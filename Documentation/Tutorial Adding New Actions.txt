@@ -1,0 +1,53 @@
+How to add new Scene Actions
+
+
+Scenes/scene-action-class.js contains the base code for scene actions. It's recommended to read the constructor sceneAction() throughly, and you should also give a quick look to isActionUsable().
+
+The general requisites for any action to appear in the game are the following: the action should have a constructor, the constructor should be referenced in the actions database, and the game's characters should know or be able to learn the action.
+
+- Making an action constructor
+
+Open Scenes/sex-scene-actions.js or Scenes/battle-scene-actions.js to have a reference at hand. I advise to copy the constructor of a mechanically similar action and edit it on the go. A action constructor is a function that will create a scene action object, give it specific parameters that fit what we want the action to do, and return it.
+
+--- General variables ---
+
+Start by declaring an empty sceneAction object, then provide it a name and a key, which should be based on the action's name. Assign the appropriate tags ("ss" for sex scenes actions, "bs" for battle scene actions, "sUse" for single use actions, "cAct" for continued actions). reqTags refers to a few other tags that refer to conditions required for the action to be usable, such as requiring a target other than the user ("diffTarget"), having the lead ("hasLead") and control ("control"). Look for the available tags on the isUsable() function.
+
+actorBpReqs and targetBpReqs will turn the action unusable if the character lacks any bodypart included in these lists or it's not free. These bodyparts are referenced as their respective key, which should be a string containing the name of the bodypart in all minus characters, such as "breasts" or "legs".
+
+flavorTags and strategyTags are lists used by the AI on sex scenes and battle scenes, respectively. You may find the list of flavor tags on a-common-functions.js at createPreferencesWeightedList(). strategyTags are unused as of version 0.2.1. Affinities refers to different attributes of the action, used in battle scenes. You may find all affinities on stat-classes.js, at the constructor flavorAffinities().
+
+getIsAllowedBySettings is null by default and will do nothing if it remains as null. You may turn it into a function that will only allow the action to be usable if it returns true. I use it for actions that I may want to disable by settings. Check createSaAnalThrust() at Scenes/sex-scene-actions.js to see an example.
+
+requiredPositions, targetRequiredPositions will check the positions' keys, which should be included in the respective position's constructor. requiredCAs and the other CA lists will similarly check the required continued actions' keys.
+
+description is the text that will be shown when the player clicks on Action Description while the action is selected.
+
+--- Creating the actions effects ---
+
+execute() will be a built-in function that executes the effects of the action, should it get executed. Just coding logic here. You may find these functions from a-common-functions.js useful:
+
+gC() is used to access a character object, sometimes written as getChar().
+gCstat() gives you fast access to a character's stat, for example gCstat("actorKey","agility") will return the current value of the agility of the character whose key is equal to that stored at the actorKey variable.
+
+limitedRandom() if you want to add a randomized factor to the action's logic.
+addLuckFactor() and luckedDiceThrow() are two extra functions that add further ways to create variance.
+
+randomFromList() is often used to create variety in the actions' descriptions.
+All functions from the Text category in that file, including textLustDamage, pussyWord(), dickWord, ktn() to give some examples.
+
+--- Positional Actions ---
+
+Positional actions are simple: these are actions that create a position in their execute function. Positions are usually created by calling a position constructor. Check some position constructors at Scenes/scene-continued-action-class.js at the CREATE POSITION FUNCTIONS segment, and the base position constructor at stat-classes.js.
+
+--- Continued Actions ---
+
+Similarly to positional actions, continued actions are actually single use actions that create continued actions. Check Scenes/scene-continued-action-class.js to find some examples. The key here is that the execute() of the action that triggers the continued action gets executed once, while the execute() of the continuedAction object gets executed every turn.
+
+- Action to actions database
+
+The actions database has a name too grand for what it actually is: a function that contains all of the actions constructors as variables. Just add "this.actionKey = constructorName();" to the saList() function in Scenes/scene-action-class.js, replacing actionKey and constructorName by your new action's key and constructors.
+
+- Learning actions
+
+Characters need to learn the actions in order to actually use them. At character-class.js, search "this.saList": this list is the attribute where the all the keys of all actions learned by a character are stored. Add the keys of your actions to these lists and they will have learned them. You can use the function charactersLearnSceneActions() in the same file if you want your code to be cleaner. For example: "charactersLearnSceneActions(["chMir","chVal"],["lapDance"]);" would make Padmiri and Valtan learn an action which key is "lapDance". The candidates' keys are "chPlayerCharacter", "chNash", "chClaw", "chVal", "chMir" and "chAte".
