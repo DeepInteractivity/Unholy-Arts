@@ -1,5 +1,6 @@
 How to add new Scene Actions
 
+This document will explain how to create new actions for scenes. As a reminder, scenes are the segments of the game where sex and battle happen.
 
 Scenes/scene-action-class.js contains the base code for scene actions. It's recommended to read the constructor sceneAction() throughly, and you should also give a quick look to isActionUsable().
 
