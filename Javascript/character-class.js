@@ -286,6 +286,7 @@ window.Character = function(name, varName) {
 	// Orgasms
 	this.orgasmCounter = 0;
 	this.orgasmSceneCounter = 0;
+	this.ruinedOrgasmSceneCounter = 0;
 	
 	this.koed = false; // Flag: has the character been defeated in the current battle
 	
@@ -294,9 +295,17 @@ window.Character = function(name, varName) {
 		
 		if ( this.lust.current <= 0 ) {
 			overflow = -this.lust.current;
-			this.lust.current = this.lust.max;
 			this.orgasmCounter++;
-			this.orgasmSceneCounter++;
+			if ( isCharsOrgasmRuined(this.varName) == false ) {
+				this.orgasmSceneCounter++;
+				this.lust.current = this.lust.max;
+			} else {
+				this.ruinedOrgasmSceneCounter++;
+				this.lust.current = this.lust.max * 0.80;
+				this.energy.changeValue(-this.energy.max * 0.1);
+				this.willpower.changeValue(-this.willpower.max * 0.1);
+				this.socialdrive.changeValue(-this.socialdrive.max * 0.1);
+			}
 		}
 		
 		return overflow;
@@ -326,7 +335,7 @@ window.Character = function(name, varName) {
 		
 		// Add single use actions
 		for ( var sa of this.saList ) {
-			if ( State.variables.saList[sa].tags.includes("sUse") ) {
+			if ( setup.saList[sa].tags.includes("sUse") ) {
 				if ( sortedList.includes(sa) == false ) {
 					sortedList.push(sa);
 				}
@@ -335,7 +344,7 @@ window.Character = function(name, varName) {
 		
 		// Add continued actions
 		for ( var sa of this.saList ) {
-			if ( State.variables.saList[sa].tags.includes("cAct") ) {
+			if ( setup.saList[sa].tags.includes("cAct") ) {
 				if ( sortedList.includes(sa) == false ) {
 					sortedList.push(sa);
 				}
@@ -344,7 +353,7 @@ window.Character = function(name, varName) {
 		
 		// Add positional actions
 		for ( var sa of this.saList ) {
-			if ( State.variables.saList[sa].tags.includes("pos") ) {
+			if ( setup.saList[sa].tags.includes("pos") ) {
 				if ( sortedList.includes(sa) == false ) {
 					sortedList.push(sa);
 				}
@@ -353,7 +362,7 @@ window.Character = function(name, varName) {
 		
 		// Add pounce actions
 		for ( var sa of this.saList ) {
-			if ( State.variables.saList[sa].tags.includes("bPos") ) {
+			if ( setup.saList[sa].tags.includes("bPos") ) {
 				if ( sortedList.includes(sa) == false ) {
 					sortedList.push(sa);
 				}
@@ -421,6 +430,8 @@ window.Character = function(name, varName) {
 		this.lust.cleanDamage();
 		this.willpower.cleanDamage();
 	}
+	
+	// this.turnTags = []; // Added and gotten by functions, see below Character class. These are labels that only last for the duration of a scene turn
 	
 	// Personality
 	this.tastes = createPreferencesWeightedList();
@@ -563,7 +574,12 @@ window.Character = function(name, varName) {
 		var i = 0;
 		for ( var as of this.alteredStates ) {
 			if ( i > 0 ) { text += ", "; }
-			var tooltip = as.title + ": " + as.description + "\nRemaining turns: " + as.remainingTurns;
+			var tooltip = as.title + ": " + as.description; // + "\nRemaining turns: " + as.remainingTurns;
+			if ( as.scope == "scene" ) {
+				tooltip += "\nRemaining turns: " + as.remainingTurns;
+			} else if ( as.scope == "days" ) {
+				tooltip += "\nRemaining days: " + as.remaininDays;
+			}
 			var asText = "<span title='" + tooltip + "'>" + as.acr + "</" + "span>";
 			text += asText;
 			i++;
@@ -704,6 +720,8 @@ window.attackControl = function(charKey,damage) {
 		gC(charKey).control -= damage;
 		if ( gC(charKey).control < 0 ) {
 			gC(charKey).control = 0;
+		} else if ( gC(charKey).control >= gC(charKey).maxControl ) {
+			gC(charKey).control = gC(charKey).maxControl;
 		}
 	}
 	
@@ -756,6 +774,15 @@ window.generateTitledName = function(charKey) {
 		var titledName = '<span style="color:'+ gC(charKey).nameColor+'" title="' + tooltip + '">' + gC(charKey).name+'</span>';
 		return titledName;
 	}
+
+// Bodyparts
+window.doesCharHaveBodypart = function(charKey,bodypart) {
+	var flag = false;
+	if ( gC(charKey).body.hasOwnProperty(bodypart) ) {
+		flag = true;
+	}
+	return flag;
+}
 
 // Group functions
 window.getCharGroup = function(charKey) { // Get character's group
@@ -860,6 +887,59 @@ window.applyFollowingDebt = function(charKey) {
 	}
 }
 
+	// Turn tags
+window.getCharTurnTags = function(charKey) {
+	var turnTags = [];
+	if ( gC(charKey).hasOwnProperty("turnTags") ) {
+		turnTags = gC(charKey).turnTags;
+	}
+	return turnTags;
+}
+window.addTurnTagToChar = function(tag,charKey) {
+	if ( gC(charKey).hasOwnProperty("turnTags") ) {
+		gC(charKey).turnTags.push(tag);
+	} else {
+		gC(charKey).turnTags = [tag];
+	}
+}
+window.doesCharHaveTurnTag = function(charKey,tag) {
+	var flag = false;
+	if ( gC(charKey).hasOwnProperty("turnTags") ) {
+		if ( gC(charKey).turnTags.includes(tag) ) {
+			flag = true;
+		}
+	}
+	return flag;
+}
+
+	// Orgasms
+window.isCharsOrgasmRuined = function(charKey) {
+	var flag = false;
+	if ( gSettings().chastity == "enable" ) {
+		if ( doesCharHaveTurnTag(charKey,"denied") ) {
+			flag = true;
+		} else {
+			// Pussy and dick
+			if ( doesCharHaveBodypart(charKey,"pussy") && doesCharHaveBodypart(charKey,"dick") ) {
+				if ( gC(charKey).body.pussy.state == "locked" && gC(charKey).body.dick.state == "locked" ) {
+					flag = true;
+				}
+			// Pussy
+			} else if ( doesCharHaveBodypart(charKey,"pussy") ) {
+				if ( gC(charKey).body.pussy.state == "locked" ) {
+					flag = true;
+				}
+			// Dick
+			} else if ( doesCharHaveBodypart(charKey,"dick") ) {
+				if ( gC(charKey).body.dick.state == "locked" ) {
+					flag = true;
+				}
+			}
+		}
+	}
+	return flag;
+}
+
 // Constructors, serializers, etc.
 Character.prototype._init = function (obj) {
 	Object.keys(obj).forEach(function (pn) {
@@ -892,11 +972,24 @@ window.charactersLearnSceneActions = function(characters,sceneActions) {
 		for ( var currentAction of sceneActions ) {
 			if ( gC(currentChar).saList.includes(currentAction) == false ) {
 				gC(currentChar).saList.push(currentAction);
-				movesLearned.push(State.variables.saList[currentAction].name);
+				movesLearned.push(setup.saList[currentAction].name);
 			}
 		}
 		resultsMsg += gC(currentChar).getFormattedName() + " learned " + stringArrayToText(movesLearned) + ".\n";
 		gC(currentChar).sortSaList();
+	}
+	return resultsMsg;
+}
+window.charactersForgetSceneActions = function(characters,sceneActions) {
+	var resultsMsg = "";
+	for ( var character of characters ) {
+		var newSaList = [];
+		for ( var action of gC(character).saList ) {
+			if ( sceneActions.includes(action) == false ) {
+				newSaList.push(action);
+			}
+		}
+		gC(character).saList = newSaList;
 	}
 	return resultsMsg;
 }

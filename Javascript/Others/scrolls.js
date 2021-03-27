@@ -256,6 +256,57 @@ window.createScrollPillowFeetFight = function() {
 	
 }
 
+// Punishing the traitors
+window.getScrollPunishingTheTraitorsContent = function() {
+	var content = 'Characters: Cainei (Gaanidan female), Wesia (Gaanidan female), Rasce (Gaanidan male)\n\n'
+				+ 'Tags: Female x Male, Female x Male, bondage, domination, femdom, femsub, malesub, denial\n\n'
+				+ '"Please, Cainei, think calmly about this... You\'re going too far."\n\n'
+				+ 'The voice of her friend Rasce was the first thing Wesia heard when she woke up, but her fuzzy mind was going to need some more work to understand the situation. Her lazy eyes opened for half a second, and caught a glance of a foot massaging a dick. She made an extra effort to keep them open the next time, and she found their friend Cainei standing on her feet before Rasce who laid down on the floor, as she gave him a footjob.\n\n'
+				+ '"Please, I beg you..."\n\n'
+				+ '"Your begging isn\'t going to undo what you did." She replied merciless, without stopping.\n\n'
+				+ 'A second inspection made Wesia notice an important detail of the scene: Rasce\'s arms and feet were chained, and he was immobilized.\n\n'
+				+ '"What are you doing...?" Wesia asked, still confused. A third inspection made her realize an even more important issue: SHE was chained too. "Huh? What\'s going on!?"\n\n'
+				+ '"That\'s what I\'d like to know too! What\'s going on with you, you little scum!" A furious Cainei replied. The massage against Rasce\'s dick was growing in intensity: Cainei\'s fingers grabbed the head of the penis and rubbed it aggressively.\n\n'
+				+ '"Cainei, why are we chained!? Why am I chained!?"\n\n'
+				+ '"If you don\'t know, you\'re even more guilty!"\n\n'
+				+ '"Uugh-guugh..." Rasce groaned.\n\n'
+				+ '"Ah, there you are." Said Cainei, who quickly retired her foot, and stepped on the base of Rasce\'s cock, making sure that no other part of it was getting contact with anything.\n\n'
+				+ '"No, please, let me cum!"\n\n'
+				+ '"Ah, but you\'re cumming alright." A small but long stream of cum sprouted from the sad dick, in what was probably the most frustrating and humilliating orgasm it had ever experienced. "This is what traitors like you deserve!"\n\n'
+				+ '"Why... Why are you so cruel...?"\n\n'
+				+ '"Cainei! Please tell me why you are doing this!" Wesia insisted.\n\n'
+				+ '"Don\'t worry, Wesia. I\'m going to make you remember." The free woman walked towards her chained friend, and stepped on her pussy. "After your clit aches in heat and desperation like I\'m going to make it, you\'ll remember for a long, long time." Cainei\'s big toe started making circles on her prisoner\'s clitoris, ready to torture it.\n\n'
+				+ '"But tell me at least what I did to make you angry!"\n\n'
+				+ '"You...! You ate all of our sweets!" Cainei revealed, indignant.\n\n'
+				+ '"What?"\n\n'
+				+ '"You two left me with nothing!"\n\n'
+				+ '"What!? Are you torturing us because we left you without sweets!?" Wesia couldn\'t believe her ears.\n\n'
+				+ '"They were the special sweets that the Leirien gave us, and you never know how long it\'ll be until they bring more again! They\'re delicious, and now they\'re GONE!"\n\n'
+				+ '"Cainei," Rasce intervened, "if it makes you feel better, they weren\'t even that good."'
+				+ '"Don\'t lie to me, you bastard! You ate all of them!"\n\n'
+				+ '"Agh! Rasce, don\'t make her angrier, she\'s hurting me..." Wesia complained.\n\n'
+				+ '"You\'re going to be nothing but a drooling, pained dog in heat, when I\'m done with you."\n\n';
+	return content;
+}
+window.createScrollPunishingTheTraitors = function() {
+	var scr = new Scroll("punishingTheTraitors","Punishing The Traitors","shortStory");
+	scr.firstTimeEffect = function(characters) {
+		var textResults = charactersLearnSceneActions(characters,['denyOrgasm','teaseLockedPussy','teaseLockedDick']);
+		return textResults;
+	}
+	
+	scr.getContent = getScrollPunishingTheTraitorsContent;
+	scr.mayBeFound = function(characters) {
+		var flag = false;
+		if ( State.variables.daycycle.day > 10 || State.variables.daycycle.month > 1 ) {
+			flag = true;
+		}
+		return flag;
+	}
+	return scr;
+}
+
+
 	// GAMEPLAY
 // The basics of combat
 window.getScrollTheBasicsOfCombat = function() {
@@ -288,6 +339,7 @@ State.variables.scrollsList.theTasteOfPleasure = createScrollTheTasteOfPleasure(
 State.variables.scrollsList.surprisedInTheRear = createScrollSurprisedInTheRear();
 State.variables.scrollsList.paybackForTheThief = createScrollPaybackForTheThief();
 State.variables.scrollsList.pillowFeetFight = createScrollPillowFeetFight();
+State.variables.scrollsList.punishingTheTraitors = createScrollPunishingTheTraitors();
 State.variables.scrollsList.theBasicsOfCombat = createScrollTheBasicsOfCombat();
 
 window.getScrollsStringList = function() {

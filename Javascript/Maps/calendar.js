@@ -110,36 +110,42 @@ window.EventsCalendar = function() {
 						}
 						break;
 					case 10:
+						this.customEventScript = initializeSeTheMerchants;
+						this.getEndDayButton = function() {
+							return this.getButtonToEvent("SE The Merchants Start");
+						}
+						break;
+					case 11:
 						this.customEventScript = initializeSeBeatingKittyIntoFriendship;
 						this.getEndDayButton = function() {
 							return this.getButtonToEvent("SE Beating Kitty Into Friendship Start");
 						}
 						break;
-					case 11:
+					case 12:
 						this.customEventScript = initializeSeBkifOutcome;
 						this.getEndDayButton = function() {
 							return this.getButtonToEvent("SE BKIF Outcome Start");
 						}
 						break;
-					case 12:
+					case 13:
 						this.customEventScript = initializeSeAspiringTreeClimber;
 						this.getEndDayButton = function() {
 							return this.getButtonToEvent("SE Aspiring TC Start");
 						}
 						break;
-					case 13:
+					case 14:
 						this.customEventScript = initializeSeLuringMasquerade;
 						this.getEndDayButton = function() {
 							return this.getButtonToEvent("Luring Masquerade Start");
 						}
 						break;
-					case 14:
+					case 15:
 						this.customEventScript = initializeSeGiftsForNature;
 						this.getEndDayButton = function() {
 							return this.getButtonToEvent("SE Gifts For Nature Start");
 						}
 						break;
-					case 15:
+					case 16:
 						this.customEventScript = initializeSeDiscoveringTheOthers;
 						this.getEndDayButton = function() {
 							return this.getButtonToEvent("SE Discovering The Others Start");

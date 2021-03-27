@@ -43,11 +43,11 @@ window.aiAlgorythm = function() {
 		
 		this.updateRolePreferences = function(lastActionKey) {
 			this.rolePreferences.position.w += 20;
-			if ( State.variables.saList[lastActionKey].flavorTags.includes("position") ) {
+			if ( setup.saList[lastActionKey].flavorTags.includes("position") ) {
 				// State.variables.sc.sceneLog += " Decided to use action last turn. Decreasing chance of using positions again. ; ";
 				this.rolePreferences.position.w = 0;
 			}
-			else if ( State.variables.saList[lastActionKey].flavorTags.includes("continuedAction") ) {
+			else if ( setup.saList[lastActionKey].flavorTags.includes("continuedAction") ) {
 				this.rolePreferences.continuedAction.w = 100;
 			}
 			if ( this.rolePreferences.foreplay.w > 100 ) {
@@ -70,13 +70,14 @@ window.aiAlgorythm = function() {
 		this.rolePreferences.domination.w = 20;
 		this.rolePreferences.top.w = 80;
 		this.rolePreferences.charm.w = 120;
+		this.rolePreferences.denial.w = 10;
 		this.rolePreferences.continuedAction.w = 200;
 		
 		this.updateRolePreferences = function(lastActionKey) {
 			if ( this.rolePreferences.foreplay.w > 110 ) {
 				this.rolePreferences.foreplay.w -= 40;
 			}
-			if ( State.variables.saList[lastActionKey].flavorTags.includes("continuedAction") ) {
+			if ( setup.saList[lastActionKey].flavorTags.includes("continuedAction") ) {
 				this.rolePreferences.continuedAction.w = 100;
 			}
 			if ( this.rolePreferences.continuedAction.w < 200 ) {
@@ -96,18 +97,19 @@ window.aiAlgorythm = function() {
 		this.rolePreferences.submission.w = 20;
 		this.rolePreferences.domination.w = 110;
 		this.rolePreferences.top.w = 150;
-		this.rolePreferences.foreplay.w = 200;
+		this.rolePreferences.foreplay.w = 90;
 		this.rolePreferences.continuedAction.w = 200;
+		this.rolePreferences.denial.w = 110;
 		
 		this.updateRolePreferences = function(lastActionKey) {
 			this.rolePreferences.position.w += 30;	// Position
-			if ( State.variables.saList[lastActionKey].flavorTags.includes("position") ) {
+			if ( setup.saList[lastActionKey].flavorTags.includes("position") ) {
 				this.rolePreferences.position.w = 20;
 			}
 			if ( this.rolePreferences.foreplay.w > 100 ) {	// Foreplay
 				this.rolePreferences.foreplay.w -= 20;
 			}
-			if ( State.variables.saList[lastActionKey].flavorTags.includes("continuedAction") ) { // Continued Actions
+			if ( setup.saList[lastActionKey].flavorTags.includes("continuedAction") ) { // Continued Actions
 				this.rolePreferences.continuedAction.w = 100;
 			}
 			if ( this.rolePreferences.continuedAction.w < 200 ) {
@@ -128,16 +130,17 @@ window.aiAlgorythm = function() {
 		this.rolePreferences.targetAnus.w = 25;
 		this.rolePreferences.foreplay.w = 320;
 		this.rolePreferences.continuedAction.w = 200;
+		this.rolePreferences.denial.w = 80;
 		
 		this.updateRolePreferences = function(lastActionKey) {
 			this.rolePreferences.position.w += 20;
-			if ( State.variables.saList[lastActionKey].flavorTags.includes("position") ) {
+			if ( setup.saList[lastActionKey].flavorTags.includes("position") ) {
 				this.rolePreferences.position.w = 20;
 			}
 			if ( this.rolePreferences.foreplay.w > 120 ) {
 				this.rolePreferences.foreplay.w -= 40;
 			}
-			if ( State.variables.saList[lastActionKey].flavorTags.includes("continuedAction") ) { // Continued Actions
+			if ( setup.saList[lastActionKey].flavorTags.includes("continuedAction") ) { // Continued Actions
 				this.rolePreferences.continuedAction.w = 100;
 			}
 			if ( this.rolePreferences.continuedAction.w < 200 ) {
@@ -159,16 +162,17 @@ window.aiAlgorythm = function() {
 		this.rolePreferences.bottom.w = 20;
 		this.rolePreferences.submission = 10;
 		this.rolePreferences.continuedAction.w = 250;
+		this.rolePreferences.denial.w = 150;
 		
 		this.updateRolePreferences = function(lastActionKey) {
 			this.rolePreferences.position.w += 40;
-			if ( State.variables.saList[lastActionKey].flavorTags.includes("position") ) {
+			if ( setup.saList[lastActionKey].flavorTags.includes("position") ) {
 				this.rolePreferences.position.w = 60;
 			}
 			if ( this.rolePreferences.foreplay.w > 80 ) {
 				this.rolePreferences.foreplay.w -= 40;
 			}
-			if ( State.variables.saList[lastActionKey].flavorTags.includes("continuedAction") ) { // Continued Actions
+			if ( setup.saList[lastActionKey].flavorTags.includes("continuedAction") ) { // Continued Actions
 				this.rolePreferences.continuedAction.w = 150;
 			}
 			if ( this.rolePreferences.continuedAction.w < 250 ) {
@@ -192,12 +196,13 @@ window.aiAlgorythm = function() {
 		this.rolePreferences.bottom.w = 150;
 		this.rolePreferences.submission.w = 200;
 		this.rolePreferences.continuedAction.w = 200;
+		this.rolePreferences.denial.w = 10;
 		
 		this.updateRolePreferences = function(lastActionKey) {
 			if ( this.rolePreferences.foreplay.w > 110 ) {
 				this.rolePreferences.foreplay.w -= 40;
 			}
-			if ( State.variables.saList[lastActionKey].flavorTags.includes("continuedAction") ) { // Continued Actions
+			if ( setup.saList[lastActionKey].flavorTags.includes("continuedAction") ) { // Continued Actions
 				this.rolePreferences.continuedAction.w = 100;
 			}
 			if ( this.rolePreferences.continuedAction.w < 200 ) {
@@ -223,17 +228,18 @@ window.aiAlgorythm = function() {
 		this.rolePreferences.domination.w = 200;
 		this.rolePreferences.hypnosis.w = 120;
 		this.rolePreferences.usePain.w = 150;
+		this.rolePreferences.denial.w = 200;
 		this.rolePreferences.continuedAction.w = 200;
 		
 		this.updateRolePreferences = function(lastActionKey) {
 			this.rolePreferences.position.w += 30;
-			if ( State.variables.saList[lastActionKey].flavorTags.includes("position") ) {
+			if ( setup.saList[lastActionKey].flavorTags.includes("position") ) {
 				this.rolePreferences.position.w = 20;
 			}
 			if ( this.rolePreferences.foreplay.w > 100 ) {
 				this.rolePreferences.foreplay.w -= 40;
 			}
-			if ( State.variables.saList[lastActionKey].flavorTags.includes("continuedAction") ) { // Continued Actions
+			if ( setup.saList[lastActionKey].flavorTags.includes("continuedAction") ) { // Continued Actions
 				this.rolePreferences.continuedAction.w = 100;
 			}
 			if ( this.rolePreferences.continuedAction.w < 200 ) {
@@ -457,7 +463,7 @@ window.createAiEarlyStrategic = function() { // November 2020
 				damageActions = purgeActionsWithoutStrategyTag(validActionsList,"pounce");
 				if ( damageActions.length > 0 ) {
 					var randomPounce = randomFromList(damageActions);
-					if ( State.variables.saList[randomPounce].doesHitLand.hit ) {
+					if ( setup.saList[randomPounce].doesHitLand.hit ) {
 						results.actionKey = randomPounce;
 						results.targetsIDs = [ directEnemy ];
 					}
@@ -655,6 +661,10 @@ window.createAiWeightedMissionsByTaste = function() {
 			}
 		
 			var validActionsList = State.variables.sc.listUsableActionsOnTarget(character,results.targetsIDs[0]);
+			// Purge denial if target isn't close to orgasm
+			if ( getBarPercentage(results.targetsIDs[0],"lust") > 0.1 || character == results.targetsIDs[0] ) {
+				validActionsList = purgeActionsWithPreferenceTag(validActionsList,"denial");
+			}
 			validActionsList.shift();
 		
 			if ( validActionsList.length > 0 ) {
@@ -664,10 +674,10 @@ window.createAiWeightedMissionsByTaste = function() {
 					if (wList.hasOwnProperty(item) ) {
 						wList[item].w = applyTasteWeightToAction(wList[item],character); // Taste weighted
 						// Positional actions must not be chosen here, this portion removes their priority
-						if ( State.variables.saList[wList[item].content].tags.includes("pos") ) {
+						if ( setup.saList[wList[item].content].tags.includes("pos") ) {
 							wList[item].w = 0;
 						}
-						// if ( State.variables.saList[wItem.content].flavorTags.includes(character.tastes[taste].content) ) {
+						// if ( setup.saList[wItem.content].flavorTags.includes(character.tastes[taste].content) ) {
 					}
 				}
 				if ( this.role != "none" ) {
@@ -706,7 +716,8 @@ window.createAiRandomActions = function() {
 } */
 // createAiRandomAction <-
 
-// Auxiliar functions
+// Auxiliar functions	
+	// Choose target
 window.chooseTargetDynamically = function(character,allyCharacters,enemyCharacters) { // Updated 12-2020
 	// Cheap version, this function must be upgraded
 	var mainTarget = [];
@@ -724,7 +735,7 @@ window.chooseTargetDynamically = function(character,allyCharacters,enemyCharacte
 	}*/
 	
 	var allOtherCharacters = arrayMinusA(allyCharacters.concat(enemyCharacters),character);
-	if ( (limitedRandomInt(100) + gC(character).dLove.level * 10) > (24 + gC(character).dPleasure.level * 10) ) {
+	if ( (limitedRandomInt(100) + gC(character).dLove.level * 5) > (24 + gC(character).dPleasure.level * 5) ) {
 		mainTarget = randomFromList(allOtherCharacters);
 	} else {
 		mainTarget = character;
@@ -733,6 +744,7 @@ window.chooseTargetDynamically = function(character,allyCharacters,enemyCharacte
 	return mainTarget;
 }
 
+	// Missions
 window.returnValidSexSceneMissions = function(character,target) {
 	// Very cheap version, this function will be upgraded into a full system
 	var validMissions = [];
@@ -780,6 +792,7 @@ window.returnSexSceneMissionCommands = function(missionKey) {
 	return commandsChain;
 }
 
+	// Weight
 window.applyWeightListToActionList = function(actList,wgtList) {
 	var actList2 = actList;
 	
@@ -787,7 +800,7 @@ window.applyWeightListToActionList = function(actList,wgtList) {
 		if ( actList2.hasOwnProperty(action) ) {
 			for ( var weight in wgtList ) {
 				if ( wgtList.hasOwnProperty(weight) ) {
-					if ( State.variables.saList[actList2[action].content].flavorTags.includes(wgtList[weight].content) ) {
+					if ( setup.saList[actList2[action].content].flavorTags.includes(wgtList[weight].content) ) {
 						actList2[action].w *= wgtList[weight].w / 100;
 					}
 				}
@@ -803,7 +816,7 @@ window.applyTasteWeightToAction = function(wItem,character) { // wItem refers to
 	
 	for ( var taste in character.tastes ) {
 		if ( character.tastes.hasOwnProperty(taste) ) {
-			if ( State.variables.saList[wItem.content].flavorTags.includes(character.tastes[taste].content) ) {
+			if ( setup.saList[wItem.content].flavorTags.includes(character.tastes[taste].content) ) {
 				newWeight *= (character.tastes[taste].w / 100);
 			}
 		}
@@ -822,15 +835,27 @@ window.applyRoleWeightToAction = function(wList,rolePreferences) {
 	*/
 }
 
+	// Action lists
 window.purgeActionsWithoutStrategyTag = function(list,tag) {
 	var newList = [];
 	for ( var action of list ) {
-		if ( State.variables.saList[action].strategyTags.includes(tag) ) {
+		if ( setup.saList[action].strategyTags.includes(tag) ) {
 			newList.push(action);
 		}
 	}
 	return newList;
 }
+window.purgeActionsWithPreferenceTag = function(list,tag) {
+	var newList = [];
+	for ( var action of list ) {
+		if ( setup.saList[action].flavorTags.includes(tag) == false ) {
+			newList.push(action);
+		}
+	}
+	return newList;
+}
+
+	// Altered states
 window.countCharactersBuffs = function(charKey) {
 	var count = 0;
 	for ( var as of gC(charKey).alteredStates ) {

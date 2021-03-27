@@ -293,9 +293,10 @@ window.configureTestsRoomScene = function() {
 	charactersLearnSceneActions(["chVal"],[
 									"doublePenetration"
 		]);
-	State.variables.chVal.saList = ["doNothing", "struggle", "strokePussy", "lickGroin", "baKissLips", "baStrokeDick", "baStrokePussy", "baThrust", "baPushHipsBack", "baScissor", "baScissorBack", "baRideDick", "baPushDickBack", "coldGuts", "baTease", "embers", "freezeFeet", "sparkingRubbing", "thrust", "piston", "finalPush", "suckDick", "lickPussy", "scissor", "strokeAss", "analThrust", "dickFootjob", "pussyFootjob", "lickLegs", "pushHipsBack", "spanking", "fuckFace", "rideFace", "frenchKiss", "legHoldHead", "getBlowjob", "doublePenetration", "mountFaceToFace", "mountFromBehind", "pounceFrontalD2P", "pounceFrontalP2P", "pounceFrontalP2D", "doubleThrust","slimeHug"];
-	State.variables.chVal.tastes.bondage.w = 20000;
-	State.variables.chVal.tastes.domination.w = 20000;
+	State.variables.chVal.saList = ["doNothing", "struggle", "strokePussy", "lickGroin", "baKissLips", "baStrokeDick", "baStrokePussy", "baThrust", "baPushHipsBack", "baScissor", "baScissorBack", "baRideDick", "baPushDickBack", "coldGuts", "baTease", "embers", "freezeFeet", "sparkingRubbing", "thrust", "piston", "finalPush", "suckDick", "lickPussy", "scissor", "strokeAss", "analThrust", "dickFootjob", "pussyFootjob", "lickLegs", "pushHipsBack", "spanking", "fuckFace", "rideFace", "frenchKiss", "legHoldHead", "getBlowjob", "doublePenetration", "mountFaceToFace", "mountFromBehind", "pounceFrontalD2P", "pounceFrontalP2P", "pounceFrontalP2D", "doubleThrust","slimeHug","denyOrgasm"];
+	//State.variables.chVal.tastes.bondage.w = 20000;
+	//State.variables.chVal.tastes.domination.w = 20000;
+	State.variables.chVal.tastes.denial.w = 2000;
 }
 
 window.configureBattleTestsRoomScene = function() {
@@ -317,7 +318,11 @@ window.setUpTestScenesRoom = function() {
 									"taunt","baTease"
 									,"realHypnoticGlance"
 									,"energyDrainingKiss"
-									,"baEtherealChains","etherealChains"
+									,"baEtherealChains","etherealChains",
+									"denyOrgasm","teaseLockedPussy","teaseLockedDick"
+		]);
+	charactersLearnSceneActions(["chVal"],[
+									"denyOrgasm","teaseLockedPussy","teaseLockedDick"
 		]);
 }
 

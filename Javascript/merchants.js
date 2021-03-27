@@ -55,8 +55,8 @@ setup.merchantDataList[merchantType.WEAPONS] = new Merchant(merchantType.WEAPONS
 		return itemsList;
 	});
 	// Bondage
-		// Nereshesh
-setup.merchantDataList[merchantType.BONDAGE] = new Merchant(merchantType.BONDAGE,"Nerishesh, Toy maker",25,
+		// Nimeresh
+setup.merchantDataList[merchantType.BONDAGE] = new Merchant(merchantType.BONDAGE,"Nimeresh, Toy maker",25,
 	function() {
 		var str = "This Ashwalker clearly daydreams about her clients wearing her toys. She'll eagerly invite you to try them on.";
 		return str;

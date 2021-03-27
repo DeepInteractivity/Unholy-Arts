@@ -288,6 +288,7 @@ window.initFakePeriodPassionTemple = function() {
 	State.variables.personalRoom.endDayRelationMoodEffects();
 }
 window.initFakePeriodPassionTempleXtimes = function(times) {
+	State.variables.enabledMerchants = [0,30];
 	try {
 	var i = 0;
 	while ( i < times ) {

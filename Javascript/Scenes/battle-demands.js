@@ -23,7 +23,7 @@ window.battleDemand = function(title) {
 	this.getFormattedPlayerChoice = function(actor,target,stakes,infamyMultiplier,i) {
 		var cText = "<<l" + "ink [[" + this.title + "|Scene Results]]>><<s" + "cript>>\n";
 			cText += "setup.battleDemandsDB[" + i + "].provokeEffect('chPlayerCharacter','" + target + "'," + stakes + "," + infamyMultiplier + ",'','');\n";
-			cText += "formatGenericBattlePlayerChoice(setup.battleDemandsDB[" + i + "].resultMessage('chPlayerCharacter','" + target + "'," + stakes + "," + infamyMultiplier + ",'',''),setup.battleDemandsDB[" + i + "].getPassageLink());\n";
+			cText += "formatGenericBattlePlayerChoice(setup.battleDemandsDB[" + i + "].resultMessage('chPlayerCharacter','" + target + "'," + stakes + "," + infamyMultiplier + ",'',''),setup.battleDemandsDB[" + i + "].getPassageLink('" + actor + "','" + target + "'));\n";
 			cText += "<</s" + "cript>><</l" + "ink>>" + this.subtitle + "\n";
 		return cText;
 	}
@@ -534,10 +534,10 @@ window.createBdemandForceBondage = function() {
 					bondageScore.push(physicalScore);
 				} else if ( tags.includes("attackMagic") ) {
 					bondageScore.push(magicalScore);
-				} else if ( tags.includes("attackMagic") ) {
+				} else if ( tags.includes("attackSocial") ) {
 					bondageScore.push(socialScore);
 				} else {
-					bondageScore.push(totalScore * 0.9);
+					bondageScore.push(totalScore * 0.4);
 				}
 			}
 			// Find best score
@@ -645,6 +645,113 @@ window.createBdemandForceBondage = function() {
 	return bDemand;
 }
 
+window.createBdemandUnequipBondage = function() {
+	var bDemand = new battleDemand("Unequip bondage");
+	var tooltip = "Forces your opponent to free someone from their bondage. May reduce infamy";
+	bDemand.subtitle += '<span title="' + tooltip + '">(?)</span>';
+	
+	// extra1 = Character to be freed
+	
+	bDemand.isPossible = function(actor,target,battleWeight) {
+		var isPossible = false;
+		if ( battleWeight >= 1 ) {
+			for ( var item of gC(target).ownedEquipment ) {
+				if ( getEquipById(item).equippedOn != null && getEquipById(item).equippedOn != target && gC(target).subChars.includes(getEquipById(item).equippedOn) == false && equipmentIsBondage(getEquipDataById(item)) ) {
+					isPossible = true;
+				}
+			}
+		}
+		return isPossible;
+	}
+	bDemand.calculateInfamy = function(actor,target,battleWeight,infamyMultiplier) {
+		var infamy = 0;
+		return infamy;
+	}
+	bDemand.generateDescription = function(actor,target,battleWeight,infamyMultiplier,extra1,extra2) {
+		return "noDescription";
+	}
+	bDemand.provokeEffect = function(actor,target,battleWeight,infamyMultiplier,extra1,extra2) {
+		var bondageList = [];
+		// Get bondage list
+		for ( var item of gC(target).ownedEquipment ) {
+			if ( getEquipById(item).equippedOn == extra1 && equipmentIsBondage(getEquipDataById(item)) ) {
+				bondageList.push(item);
+			}
+		}
+		// Unequip bondage
+		for ( var item of bondageList ) {
+			unequipObject(item);
+		}
+		// Extra effects if actor != freed character
+		if ( extra1 != actor ) {
+			gC(actor).changeInfamy(-1);
+			getRelation(extra1,actor).friendship.stv += 25;
+		}
+		return 1;
+	}
+	bDemand.resultMessage = function(actor,target,battleWeight,infamyMultiplier,extra1,extra2) {		
+		var msg = gC(extra1).getFormattedName() + " will be freed from " + gC(target).getFormattedName() + "'s bondage items.\n";
+		if ( extra1 != actor ) {
+			msg += gC(actor).getFormattedName() + " has lost 1 infamy, and " + gC(actor).posPr + " friendship with " + gC(extra1).getFormattedName() + " has grown.";
+		}
+		
+		return msg;
+	}
+	bDemand.getFormattedPlayerChoice = function(actor,target,stakes,infamyMultiplier,i) {
+		var cText = "";
+		var validChars = [];
+		// Get valid chars
+		for ( var item of gC(target).ownedEquipment ) {
+			if ( getEquipById(item).equippedOn != null && getEquipById(item).equippedOn != target && gC(target).subChars.includes(getEquipById(item).equippedOn) == false && equipmentIsBondage(getEquipDataById(item)) ) {
+				if ( validChars.includes(getEquipById(item).equippedOn) == false ) {
+					validChars.push(getEquipById(item).equippedOn);
+				}
+			}
+		}
+		// Format choices
+		for ( var charKey of validChars ) {
+			cText += "<<l" + "ink [[" + this.title + " (" + gC(charKey).getName() + ")|Scene Results]]>><<s" + "cript>>\n"
+				   + "setup.battleDemandsDB[" + i + "].provokeEffect('chPlayerCharacter','" + target + "'," + stakes + "," + infamyMultiplier + ",'" + charKey + "','');\n"
+				   + "formatGenericBattlePlayerChoice(setup.battleDemandsDB[" + i + "].resultMessage('chPlayerCharacter','" + target + "'," + stakes + "," + infamyMultiplier + ",'" + charKey + "',''),setup.battleDemandsDB[" + i + "].getPassageLink());\n"
+				   + "<</s" + "cript>><</l" + "ink>>" + this.subtitle + "\n";
+		}
+		
+		return cText;
+	}
+	
+	bDemand.generateChoicesValuesForNpcs = function(actor,target,battleWeight,infamyMultiplier) {
+		var choicesList = [];
+		var validChars = [];
+		// Get valid chars
+		for ( var item of gC(target).ownedEquipment ) {
+			if ( getEquipById(item).equippedOn != null && getEquipById(item).equippedOn != target && gC(target).subChars.includes(getEquipById(item).equippedOn) == false && equipmentIsBondage(getEquipDataById(item)) ) {
+				if ( validChars.includes(getEquipById(item).equippedOn) == false ) {
+					validChars.push(getEquipById(item).equippedOn);
+				}
+			}
+		}
+		for ( var charKey of validChars ) {
+			var extra1 = charKey;
+			var extra2 = "";
+			var relationFactor = 0;
+			if ( charKey != actor ) {
+				relationFactor = rLvlAbt(actor,charKey,"friendship") * 1 + rLvlAbt(actor,charKey,"romance") * 2 - rLvlAbt(actor,charKey,"rivalry") * 1 - rLvlAbt(actor,charKey,"enmity") * 2;
+			} else {
+				relationFactor = 50;
+			}
+			var drivesFactor = gC(actor).dCooperation.level * 2;
+			var value = 1 + limitedRandomInt(3) + relationFactor + drivesFactor;
+				
+			if ( choicesList.length == 0 ) { choicesList = [getBattleDemandChoiceValueNpc(value,this,extra1,extra2)]; }
+			else { choiceslist = choicesList.concat([getBattleDemandChoiceValueNpc(value,this,extra1,extra2)]); }
+		}
+		
+		return choicesList;
+	}	
+	
+	return bDemand;
+}
+
 // State.variables.battleDemandsDB = [
 setup.battleDemandsDB = [
 	// Do nothing
@@ -660,7 +767,9 @@ setup.battleDemandsDB = [
 	// Steal servitude
 	createBdemandStealServant(),
 	// Force bondage
-	createBdemandForceBondage()
+	createBdemandForceBondage(),
+	// Liberate from bondage
+	createBdemandUnequipBondage()
 ];
 
 window.formatBattleDemandButtons = function(target,stakes,infamyMultiplier) {

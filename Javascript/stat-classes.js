@@ -673,11 +673,13 @@ window.alteredState = function(title,acr,scope,turns,provokeEffect,cancelEffect,
 	this.title = title;
 	this.type = "none";
 	this.acr = acr;
-	this.scope = scope;
+	this.scope = scope; // "scene", "days" or "equipment"
 	this.remainingTurns = turns;
 	this.provokeEffect = provokeEffect;
 	this.cancelEffect = cancelEffect;
 	this.description = description;
+	this.remainingDays = -1; // If something other than -1, modify outside of constructor
+	// this.turnEffect = function(character) -> Property added outside of constructor
 	
 	this.flagRemove = false;
 }
@@ -687,6 +689,21 @@ window.applyAlteredState = function(charKeysList,alteredState) {
 		gC(charKey).alteredStates.push(alteredState);
 		alteredState.provokeEffect(charKey);
 	}
+}
+window.removeAlteredStateByAcr = function(charKey,acr) {
+	for ( var as of gC(charKey).alteredStates ) {
+		if ( as.acr == acr ) {
+			as.flagRemove = true;
+		}
+	}
+	gC(charKey).cleanStates();
+}
+window.getAsTurnEffect = function(as) {
+	var te = null;
+	if ( as.hasOwnProperty("turnEffect") ) {
+		te = as.turnEffect;
+	}
+	return te;
 }
 
 // Constructors, serializers, etc.

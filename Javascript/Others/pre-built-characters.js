@@ -65,7 +65,6 @@ window.createGoddessHerald = function() {
 	}
 	//character.icon = function() { // Does she need an icon?
 	//	return "[img[img/charIcons/nashIcon.png]]";
-	//}
 	
 	character.fullPortraitL = "img/portraits/varyonte-full.png";
 	character.avatarL = "img/portraits/varyonte-avatar.png";
@@ -73,6 +72,18 @@ window.createGoddessHerald = function() {
 	
 	return character;
 };
+window.createDrishtya = function() {
+	var character = new Character( "Drishtya" , "chDummy" );
+	character.setColors("DarkOrchid","DarkOrchid");
+	
+	// Others
+	character.assignFemeninePronouns();
+	
+	delete character.combatAffinities;
+	delete character.tastes;
+	
+	return character;
+}
 
 window.createNashillbyir = function() {
 	var character = new Character("Nash", "chNash");
@@ -222,6 +233,7 @@ window.createPadmiri = function() {
 	character.tastes.hypnosis.w = 105;
 	character.tastes.receivePain.w = 50;
 	character.tastes.usePain.w = 30;
+	character.tastes.denial.w = 30;
 	
 	// Base mood
 	character.baseMood.friendly = 0;	
@@ -315,6 +327,7 @@ window.createCarine = function() {
 	character.tastes.romantic.w = 80;
 	character.tastes.receivePain.w = 30;
 	character.tastes.usePain.w = 100;
+	character.tastes.denial.w = 50;
 	
 	// Base mood
 	character.baseMood.angry = 50;
@@ -401,6 +414,7 @@ window.createValtan = function() {
 	character.tastes.charm.w = 110;
 	character.tastes.receivePain.w = 60;
 	character.tastes.usePain.w = 60;
+	character.tastes.denial.w = 5000;
 	
 	// Drives
 	setDriveValues(character.dImprovement,850,2);

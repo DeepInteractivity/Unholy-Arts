@@ -56,29 +56,38 @@ window.processGenericSexSceneEffects = function() {
 					}
 				} else {										  // Char was bottom
 						// Define values
-					var gainedRomance = 25 + gC(charKey).orgasmSceneCounter * 5;
-					var gainedSexualTension = 35 + gC(charKey).orgasmSceneCounter * 10;
-					var gainedSubmission = 25 + gC(charKey).orgasmSceneCounter * 5;
-					var gainedEnmity = 0;
-					var gainedDrivePleasure = 8 + gC(charKey).orgasmSceneCounter * 2;
+					var gainedRomance = 25 + gC(charKey).orgasmSceneCounter * 5 - gC(charKey).ruinedOrgasmSceneCounter * 5;
+					var gainedSexualTension = 35 + gC(charKey).orgasmSceneCounter * 10 + gC(charKey).ruinedOrgasmSceneCounter * 10;
+					var gainedSubmission = 25 + gC(charKey).orgasmSceneCounter * 5 + gC(charKey).ruinedOrgasmSceneCounter * 15;
+					var gainedEnmity = gC(charKey).ruinedOrgasmSceneCounter * 5;
+					var gainedDrivePleasure = 8 + gC(charKey).orgasmSceneCounter * 2 + gC(charKey).ruinedOrgasmSceneCounter * 3;
+					var gainedDriveLove = - gC(charKey).ruinedOrgasmSceneCounter * 2;
 					var gainedExtraSubmission = 25;
 					var energyLostPer = gC(charKey).energy.accumulatedDamage / gC(charKey).energy.max;
 					if ( energyLostPer > 1 ) { energyLostPer = 1; }
 					var willpowerLostPer = gC(charKey).willpower.accumulatedDamage / gC(charKey).willpower.max;
 					if ( willpowerLostPer > 1 ) { willpowerLostPer = 1; }
 					gainedExtraSubmission *= ( ( energyLostPer + willpowerLostPer ) / 2 );
-					if ( gC(charKey).orgasmSceneCounter == 0 ) {
+					if ( gC(charKey).orgasmSceneCounter == 0 && gC(charKey).ruinedOrgasmSceneCounter == 0 ) {
 						gainedSexualTension = -20;
 						gainedEnmity = 20;
 						gainedRomance = 0;
 						gainedSubmission = 20;
 						gainedDrivePleasure = -10;
+					} else if ( gC(charKey).orgasmSceneCounter == 0 ) {
+						gainedSexualTension += 20;
+						gainedEnmity += 20;
+						gainedRomance += 0;
+						gainedSubmission += 20;
+						gainedDrivePleasure += 10;
+						
 					}
 					gainedRomance *= effectsMultiplier;
 					gainedSexualTension *= effectsMultiplier;
 					gainedSubmission += gainedExtraSubmission;
 					gainedSubmission *= effectsMultiplier;
 					gainedEnmity *= effectsMultiplier;
+					gainedDriveLove *= effectsMultiplier;
 					gainedDrivePleasure *= effectsMultiplier;
 						// Apply values
 							// Relations
@@ -96,15 +105,16 @@ window.processGenericSexSceneEffects = function() {
 					}
 							// Drives
 					addPointsToDrive(gC(charKey).dPleasure,gainedDrivePleasure);
+					addPointsToDrive(gC(charKey).dLove,gainedDriveLove);
 						// Text
-					if ( gC(charKey).orgasmSceneCounter == 0 ) {
+					if ( gC(charKey).orgasmSceneCounter == 0 && gC(charKey).ruinedOrgasmSceneCounter == 0 ) {
 						allCharsMsgs[charKey].msg += gC(charKey).getFormattedName() + " has gained " + gainedEnmity.toFixed(1) + " enmity and " + gainedSubmission.toFixed(1) 
 											   + " submission, and lost " + (-gainedSexualTension).toFixed(1) + " sexual tension with " + gC(leadingChar).getFormattedName() + ".\n"
 											   + gC(charKey).getFormattedName() + " lost " + (-gainedDrivePleasure).toFixed(1) + " pleasure drive points."
 					} else {
 						allCharsMsgs[charKey].msg += gC(charKey).getFormattedName() + " has gained " + gainedRomance.toFixed(1) + " romance, " + gainedSexualTension.toFixed(1)
 											   + " sexual tension and " + gainedSubmission.toFixed(1) + " submission towards " + gC(leadingChar).getFormattedName() + ".\n"
-											   + gC(charKey).getFormattedName() + " gained " + gainedDrivePleasure.toFixed(1) + " pleasure drive points."
+											   + gC(charKey).getFormattedName() + " gained " + gainedDrivePleasure.toFixed(1) + " pleasure drive points and " + gainedDriveLove.toFixed(1) + " love drive points.";
 					}
 				}
 			} else {				// Dynamic lead
@@ -124,16 +134,29 @@ window.processGenericSexSceneEffects = function() {
 				var extraSubmissionMult =  ( ( energyLostPer + willpowerLostPer ) / 2 );
 				
 					// Decide changes
-				if ( gC(charKey).orgasmSceneCounter == 0 ) { // Character didn't orgasm			
-					gainedSexualTension = -20;
-					gainedRomance = -20;
-					gainedEnmity = 20;
-					gainedLoveDrive = -5;
-					gainedPleasureDrive = -10;
-					gainedCooperationDrive = -5;
-					gainedDominationDrive = 10;
-					if ( allChars.length == 2 ) {
-						gainedSubmission = 10 * extraSubmissionMult;
+				if ( gC(charKey).orgasmSceneCounter == 0 ) { // Character didn't orgasm
+					if ( gC(charKey).ruinedOrgasmSceneCounter == 0 ) {
+						gainedSexualTension = -20;
+						gainedRomance = -20;
+						gainedEnmity = 20;
+						gainedLoveDrive = -5;
+						gainedPleasureDrive = -10;
+						gainedCooperationDrive = -5;
+						gainedDominationDrive = 10;
+						if ( allChars.length == 2 ) {
+							gainedSubmission = 10 * extraSubmissionMult;
+						}
+					} else {
+						gainedSexualTension = 20;
+						gainedRomance = -20;
+						gainedEnmity = 20;
+						gainedLoveDrive = -5;
+						gainedPleasureDrive = 10;
+						gainedCooperationDrive = -5;
+						gainedDominationDrive = 5;
+						if ( allChars.length == 2 ) {
+							gainedSubmission = 10 * extraSubmissionMult;
+						}
 					}
 				} else {									// Character did orgasm
 					// Two characters in scene
@@ -155,6 +178,16 @@ window.processGenericSexSceneEffects = function() {
 						
 					}
 				}
+				// Ruined orgasms
+				gainedRomance -= gC(charKey).ruinedOrgasmSceneCounter * 2;
+				gainedSexualTension += gC(charKey).ruinedOrgasmSceneCounter * 5;
+				gainedEnmity += gC(charKey).ruinedOrgasmSceneCounter * 5;
+				gainedLoveDrive -= gC(charKey).ruinedOrgasmSceneCounter * 2;
+				gainedPleasureDrive += gC(charKey).ruinedOrgasmSceneCounter * 3;
+				gainedCooperationDrive -= gC(charKey).ruinedOrgasmSceneCounter * 2;
+				gainedDominationDrive += gC(charKey).ruinedOrgasmSceneCounter * 1;
+				gainedSubmission += gC(charKey).ruinedOrgasmSceneCounter * 5;
+				
 				gainedRomance *= effectsMultiplier;
 				gainedSexualTension *= effectsMultiplier;
 				gainedSubmission *= effectsMultiplier;

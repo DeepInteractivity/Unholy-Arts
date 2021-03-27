@@ -200,6 +200,118 @@ Relation.prototype.toJSON = function() {
 	return JSON.reviveWrapper('(new Relation())._init($ReviveData$)', ownData);
 };
 
+	// Relationship description
+window.getRelationshipDescription = function(charA,charB) {
+	var results = [(gC(charA).getFormattedName() + " is indifferent towards " + gC(charB).getFormattedName() + "."),"0",0]; // 0: Description, 1: Type, 2: Level
+	
+	var fr = rLvlAbt(charA,charB,"friendship");
+	var ro = rLvlAbt(charA,charB,"romance");
+	var se = rLvlAbt(charA,charB,"sexualTension");
+	var dom = rLvlAbt(charA,charB,"domination");
+	var sub = rLvlAbt(charA,charB,"submission");
+	var ri = rLvlAbt(charA,charB,"rivalry");
+	var en = rLvlAbt(charA,charB,"enmity");
+	var intensity = 0;
+	var inValue = 0;
+	
+	if ( fr == 0 && ro == 0 && se == 0 && dom == 0 && sub == 0 && ri == 0 && en == 0 ) {
+		results = [(gC(charA).getFormattedName() + " is indifferent towards " + gC(charB).getFormattedName() + "."),"0",0];
+	} else if ( (fr+ro) > (ri+en) ) { // Positive relationship
+		if ( (fr+ro) > (se*2) ) { // Not sexually focused
+			var dsBalance = (dom-sub) / (fr+ro);
+			inValue = fr+ro;
+			if ( inValue > 15 ) { intensity = 2; }
+			else if ( inValue > 7 ) { intensity = 1; }
+			if ( dsBalance >= 0.25 ) { // Domination is dominant
+				if ( intensity == 0 ) { results = [(gC(charA).getFormattedName() + " thinks " + gC(charB).getFormattedName() + " is cute."),"1ab",0]; }
+				else if ( intensity == 1 ) { results = [(gC(charA).getFormattedName() + " enjoys " + gC(charB).getFormattedName() + "'s company and attention."),"1ab",1]; }
+				else { results = [(gC(charA).getFormattedName() + " considers " + gC(charB).getFormattedName() + " " + gC(charA).posPr + " protegee."),"1ab",2]; }
+			} else if ( dsBalance <= -0.25 ) { // Submission is dominant
+				if ( intensity == 0 ) { results = [(gC(charA).getFormattedName() + " looks at " + gC(charB).getFormattedName() + " with interest and respect."),"1aa",0]; }
+				else if ( intensity == 1 ) { results = [(gC(charA).getFormattedName() + " has considerable trust and respect for " + gC(charB).getFormattedName() + "."),"1aa",1]; }
+				else { results = [(gC(charA).getFormattedName() + " holds great trust and devotion for " + gC(charB).getFormattedName() + "."),"1aa",2]; }
+			} else { // No domination
+				if ( (ri*2.3) >= (fr+ro) ) { // Rivalry leaning
+					if ( intensity == 0 ) { results = [(gC(charA).getFormattedName() + " is interested in " + gC(charB).getFormattedName() + "."),"1aca",0]; }
+					else if ( intensity == 1 ) { results = [(gC(charA).getFormattedName() + " sees a friend and a rival in " + gC(charB).getFormattedName() + "."),"1aca",1]; }
+					else { results = [(gC(charA).getFormattedName() + " is bound to " + gC(charB).getFormattedName() + " by love and rivalry."),"1aca",2]; }
+				} else if ( fr > ro ) { // Friendship is dominant
+					if ( intensity == 0 ) { results = [(gC(charA).getFormattedName() + " likes " + gC(charB).getFormattedName() + "."),"1acb",0]; }
+					else if ( intensity == 1 ) { results = [(gC(charA).getFormattedName() + " considers " + gC(charB).getFormattedName() + " a companion."),"1acb",1]; }
+					else { results = [(gC(charA).getFormattedName() + " would trust " + gC(charB).getFormattedName() + " with " + gC(charA).posPr + " life."),"1acb",2]; }
+				} else { // Romance is dominant
+					if ( intensity == 0 ) { results = [(gC(charA).getFormattedName() + " likes " + gC(charB).getFormattedName() + "."),"1acc",0]; }
+					else if ( intensity == 1 ) { results = [(gC(charA).getFormattedName() + " is falling for " + gC(charB).getFormattedName() + "."),"1acc",1]; }
+					else { results = [(gC(charA).getFormattedName() + " is deeply in love with " + gC(charB).getFormattedName() + "."),"1acc",2]; }
+				}
+			}
+		} else { // Sexually focused
+			var dsBalance = (dom-sub) / (se*2);
+			inValue = se*2;
+			if ( inValue > 15 ) { intensity = 2; }
+			else if ( inValue > 7 ) { intensity = 1; }
+			if ( dsBalance >= 0.25 ) { // Domination is dominant
+				if ( intensity == 0 ) { results = [(gC(charA).getFormattedName() + " lusts after " + gC(charB).getFormattedName() + "."),"1bb",0]; }
+				else if ( intensity == 1 ) { results = [(gC(charA).getFormattedName() + " wishes to ravage " + gC(charB).getFormattedName() + "."),"1bb",1]; }
+				else { results = [(gC(charA).getFormattedName() + " feels complete by having " + gC(charB).getFormattedName() + " below " + gC(charA).refPr + "."),"1bb",2]; }
+			} else if ( dsBalance <= -0.25 ) { // Submission is dominant
+				if ( intensity == 0 ) { results = [(gC(charA).getFormattedName() + " is aroused by " + gC(charB).getFormattedName() + "."),"1ba",0]; }
+				else if ( intensity == 1 ) { results = [(gC(charA).getFormattedName() + " looks up to " + gC(charB).getFormattedName() + " with respect and lust."),"1ba",1]; }
+				else { results = [(gC(charA).getFormattedName() + " melts is desire and devotion for " + gC(charB).getFormattedName() + "."),"1ba",2]; }
+			} else { // No domination
+				if ( intensity == 0 ) { results = [(gC(charA).getFormattedName() + " lusts after " + gC(charB).getFormattedName() + "."),"1bc",0]; }
+				else if ( intensity == 1 ) { results = [(gC(charA).getFormattedName() + " gets excited with " + gC(charB).getFormattedName() + "'s company."),"1bc",1]; }
+				else { results = [(gC(charA).getFormattedName() + " holds great desire to have " + gC(charB).getFormattedName() + " in " + gC(charA).posPr + " arms."),"1bc",2]; }				
+			}
+		}
+	} else { // Negative relationship
+		if ( (ri+en) > (se*2) ) { // Not sexually focused
+			var dsBalance = (dom-sub) / (ri+en);
+			inValue = ri+en;
+			if ( inValue > 15 ) { intensity = 2; }
+			else if ( inValue > 7 ) { intensity = 1; }
+			if ( dsBalance >= 0.25 ) { // Domination is dominant
+				if ( intensity == 0 ) { results = [(gC(charA).getFormattedName() + " finds " + gC(charB).getFormattedName() + " annoying."),"2cb",0]; }
+				else if ( intensity == 1 ) { results = [(gC(charA).getFormattedName() + " is often demeaning towards " + gC(charB).getFormattedName() + "."),"2cb",1]; }
+				else { results = [(gC(charA).getFormattedName() + " is glad to have " + gC(charB).getFormattedName() + " under " + gC(charA).posPr + " foot."),"2cb",2]; }
+			} else if ( dsBalance <= -0.25 ) { // Submission is dominant
+				if ( intensity == 0 ) { results = [(gC(charA).getFormattedName() + " is scared of " + gC(charB).getFormattedName() + "."),"2ca",0]; }
+				else if ( intensity == 1 ) { results = [(gC(charA).getFormattedName() + " is obedient towards " + gC(charB).getFormattedName() + "."),"2ca",1]; }
+				else { results = [(gC(charA).getFormattedName() + " can't even think about going against " + gC(charB).getFormattedName() + "'s word."),"2ca",2]; }
+			} else { // DS is not dominant
+				if ( ri > en ) { // Rivalry is dominant
+					if ( intensity == 0 ) { results = [(gC(charA).getFormattedName() + " is cautious about " + gC(charB).getFormattedName() + "."),"2cca",0]; }
+					else if ( intensity == 1 ) { results = [(gC(charA).getFormattedName() + " is tense around " + gC(charB).getFormattedName() + "."),"2cca",1]; }
+					else { results = [(gC(charA).getFormattedName() + " sees " + gC(charB).getFormattedName() + " as " + gC(charA).posPr + " nemesis."),"2cca",2]; }
+				} else { // Enmity is dominant
+					if ( intensity == 0 ) { results = [(gC(charA).getFormattedName() + " is annoyed about " + gC(charB).getFormattedName() + "."),"2ccb",0]; }
+					else if ( intensity == 1 ) { results = [(gC(charA).getFormattedName() + " thinks " + gC(charB).getFormattedName() + " is dangerous."),"2ccb",1]; }
+					else { results = [(gC(charA).getFormattedName() + " thinks " + gC(charB).getFormattedName() + " is scum."),"2ccb",2]; }					
+				}
+			}
+		} else { // Sexually focused
+			var dsBalance = (dom-sub) / (ri+en);
+			inValue = ri+en;
+			if ( inValue > 15 ) { intensity = 2; }
+			else if ( inValue > 7 ) { intensity = 1; }
+			if ( dsBalance >= 0.25 ) { // Domination is dominant
+				if ( intensity == 0 ) { results = [(gC(charA).getFormattedName() + " lusts after " + gC(charB).getFormattedName() + "'s body."),"2db",0]; }
+				else if ( intensity == 1 ) { results = [(gC(charA).getFormattedName() + " desire to have " + gC(charB).getFormattedName() + " under " + gC(charA).posPr + " grasp."),"2db",1]; }
+				else { results = [(gC(charA).getFormattedName() + " sees an alluring toy in " + gC(charB).getFormattedName() + "."),"2db",2]; }
+			} else if ( dsBalance <= 0.25 ) { // Submission is dominant
+				if ( intensity == 0 ) { results = [(gC(charA).getFormattedName() + " is scared of " + gC(charB).getFormattedName() + "."),"2da",0]; }
+				else if ( intensity == 1 ) { results = [(gC(charA).getFormattedName() + " thinks " + gC(charB).getFormattedName() + " is dangerous... But also thrilling."),"2da",1]; }
+				else { results = [(gC(charA).getFormattedName() + " finds guilty pleasure in obeying " + gC(charB).getFormattedName() + "."),"2da",2]; }
+			} else { // DS is not dominant
+				if ( intensity == 0 ) { results = [(gC(charA).getFormattedName() + " dislikes lusting after " + gC(charB).getFormattedName() + "."),"2dc",0]; }
+				else if ( intensity == 1 ) { results = [(gC(charA).getFormattedName() + " desires " + gC(charB).getFormattedName() + "'s body."),"2dc",1]; }
+				else { results = [(gC(charA).getFormattedName() + " feels great lust for " + gC(charB).getFormattedName() + ", despite everything else."),"2dc",2]; }
+			}
+		}
+	}
+	
+	return results;
+}
 
 ////////// RELATIONSHIPTYPE CLASS  //////////
 // A relationship type is a specific form or relationship that follows specific rules
@@ -250,6 +362,8 @@ window.finishRelType = function(charA,charB) {
 	var relType = gRelTypeAb(charA,charB);
 	var description = "";
 	if ( relType ) {
+		gC(charA).relations[charB].relType.finishRelTypeExtra();
+		gC(charB).relations[charA].relType.finishRelTypeExtra();
 		description = "The " + relType.name + " relationship between " + gC(charA).name + " and " + gC(charB).name + " has finished.";
 		if ( relType.hierarchy == "ega" ) {
 			gC(charA).egaChars = arrayMinusA(gC(charA).egaChars,charB);
@@ -424,6 +538,8 @@ window.createRelTypeCompanionship = function(actor,target,days) {
 		gC(this.actor).relations[this.target].sexualTension.levelMod -= 1;
 	}
 }
+
+
 
 	// Relatinship Types' Tooltips
 

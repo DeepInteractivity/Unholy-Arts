@@ -253,7 +253,7 @@ window.signCharsActive = function(characters) {
 	// Battles
 window.initiatePlayerAssault = function(target) {
 	// Infamy
-	var infamy = getCharGroup("chPlayerCharacter").length * 5 / getCharGroup(target).length;
+	var infamy = getCharGroup("chPlayerCharacter").length * 3 / getCharGroup(target).length;
 	gC("chPlayerCharacter").changeInfamy(infamy);
 	// Initiate Battle
 		// Event
@@ -281,7 +281,7 @@ window.initiateNpcAssault = function(actor,target) {
 	}
 	
 	// Infamy
-	var infamy = getCharGroup(actor).length * 5 / getCharGroup(target).length;
+	var infamy = getCharGroup(actor).length * 3 / getCharGroup(target).length;
 	gC(actor).changeInfamy(infamy);
 	// Initiate Battle
 		// Event
@@ -983,7 +983,11 @@ window.Compass = function() {
 					
 					this.roomPassage += this.displayCharactersInRoom() + " \n";
 					
-					this.roomPassage += this.displayEventsInRoom(getCurrentRoom().key);
+					if ( State.variables.chPlayerCharacter.hasFreeBodypart("eyes") ) {
+						this.roomPassage += this.displayEventsInRoom(getCurrentRoom().key);
+					} else {
+						this.roomPassage += "Having your vision blocked prevents you from seeing what's happening.\n"
+					}
 					
 					if ( getCurrentMap().icon ) {
 						this.roomPassage += "\n\n<div align='center'>[img[img/maps/" + getCurrentMap().icon + "]]</div>";
@@ -1509,7 +1513,11 @@ window.createStandardDisplayConnections = function(connections) {
 	var string = "";
 	for ( var connection of connections ) {
 		string += getLinkToRoom(connection.loc,"Go to " + getCurrentMap().rooms[connection.loc].title,connection.distance)
-			    + " " + displayCharIconsInRoom(connection.loc) + "\n";
+			    + " ";
+				if ( State.variables.chPlayerCharacter.hasFreeBodypart("eyes") ) {
+					string += displayCharIconsInRoom(connection.loc);
+				}
+		string += "\n";
 	}
 	return string;
 }

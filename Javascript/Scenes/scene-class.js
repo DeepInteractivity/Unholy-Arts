@@ -47,6 +47,7 @@ window.scene = function() {
 	this.charactersDescription = "";
 	this.positionsDescription = "";
 	this.actionsDescription = "";
+	this.extraEffectsDescription = "";
 	this.actionsDescriptionNl = false;
 	this.otherMessages = [];
 	
@@ -138,6 +139,7 @@ window.scene = function() {
 		this.charactersDescription = "";
 		this.positionsDescription = "";
 		this.actionsDescription = "";
+		this.extraEffectsDescription = "";
 		
 		this.cancelActionButtons = [];
 		this.cabID = 0; 
@@ -173,6 +175,11 @@ window.scene = function() {
 			this.executeTurn();
 		}
 		this.cleanScene();
+	}
+	this.autoResolveSceneAlt = function() {
+		while ( this.flagSceneEnded == false ) {
+			this.executeTurn();
+		}
 	}
 	
 	// Management
@@ -313,6 +320,7 @@ window.scene = function() {
 		var charKeys = this.teamAcharKeys.concat(this.teamBcharKeys);
 		for ( var key of charKeys ) {
 			getChar(key).orgasmSceneCounter = 0;
+			getChar(key).ruinedOrgasmSceneCounter = 0;
 		}		
 	}
 	this.cleanAccumulatedDamages = function() {
@@ -422,6 +430,7 @@ window.scene = function() {
 		this.headingDescription = "";
 		this.charactersDescription = "";
 		this.actionsDescription = "";
+		this.extraEffectsDescription = "";
 		this.otherMessages = [];
 		
 		this.provisionalInfo = "";
@@ -547,7 +556,7 @@ window.scene = function() {
 		for ( var actionKey of gC(actorKey).saList ) {
 			for ( var target of charList ) {
 				if ( list.includes(actionKey) == false ) {
-					if ( this.isActionAllowed(actorKey,State.variables.saList[actionKey]) == true && isActionUsable(actionKey,actorKey,[target]).isUsable == true ) {
+					if ( this.isActionAllowed(actorKey,setup.saList[actionKey]) == true && isActionUsable(actionKey,actorKey,[target]).isUsable == true ) {
 						list.push(actionKey);
 					}
 				}
@@ -565,7 +574,7 @@ window.scene = function() {
 			
 		for ( var actionKey of gC(actorKey).saList ) {
 				if ( list.includes(actionKey) == false ) {
-					if ( this.isActionAllowed(actorKey,State.variables.saList[actionKey]) == true && isActionUsable(actionKey,actorKey,[targetKey]).isUsable == true ) {
+					if ( this.isActionAllowed(actorKey,setup.saList[actionKey]) == true && isActionUsable(actionKey,actorKey,[targetKey]).isUsable == true ) {
 						list.push(actionKey);
 					}
 				}
@@ -654,7 +663,7 @@ window.scene = function() {
 			while ( j > 0 ) {
 				var currentC = randomFromWeightedList(wL); // Take weighted random char
 				var currentA = actionsInfo[currentC][1]; // Execute action
-				var actionName = "[" + State.variables.saList[currentA].name + "] ";
+				var actionName = "[" + setup.saList[currentA].name + "] ";
 				this.actionsDescription += colorText(actionName,"darkgray");
 				this.actionsDescription += tryExecuteAction(currentA,currentC,actionsInfo[currentC][2]).description;
 				this.actionsDescription += "\n";
@@ -666,19 +675,19 @@ window.scene = function() {
 			for (let action of this.teamAchosenActions) {
 				// Each chosen action is called in order. The parameters are the acting character and its list of targets.
 				// Each action returns a description of its effects, which is added to actionsDescription.
-				var actionName = "[" + State.variables.saList[action].name + "] ";
+				var actionName = "[" + setup.saList[action].name + "] ";
 				this.actionsDescription += colorText(actionName,"darkgray");
 				this.actionsDescription += tryExecuteAction(action,this.teamAcharKeys[i],this.teamAchosenTargets[i]).description;
-				//this.actionsDescription += State.variables.saList[this.teamAchosenActions[action]].execute(this.teamAcharKeys[i],this.teamAchosenTargets[i]).description;
+				//this.actionsDescription += setup.saList[this.teamAchosenActions[action]].execute(this.teamAcharKeys[i],this.teamAchosenTargets[i]).description;
 				this.actionsDescription += "\n";
 				i++;
 			}
 			i = 0;
 			for (let action of this.teamBchosenActions) {
-				var actionName = "[" + State.variables.saList[action].name + "] ";
+				var actionName = "[" + setup.saList[action].name + "] ";
 				this.actionsDescription += colorText(actionName,"darkgray");
 				this.actionsDescription += tryExecuteAction(action,this.teamBcharKeys[i],this.teamBchosenTargets[i]).description;
-				//this.actionsDescription += State.variables.saList[this.teamBchosenActions[action]].execute(this.teamBcharKeys[i],this.teamBchosenTargets[i]).description;
+				//this.actionsDescription += setup.saList[this.teamBchosenActions[action]].execute(this.teamBcharKeys[i],this.teamBchosenTargets[i]).description;
 				this.actionsDescription += "\n";
 				i++;
 			}
@@ -824,6 +833,7 @@ window.scene = function() {
 		
 		this.importantMessages = "";
 		this.actionsDescription = "";
+		this.extraEffectsDescription = "";
 		this.otherMessages = [];
 		
 		// Choose actions
@@ -872,6 +882,9 @@ window.scene = function() {
 		
 		// Execute actions
 		this.executeActions();
+		
+		// Execute altered states
+		executeAlteredStatesTurnEffects();
 		
 		// Lead (Part 1)
 		this.addTurnLeadPoints();
@@ -939,6 +952,9 @@ window.scene = function() {
 		
 		// Bars below negative limits
 		this.cleanNegativeBars();
+		
+		// Clean turn tags
+		cleanTurnTags();
 		
 		// Format Scene Passage
 		this.formatScenePassage();
@@ -1040,9 +1056,10 @@ window.scene = function() {
 	this.formatActionsOptionList = function(pcChar) {
 		this.formattedActionsOptionList = '<<listbox "$sc.pcChosenAction" $sc.pcChosenAction>>\n';
 		for (var actionKey of this.listUsableActions(pcChar.varName)) {
-			if ( this.isActionAllowed(pcChar,State.variables.saList[actionKey]) == true ) {
+			if ( this.isActionAllowed(pcChar,setup.saList[actionKey]) == true ) {
 				// this.sceneLog += "// " + actionKey + " //";
-				this.formattedActionsOptionList += '<<option $saList.' + actionKey + '.name ' + actionKey;
+				var actionName = setup.saList[actionKey].name;
+				this.formattedActionsOptionList += '<<option "' + actionName + '" ' + actionKey;
 				if ( actionKey == this.lastPlayerCommand ) {
 					this.formattedActionsOptionList += " selected";
 				}
@@ -1101,7 +1118,12 @@ window.scene = function() {
 	
 	// Descriptions
 	this.textOrgasmMessage = function(charKey,overflow) {
-		var orgasmText = getChar(charKey).name + " reached climax for " + (getChar(charKey).lust.max + overflow).toFixed(2) + " total lust damage.";
+		var orgasmText = "";
+		if ( isCharsOrgasmRuined(charKey) == false ) {
+			orgasmText = getChar(charKey).name + " reached climax for " + (getChar(charKey).lust.max + overflow).toFixed(2) + " total lust damage.";
+		} else {
+			orgasmText = gC(charKey).name + " reached climax for " + (getChar(charKey).lust.max + overflow).toFixed(2) + " total lust damage, but the orgasm was ruined! " + gC(charKey).name + " feels " + gC(charKey).posPr + " strength flowing away.";
+		}
 		return orgasmText;
 	}
 	
@@ -1228,6 +1250,10 @@ window.scene = function() {
 			pas += "</div>\n";
 		}
 		
+		if ( this.extraEffectsDescription != "" ) {
+			pas += "<div class='standardBox'>" + this.extraEffectsDescription + "</div>\n";
+		}
+		
 		if ( this.flagSceneEnded == false ) { // Scene has not ended
 			if ( this.isPlayerInScene() && State.variables.chPlayerCharacter.koed == false ) { // Player is in scene
 				pas += this.askForLeadScript + "\\"
@@ -1276,7 +1302,11 @@ window.scene = function() {
 	this.getPassTurnButton = function() {
 		var tButton = '<<l' + 'ink [[Next Turn|Scene]]>>\n<<sc' + 'ript>>\n'
 					+ 'State.variables.sc.executeTurn();\n'
-					+ '<</s' + 'cript>><</l' + 'ink>><sup>[q]</sup>';
+					+ '<</s' + 'cript>><</l' + 'ink>>';
+			// Button to autocomplete battle
+		   tButton += '\n<<l' + 'ink [[Auto-resolve scene|Scene]]>>\n<<sc' + 'ript>>\n'
+					+ 'State.variables.sc.autoResolveSceneAlt();\n'
+					+ '<</s' + 'cript>><</l' + 'ink>>';
 		return tButton;
 	}
 
@@ -1413,6 +1443,31 @@ window.createEndConditionStoryBattle = function(passageVictoryTeamA,passageVicto
 		return flagEndScene;
 	}
 	return customScript;
+}
+
+//////// OTHER FUNCTIONS ////////
+
+window.addExtraEffectDescription = function(desc) {
+	if ( State.variables.sc.extraEffectsDescription != "" ) { State.variables.sc.extraEffectsDescription += "\n"; }
+	State.variables.sc.extraEffectsDescription += desc;
+}
+window.executeAlteredStatesTurnEffects = function() {
+	for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
+		for ( var as of gC(charKey).alteredStates ) {
+			var effect = getAsTurnEffect(as);
+			if ( effect ) {
+				addExtraEffectDescription(effect(charKey));
+			}
+		}
+	}
+}
+
+window.cleanTurnTags = function() {
+	for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
+		if ( gC(charKey).hasOwnProperty("turnTags") ) {
+			delete gC(charKey).turnTags;
+		}
+	}
 }
 
 

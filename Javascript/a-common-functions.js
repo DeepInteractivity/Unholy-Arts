@@ -239,6 +239,9 @@ window.luckedDiceThrow = function(luck) { // 100-sides dice throw, accounting fo
 window.getStatNamesArray = function() {
 	return ["physique","agility","resilience","will","intelligence","perception","empathy","charisma","luck"];
 }
+window.getRelationshipStatsNamesArray = function() {
+	return [ "friendship" , "romance" , "sexualTension" , "submission" , "domination" , "rivalry" , "enmity" ];
+}
 
 window.getRandomStat = function() {
 	return randomFromList(["physique","agility","resilience","will","intelligence","perception","empathy","charisma","luck"]);
@@ -376,6 +379,7 @@ window.createPreferencesWeightedList = function() {
 	wl.romantic = new weightedElement("romantic",100);
 	wl.usePain = new weightedElement("usePain",40);
 	wl.receivePain = new weightedElement("receivePain",40);
+	wl.denial = new weightedElement("denial",40);
 	wl.position = new weightedElement("position",100);
 	wl.continuedAction = new weightedElement("continuedAction",100);
 	
@@ -471,7 +475,7 @@ window.getHotfixButton = function() {
 	// This button will be used to apply hotfixes to saved games, when required. It may be found at the personal room screen.
 	var bText = "\n\n<<l" + "ink [[Apply Hotfix|Personal Room]]>><<s" + "cript>>\n";
 		bText 	 += "applyHotfix();\n";
-		bText	 += "<</s" + "cript>><</l" + "ink>>";
+		bText	 += "<</s" + "cript>><</l" + "ink>> BEWARE: This hotfix unequips all items and finishes all special relationships. It should only be used ONCE if any character has equipped any blindfold or used flaunt, which, if you have played past day 11, has most likely happened.";
 	//var	bText	  = "\n\n<<l" + "ink [[Apply lag fix|Personal Room]]>><<s" + "cript>>\n";
 	//	bText 	 += "applyLagFix();\n";
 	//	bText	 += "<</s" + "cript>><</l" + "ink>>\n\n";
@@ -480,155 +484,10 @@ window.getHotfixButton = function() {
 }
 
 window.applyHotfix = function() {
-	State.variables.personalRoom.getCharacterInfo = function(character) {
-		// <p><img src="img/logo.png" alt="alt text" style="float: right">Text here</p>
-		var iText = "<div><p>";
-		
-		if ( gC(character).fullPortrait != null ) {															// Image
-			iText += '<div class="portraitBox"><img src="' + gC(character).fullPortraitL + '" alt="" style="float: right"></div>'
-		} else if ( gC(character).avatar != null ) {
-			iText += '<div class="portraitBox"><img src="' + gC(character).avatarL + '" alt="" style="float: right"></div>'
-		}
-		
-		// Name, merit, money
-		iText += "<div class='standardBox'>    __" + gC(this.checkedCharacter).getFormattedName() + "__:\n";							// Name
-		if ( gC(character).type == "candidate" ) {
-			iText += "Merit: " + gC(character).merit;
-			iText += " | Infamy: " + gC(character).infamy + "/" + State.variables.settings.infamyLimit;
-			if ( character == "chPlayerCharacter" ) {
-				iText += " | Money: " + gC(character).money.toFixed(0);
-			}
-			iText += "</div>\n";
-		}
-		
-		// Special relationships
-		var tempText = "";
-		if ( gC(character).domChar ) {
-			tempText += "Submissive relationship: "
-					  + gC(gC(character).domChar).getFormattedName() + ": " + getRelTypeNameMayus(gC(character).domChar,character);
-					  if ( gRelTypeAb(gC(character).domChar,character).persistence == "temporary" ) {
-						  tempText += " | Days remaining: " + gRelTypeAb(gC(character).domChar,character).days;
-					  }
-		}
-		if ( gC(character).subChars.length > 0 ) {
-			tempText += "Dominant relationships: ";
-			for ( var sChar of gC(character).subChars ) {
-				tempText += "\n" + gC(sChar).getFormattedName() + ": " + getRelTypeNameMayus(sChar,character);
-					  if ( gRelTypeAb(sChar,character).persistence == "temporary" ) {
-						  tempText += " | Days remaining: " + gRelTypeAb(sChar,character).days;
-					  }
-			}
-		}
-		if ( gC(character).egaChars.length > 0 ) {
-			if ( tempText != "" ) { textText += "\n"; }
-			tempText += "Egalitarian relationships: ";
-			for ( var eChar of gC(character).egaChars ) {
-				tempText += "\n" + gC(eChar).getFormattedName() + ": " + getRelTypeNameMayus(eChar,character);
-					  if ( gRelTypeAb(eChar,character).persistence == "temporary" ) {
-						  tempText += " | Days remaining: " + gRelTypeAb(eChar,character).days;
-					  }
-			}
-		}
-		if ( tempText != "" ) {
-			iText += "<div class='standardBox'>__Special Relationships__:\n";
-			iText += tempText;
-			iText += "</div>\n";
-		}
-		
-		// Base stats
-		iText += "<div class='standardBox'>__Stats__:\n";																				// Stats
-		iText += colorText("Max lust: ","lightcoral") + gC(character).lust.max + " ; " + colorText("Max willpower: ","darkslateblue") + gC(character).willpower.max + " \n";
-		iText += colorText("Max energy: ","limegreen") + gC(character).energy.max + " ; " + colorText("Max social drive: ","khaki") + gC(character).socialdrive.max + " \n";
-		iText += "\nPhysique: " + gC(character).physique.value + " (" + gC(character).physique.getValue() + ")";
-		if ( character == "chPlayerCharacter" ) { iText += " | " + getTextStatExp(gC(character).physique); }
-		iText += "\nAgility: " + gC(character).agility.value + " (" + gC(character).agility.getValue() + ")";
-		if ( character == "chPlayerCharacter" ) { iText += " | " + getTextStatExp(gC(character).agility); }
-		iText += "\nResilience: " + gC(character).resilience.value + " (" + gC(character).resilience.getValue() + ")";
-		if ( character == "chPlayerCharacter" ) { iText += " | " + getTextStatExp(gC(character).resilience); }
-		
-		iText += "\nWill: " + gC(character).will.value + " (" + gC(character).will.getValue() + ")";
-		if ( character == "chPlayerCharacter" ) { iText += " | " + getTextStatExp(gC(character).will); }
-		iText += "\nIntelligence: " + gC(character).intelligence.value + " (" + gC(character).intelligence.getValue() + ")";
-		if ( character == "chPlayerCharacter" ) { iText += " | " + getTextStatExp(gC(character).intelligence); }
-		iText += "\nPerception: " + gC(character).perception.value + " (" + gC(character).perception.getValue() + ")";
-		if ( character == "chPlayerCharacter" ) { iText += " | " + getTextStatExp(gC(character).perception); }
-		
-		iText += "\nEmpathy: " + gC(character).empathy.value + " (" + gC(character).empathy.getValue() + ")";
-		if ( character == "chPlayerCharacter" ) { iText += " | " + getTextStatExp(gC(character).empathy); }
-		iText += "\nCharisma: " + gC(character).charisma.value + " (" + gC(character).charisma.getValue() + ")";
-		if ( character == "chPlayerCharacter" ) { iText += " | " + getTextStatExp(gC(character).charisma); }
-		iText += "\nLuck: " + gC(character).luck.value + " (" + gC(character).luck.getValue() + ")";
-		if ( character == "chPlayerCharacter" ) { iText += " | " + getTextStatExp(gC(character).luck); }
-		iText += "</div>\n";
-		
-		// Relationships
-		if ( character != "chPlayerCharacter" ) {			// Relationship
-			iText += "<div class='standardBox'>__" + gC(character).name + "'s thoughts on you__:\n";
-			var i = 0;
-			var rpNames = [ "Friendship", "Sexual Tension", "Romance", "Domination", "Submission", "Rivalry", "Enmity" ];
-			for ( var relPar in gC(character).relations["chPlayerCharacter"] ) {
-				if ( gC(character).relations["chPlayerCharacter"][relPar] instanceof RelPar ) {
-					iText += rpNames[i] + " - Lvl: " + gC(character).relations["chPlayerCharacter"][relPar].level;
-					var levelMod = gC(character).relations["chPlayerCharacter"][relPar].levelMod;
-					if ( levelMod > 0 ) {
-						iText += "+" + levelMod;
-					} else if ( levelMod < 0 ) {
-						iText += "-" + -levelMod;
-					}
-					iText += ">("
-						   + + formulaRelParTotalLevel(gC(character).relations["chPlayerCharacter"][relPar]) + ")"
-						   + " | ST: " + gC(character).relations["chPlayerCharacter"][relPar].stv.toFixed(1)
-						   + " (" + colorText((gC(character).relations["chPlayerCharacter"][relPar].stv * 0.05).toFixed(1),"red") + ")"
-						   + " | LT: " + gC(character).relations["chPlayerCharacter"][relPar].ltv.toFixed(1)
-						   + " (" + colorText((gC(character).relations["chPlayerCharacter"][relPar].stv * 0.01).toFixed(1),"green") + ")";
-					if ( i < 6 ) { iText += "\n"; }
-					i++;
-				}
-			}
-			iText += "\nFavor owed to you: " + gC(character).relations.chPlayerCharacter.favor.toFixed(2);
-			iText += "</div>";
-			
-			iText += "\n<div class='standardBox'>__Your thoughts on " + gC(character).name + "__:\n";
-			i = 0;
-			for ( var relPar in gC("chPlayerCharacter").relations[character] ) {
-				if ( gC("chPlayerCharacter").relations[character][relPar] instanceof RelPar ) {
-					iText += rpNames[i] + " - Lvl: " + gC("chPlayerCharacter").relations[character][relPar].level;
-					var levelMod = gC("chPlayerCharacter").relations[character][relPar].levelMod;
-					if ( levelMod > 0 ) {
-						iText += "+" + levelMod;
-					} else if ( levelMod < 0 ) {
-						iText += "-" + -levelMod;
-					}
-					iText += ">(" + formulaRelParTotalLevel(gC("chPlayerCharacter").relations[character][relPar]) + ")"
-						   + " | ST: " + gC("chPlayerCharacter").relations[character][relPar].stv.toFixed(1)
-						   + " (" + colorText((gC("chPlayerCharacter").relations[character][relPar].stv * 0.05).toFixed(1),"red") + ")"
-						   + " | LT: " + gC("chPlayerCharacter").relations[character][relPar].ltv.toFixed(1)
-						   + " (" + colorText((gC("chPlayerCharacter").relations[character][relPar].stv * 0.01).toFixed(1),"green") + ")";
-					if ( i < 6 ) { iText += "\n"; }
-					i++;
-				}
-			}
-			iText += "\nFavor owed to " + gC(character).name + ": " + gC("chPlayerCharacter").relations[character].favor.toFixed(2);
-			iText += "</div>";
-			
-			iText += "\nST stands for Short Term, LT stands for Long Term. ST values slowly decay, and a portion is turned into LT at the end of the day.\n"
-		}
-		
-			// Drives
-		if ( character != "chPlayerCharacter" ) {
-			// Extra conditions
-			if ( gC(character).domChar == "chPlayerCharacter" || gC(character).subChars.includes("chPlayerCharacter") || gC(character).egaChars.includes("chPlayerCharacter") ) {
-				var drivesDesc = "\n<div class='standardBox'>__" + gC(character).name + "'s drives__:\n";
-				drivesDesc += textCharactersDrives(character) + "</div>";
-				iText += drivesDesc;
-			}
-		}
-		
-		iText += "</p></div>";
-		
-		
-		return iText;
-	}
+	takeOffAllItems();
+	finishAllRelationships();
+	resetStatModifiers();
+	resetRelationshipModifiers();
 }
 
 window.applyLagFix = function() {
@@ -638,5 +497,39 @@ window.applyLagFix = function() {
 	State.variables.compass.sisPassage = "";
 	
 	State.variables.compass.debugInfo = "";
+}
+
+window.takeOffAllItems = function() {
+	for ( var item of State.variables.equipmentList ) {
+		unequipObject(item.id);
+	}
+}
+window.finishAllRelationships = function() {
+	for ( var char1 of getCandidatesKeysArray() ) {
+		for ( var char2 of getCandidatesKeysArray() ) {
+			if ( char1 != char2 ) {
+				finishRelType(char1,char2);
+			}
+		}
+	}
+}
+window.resetStatModifiers = function() {
+	for ( var charKey of getCandidatesKeysArray() ) {
+		for ( var stat of getStatNamesArray() ) {
+			gC(charKey)[stat].sumModifier = 0;
+			gC(charKey)[stat].multModifier = 1;
+		}
+	}
+}
+window.resetRelationshipModifiers = function() {
+	for ( var char1 of getCandidatesKeysArray() ) {
+		for ( var char2 of getCandidatesKeysArray() ) {
+			if ( char1 != char2 ) {
+				for ( var stat of getRelationshipStatsNamesArray() ) {
+					getRelation(char1,char2)[stat].levelMod = 0;
+				}
+			}
+		}
+	}
 }
 

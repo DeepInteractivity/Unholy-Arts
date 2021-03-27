@@ -78,15 +78,16 @@ window.equipObjectOnWearer = function(id,wearer,days) {
 		equipment.equippedOn = wearer;
 		equipment.days = days;
 		var data = getEquipDataById(id);
-		if ( data.slotType == "bodypart" ) {
+		if ( data.slotType == "bodypart" ) { // Bondage
 			gC(wearer).body[data.slot].bondage = id;
 			gC(wearer).body[data.slot].state = "locked";
-		} else if ( data.slotType == "tool" ) {
+		} else if ( data.slotType == "tool" ) { // Tools
 			if ( data.slot == "weapon" ) {
 				gC(wearer).weaponID = id;
 			}
 		}
-		data.putOnEffect(equipment.owner,wearer);
+		data.putOnEffect(equipment.owner,wearer); // Main effects
+		charactersLearnSceneActions([wearer],data.learntActions);
 	}
 }
 window.unequipObject = function(id) {
@@ -104,6 +105,7 @@ window.unequipObject = function(id) {
 				}
 			}
 			data.putOutEffect(equipment.owner,equipment.equippedOn);
+			charactersForgetSceneActions([equipment.equippedOn],data.learntActions);
 			equipment.equippedOn = null;
 		}
 	}
@@ -114,6 +116,11 @@ window.charBuysItem = function(charKey,equipType) {
 	gC(charKey).money -= equipData.price;
 	var id = createEquipment(equipType,charKey);
 	return id;
+}
+window.itemIsLost = function(id) {
+	var owner = getEquipById(id).owner;
+	gC(owner).ownedEquipment = arrayMinusA(gC(owner).ownedEquipment,id);
+	getEquipById(id).owner = null;
 }
 
 // Constructors, serializers, etc.
@@ -137,16 +144,18 @@ Equipment.prototype.toJSON = function() {
 
 // EQUIPMENT DATA
 
-window.equipmentData = function(name,slotType,slot,putOnEffect,putOutEffect,description,price,infamy,strategyTags) {
+window.equipmentData = function(name,slotType,slot,putOnEffect,putOutEffect,description,price,infamy,strategyTags,learntActions) {
 	this.name = name;
 	this.slotType = slotType;
 	this.slot = slot;
 	this.putOnEffect = putOnEffect;
 	this.putOutEffect = putOutEffect;
+	this.learntActions = [];
 	this.description = description;
 	this.price = price;
 	this.infamy = infamy;
 	this.strategyTags = strategyTags;
+	this.learntActions = learntActions;
 }
 
 /*
@@ -215,13 +224,13 @@ setup.equipDataList[equipmentType.COLLAR] = new equipmentData("Collar","bodypart
 		gC(wearer).charisma.multModifier += 0.1;
 	}, "A leather collar. It gets locked in the neck to mark possession over the wearer."
 		+ "\nIncreases submission and sexual tension, decreases will and charisma. Locks neck.\n1 infamy upon forced equipment.",
-	750,1,["bondage","domination"]);
+	750,1,["bondage","domination"],[]);
 setup.equipDataList[equipmentType.BLINDFOLD] = new equipmentData("Blindfold","bodypart","eyes",
 	function(owner,wearer) { // Put on
 		if ( getRelation(wearer,owner) != undefined ) {
-			getRelation(wearer,owner).submission.levelMod -= 1;
-			getRelation(wearer,owner).rivalry.levelMod -= 2;
-			getRelation(wearer,owner).enmity.levelMod -= 1;
+			getRelation(wearer,owner).submission.levelMod += 1;
+			getRelation(wearer,owner).rivalry.levelMod += 2;
+			getRelation(wearer,owner).enmity.levelMod += 1;
 		}
 		gC(wearer).perception.sumModifier -= 5;
 		gC(wearer).perception.multModifier -= 0.4;
@@ -240,7 +249,7 @@ setup.equipDataList[equipmentType.BLINDFOLD] = new equipmentData("Blindfold","bo
 		gC(wearer).empathy.multModifier += 0.1;
 	}, "A linen blindfold. It gets locked eyes of the wearer, difficulting vision."
 		+ "\nIncreases submission, rivalry and enmity, decreases perception and empathy. Locks eyes.\n2 infamy upon forced equipment.",
-	1500,2,["bondage"]);
+	1500,2,["bondage"],[]);
 setup.equipDataList[equipmentType.MOUTHGAG] = new equipmentData("Mouth gag","bodypart","mouth",
 	function(owner,wearer) { // Put on
 		if ( getRelation(wearer,owner) != undefined ) {
@@ -261,7 +270,7 @@ setup.equipDataList[equipmentType.MOUTHGAG] = new equipmentData("Mouth gag","bod
 		gC(wearer).charisma.multModifier += 0.4;
 	}, "A leather mouth gag. It blocks the mouth of the wearer, difficulting communication."
 		+ "\nIncreases submission, rivalry and enmity, decreases charisma. Locks mouth.\n2 infamy upon forced equipment.",
-	1500,2,["bondage","attackSocial"]);
+	1500,2,["bondage","attackSocial"],[]);
 setup.equipDataList[equipmentType.HANDCUFFS] = new equipmentData("Handcuffs","bodypart","arms",
 	function(owner,wearer) { // Put on
 		if ( getRelation(wearer,owner) != undefined ) {
@@ -286,7 +295,7 @@ setup.equipDataList[equipmentType.HANDCUFFS] = new equipmentData("Handcuffs","bo
 		gC(wearer).physique.multModifier += 0.3;
 	}, "Leather handcuffs, which difficult the movement of the wearer's arms."
 		+ "\nIncreases submission, rivalry and enmity, decreases agility and physique. Locks arms.\n3 infamy upon forced equipment.",
-	2000,3,["bondage","attackPhysical"]);
+	2000,3,["bondage","attackPhysical"],[]);
 setup.equipDataList[equipmentType.FEETCUFFS] = new equipmentData("Feetcuffs","bodypart","legs",
 	function(owner,wearer) { // Put on
 		if ( getRelation(wearer,owner) != undefined ) {
@@ -311,7 +320,7 @@ setup.equipDataList[equipmentType.FEETCUFFS] = new equipmentData("Feetcuffs","bo
 		gC(wearer).resilience.multModifier += 0.3;
 	}, "Leather feetcuffs, which difficult the movement of the wearer's legs."
 		+ "\nIncreases submission, rivalry and enmity, decreases agility and resilience. Locks legs.\n3 infamy upon forced equipment.",
-	2000,3,["bondage","attackPhysical"]);
+	2000,3,["bondage","attackPhysical"],[]);
 setup.equipDataList[equipmentType.NIPPLESUCKERS] = new equipmentData("Nipple suckers","bodypart","breasts",
 	function(owner,wearer) { // Put on
 		if ( getRelation(wearer,owner) != undefined ) {
@@ -320,6 +329,7 @@ setup.equipDataList[equipmentType.NIPPLESUCKERS] = new equipmentData("Nipple suc
 			getRelation(wearer,owner).rivalry.levelMod += 1;
 		}
 		gC(wearer).lust.weakness += 10;
+		gC(wearer).alteredStates.push(createASnipplesuckers());
 	},
 	function(owner,wearer) { // Put out
 		if ( getRelation(wearer,owner) != undefined ) {
@@ -327,10 +337,11 @@ setup.equipDataList[equipmentType.NIPPLESUCKERS] = new equipmentData("Nipple suc
 			getRelation(wearer,owner).sexualTension.levelMod -= 1;
 			getRelation(wearer,owner).rivalry.levelMod -= 1;
 		}
+		removeAlteredStateByAcr(wearer,"Npsk");
 		gC(wearer).lust.weakness -= 10;
 	}, "A magical device that suctions the wearer's nipples."
 		+ "\nIncreases submission, sexual tension and rivalry, as well as weakness to lust damage. Locks breasts.\n2 infamy upon forced equipment.",
-	1500,2,["bondage","attackAll"]);
+	1500,2,["bondage","attackAll"],[]);
 setup.equipDataList[equipmentType.BUTTPLUG] = new equipmentData("Buttplug","bodypart","anus",
 	function(owner,wearer) { // Put on
 		if ( getRelation(wearer,owner) != undefined ) {
@@ -338,6 +349,7 @@ setup.equipDataList[equipmentType.BUTTPLUG] = new equipmentData("Buttplug","body
 			getRelation(wearer,owner).sexualTension.levelMod += 1;
 			getRelation(wearer,owner).rivalry.levelMod += 1;
 		}
+		gC(wearer).alteredStates.push(createASbuttplug());
 		gC(wearer).lust.weakness += 10;
 		gC(wearer).energy.tainted += 10;
 	},
@@ -347,11 +359,12 @@ setup.equipDataList[equipmentType.BUTTPLUG] = new equipmentData("Buttplug","body
 			getRelation(wearer,owner).sexualTension.levelMod -= 1;
 			getRelation(wearer,owner).rivalry.levelMod -= 1;
 		}
+		removeAlteredStateByAcr(wearer,"Btpg");
 		gC(wearer).lust.weakness -= 10;
 		gC(wearer).energy.tainted -= 10;
 	}, "A toy that gets locked in the ass."
 		+ "\nIncreases submission, sexual tension and rivalry, as well as weakness to lust damage and tainting energy. Locks ass.\n2 infamy upon forced equipment.",
-	2000,2,["bondage","attackAll"]);
+	2000,2,["bondage","attackAll"],[]);
 setup.equipDataList[equipmentType.CHASTITYBELT] = new equipmentData("Chastity belt","bodypart","pussy",
 	function(owner,wearer) { // Put on
 		if ( getRelation(wearer,owner) != undefined ) {
@@ -382,7 +395,7 @@ setup.equipDataList[equipmentType.CHASTITYBELT] = new equipmentData("Chastity be
 		gC(wearer).willpower.weakness -= 10;		
 	}, "A metal shield that locks the wearer's pussy. It may provoke sexual frustration."
 		+ "\nIncreases submission, sexual tension, rivalry and enmity. Reduces intelligence and will, and increases weakness to lust and willpower damage. Locks pussy.\n3 infamy upon forced equipment.",
-	2500,3,["bondage","attackMagic","chastity"]);
+	2500,3,["bondage","attackMagic","chastity"],[]);
 setup.equipDataList[equipmentType.CHASTITYCAGE] = new equipmentData("Chastity cage","bodypart","dick",
 	function(owner,wearer) { // Put on
 		if ( getRelation(wearer,owner) != undefined ) {
@@ -413,7 +426,7 @@ setup.equipDataList[equipmentType.CHASTITYCAGE] = new equipmentData("Chastity ca
 		gC(wearer).willpower.weakness -= 10;	
 	}, "A metal cage that locks the wearer's dick. It may provoke sexual frustration."
 		+ "\nIncreases submission, sexual tension, rivalry and enmity. Reduces intelligence and will, and increases weakness to lust and willpower damage. Locks pussy.\n3 infamy upon forced equipment.",
-	2500,3,["bondage","attackMagic","chastity"]);
+	2500,3,["bondage","attackMagic","chastity"],[]);
 	
 	// Weapons
 setup.equipDataList[equipmentType.STAFFOFBATTLE] = new equipmentData("Staff of battle","tool","weapon",
@@ -431,7 +444,7 @@ setup.equipDataList[equipmentType.STAFFOFBATTLE] = new equipmentData("Staff of b
 	}, "A wooden staff, great for physical offense and defense."
 		+ "\nIncreases physique and resilience.",
 	2000,0,
-	[["physique",1],["resilience",1]]);
+	[["physique",1],["resilience",1]],["staffSwipe"]);
 setup.equipDataList[equipmentType.KNUCKLES] = new equipmentData("Knuckles","tool","weapon",
 	function(owner,wearer) { // Put on
 		gC(wearer).physique.sumModifier += 2;
@@ -444,10 +457,10 @@ setup.equipDataList[equipmentType.KNUCKLES] = new equipmentData("Knuckles","tool
 		gC(wearer).physique.multModifier -= 0.1;
 		gC(wearer).agility.sumModifier -= 2;
 		gC(wearer).agility.multModifier -= 0.1;
-	}, "Brass knucles that will make the user pack a punch."
+	}, "Brass knuckles that will make the user pack a punch."
 		+ "\nIncreases physique and agility.",
 	2000,0,
-	[["physique",1],["agility",1]]);
+	[["physique",1],["agility",1]],["boldJab"]);
 setup.equipDataList[equipmentType.WAND] = new equipmentData("Wand","tool","weapon",
 	function(owner,wearer) { // Put on
 		gC(wearer).intelligence.sumModifier += 2;
@@ -463,7 +476,7 @@ setup.equipDataList[equipmentType.WAND] = new equipmentData("Wand","tool","weapo
 	}, "A magical wand, most useful to control the flow of aether."
 		+ "\nIncreases intelligence and will.",
 	2000,0,
-	[["intelligence",1],["will",1]]);
+	[["intelligence",1],["will",1]],["channelAether"]);
 setup.equipDataList[equipmentType.HANDFAN] = new equipmentData("Hand fan","tool","weapon",
 	function(owner,wearer) { // Put on
 		gC(wearer).perception.sumModifier += 2;
@@ -479,7 +492,7 @@ setup.equipDataList[equipmentType.HANDFAN] = new equipmentData("Hand fan","tool"
 	}, "A magical fan, favored by illusionists."
 		+ "\nIncreases perception and charisma.",
 	2000,0,
-	[["perception",1],["charisma",1]]);
+	[["perception",1],["charisma",1]],["flaunt"]);
 
 // AI
 
@@ -487,10 +500,8 @@ window.npcValuesBondage = function(charKey,bondageId) {
 	var value = 100;
 	var bondageData = setup.equipDataList[bondageId];
 	var bondageType = bondageData.slot;
-	State.variables.logL2.push("A1");
 	for ( var equipment of gC(charKey).ownedEquipment ) {
 		var equipData = getEquipDataById(equipment);
-	State.variables.logL2.push("A2");
 		if ( equipData.slotType == "bodypart" ) {
 			if ( equipData.slot == bondageType ) {
 				if ( getEquipById(equipment).equippedOn == null ) {
@@ -576,5 +587,97 @@ window.getItemListEquippableOnChar = function(charKey,itemList) {
 		}
 	}
 	return newItemList;
+}
+window.getActorsEquippableBondageOnTarget = function(actor,target) {
+	var bondageList = [];
+	
+	for ( var item of gC(actor).ownedEquipment ) {
+		if ( equipmentIsBondage(item) && mayEquipmentBePut(item,target) ) {
+			bondageList.push(target);
+		}
+	}
+	
+	return bondageList;
+}
+
+window.chooseBestBondageForTargetByActor = function(bondageIDsList,target,actor) {
+	var chosenID = bondageIDsList[0];
+	var bondageScores = [];
+	
+	var physicalScore = gC(target).physique.value + gC(target).agility.value + gC(target).resilience.value;
+	var magicalScore = gC(target).intelligence.value + gC(target).will.value + gC(target).perception.value;
+	var socialScore = (gC(target).charisma.value + gC(target).empathy.value) * 1.5;
+	var totalScore = physicalScore + magicalScore + socialScore;
+	
+	for ( var bondage of bondageIDsList ) {
+		var tags = getEquipDataById(bondage).strategyTags;
+		var score = 0;
+		
+		// Stats score
+		if ( tags.includes("attackPhysical") ) {
+			score += physicalScore;
+		} else if ( tags.includes("attackMagic") ) {
+			score += magicalScore;
+		} else if ( tags.includes("attackSocial") ) {
+			score += socialScore;
+		} else {
+			score += totalScore * 0.4;
+		}
+		
+		// Preferences score
+		if ( tags.includes("chastity") ) {
+			score += ( gC(actor).tastes.denial.w - 40 ) * 3;
+		}
+		
+		bondageScores.push(score);
+	}
+	
+	// Find best score
+	var bestIndex = bondageIDsList[0];
+	var i = 0;
+	var highestScore = -1;
+	var diceScore = 0;
+	for ( var score of bondageScores ) {
+		diceScore = limitedRandomInt(score*score);
+		if ( diceScore > highestScore ) {
+			bestIndex = i;
+			highestScore = diceScore; 
+		}
+		i++;
+	}
+	chosenID = bondageIDsList[bestIndex];
+	
+	return chosenID;
+}
+window.isSubOverDomsPowerThreshold = function(subChar,domChar) {
+	// Dom's power threshold
+	var domTs = 0.5;
+	if ( getCharsDrivePercent(domChar,"dDomination") > 0.15 ) {
+		domTs -= 0.05;
+		if ( ( getCharsDrivePercent(domChar,"dDomination") > 0.2 ) ) {
+			domTs -= 0.05;
+		}
+	}
+	if ( getCharsDrivePercent(domChar,"dCooperation") > 0.15 ) {
+		domTs += 0.05;
+		if ( ( getCharsDrivePercent(domChar,"dCooperation") > 0.2 ) ) {
+			domTs += 0.05;
+		}
+	}
+	// Relative power threshold
+	var totalRelation = rLvlAbt(domChar,subChar,"friendship") + rLvlAbt(domChar,subChar,"romance") + rLvlAbt(domChar,subChar,"sexualTension") + rLvlAbt(domChar,subChar,"domination") + rLvlAbt(domChar,subChar,"submission") + rLvlAbt(domChar,subChar,"enmity") + rLvlAbt(domChar,subChar,"rivalry");
+	var relationModifier = ( rLvlAbt(domChar,subChar,"friendship") + rLvlAbt(domChar,subChar,"romance") - rLvlAbt(domChar,subChar,"sexualTension") - rLvlAbt(domChar,subChar,"rivalry") - rLvlAbt(domChar,subChar,"enmity") * 2 - rLvlAbt(domChar,subChar,"submission") + rLvlAbt(domChar,subChar,"domination") ) / ( totalRelation + 5 ) * 0.3;
+	var totalPercentage = domTs + relationModifier; // Max ~= 0.9 , Min ~= 0.1
+	// Relationship type
+	if ( gRelTypeAb(subChar,domChar).type == "tutorship" ) {
+		totalPercentage += 0.2;
+	}
+	// Check if sub goes over the threshold
+	var flag = false;
+	if ( ( quantifyCharacterStats(subChar) / quantifyCharacterStats(domChar) ) > totalPercentage ) {
+		flag = true;
+	}
+	
+	return flag;
 }
 

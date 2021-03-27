@@ -358,6 +358,84 @@ window.effectsSeDiscoveringTheOthersEarlyEnd = function() {
 	}
 }
 
+window.initializeSeTheMerchants = function() {
+	// Shrezdill - Old Ashwalker Candidate
+	// Abibdill - Weapons merchant
+	// Nimeresh - Bondage merchant
+	// Enable and set merchants
+	State.variables.enabledMerchants.push(0);
+	State.variables.enabledMerchants.push(30);
+	if ( State.variables.currentMerchants.includes(30) == false ) {
+		State.variables.currentMerchants.push(30);
+	}
+	if ( State.variables.currentMerchants.includes(0) == false ) {
+		State.variables.currentMerchants.push(0);
+	}
+	
+	// Relation changes
+	State.variables.chVal.relations.chMir.submission.stv += 150;
+	State.variables.chMir.relations.chVal.domination.stv += 150;
+	
+	// Checks
+		// Character choice
+	var nashScore = rLvlAbt("chNash","chPlayerCharacter","sexualTension") * 2 + rLvlAbt("chNash","chPlayerCharacter","romance") + rLvlAbt("chNash","chPlayerCharacter","domination") - rLvlAbt("chNash","chPlayerCharacter","submission");
+	var mirScore = rLvlAbt("chMir","chPlayerCharacter","sexualTension") * 2 + rLvlAbt("chMir","chPlayerCharacter","romance") + rLvlAbt("chMir","chPlayerCharacter","domination") - rLvlAbt("chMir","chPlayerCharacter","submission");
+	var valScore = rLvlAbt("chVal","chPlayerCharacter","sexualTension") * 2 + rLvlAbt("chVal","chPlayerCharacter","romance") + rLvlAbt("chVal","chPlayerCharacter","domination") - rLvlAbt("chVal","chPlayerCharacter","submission");
+	if ( nashScore >= mirScore && nashScore >= valScore ) {
+		State.variables.StVars.check1 = "nash";
+	} else if ( valScore >= mirScore ) {
+		State.variables.StVars.check1 = "val";
+	} else {
+		State.variables.StVars.check1 = "mir";
+	}
+	
+		// Mir, Nash, Val, cost
+	State.variables.StVars.check2 = (rLvlAbt("chPlayerCharacter","chMir","submission") - rLvlAbt("chPlayerCharacter","chMir","domination")) * 20 + rLvlAbt("chPlayerCharacter","chMir","sexualTension") * 10;
+	if ( State.variables.StVars.check2 <= 10 ) { State.variables.StVars.check2 = 10; }
+	State.variables.StVars.check3 = (rLvlAbt("chPlayerCharacter","chNash","submission") - rLvlAbt("chPlayerCharacter","chNash","domination")) * 20 + rLvlAbt("chPlayerCharacter","chNash","sexualTension") * 10;
+	if ( State.variables.StVars.check3 <= 10 ) { State.variables.StVars.check3 = 10; }
+	State.variables.StVars.check4 = (rLvlAbt("chPlayerCharacter","chVal","submission") - rLvlAbt("chPlayerCharacter","chVal","domination")) * 20 + rLvlAbt("chPlayerCharacter","chVal","sexualTension") * 10;
+	if ( State.variables.StVars.check4 <= 10 ) { State.variables.StVars.check4 = 10; }
+	
+		// Nash, Mir, Val, Ate, Claw checks
+	State.variables.StVars.check5 = false;
+	if ( (gCstat("chPlayerCharacter","charisma") + gCstat("chPlayerCharacter","will") + rLvlAbt("chNash","chPlayerCharacter","submission") + rLvlAbt("chNash","chPlayerCharacter","sexualTension") - rLvlAbt("chNash","chPlayerCharacter","domination") ) >= 28 ) { State.variables.StVars.check5 = "true"; }
+	State.variables.StVars.check6 = false;
+	if ( (gCstat("chPlayerCharacter","charisma") + gCstat("chPlayerCharacter","will") + rLvlAbt("chMir","chPlayerCharacter","submission") + rLvlAbt("chMir","chPlayerCharacter","sexualTension") - rLvlAbt("chMir","chPlayerCharacter","domination") ) >= 27 ) { State.variables.StVars.check6 = "true"; }
+	State.variables.StVars.check7 = false;
+	if ( (gCstat("chPlayerCharacter","agility") + gCstat("chPlayerCharacter","will") + rLvlAbt("chVal","chPlayerCharacter","submission") + rLvlAbt("chVal","chPlayerCharacter","sexualTension") - rLvlAbt("chVal","chPlayerCharacter","domination") ) >= 29 ) { State.variables.StVars.check7 = "true"; } 
+	State.variables.StVars.check8 = false;
+	if ( (gCstat("chPlayerCharacter","luck") + gCstat("chPlayerCharacter","will") + rLvlAbt("chAte","chPlayerCharacter","submission") + rLvlAbt("chAte","chPlayerCharacter","sexualTension") - rLvlAbt("chAte","chPlayerCharacter","domination") ) >= 25 ) { State.variables.StVars.check8 = "true"; }
+	State.variables.StVars.check9 = false;
+	if ( (gCstat("chPlayerCharacter","agility") + gCstat("chPlayerCharacter","will") + rLvlAbt("chClaw","chPlayerCharacter","submission") + rLvlAbt("chClaw","chPlayerCharacter","sexualTension") - rLvlAbt("chClaw","chPlayerCharacter","domination") ) >= 26 ) { State.variables.StVars.check9 = "true"; }
+	
+	// Initiate UI
+	setRoomIntro("mapTrainingGrounds","grandHall");
+	setPasChars([getPresentCharByKey("chNash"),getPresentCharByKey("chVal"),getPresentCharByKey("chMir"),getPresentCharByKey("chAte"),getPresentCharByKey("chClaw")]);
+}
+
+window.effectsSeTheMerchantsEnd = function() {
+	createEquipment(equipmentType.KNUCKLES,"chClaw");
+	createEquipment(equipmentType.WAND,"chMir");
+	createEquipment(equipmentType.HANDFAN,"chVal");
+	createEquipment(equipmentType.WAND,"chAte");
+	createStartingPunishmentBondage();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

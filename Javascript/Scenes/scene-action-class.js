@@ -33,7 +33,7 @@ window.isUsableResults = function() {
 window.isActionUsable = function(actionKey,actorKey,targetsKeys) {
 	var iAU = new isUsableResults;
 	
-	var action = State.variables.saList[actionKey];
+	var action = setup.saList[actionKey];
 	var actor = getChar(actorKey);
 	var targetsList = getCharList(targetsKeys);
 	
@@ -113,6 +113,19 @@ window.isActionUsable = function(actionKey,actorKey,targetsKeys) {
 			else {
 				iAU.isUsable = false;
 				if ( State.variables.settings.debugFunctions ) { iAU.explanation += "A target doesn't have the required " + action.targetBpReqs[rbp] + " to perform the action.\n"; }
+			}
+		}
+	}
+	for ( var rlbp of action.targetLockedBpReqs ) {
+		for ( var target of targetsList ) {
+			if ( target.body.hasOwnProperty(rlbp) ) {
+				if ( target.body[rlbp].state != "locked" ) {
+					iAU.isUsable = false;
+					if ( State.variables.settings.debugFunctions ) { iAU.explanation += "A target doesn't have the required locked " + rlbp + " to perform the action.\n"; }
+				}
+			} else {
+				iAU.isUsable = false;
+				if ( State.variables.settings.debugFunctions ) { iAU.explanation += "A target doesn't have the required " + rlbp + " to perform the action.\n"; }
 			}
 		}
 	}
@@ -358,7 +371,7 @@ window.tryExecuteAction = function(actionKey,actorKey,targetKeys) {
 	
 	iAU = isActionUsable(actionKey,actorKey,targetKeys);
 	if ( iAU.isUsable ) { // Action may be used, execute:
-		results = State.variables.saList[actionKey].execute(actorKey,targetKeys);
+		results = setup.saList[actionKey].execute(actorKey,targetKeys);
 	}
 	else {
 		results.description = "The action couldn't be executed.";
@@ -389,6 +402,7 @@ Each character has a list of learnt sceneActions, identified by their name or ID
 Each action has a list of tags which mark their range.
 
 Upon executing an action, its ID is used to access the original action on State.variables.saList, which provides a description.
+																		-> setup.saList
 Actions are executed by calling their execute() method, which applies all of its effects.
 	The execute() method requires the actor using the action and a list of targets as parameters,
 	and returns a string describing the action's effects.
@@ -417,6 +431,7 @@ window.sceneAction = function() {
 						  // control -> Requires the actor's control to be higher than 0
 	this.actorBpReqs = []; // The actor requires these body parts for the action to be possible
 	this.targetBpReqs = [];	// The targets require these body parts for the action to be possible
+	this.targetLockedBpReqs = []; // The targets require these bodyparts to be locked for the action to be possible
 	this.flavorTags = [];
 	this.strategyTags = [];
 	this.affinities = [];
@@ -597,6 +612,10 @@ window.saList = function() {
 	
 	this.etherealChains = createSaEtherealChains();
 	
+	this.denyOrgasm = createSaDenyOrgasm();
+	this.teaseLockedPussy = createSaTeaseLockedPussy();
+	this.teaseLockedDick = createSaTeaseLockedDick();
+	
 		// Cont. actions
 	
 	this.frenchKiss = createSaFrenchKiss();
@@ -692,6 +711,12 @@ window.saList = function() {
 		// Spores
 		
 	this.baRelaxingScent = createSaRelaxingScent();
+	
+	// Items
+	this.staffSwipe = createStaffSwipe();
+	this.boldJab = createBoldJab();
+	this.channelAether = createSaChannelAether();
+	this.flaunt = createSaFlaunt();
 };
 
 // Constructors, serializers, etc.

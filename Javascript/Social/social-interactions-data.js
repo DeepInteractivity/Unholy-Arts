@@ -634,6 +634,7 @@ window.getGossipAbout = function(charKey,name) {
 		var desc = ktn(this.actor) + " asks " + ktn(this.target) + " about her opinion on " + ktn(this.topic) + " and " + gC(this.target).perPr
 				 + " eagerly speaks " + gC(this.target).posPr + " mind.\n";
 		desc	+= "__" + gC(this.target).getName() + "'s thoughts on " + gC(this.topic).getName() + "__\n";
+		desc	+= getRelationshipDescription(this.target,this.topic)[0] + "\n";
 		var rpNames = [ "Friendship", "Sexual Tension", "Romance", "Domination", "Submission", "Rivalry", "Enmity" ];
 		var i = 0;
 		for ( var relPar in gC(this.target).relations[this.topic] ) {
@@ -654,7 +655,7 @@ window.getGossipAbout = function(charKey,name) {
 
 	socInt.isValid = function(sis,actor,target,observers,extraData) {
 		var flagValid = true;
-		if ( sis.charList.includes(this.topic) ) {
+		if ( sis.charList.includes(this.topic) || ( gC(actor).hasFreeBodypart("mouth") == false ) ) {
 			flagValid = false;
 		}
 		return flagValid;
@@ -726,8 +727,10 @@ window.getAskAboutValues = function(type) {
 	}
 
 	socInt.isValid = function(sis,actor,target,observers,extraData) {
-		var flagValid = true;
-		
+		var flagValid = false;
+		if ( gC(actor).hasFreeBodypart("mouth") ) {
+			flagValid = true;
+		}
 		return flagValid;
 	}
 	socInt.getWeight = function(sis,actor,target,observers,extraData) {

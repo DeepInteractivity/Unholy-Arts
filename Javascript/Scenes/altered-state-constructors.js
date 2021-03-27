@@ -149,6 +149,45 @@ window.createASteased = function(intensity, type) {
 	return as;
 }
 
+window.createASflaunting = function(intensity) {
+	// Stats gain (phys, agil, will, perc, char) , increased sex damage
+	var sgs = 1 + intensity * 0.2; // 1 ~ 3
+	var sgm = 0.04 + intensity * 0.008; // 0.04 ~ 0.12
+	var isd = 10 + intensity * 1; // 10 ~ 20
+	var turns = 5 + limitedRandomInt(2); // 5 ~ 7
+	var provokeEffect = function(charKey) {
+		gC(charKey).physique.sumModifier += sgs;
+		gC(charKey).physique.multModifier += sgm;
+		gC(charKey).agility.sumModifier += sgs;
+		gC(charKey).agility.multModifier += sgm;
+		gC(charKey).will.sumModifier += sgs;
+		gC(charKey).will.multModifier += sgm;
+		gC(charKey).perception.sumModifier += sgs;
+		gC(charKey).perception.multModifier += sgm;
+		gC(charKey).charisma.sumModifier += sgs;
+		gC(charKey).charisma.multModifier += sgm;
+		gC(charKey).combatAffinities.sex.strength += isd;
+	}
+	var cancelEffect = function(charKey) {
+		gC(charKey).physique.sumModifier -= sgs;
+		gC(charKey).physique.multModifier -= sgm;
+		gC(charKey).agility.sumModifier -= sgs;
+		gC(charKey).agility.multModifier -= sgm;
+		gC(charKey).will.sumModifier -= sgs;
+		gC(charKey).will.multModifier -= sgm;
+		gC(charKey).perception.sumModifier -= sgs;
+		gC(charKey).perception.multModifier -= sgm;
+		gC(charKey).charisma.sumModifier -= sgs;
+		gC(charKey).charisma.multModifier -= sgm;
+		gC(charKey).combatAffinities.sex.strength -= isd;
+	}
+	var description = "This character is flaunting their body, intoxicating their opponents with sex appeal.\n"
+					+ "Increased physique, agility, will, perception, charisma and effectiveness of sex actions.";
+	var as = new alteredState("Flaunting","Flnt","scene",turns,provokeEffect,cancelEffect,description);
+	as.type = "buff";
+	return as;
+}
+
 // Hypnosis
 
 window.createAShypnosisStroke = function(intensity) {
@@ -419,4 +458,44 @@ window.createASrelaxingScent = function(intensity) {
 	return as;
 }
 
+
+		// Bondage
+		
+// Nipplesuckers
+window.createASnipplesuckers = function() {
+	var nofunc = function() {
+		return 0;
+	}
+	var description = "The nipple suckers attached to this character activate when aether starts moving.\n"
+					+ "Lust damage received every turn.";
+	var as = new alteredState("Nipple suckers","Npsk","equipment",-1,nofunc,nofunc,description);
+	as.type = "debuff";
+	as.turnEffect = function(character) {
+		var description = "";
+		var damage = 0.7;
+		gC(character).lust.attack(-damage);
+		description = "The nipple suckers are stimulating " + gC(character).getFormattedName() + "'s " + boobsWord() + " for " + textLustDamage(damage) + ".";
+		return description;
+	}
+	return as;
+}
+		
+// Buttplug
+window.createASbuttplug = function() {
+	var nofunc = function() {
+		return 0;
+	}
+	var description = "The buttplug inserted in this character vibrates when aether starts moving.\n"
+					+ "Lust damage received every turn.";
+	var as = new alteredState("Buttplug","Btpg","equipment",-1,nofunc,nofunc,description);
+	as.type = "debuff";
+	as.turnEffect = function(character) {
+		var description = "";
+		var damage = 0.7;
+		gC(character).lust.attack(-damage);
+		description = "The buttplug is massaging " + gC(character).getFormattedName() + "'s " + assWord() + " for " + textLustDamage(damage) + ".";
+		return description;
+	}
+	return as;
+}
 

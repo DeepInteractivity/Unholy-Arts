@@ -1944,3 +1944,186 @@ window.createSaMakeKneel = function() {
 	return sa;
 }
 
+	// Denial
+window.createSaDenyOrgasm = function() {
+	var sa = new sceneAction();
+	sa.name = "Deny orgasm";
+	sa.key = "denyOrgasm";
+	sa.targetType = "single";
+	sa.tags.push("ss");
+	sa.tags.push("sUse");
+	sa.actorBpReqs.push("arms");
+	
+	sa.flavorTags.push("denial","domination");
+	
+	sa.getIsAllowedBySettings = function() {
+		var isAllowed = true;
+		
+		if ( State.variables.settings.chastity == "disable" ) {
+			isAllowed = false;
+		}
+		
+		return isAllowed;
+	}
+	
+	sa.description = "The character locks their partner in place, attempting to ruin their orgasm.\n\nSingle target action.\n"
+				   + "Actor requires free hands.\n\nDenial.\n\n__Influences__:\nNone.";
+				   
+	sa.execute = function(actorKey,targetActors) {
+		var results = new saResults;
+		var actor = actorKey;
+		var target = targetActors[0];
+		
+		var lustPc = getBarPercentage(target,"lust");
+		
+		if ( lustPc > 0.1 ) {
+			results.value = 0;
+			results.description += randomFromList( [
+										(ktn(actor) + " tried to deny " + ktn(target) + "'s orgasm, but " + gC(target).perPr + " wasn't close enough."),
+										(ktn(actor) + " attempted to ruin " + ktn(target) + "'s climax, but it wasn't close enough yet.") ] );
+		} else {
+			var lustDamage = gC(target).lust.max * 0.15;
+			gC(target).lust.changeValue(-lustDamage);
+			
+			addTurnTagToChar("denied",target);
+			
+			results.value += lustDamage;
+			results.description += randomFromList( [
+										(ktn(actor) + " locked " + ktn(target) + " in place, denying " + gC(target).posPr + " pleasure."),
+										(ktn(actor) + " prevented " + ktn(target) + " from getting any pleasure during " + gC(target).posPr + " climax."),
+										(ktn(actor) + " denied " + ktn(target) + "'s orgasm, much to " + gC(target).posPr + " frustration.") ] );
+			results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ".";
+		}
+		
+		return results;
+	}
+	
+	return sa;
+}	
+window.createSaTeaseLockedPussy = function() {
+	var sa = new sceneAction();
+	sa.name = "Tease locked pussy";
+	sa.key = "teaseLockedPussy";
+	sa.targetType = "single";
+	sa.tags.push("ss");
+	sa.tags.push("sUse");
+	sa.actorBpReqs.push("arms");
+	sa.targetLockedBpReqs.push("pussy");
+	
+	sa.flavorTags.push("denial","domination","targetPussy");
+	
+	sa.getIsAllowedBySettings = function() {
+		var isAllowed = true;
+		
+		if ( State.variables.settings.chastity == "disable" ) {
+			isAllowed = false;
+		}
+		
+		return isAllowed;
+	}
+	
+	sa.description = "The character teases their partner's locked pussy, attempting to ruin their orgasm.\n\nSingle target action.\n"
+				   + "Actor requires free hands, target requires locked pussy.\n\nDenial.\n\n__Influences__:\nDamage: Actor's charisma x1, empathy x1, perception x1, agility x1.";
+				   
+	sa.execute = function(actorKey,targetActors) {
+		var results = new saResults;
+		var actor = actorKey;
+		var target = targetActors[0];
+		
+		var threshold = 0.1 + ( gCstat(actor,"charisma") + gCstat(actor,"empathy") + gCstat(actor,"agility") + gCstat(actor,"perception") ) * 0.00025;
+		var startingLustDamage = ( gCstat(actor,"charisma") + gCstat(actor,"empathy") + gCstat(actor,"agility") + gCstat(actor,"perception") ) * 0.05;
+		results.value += startingLustDamage;
+		gC(target).lust.changeValue(-startingLustDamage);
+		
+		var lustPc = getBarPercentage(target,"lust");
+		
+		if ( lustPc > threshold ) {
+			results.description += randomFromList( [
+										(ktn(actor) + " teased " + ktn(target) + "'s nethers, reminding " + gC(target).comPr + " of " + gC(target).posPr + " locked " + pussyWord() + "."),
+										(ktn(actor) + " taunted " + ktn(target) + " about not being able to pleasure " + gC(target).posPr + " own " + pussyWord() + ".")
+											] );
+			results.description += " " + ktn(target) + " received " + textLustDamage(startingLustDamage) + ".";
+		} else {
+			var lustDamage = gC(target).lust.max * 0.25;
+			gC(target).lust.changeValue(-lustDamage);
+			
+			addTurnTagToChar("denied",target);
+			
+			results.value += lustDamage;
+			results.description += randomFromList( [
+										(ktn(actor) + " teased " + ktn(target) + "'s nethers, reminding " + gC(target).comPr + " of " + gC(target).posPr + " locked " + pussyWord() + ". " + ktn(target) + " gave in to the humilliation."),
+										(ktn(actor) + " taunted " + ktn(target) + " about not being able to pleasure " + gC(target).posPr + " own " + pussyWord() + ". " + ktn(target) + " couldn't hold the shame.")
+											] );
+			results.description += " " + ktn(target) + " received " + textLustDamage(startingLustDamage + lustDamage) + ".";
+		}
+		
+		return results;
+	}
+	
+	return sa;
+}		
+window.createSaTeaseLockedDick = function() {
+	var sa = new sceneAction();
+	sa.name = "Tease locked dick";
+	sa.key = "teaseLockedDick";
+	sa.targetType = "single";
+	sa.tags.push("ss");
+	sa.tags.push("sUse");
+	sa.actorBpReqs.push("arms");
+	sa.targetLockedBpReqs.push("dick");
+	
+	sa.flavorTags.push("denial","domination","targetDick");
+	
+	sa.getIsAllowedBySettings = function() {
+		var isAllowed = true;
+		
+		if ( State.variables.settings.chastity == "disable" ) {
+			isAllowed = false;
+		}
+		
+		return isAllowed;
+	}
+	
+	sa.description = "The character teases their partner's locked dick, attempting to ruin their orgasm.\n\nSingle target action.\n"
+				   + "Actor requires free hands, target requires locked dick.\n\nDenial.\n\n__Influences__:\nDamage: Actor's charisma x1, empathy x1, perception x1, agility x1.";
+				   
+	sa.execute = function(actorKey,targetActors) {
+		var results = new saResults;
+		var actor = actorKey;
+		var target = targetActors[0];
+		
+		var threshold = 0.1 + ( gCstat(actor,"charisma") + gCstat(actor,"empathy") + gCstat(actor,"agility") + gCstat(actor,"perception") ) * 0.00025;
+		var startingLustDamage = ( gCstat(actor,"charisma") + gCstat(actor,"empathy") + gCstat(actor,"agility") + gCstat(actor,"perception") ) * 0.05;
+		results.value += startingLustDamage;
+		gC(target).lust.changeValue(-startingLustDamage);
+		
+		var lustPc = getBarPercentage(target,"lust");
+		
+		if ( lustPc > threshold ) {
+			results.description += randomFromList( [
+										(ktn(actor) + " teased " + ktn(target) + "'s thighs, reminding " + gC(target).comPr + " of " + gC(target).posPr + " locked " + dickWord() + "."),
+										(ktn(actor) + " taunted " + ktn(target) + " about not being able to pleasure " + gC(target).posPr + " own " + dickWord() + ".")
+											] );
+			results.description += " " + ktn(target) + " received " + textLustDamage(startingLustDamage) + ".";
+		} else {
+			var lustDamage = gC(target).lust.max * 0.25;
+			gC(target).lust.changeValue(-lustDamage);
+			
+			addTurnTagToChar("denied",target);
+			
+			results.value += lustDamage;
+			results.description += randomFromList( [
+										(ktn(actor) + " teased " + ktn(target) + "'s thighs, reminding " + gC(target).comPr + " of " + gC(target).posPr + " locked " + dickWord() + ". " + ktn(target) + " gave in to the humilliation."),
+										(ktn(actor) + " taunted " + ktn(target) + " about not being able to pleasure " + gC(target).posPr + " own " + dickWord() + ". " + ktn(target) + " couldn't hold the shame.")
+											] );
+			results.description += " " + ktn(target) + " received " + textLustDamage(startingLustDamage + lustDamage) + ".";
+		}
+		
+		return results;
+	}
+	
+	return sa;
+}	
+
+
+	
