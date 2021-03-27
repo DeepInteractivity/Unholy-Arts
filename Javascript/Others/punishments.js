@@ -20,7 +20,7 @@ window.createStartingPunishmentBondage = function() {
 window.countPunishmentBondageOnTarget = function(charKey) {
 	var n = 0; // Amount of punishment bondage
 	for ( var item of State.variables.equipmentList ) {
-		if ( item.equippedOn == charKey && owner == "chDummy" ) {
+		if ( item.equippedOn == charKey && item.owner == "chDummy" ) {
 			n++;
 		}
 	}
