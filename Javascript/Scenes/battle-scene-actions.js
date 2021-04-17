@@ -1528,7 +1528,7 @@ window.createSaFreezeFeet = function() {
 	sa.description = "The character casts a frozen air stream aimed at their target's legs.\n"
 				   + "This attack damages the target and reduces their energy, control and agility.\n\nSingle target action."
 				   + "\n\nMagical ice projectile attack."
-				   + "\n\n__Influences__:\nDamage: Actor's intelligence x2, actor's will x1, target's will x-1, target's resilience x-1.\nEnergy damage: Actor's intelligence x2, actor's will x1.\nEvasion: Actor's intelligence x7, actor's perception x3, target's will x-5, actor's and target's control."; 
+				   + "\n\n__Influences__:\nDamage: Actor's intelligence x2, actor's will x1, target's will x-1, target's resilience x-1.\nEnergy damage: Actor's intelligence x2, actor's will x1.\nEvasion: Actor's intelligence x7, actor's will x3, target's will x-10, actor's and target's control."; 
 				   
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"intelligence") * 0.35 + gCstat(actor,"will") * 0.15 + gC(actor).control * 2 + 15;
@@ -2315,7 +2315,7 @@ window.createStaffSwipe = function() {
 	sa.requiresFree = true;
 	
 	sa.strategyTags.push("damage","physical","consumeEnergy","physicalDamage","damageControl");
-	sa.affinities.push("physical");
+	sa.affinities.push("physical","weapon");
 	
 	sa.description = "The character swipes their staff against their opponent, aiming to gain positional advantage.\n"
 				   + "This attack damages the target and their control, and recovers the actor's control.\nCosts 2 energy.\n\nSingle target action."
@@ -2392,7 +2392,7 @@ window.createBoldJab = function() {
 	sa.requiresFree = true;
 	
 	sa.strategyTags.push("damage","physical","consumeEnergy","physicalDamage","damageControl");
-	sa.affinities.push("physical");
+	sa.affinities.push("physical","weapon");
 	
 	sa.description = "The character leaps around to land a punch at their target's sides. Risky.\n"
 				   + "This attack damages the target and their control if it lands, but damages the actor's control otherwise.\nCosts 2 energy.\n\nSingle target action."
@@ -2463,7 +2463,7 @@ window.createSaChannelAether = function() {
 	sa.tags.push("sUse");
 	
 	sa.strategyTags.push("magic","recoverWillpower");
-	sa.affinities.push();
+	sa.affinities.push("weapon");
 	
 	sa.description = "The character focuses on the energies surrounding them, absorbing unleashed aether.\n"
 				   + "The action makes the actor recover a portion of their maximum willpower.\n\nSelf targeted action."
@@ -2522,7 +2522,7 @@ window.createSaFlaunt = function() {
 	sa.actorDisabledByAs = [ "Flnt" ];
 	
 	sa.strategyTags.push("buff","social","alteredState");
-	sa.affinities.push();
+	sa.affinities.push("weapon");
 	
 	sa.description = "The character shows proudly exposes their body, hitting their opponents with raw sex appeal.\n"
 				   + "The action increases the actor's physique, agility, will, perception, charisma and damage dealt with sex actions.\n\nSelf targeted action."

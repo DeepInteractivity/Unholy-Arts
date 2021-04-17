@@ -1,4 +1,3 @@
-
 ////////// Map functions //////////
 	// Management / Info
 window.getLinkToRoom = function(roomKey,message,distance) {
@@ -52,6 +51,13 @@ window.mayCharBeInterrupted = function(character) {
 			flagMayBeInterrupted = tEvent.flagMayBeInterrupted;
 		}
 	return flagMayBeInterrupted;
+}
+window.mayCharBeApproached = function(actor,target) {
+	var flag = false;
+	if ( mayCharBeInterrupted(target) && (gC(target).followingTo == "" || gC(target).followingTo == actor) ) {
+		flag = true;
+	}
+	return flag;
 }
 
 window.mayEventBeSpectated = function(sEvent) {
@@ -255,6 +261,8 @@ window.initiatePlayerAssault = function(target) {
 	// Infamy
 	var infamy = getCharGroup("chPlayerCharacter").length * 3 / getCharGroup(target).length;
 	gC("chPlayerCharacter").changeInfamy(infamy);
+	// Mood
+	gC(target).mood.applyChange("angry",25);
 	// Initiate Battle
 		// Event
 	var allChars = getCharGroup("chPlayerCharacter").concat(getCharGroup(target));
@@ -283,6 +291,8 @@ window.initiateNpcAssault = function(actor,target) {
 	// Infamy
 	var infamy = getCharGroup(actor).length * 3 / getCharGroup(target).length;
 	gC(actor).changeInfamy(infamy);
+	// Mood
+	gC(target).mood.applyChange("angry",25);
 	// Initiate Battle
 		// Event
 	var allChars = getCharGroup(actor).concat(getCharGroup(target));
@@ -668,10 +678,10 @@ window.Compass = function() {
 					var sEvent = this.findFirstEventInvolvingCharacter(character);
 					if ( sEvent == null ) {
 						gC(character).mapAi.signIdle();
+						gC(character).mapAi.main();
 					}
 				}
 			}
-			gC(character).mapAi.main();
 		}
 	}
 	this.allCharsCheckMapAi = function() {
@@ -880,6 +890,7 @@ window.Compass = function() {
 	this.advanceTime = function(minutes) { // General function to advance time. It regulates everything. EVERYTHING.
 		State.variables.daycycle.addMinutes(minutes);
 		
+		State.variables.logL5 = [];
 		this.pushTimeToOngoingEvents(minutes);
 		this.timeToAdvance -= minutes;
 		
@@ -891,9 +902,18 @@ window.Compass = function() {
 		if ( this.timeToAdvance == 0 ) {
 			this.pushTimeToOngoingEvents(0);
 		}
-		while ( this.timeToAdvance > 0 ) {
+			// Infinite loop patch Part 1 //
+		var tempTimeToAdvance = this.timeToAdvance;
+		var repeatedAdvances = 0;
+			// Infinite loop patch //
+			State.variables.repeatedAdvances = 0;
+		while ( this.timeToAdvance > 0 && repeatedAdvances < 10 ) {
 			var timePush = this.ongoingEvents[0].timeRemaining;
 			this.advanceTime(timePush);
+			// Infinite loop patch Part 2 //
+			if ( tempTimeToAdvance == this.timeToAdvance ) { repeatedAdvances++; }
+			else { State.variables.repeatedAdvances = -repeatedAdvances; repeatedAdvances = 0; }
+			// Infinite loop patch //
 		}
 	}
 	
@@ -1664,6 +1684,8 @@ window.systemEvent = function(minutes,characters,title,name,effect) {
 	this.flagSignCharsAsIdleOnEnd = true; // If true, characters' AI may get a new goal when the event ends
 	this.flagDontPushTimeYet = false; // This must be set to true on creation if the event will be created during
 									  // pushTimeToOngoingEvents
+									  
+	this.executeWithoutCharacters = false;
 	
 	this.removeCharFromEvent = function(charKey) {
 		if ( this.characters.includes(charKey) ) {
@@ -1687,11 +1709,15 @@ window.systemEvent = function(minutes,characters,title,name,effect) {
 			if ( this.flagForcedToEnd == true ) {			// Forced to end
 				flagFinishedEvent = true;
 				if ( this.applyEffectIfForcedToEnd ) {
-					effectMsg = this.effect(this.characters);
+					if ( this.characters.length > 0 || this.executeWithoutCharacters ) {
+						effectMsg = this.effect(this.characters);
+					}
 				}
 			}
 			else if ( this.timeRemaining <= 0 ) {			// Finished at its correct time
-				effectMsg = this.effect(this.characters); // Event gets executed
+				if ( this.characters.length > 0 || this.executeWithoutCharacters ) {
+					effectMsg = this.effect(this.characters); // Event gets executed
+				}
 				
 				if ( this.flagSignCharsAsIdleOnEnd ) {
 					signCharsIdle(this.characters); // Tell MapAIs these characters are missing orders

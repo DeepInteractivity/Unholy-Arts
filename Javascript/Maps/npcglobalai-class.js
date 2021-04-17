@@ -184,6 +184,163 @@ window.createCandidateGlobalAi = function(charKey) {
 				cTrainIntelligenceMissionChoice(charKey),cTrainLuckMissionChoice(charKey),cTrainPerceptionMissionChoice(charKey),
 				cTrainPhysiqueMissionChoice(charKey),cTrainResilienceMissionChoice(charKey),cTrainWillMissionChoice(charKey)];
 	}
+	globalAi.generateScrollsChoices = function() {
+		var choices = [];
+		if ( State.variables.simCycPar.templeDayPeriod != "training" ) {
+			var choiceSearch = cSearchScrollsMissionChoice(this.charKey);
+			var choiceStudy = cStudyScrollMissionChoice(this.charKey);
+			if ( choiceSearch.isValid() ) {
+				choiceSearch.weight = 40;
+				choices.push(choiceSearch);
+			}
+			if ( choiceStudy.isValid() ) {
+				choiceStudy.weight = 60;
+				choices.push(choiceStudy);
+			}
+		}
+		
+		return choices;
+	}
+	
+	globalAi.generateAdvancedSocializationChoices = function() {
+		var mChoices = [];
+		
+		// Generate targets
+		var allyTargets = [];
+		var loveTargets = [];
+		var covetTargets = [];
+		var enemyTargets = [];
+		var allTargets = [];
+		
+		for ( var charKey of getCurrentMap().characters ) {
+			if ( charKey != this.charKey ) {
+				if ( mayCharBeApproached(this.charKey,charKey) ) {
+					if ( gC(this.charKey).socialAi.allyTs.includes(charKey) ) {
+						allyTargets.push(charKey);
+					}
+					if ( gC(this.charKey).socialAi.loveTs.includes(charKey) ) {
+						loveTargets.push(charKey);
+					}
+					if ( gC(this.charKey).socialAi.covetTs.includes(charKey) ) {
+						covetTargets.push(charKey);
+					}
+					if ( gC(this.charKey).socialAi.rivalTs.includes(charKey) ) {
+						enemyTargets.push(charKey);
+					}
+					allTargets.push(charKey);
+				}
+			}
+		}
+		
+		if ( allTargets.length > 0 && getBarPercentage(this.charKey,"socialdrive") >= 0.25 ) {
+			var selectedChar = "";
+			if ( (gC(this.charKey).mood.angry + gC(this.charKey).mood.bored * 0.5 - 15 ) < ( gC(this.charKey).mood.friendly + gC(this.charKey).mood.flirty ) ) {
+				// Nurture friendship, flirt, seduce, taunt
+				// Friendship
+				if ( limitedRandomInt(10) >= 2 && loveTargets.length > 0 ) {
+					selectedChar = randomFromList(allyTargets);
+				} else {
+					selectedChar = randomFromList(allTargets);
+				}
+				var frChoice = cAdvancedScialGoalMissionChoice(this.charKey,selectedChar,"raiseFriendship");
+				var weight = 2 + gC(this.charKey).dLove.level * 1 + gC(this.charKey).dCooperation.level * 1 - gC(this.charKey).mood.angry * 0.1;
+				if ( State.variables.simCycPar.templeDayPeriod != "training" ) { weight *= 3 + allyTargets.length * 2; }
+				frChoice.weight = weight;
+				if ( frChoice.weight > 0 ) { mChoices.push(frChoice); }
+				
+				// Flirt
+				if ( limitedRandomInt(10) >= 2 && loveTargets.length > 0 ) {
+					selectedChar = randomFromList(loveTargets);
+				} else {
+					selectedChar = randomFromList(allTargets);
+				}
+				var flChoice = cAdvancedScialGoalMissionChoice(this.charKey,selectedChar,"flirt");
+				weight = 3 + gC(this.charKey).dLove.level * 1 + gC(this.charKey).dPleasure.level * 1 + gC(this.charKey).dCooperation.level * 1 - gC(this.charKey).mood.angry * 0.1 + gC(this.charKey).mood.flirty * 0.1;
+				if ( State.variables.simCycPar.templeDayPeriod != "training" ) { weight *= 3 + loveTargets.length * 2; }
+				frChoice.weight = weight;
+				if ( frChoice.weight > 0 ) { mChoices.push(flChoice); }
+				
+				// Seduce
+				if ( limitedRandomInt(10) >= 2 && loveTargets.length > 0 ) {
+					selectedChar = randomFromList(covetTargets);
+				} else {
+					selectedChar = randomFromList(allTargets);
+				}
+				var sdChoice = cAdvancedScialGoalMissionChoice(this.charKey,selectedChar,"seduce");
+				weight = 3 + + gC(this.charKey).dPleasure.level * 2 + gC(this.charKey).dDomination.level * 1 - gC(this.charKey).mood.angry * 0.1 + gC(this.charKey).mood.aroused * 0.1;
+				if ( State.variables.simCycPar.templeDayPeriod != "training" ) { weight *= 3 + covetTargets.length * 2; }
+				frChoice.weight = weight;
+				if ( frChoice.weight > 0 ) { mChoices.push(sdChoice); }
+				
+				// Have sex
+				var sexDollTargets = [];
+				for ( var sexDoll of gC(this.charKey).subChars ) {
+					var relType = gRelTypeAb(sexDoll,this.charKey);
+					if ( relType ) {
+						if ( relType.forcedToSex ) { sexDollTargets.push(sexDoll); }
+					}
+				}	
+				var hsTargets = covetTargets.concat(loveTargets).concat(sexDollTargets);
+				if ( (hsTargets.length) > 0 ) {
+					selectedChar = randomFromList(hsTargets);
+					var hsChoice = cAdvancedScialGoalMissionChoice(this.charKey,selectedChar,"haveSex");
+					var weight = 2 + gC(this.charKey).dLove.level * 1 + gC(this.charKey).dPleasure.level * 1 - gC(this.charKey).mood.angry * 0.1 + gC(this.charKey).mood.aroused * 0.1 + (1 - getBarPercentage(this.charKey,"lust")) * 20;
+					if ( State.variables.simCycPar.templeDayPeriod != "training" ) { weight *= 3 + hsTargets.length * 2; }
+					weight = weight * ((3 - gC(this.charKey).sexScenesToday + gC(this.charKey).daysWithoutSex) / 3);
+					hsChoice.weight = weight;
+					if ( hsChoice.weight > 0 ) { mChoices.push(hsChoice); }
+				}
+				
+				// Have dominating sex
+				var dsTargets = covetTargets.concat(sexDollTargets).concat(sexDollTargets);
+				if ( (dsTargets.length) > 0 ) {
+					selectedChar = randomFromList(dsTargets);
+					var dsChoice = cAdvancedScialGoalMissionChoice(this.charKey,selectedChar,"haveDomSex");
+					var weight = 2 + gC(this.charKey).dPleasure.level * 2 + gC(this.charKey).dDomination.level * 2 - gC(this.charKey).mood.angry * 0.1 + gC(this.charKey).mood.aroused * 0.1 + (1 - getBarPercentage(this.charKey,"lust")) * 10;
+					if ( State.variables.simCycPar.templeDayPeriod != "training" ) { weight *= 3 + dsTargets.length * 2; }
+					if ( getCharsDrivePercent(this.charKey,"dDomination") < 0.15 ) {
+						weight = 0;
+					} else if ( getCharsDrivePercent(this.charKey,"dDomination") + getCharsDrivePercent(this.charKey,"dAmbition") > 0.4 ) {
+						weight *= 2;
+					}
+					weight = weight * ((3 - gC(this.charKey).sexScenesToday + gC(this.charKey).daysWithoutSex) / 3);
+					dsChoice.weight = weight;
+					if ( dsChoice.weight > 0 ) { mChoices.push(dsChoice); }
+				}
+				
+				// Get alliance
+				var alTargets = allyTargets.concat(loveTargets);
+				if ( alTargets.length > 0 ) {
+					
+					selectedChar = randomFromList(alTargets);
+					var gaChoice = cAdvancedScialGoalMissionChoice(this.charKey,selectedChar,"getAlliance");
+					var weight = 2 + gC(this.charKey).dLove.level * 1 + gC(this.charKey).dCooperation.level * 2 - gC(this.charKey).mood.angry * 0.1 + gC(this.charKey).mood.intimate * 0.1;
+					if ( State.variables.simCycPar.templeDayPeriod != "training" ) { weight *= 2 + alTargets.length * 1.5; }
+					if ( gC(this.charKey).egaChars.length < 2 ) {
+						weight *= 0.5;
+					} else if ( gC(this.charKey).egaChars.length >= 2 ) {
+						weight = 0;
+					}
+
+					gaChoice.weight = weight;
+					if ( gaChoice.weight > 0 ) { mChoices.push(gaChoice); }
+					
+				}
+				
+			}
+			if ( (gC(this.charKey).mood.angry + 15 ) > ( gC(this.charKey).mood.friendly + gC(this.charKey).mood.flirty ) && enemyTargets.length > 0 && false ) {
+				// Taunt
+				selectedChar = randomFromList(enemyTargets);
+				var tnChoice = cAdvancedScialGoalMissionChoice(this.charKey,selectedChar,"taunt");
+				var weight = 4 + gC(this.charKey).mood.angry * 0.1 - gC(this.charKey).mood.friendly * 0.1;
+				if ( State.variables.simCycPar.templeDayPeriod != "training" ) { weight *= 2 + enemyTargets.length * 2; }
+				frChoice.weight = weight;
+				if ( frChoice.weight > 0 ) { mChoices.push(tnChoice); }
+			}
+		}
+		
+		return mChoices;
+	}
 	globalAi.generateSocializationChoices = function() {
 		var mChoices = [];
 		// Choose target
@@ -232,24 +389,190 @@ window.createCandidateGlobalAi = function(charKey) {
 		}
 		return mChoices;
 	}
-	globalAi.generateScrollsChoices = function() {
-		var choices = [];
-		if ( State.variables.simCycPar.templeDayPeriod != "training" ) {
-			var choiceSearch = cSearchScrollsMissionChoice(this.charKey);
-			var choiceStudy = cStudyScrollMissionChoice(this.charKey);
-			if ( choiceSearch.isValid() ) {
-				choiceSearch.weight = 40;
-				choices.push(choiceSearch);
+	
+	globalAi.generateAdvancedCombatChoices = function() {
+		var mChoices = [];
+		
+		if ( gSettings().challengingAllowed || gSettings().assaultingAllowed ) {
+			// Get potential targets
+			var potentialChallengeTargets = [];
+			var potentialAssaultTargets = [];
+			var potentialChallengeRivals = [];
+			var potentialAssaultRivals = [];
+			var potentialChallengeConquests = [];
+			var potentialAssaultConquests = [];
+			var validSubSource = [];
+			var oppressors = [];
+			var validAssaultOppressors = [];
+			for ( var cK of getCandidatesKeysArray() ) {
+				if ( cK != this.charKey && gC(cK).followingTo == "" ) {
+					if ( gC(cK).domChar == null ) {
+						validSubSource.push(cK);
+					}
+					if ( quantifyCharactersGroupStrength(cK) < quantifyCharactersGroupStrength(this.charKey) * 1.1 ) {
+						potentialAssaultTargets.push(cK);
+						if ( gC(this.charKey).socialAi.rivalTs.includes(cK) ) {
+							potentialAssaultRivals.push(cK);
+						}
+						if ( gC(this.charKey).socialAi.conquestTs.includes(cK) ) {
+							potentialAssaultConquests.push(cK);
+						}
+					}
+					if ( quantifyCharacterStrength(cK) < quantifyCharacterStrength(this.charKey) * 1.1 ) {
+						potentialChallengeTargets.push(cK);
+						if ( gC(this.charKey).socialAi.rivalTs.includes(cK) ) {
+							potentialChallengeRivals.push(cK);
+						}
+						if ( gC(this.charKey).socialAi.conquestTs.includes(cK) ) {
+							potentialChallengeConquests.push(cK);
+						}
+						if ( oppressors.includes(cK) ) {
+							validAssaultOppressors.push(cK);
+						}
+					}
+				}
 			}
-			if ( choiceStudy.isValid() ) {
-				choiceStudy.weight = 60;
-				choices.push(choiceStudy);
+			for ( var cK of getCandidatesKeysArray() ) {
+				if ( gC(this.charKey).socialAi.loveTs.includes(cK) ) {
+					if ( (gC(cK).domChar != "") && (gC(cK).domChar != null) && (gC(cK).domChar != this.charKey) ) {
+						if ( gRelTypeAb(cK,gC(cK).domChar).type == "servitude" ) {
+							oppressors.push(gC(cK).domChar);
+						}
+					}
+				}
 			}
+			
+			if ( potentialAssaultTargets.length > 0 && potentialChallengeTargets.length > 0 && ( gC(this.charKey).infamy < getCharsInfamyLimit(this.charKey) ) ) {
+				var selectedChar = "";
+				// Challenge mission
+				var challengeFactor = (getCharsDrivePercent(this.charKey,"dImprovement") + getCharsDrivePercent(this.charKey,"dAmbition")) * 6;
+				if ( challengeFactor > 2 && potentialChallengeTargets.length > 0 ) {
+					selectedChar = randomFromList(potentialChallengeTargets);
+					var chChoice = cChallengeGoalsMissionChoice(this.charKey,selectedChar,"challenge");
+					var weight = 1 + gC(this.charKey).dImprovement.level + gC(this.charKey).dAmbition.level;
+					if ( gC(this.charKey).infamy == 0 ) { weight += 6; }
+					if ( State.variables.simCycPar.templeDayPeriod != "training" ) { weight *= 2; }
+					chChoice.weight = weight;
+					if ( chChoice.weight > 0 ) { mChoices.push(chChoice); }
+				}
+				// Gain merit	
+				var meritFactor = getCharsDrivePercent(this.charKey,"dAmbition") * 6;
+				if ( meritFactor > 1.2 && potentialChallengeTargets.length > 0 ) {
+					selectedChar = randomFromList(potentialChallengeTargets.concat(potentialChallengeRivals));
+					var hmChoice = cChallengeGoalsMissionChoice(this.charKey,selectedChar,"humilliate");
+					var weight = 1 + gC(this.charKey).dAmbition.level * 2;
+					if ( gC(this.charKey).infamy == 0 ) { weight += 4; }
+					if ( State.variables.simCycPar.templeDayPeriod != "training" ) { weight *= 2; }
+					hmChoice.weight = weight;
+					if ( hmChoice.weight > 0 ) { mChoices.push(hmChoice); }
+				}
+				// Weaken enemy
+				if (  potentialChallengeRivals.length > 0 ) {
+					selectedChar = randomFromList(potentialChallengeRivals);
+					var weChoice = cChallengeGoalsMissionChoice(this.charKey,selectedChar,"weakenEnemy");
+					var weight = 3 * (quantifyCharacterStats(selectedChar) / quantifyCharacterStats(this.charKey)) + gC(selectedChar).infamy - gC(this.charKey).infamy;
+					if ( gC(this.charKey).infamy == 0 ) { weight += 6; }
+					if ( State.variables.simCycPar.templeDayPeriod != "training" ) { weight *= 2; }
+					weChoice.weight = weight;
+					if ( weChoice.weight > 0 ) { mChoices.push(weChoice); }
+				} else if ( potentialAssaultRivals.length > 0 ) {
+					selectedChar = randomFromList(potentialAssaultRivals);
+					var weChoice = cAssaultGoalsMissionChoice(this.charKey,selectedChar,"weakenEnemy");
+					var weight = 10 + (quantifyCharacterStats(selectedChar) - quantifyCharacterStats(this.charKey));
+					if ( gC(this.charKey).infamy == 0 ) { weight += 6; }
+					if ( State.variables.simCycPar.templeDayPeriod != "training" ) { weight *= 2; }
+					weChoice.weight = weight;
+					if ( weChoice.weight > 0 ) { mChoices.push(weChoice); }
+				}
+				// Gain domination
+				var dominationFactor = (getCharsDrivePercent(this.charKey,"dDomination") + getCharsDrivePercent(this.charKey,"dPleasure") * 0.5) * 6;
+				if ( dominationFactor > 1.2 ) {
+					var challengeConquestTs = potentialChallengeConquests.concat(potentialChallengeConquests).concat(potentialChallengeTargets);
+					var assaultConquestTs = potentialAssaultConquests.concat(potentialAssaultConquests).concat(potentialAssaultConquests);
+					if (  challengeConquestTs.length > 0 ) {
+						selectedChar = randomFromList(challengeConquestTs);
+						var gdChoice = cChallengeGoalsMissionChoice(this.charKey,selectedChar,"gainDomination");
+						var weight = 1 + gC(this.charKey).dDomination.level * 2;
+						if ( gC(this.charKey).infamy == 0 ) { weight += 7; }
+						if ( State.variables.simCycPar.templeDayPeriod != "training" ) { weight *= 2; }
+						gdChoice.weight = weight;
+						if ( gdChoice.weight > 0 ) { mChoices.push(gdChoice); }
+					} else if ( assaultConquestTs.length > 0 ) {
+						selectedChar = randomFromList(assaultConquestTs);
+						var gdChoice = cAssaultGoalsMissionChoice(this.charKey,selectedChar,"gainDomination");
+						var weight = 1 + gC(this.charKey).dDomination.level * 2;
+						if ( gC(this.charKey).infamy == 0 ) { weight += 7; }
+						if ( State.variables.simCycPar.templeDayPeriod != "training" ) { weight *= 2; }
+						gdChoice.weight = weight;
+						if ( gdChoice.weight > 0 ) { mChoices.push(gdChoice); }
+					}
+				}
+				// Force sex
+				var forceSexFactor = (getCharsDrivePercent(this.charKey,"dDomination") * 0.5 + getCharsDrivePercent(this.charKey,"dPleasure")) * 6;
+				if ( forceSexFactor > 1.2 ) {
+					var challengeConquestTs = potentialChallengeConquests.concat(potentialChallengeConquests).concat(potentialChallengeTargets);
+					var assaultConquestTs = potentialAssaultConquests.concat(potentialAssaultConquests).concat(potentialAssaultConquests);
+					if (  challengeConquestTs.length > 0 ) {
+						selectedChar = randomFromList(challengeConquestTs);
+						var fsChoice = cChallengeGoalsMissionChoice(this.charKey,selectedChar,"forceSex");
+						var weight = 1 + gC(this.charKey).dPleasure.level * 2 + gC(this.charKey).daysWithoutSex;
+						if ( gC(this.charKey).infamy == 0 ) { weight += 7; }
+						if ( State.variables.simCycPar.templeDayPeriod != "training" ) { weight *= 2; }
+						fsChoice.weight = weight;
+						if ( fsChoice.weight > 0 ) { mChoices.push(fsChoice); }
+					} else if ( assaultConquestTs.length > 0 ) {
+						selectedChar = randomFromList(assaultConquestTs);
+						var fsChoice = cAssaultGoalsMissionChoice(this.charKey,selectedChar,"forceSex");
+						var weight = 1 + gC(this.charKey).dPleasure.level * 2 + gC(this.charKey).daysWithoutSex;
+						if ( gC(this.charKey).infamy == 0 ) { weight += 7; }
+						if ( State.variables.simCycPar.templeDayPeriod != "training" ) { weight *= 2; }
+						fsChoice.weight = weight;
+						if ( fsChoice.weight > 0 ) { mChoices.push(fsChoice); }
+					}
+				}
+				// Gain submissive
+				var gainSubFactor = (getCharsDrivePercent(this.charKey,"dAmbition") + getCharsDrivePercent(this.charKey,"dDomination")) * 6;
+				if ( gainSubFactor > 1.7 && ( (gC(this.charKey).infamy * 1.8) < gSettings().infamyLimit ) ) {
+					var challengeConquestTs = potentialChallengeConquests.concat(potentialChallengeRivals).concat(potentialChallengeTargets);
+					var assaultConquestTs = potentialAssaultConquests.concat(potentialAssaultRivals).concat(potentialAssaultConquests);
+					var challengeTs = [];
+					var assaultTs = [];
+					for ( var c of challengeConquestTs ) {if ( validSubSource.includes(c) ) { challengeTs.push(c); } }
+					for ( var c of assaultConquestTs ) { if ( validSubSource.includes(c) ) { assaultTs.push(c); } }
+					if (  challengeTs.length > 0 ) {
+						selectedChar = randomFromList(challengeTs);
+						var fdChoice = cChallengeGoalsMissionChoice(this.charKey,selectedChar,"gainSubmissive");
+						var weight = 1 + gC(this.charKey).dAmbition.level + gC(this.charKey).dPleasure.level + gC(this.charKey).dDomination.level; 
+						if ( gC(this.charKey).infamy == 0 ) { weight += 13; }
+						if ( State.variables.simCycPar.templeDayPeriod != "training" ) { weight *= 2; }
+						fdChoice.weight = weight;
+						if ( fdChoice.weight > 0 ) { mChoices.push(fdChoice); }
+					} else if ( assaultTs.length > 0 ) {
+						selectedChar = randomFromList(assaultTs);
+						var fdChoice = cAssaultGoalsMissionChoice(this.charKey,selectedChar,"gainSubmissive");
+						var weight = 1 + gC(this.charKey).dAmbition.level + gC(this.charKey).dPleasure.level + gC(this.charKey).dDomination.level; 
+						if ( gC(this.charKey).infamy == 0 ) { weight += 13; }
+						if ( State.variables.simCycPar.templeDayPeriod != "training" ) { weight *= 2; }
+						fdChoice.weight = weight;
+						if ( fdChoice.weight > 0 ) { mChoices.push(fdChoice); }
+					}
+				}
+				// Liberate friend
+				var liberateFriendFactor = (getCharsDrivePercent(this.charKey,"dCooperation")+ getCharsDrivePercent(this.charKey,"dLove")) * 6;
+				if ( validAssaultOppressors.length > 0 && liberateFriendFactor > 2 ) {
+					selectedChar = randomFromList(validAssaultOppressors);
+					var lfChoice = cAssaultGoalsMissionChoice(this.charKey,selectedChar,"liberateFriend");
+					var weight = 1 + gC(this.charKey).dCooperation.level * 2 + gC(this.charKey).dLove.level * 2; 
+					if ( State.variables.simCycPar.templeDayPeriod != "training" ) { weight *= 2.5; }
+					lfChoice.weight = weight;
+					if ( lfChoice.weight > 0 ) { mChoices.push(lfChoice); }
+				}
+			}
+			
 		}
 		
-		return choices;
+		return mChoices;
 	}
-	
 	globalAi.generateCombatChoices = function() {
 		var choices = [];
 		
@@ -274,8 +597,8 @@ window.createCandidateGlobalAi = function(charKey) {
 				}
 			}
 			if ( selectedTarget != "" ) {
-				var mChoice1 = cChallengeGoalsMissionChoice(this.charKey,selectedTarget);
-				var mChoice2 = cAssaultGoalsMissionChoice(this.charKey,selectedTarget);
+				var mChoice1 = cChallengeGoalsMissionChoice(this.charKey,selectedTarget,"challenge");
+				var mChoice2 = cAssaultGoalsMissionChoice(this.charKey,selectedTarget,"assault");
 				
 				// WEIGHT WEIGHTS
 				if ( State.variables.simCycPar.templeDayPeriod != "training" ) {
@@ -304,6 +627,7 @@ window.createCandidateGlobalAi = function(charKey) {
 	}
 	
 	globalAi.generateMissionChoices = function() {
+		// this->Generate stat goals
 		var mChoices = [];
 		
 		// Training
@@ -311,16 +635,25 @@ window.createCandidateGlobalAi = function(charKey) {
 			mChoices.push(choice);
 		}
 		mChoices.push(this.generateRestMissionChoice());
-		for ( var choice of this.generateSocializationChoices(this.charKey) ) {
+		
+		// Social
+		for ( var choice of this.generateAdvancedSocializationChoices() ) {
 			mChoices.push(choice);
 		}
+		
+		// Scrolls
 		for ( var choice of this.generateScrollsChoices(this.charKey) ) {
 			mChoices.push(choice);
 		}
+		
+		// Combat
 		if ( gSettings().followingAllowed ) {
+			for ( var choice of this.generateAdvancedCombatChoices(this.charKey) ) {
+				mChoices.push(choice);
+			}/*
 			for ( var choice of this.generateCombatChoices(this.charKey) ) {
 				mChoices.push(choice);
-			}
+			}*/
 		}
 		
 		return mChoices;
@@ -359,6 +692,14 @@ window.createCandidateGlobalAi = function(charKey) {
 		var choices = this.generateMissionChoices();
 		choices = this.purgeChoicesAtLowBars(choices);
 		var choice = this.getWeightedRandomMissionChoices(choices);
+		gC(this.charKey).mission = choice.title;
+		// Logging //
+		if ( State.variables.log[choice.title] == undefined ) {
+			State.variables.log[choice.title] = 1;
+		} else {
+			State.variables.log[choice.title] += 1;
+		}
+		//         //
 		
 		return choice.getCommandsList(this.charKey);
 	}
@@ -417,7 +758,10 @@ window.cTrainPhysiqueMissionChoice = function(character) {
 	mChoice.getCommandsList = function() {
 		return cMissionActionTag(getCurrentMap(),getCharGroup(character),"physique");
 	}
-	mChoice.weight = 5 + gC(character).dImprovement.level * 7 + gC(character).dAmbition.level * 2;
+	mChoice.weight = 4 + gC(character).dImprovement.level * 5 + gC(character).dAmbition.level * 2;
+	if ( gC(character).globalAi.statGoals != undefined ) {
+		mChoice.weight += gC(character).globalAi.statGoals[0] - gC(character).physique.value;
+	}
 	return mChoice;
 }
 window.cTrainAgilityMissionChoice = function(character) {
@@ -431,7 +775,10 @@ window.cTrainAgilityMissionChoice = function(character) {
 	mChoice.getCommandsList = function() {
 		return cMissionActionTag(getCurrentMap(),getCharGroup(character),"agility");
 	}
-	mChoice.weight = 5 + gC(character).dImprovement.level * 7 + gC(character).dAmbition.level * 2;
+	mChoice.weight = 4 + gC(character).dImprovement.level * 5 + gC(character).dAmbition.level * 2;
+	if ( gC(character).globalAi.statGoals != undefined ) {
+		mChoice.weight += gC(character).globalAi.statGoals[1] - gC(character).agility.value;
+	}
 	return mChoice;
 }
 window.cTrainResilienceMissionChoice = function(character) {
@@ -445,7 +792,10 @@ window.cTrainResilienceMissionChoice = function(character) {
 	mChoice.getCommandsList = function() {
 		return cMissionActionTag(getCurrentMap(),getCharGroup(character),"resilience");
 	}
-	mChoice.weight = 5 + gC(character).dImprovement.level * 7 + gC(character).dAmbition.level * 2;
+	mChoice.weight = 4 + gC(character).dImprovement.level * 5 + gC(character).dAmbition.level * 2;
+	if ( gC(character).globalAi.statGoals != undefined ) {
+		mChoice.weight += gC(character).globalAi.statGoals[2] - gC(character).resilience.value;
+	}
 	return mChoice;
 }
 window.cTrainWillMissionChoice = function(character) {
@@ -459,7 +809,10 @@ window.cTrainWillMissionChoice = function(character) {
 	mChoice.getCommandsList = function() {
 		return cMissionActionTag(getCurrentMap(),getCharGroup(character),"will");
 	}
-	mChoice.weight = 5 + gC(character).dImprovement.level * 7 + gC(character).dAmbition.level * 2;
+	mChoice.weight = 4 + gC(character).dImprovement.level * 5 + gC(character).dAmbition.level * 2;
+	if ( gC(character).globalAi.statGoals != undefined ) {
+		mChoice.weight += gC(character).globalAi.statGoals[3] - gC(character).will.value;
+	}
 	return mChoice;
 }
 window.cTrainIntelligenceMissionChoice = function(character) {
@@ -473,7 +826,10 @@ window.cTrainIntelligenceMissionChoice = function(character) {
 	mChoice.getCommandsList = function() {
 		return cMissionActionTag(getCurrentMap(),getCharGroup(character),"intelligence");
 	}
-	mChoice.weight = 5 + gC(character).dImprovement.level * 7 + gC(character).dAmbition.level * 2;
+	mChoice.weight = 4 + gC(character).dImprovement.level * 5 + gC(character).dAmbition.level * 2;
+	if ( gC(character).globalAi.statGoals != undefined ) {
+		mChoice.weight += gC(character).globalAi.statGoals[4] - gC(character).intelligence.value;
+	}
 	return mChoice;
 }
 window.cTrainPerceptionMissionChoice = function(character) {
@@ -487,7 +843,10 @@ window.cTrainPerceptionMissionChoice = function(character) {
 	mChoice.getCommandsList = function() {
 		return cMissionActionTag(getCurrentMap(),getCharGroup(character),"perception");
 	}
-	mChoice.weight = 5 + gC(character).dImprovement.level * 7 + gC(character).dAmbition.level * 2;
+	mChoice.weight = 4 + gC(character).dImprovement.level * 5 + gC(character).dAmbition.level * 2;
+	if ( gC(character).globalAi.statGoals != undefined ) {
+		mChoice.weight += gC(character).globalAi.statGoals[5] - gC(character).perception.value;
+	}
 	return mChoice;
 }
 window.cTrainEmpathyMissionChoice = function(character) {
@@ -501,7 +860,10 @@ window.cTrainEmpathyMissionChoice = function(character) {
 	mChoice.getCommandsList = function() {
 		return cMissionActionTag(getCurrentMap(),getCharGroup(character),"empathy");
 	}
-	mChoice.weight = 5 + gC(character).dImprovement.level * 7 + gC(character).dAmbition.level * 2;
+	mChoice.weight = 4 + gC(character).dImprovement.level * 5 + gC(character).dAmbition.level * 2;
+	if ( gC(character).globalAi.statGoals != undefined ) {
+		mChoice.weight += gC(character).globalAi.statGoals[6] - gC(character).empathy.value;
+	}
 	return mChoice;
 }
 window.cTrainCharismaMissionChoice = function(character) {
@@ -515,7 +877,10 @@ window.cTrainCharismaMissionChoice = function(character) {
 	mChoice.getCommandsList = function() {
 		return cMissionActionTag(getCurrentMap(),getCharGroup(character),"charisma");
 	}
-	mChoice.weight = 5 + gC(character).dImprovement.level * 7 + gC(character).dAmbition.level * 2;
+	mChoice.weight = 4 + gC(character).dImprovement.level * 5 + gC(character).dAmbition.level * 2;
+	if ( gC(character).globalAi.statGoals != undefined ) {
+		mChoice.weight += gC(character).globalAi.statGoals[7] - gC(character).charisma.value;
+	}
 	return mChoice;
 }
 window.cTrainLuckMissionChoice = function(character) {
@@ -528,7 +893,10 @@ window.cTrainLuckMissionChoice = function(character) {
 	mChoice.getCommandsList = function() {
 		return cMissionActionTag(getCurrentMap(),getCharGroup(character),"luck");
 	}
-	mChoice.weight = 5 + gC(character).dImprovement.level * 7 + gC(character).dAmbition.level * 2;
+	mChoice.weight = 4 + gC(character).dImprovement.level * 5 + gC(character).dAmbition.level * 2;
+	if ( gC(character).globalAi.statGoals != undefined ) {
+		mChoice.weight += gC(character).globalAi.statGoals[8] - gC(character).luck.value;
+	}
 	return mChoice;
 }
 
@@ -595,10 +963,20 @@ window.cSocializationGoalsMissionChoice = function(character,targetCharacter) {
 	}
 	return mChoice;
 }
+window.cAdvancedScialGoalMissionChoice = function(actor,target,missionName) {
+	var mChoice = new missionChoice(missionName);
+	mChoice.isValid = function() {
+		return ( getCurrentMap().characters.includes(target) );
+	}
+	mChoice.getCommandsList = function() {
+		return cMissionPursueAndTalkTo(getCurrentMap(),getCharGroup(actor),target);
+	}
+	return mChoice;
+}
 
 	// Combat
-window.cChallengeGoalsMissionChoice = function(character,targetCharacter) {
-	var mChoice = new missionChoice("challengeSomeone");
+window.cChallengeGoalsMissionChoice = function(character,targetCharacter,missionName) {
+	var mChoice = new missionChoice(missionName);
 	mChoice.isValid = function() {
 		var isValid = false;
 		if ( getCurrentMap().character.includes(targetCharacter) && isChallengePossible(character,targetCharacter) ) {
@@ -611,8 +989,8 @@ window.cChallengeGoalsMissionChoice = function(character,targetCharacter) {
 	}
 	return mChoice;
 }
-window.cAssaultGoalsMissionChoice = function(character,targetCharacter) {
-	var mChoice = new missionChoice("assaultSomeone");
+window.cAssaultGoalsMissionChoice = function(character,targetCharacter,missionName) {
+	var mChoice = new missionChoice(missionName);
 	mChoice.isValid = function() {
 		var isValid = false;
 		if ( getCurrentMap().character.includes(targetCharacter) && isAssaultPossible(character,targetCharacter) ) {
@@ -723,6 +1101,18 @@ missionChoice.prototype.toJSON = function() {
 };
 
 // Auxiliars
+
+window.setTrainingGoals = function(charKey) {
+	// Get average stat
+	var averageStat = quantifyCharacterStats(charKey) / 9;
+	// Create string at globalAi
+	gC(charKey).globalAi.statGoals = [];
+	// Link affinity to stat goal
+	for ( var stat of getStatNamesArray() ) {
+		var sData = gC(charKey)[stat];
+		gC(charKey).globalAi.statGoals.push(((averageStat + 2) * sData.affinity * sData.affinity));
+	}
+}
 
 window.quantifyCharacterVacuumStrength = function(charKey) {
 	var str = 0;

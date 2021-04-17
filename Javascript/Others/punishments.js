@@ -41,6 +41,7 @@ window.applyPunishmentsToCandidates = function() {
 		if ( reqPunishments > 0 ) {
 			if ( reqPunishments > countPunishmentBondageOnTarget(charKey) ) {
 				applyPunishmentBondageOnCharacter(charKey);
+				//State.variables.logL1.push(charKey + " was punished on day " + State.variables.daycycle.day + ".");
 			}
 		}
 	}

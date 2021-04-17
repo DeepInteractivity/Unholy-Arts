@@ -578,7 +578,7 @@ window.Character = function(name, varName) {
 			if ( as.scope == "scene" ) {
 				tooltip += "\nRemaining turns: " + as.remainingTurns;
 			} else if ( as.scope == "days" ) {
-				tooltip += "\nRemaining days: " + as.remaininDays;
+				tooltip += "\nRemaining days: " + as.remainingDays;
 			}
 			var asText = "<span title='" + tooltip + "'>" + as.acr + "</" + "span>";
 			text += asText;
@@ -1036,26 +1036,35 @@ window.getCharsTotalDriveLevels = function(charKey) {
 	return total;
 }
 window.getCharsInfamyLimit = function(charKey) {
-	var absoluteLimit = 25;
+	var absoluteLimit = gSettings().infamyLimit;
 	
-	var percentLimit = 0.5;
+	var percentLimit = 0.8;
 	var ambition = getCharsDrivePercent(charKey,"dAmbition");
-	if ( ambition > 0.25 ) {
+	if ( ambition > 0.2 ) {
 		percentLimit += 0.3;
 	} else if ( ambition > 0.15 ) {
-		percentLimit += 0.15;
+		percentLimit += 0.2;
 	}else if ( ambition > 0.10 ) {
-		percentLimit += 0.10;
+		percentLimit += 0.1;
 	}
 	var cooperationVsDomination = getCharsDrivePercent(charKey,"dDomination") - getCharsDrivePercent(charKey,"dCooperation");
-	if ( cooperationVsDomination > 0.2 ) {
-		percentLimit += 0.5
-	} else if ( cooperationVsDomination > 0.1 ) {
-		percentLimit += 0.35
+	if ( cooperationVsDomination > 0.1 ) {
+		percentLimit += 0.3;
+	} else if ( cooperationVsDomination > 0.05 ) {
+		percentLimit += 0.2;
 	} else if ( cooperationVsDomination > 0 ) {
-		percentLimit += 0.15
+		percentLimit += 0.1;
 	}
 	return (percentLimit * absoluteLimit);
+}
+
+	// AI
+window.getCharsMissionTitle = function(charKey) {
+	var missionTitle = "";
+	if ( gC(charKey).mission != undefined ) {
+		missionTitle = gC(charKey).mission;
+	}
+	return missionTitle;
 }
 
 	// Moods

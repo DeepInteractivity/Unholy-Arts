@@ -359,6 +359,8 @@ window.effectsSeDiscoveringTheOthersEarlyEnd = function() {
 }
 
 window.initializeSeTheMerchants = function() {
+	// Clean old variables
+	cleanPrologueStoryVars();
 	// Shrezdill - Old Ashwalker Candidate
 	// Abibdill - Weapons merchant
 	// Nimeresh - Bondage merchant
@@ -422,7 +424,13 @@ window.effectsSeTheMerchantsEnd = function() {
 	createStartingPunishmentBondage();
 }
 
-
+window.cleanPrologueStoryVars = function() {
+	for ( var stvar of ["firstDayWashed","firstDayTuto","ghAnnoyed","gh0","gh1","gh2","firstDayElderA","firstDayElderAndAshwalkers","pcDoom","pcMainDoom","pcBoon","pcMainBoon","firstDayTalkedToElder","metNash","metClaw","metVal","firstDayMirsFlower","nashRival","FirstDayWaitedWith","FirstDayNashRival","FirstDayMetAllCandidates","seMagicClassClawCheck","futaNash","seshFlirty","StretchingHelpResult","StretchingHelpGroped","seHummingCopyCheck","seHummingHarmonyCheck","seHummingImproviseCheck","seEthicsOfPowMUcheck","SeFbahHowsSill","SeFbahWhatsSill","SeFbahWhyTakePlaceSill","SeFbahRegretSill","SeFbahAnyQuestions","seStHeIINashInvites","seStHeIIMayRejectSex","seStHeIIwillpowerHit","flirtingAdviceChecks","DrishtyaTutorLifeAsCandidate","DrishtyaTutorThoughtsOnPeers","DrishtyaTutorReachedQuestions","DrishtyaTutorBehindTheRest","DrishtyaTutorStrengthenBonds","DrishtyaTutorDominatingOthers","DrishtyaTutorEmpathyCheck","DrishtyaTutorLeaveTheTemple","VaryonteTutorHasDick"] ) {
+		if ( State.variables.StVars[stvar] != undefined ) {
+			State.variables.StVars[stvar];
+		}
+	}
+}
 
 
 

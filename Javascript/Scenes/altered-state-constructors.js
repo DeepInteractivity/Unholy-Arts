@@ -36,7 +36,7 @@ window.createASfrozenFeet = function(intensity) {
 
 window.createASsensitizedGenitals = function(intensity) {
 	// Extra sex weakness // Turns
-	var esw = 5 + intensity * 1; // 5 - 15
+	var esw = 10 + intensity * 1; // 10 - 20
 	var turns = 4 + limitedRandomInt(2); // 4 ~ 6
 	var provokeEffect = function(charKey) {
 		gC(charKey).combatAffinities.sex.weakness += esw;
@@ -52,11 +52,11 @@ window.createASsensitizedGenitals = function(intensity) {
 }
 
 window.createAScoldGuts = function(intensity) {
-	// Stats gain , increased lust resistance
-	var sgs = 2 + intensity * 0.4; // 2 ~ 6
-	var sgm = 0.06 + intensity * 0.012; // 0.06 ~ 0.18
+	// Stats gain (phy,res,will) , increased lust resistance
+	var sgs = 4 + intensity * 0.4; // 4 ~ 8
+	var sgm = 0.1 + intensity * 0.08; // 0.1 ~ 0.18
 	var isr = 10 + intensity * 1; // 10 ~ 20
-	var turns = 4 + limitedRandomInt(2); // 4 ~ 6
+	var turns = 5 + limitedRandomInt(7); // 5 ~ 7
 	var provokeEffect = function(charKey) {
 		gC(charKey).physique.sumModifier += sgs;
 		gC(charKey).physique.multModifier += sgm;
@@ -84,8 +84,8 @@ window.createAScoldGuts = function(intensity) {
 
 window.createAStaunted = function(intensity) {
 	// Stats loss , Extra physical strength eps // Turns
-	var sls = 2 + intensity * 0.3; // 2 ~ 5
-	var slm = 0.05 + intensity * 0.005; // 0.05 ~ 01
+	var sls = 4 + intensity * 0.3; // 4 ~ 7
+	var slm = 0.07 + intensity * 0.008; // 0.07 ~ 0.18
 	var eps = 10 + intensity * 0.5; // 10 ~ 15
 	var turns = 4 + limitedRandomInt(2); // 4 ~ 6
 	var provokeEffect = function(charKey) {
@@ -124,7 +124,7 @@ window.createAStaunted = function(intensity) {
 window.createASteased = function(intensity, type) {
 	// Sex weakness, sex strength, random sex type weakness // Turns
 	var sType = "target" + firstToCap(type);
-	var esw = 10 + intensity * 1; // 10 - 20
+	var esw = 15 + intensity * 1; // 15 - 25
 	var ess = 5 + intensity * 0.5; // 5 - 01
 	var etw = 10 + intensity * 1; // 10 - 20
 	var turns = 4 + limitedRandomInt(2); // 4 ~ 6
@@ -151,8 +151,8 @@ window.createASteased = function(intensity, type) {
 
 window.createASflaunting = function(intensity) {
 	// Stats gain (phys, agil, will, perc, char) , increased sex damage
-	var sgs = 1 + intensity * 0.2; // 1 ~ 3
-	var sgm = 0.04 + intensity * 0.008; // 0.04 ~ 0.12
+	var sgs = 3 + intensity * 0.2; // 3 ~ 5
+	var sgm = 0.08 + intensity * 0.006; // 0.08 ~ 0.14
 	var isd = 10 + intensity * 1; // 10 ~ 20
 	var turns = 5 + limitedRandomInt(2); // 5 ~ 7
 	var provokeEffect = function(charKey) {
@@ -224,11 +224,11 @@ window.createAShypnosisStroke = function(intensity) {
 
 window.createASaetherialChainsArms = function(intensity) {
 	// Phyisique, agility loss (sum, mult), locked arms // Turns
-	var als = 3 + intensity * 0.4; // 3 ~ 7
-	var alm = 0.1 + intensity * 0.01; // 0.1 ~ 0.2
-	var pls = 3 + intensity * 0.4; // 3 ~ 7
-	var plm = 0.1 + intensity * 0.01; // 0.1 ~ 0.2
-	var turns = 3 + limitedRandomInt(1); // 3 ~ 4
+	var als = 3 + intensity * 0.5; // 3 ~ 8
+	var alm = 0.12 + intensity * 0.012; // 0.12 ~ 0.24
+	var pls = 3 + intensity * 0.5; // 3 ~ 8
+	var plm = 0.12 + intensity * 0.01; // 0.12 ~ 0.2
+	var turns = 4 + limitedRandomInt(1); // 4 ~ 5
 	var provokeEffect = function(charKey) {
 		gC(charKey).agility.sumModifier -= als;
 		gC(charKey).agility.multModifier -= alm;
@@ -257,7 +257,7 @@ window.createASvinesLockArms = function(intensity) {
 	var sls = 4 + intensity * 0.4; // 4 ~ 8
 	var slm = 0.12 + intensity * 0.012; // 0.12 ~ 0.24
 	var dcr = 0.05 + intensity * 0.01; // 0.05 ~ 0.15
-	var turns = 3 + limitedRandomInt(1); // 3 ~ 4
+	var turns = 4 + limitedRandomInt(1); // 4 ~ 5
 	var provokeEffect = function(charKey) {
 		gC(charKey).agility.sumModifier -= sls;
 		gC(charKey).agility.multModifier -= slm;
@@ -285,7 +285,7 @@ window.createASscratched = function(intensity) {
 	var eec = 5 + intensity * 1; // 5 ~ 15
 	var als = 2 + intensity * 0.2; // 2 ~ 4
 	var alm = 0.05 + intensity * 0.005; // 0.05 ~ 0.1
-	var epd = 10 + intensity * 1; // 0.1 ~ 0.2
+	var epd = 8 + intensity * 0.8; // 0.08 ~ 0.16
 	var turns = 4 + limitedRandomInt(1); // 4 ~ 5
 	var provokeEffect = function(charKey) {
 		gC(charKey).energy.tainted += eec;
@@ -372,8 +372,8 @@ window.createASborrowedIdentity = function(intensity, target) {
 
 window.createASconfusedIdentities = function(intensity) {
 	// Stats loss
-	var sls = 3 + intensity * 0.3; // 3 ~ 6
-	var slm = 0.05 + intensity * 0.005; // 0.05 ~ 0.10
+	var sls = 5 + intensity * 0.5; // 5 ~ 10
+	var slm = 0.1 + intensity * 0.01; // 0.1 ~ 0.20
 	var turns = 4; // 4
 	var provokeEffect = function(charKey) {
 		gC(charKey).perception.sumModifier -= sls;

@@ -1,7 +1,5 @@
 
-////////// VIRGINITY CLASS //////////
-// Actions that begin vaginal or anal penetrative actions make take virginity checks
-// If successful, this must send a message to scene, which must display this event
+////////// SCROLL CLASS //////////
 
 window.Scroll = function(key,title,type) {
 	this.key = key;
@@ -329,24 +327,23 @@ window.createScrollTheBasicsOfCombat = function() {
 	return scr;
 }
 
-
-State.variables.scrollsList = new pseudoList();
-State.variables.scrollsList.onAether = createScrollOnAether();
-State.variables.scrollsList.onFamily = createScrollOnFamily();
-State.variables.scrollsList.theWilds = createScrollTheWilds();
-State.variables.scrollsList.theBasicsOfSex = createScrollTheBasicsOfSex();
-State.variables.scrollsList.theTasteOfPleasure = createScrollTheTasteOfPleasure();
-State.variables.scrollsList.surprisedInTheRear = createScrollSurprisedInTheRear();
-State.variables.scrollsList.paybackForTheThief = createScrollPaybackForTheThief();
-State.variables.scrollsList.pillowFeetFight = createScrollPillowFeetFight();
-State.variables.scrollsList.punishingTheTraitors = createScrollPunishingTheTraitors();
-State.variables.scrollsList.theBasicsOfCombat = createScrollTheBasicsOfCombat();
+setup.scrollsList = [];
+setup.scrollsList.onAether = createScrollOnAether();
+setup.scrollsList.onFamily = createScrollOnFamily();
+setup.scrollsList.theWilds = createScrollTheWilds();
+setup.scrollsList.theBasicsOfSex = createScrollTheBasicsOfSex();
+setup.scrollsList.theTasteOfPleasure = createScrollTheTasteOfPleasure();
+setup.scrollsList.surprisedInTheRear = createScrollSurprisedInTheRear();
+setup.scrollsList.paybackForTheThief = createScrollPaybackForTheThief();
+setup.scrollsList.pillowFeetFight = createScrollPillowFeetFight();
+setup.scrollsList.punishingTheTraitors = createScrollPunishingTheTraitors();
+setup.scrollsList.theBasicsOfCombat = createScrollTheBasicsOfCombat();
 
 window.getScrollsStringList = function() {
 	var scrollsList = [];
-	for ( var s in State.variables.scrollsList ) {
-		if ( State.variables.scrollsList[s] instanceof Scroll ) {
-			scrollsList.push(State.variables.scrollsList[s].key);
+	for ( var s in setup.scrollsList ) {
+		if ( setup.scrollsList[s] instanceof Scroll ) {
+			scrollsList.push(setup.scrollsList[s].key);
 		}
 	}
 	return scrollsList;
@@ -355,7 +352,7 @@ window.getScrollsCharMayFind = function(character) {
 	var scrollsList = getScrollsStringList();
 	var newScrollsList = [];
 	for ( var scr of scrollsList ) {
-		if ( gC(character).foundScrolls.includes(scr) == false && State.variables.scrollsList[scr].mayBeFound(character) ) {
+		if ( gC(character).foundScrolls.includes(scr) == false && setup.scrollsList[scr].mayBeFound(character) ) {
 			newScrollsList.push(scr);
 		}
 	}

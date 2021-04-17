@@ -30,11 +30,11 @@ window.processGenericSexSceneEffects = function() {
 						gainedDrivePleasure += 10;
 						gainedDriveDomination += 10;
 					}
-					gainedRomance *= effectsMultiplier;
-					gainedSexualTension *= effectsMultiplier;
-					gainedDomination *= effectsMultiplier;
-					gainedDrivePleasure *= effectsMultiplier;
-					gainedDriveDomination *= effectsMultiplier;
+					gainedRomance *= effectsMultiplier * (1 + ((gC(charKey).mood.intimate - gC(charKey).mood.angry - gC(charKey).mood.bored) / 100));
+					gainedSexualTension *= effectsMultiplier * (1 + ((gC(charKey).mood.aroused + gC(charKey).mood.flirty - gC(charKey).mood.bored) / 200));
+					gainedDomination *= effectsMultiplier * (1 + ((gC(charKey).mood.dominant - gC(charKey).mood.submissive) / 100));
+					gainedDrivePleasure *= effectsMultiplier * (1 + ((gC(charKey).mood.aroused + gC(charKey).mood.flirty - gC(charKey).mood.bored) / 200));
+					gainedDriveDomination *= effectsMultiplier * (1 + ((gC(charKey).mood.dominant - gC(charKey).mood.submissive) / 100));
 						// Apply values
 							// Relations
 					for ( var charKey2 of allChars ) {
@@ -82,13 +82,13 @@ window.processGenericSexSceneEffects = function() {
 						gainedDrivePleasure += 10;
 						
 					}
-					gainedRomance *= effectsMultiplier;
-					gainedSexualTension *= effectsMultiplier;
+					gainedRomance *= effectsMultiplier * (1 + ((gC(charKey).mood.intimate - gC(charKey).mood.angry - gC(charKey).mood.bored) / 100));
+					gainedSexualTension *= effectsMultiplier * (1 + ((gC(charKey).mood.aroused + gC(charKey).mood.flirty - gC(charKey).mood.bored) / 200));
 					gainedSubmission += gainedExtraSubmission;
-					gainedSubmission *= effectsMultiplier;
-					gainedEnmity *= effectsMultiplier;
-					gainedDriveLove *= effectsMultiplier;
-					gainedDrivePleasure *= effectsMultiplier;
+					gainedSubmission *= effectsMultiplier * (1 + ((- gC(charKey).mood.dominant + gC(charKey).mood.submissive) / 100));
+					gainedEnmity *= effectsMultiplier * (1 + ((gC(charKey).mood.angry - gC(charKey).mood.submissive) / 100));
+					gainedDriveLove *= effectsMultiplier * (1 + ((gC(charKey).mood.intimate + gC(charKey).mood.friendly - gC(charKey).mood.angry - gC(charKey).mood.bored) / 200));
+					gainedDrivePleasure *= effectsMultiplier * (1 + ((gC(charKey).mood.aroused + gC(charKey).mood.flirty - gC(charKey).mood.bored) / 200));
 						// Apply values
 							// Relations
 					var leadingChar = charKey;
@@ -188,14 +188,15 @@ window.processGenericSexSceneEffects = function() {
 				gainedDominationDrive += gC(charKey).ruinedOrgasmSceneCounter * 1;
 				gainedSubmission += gC(charKey).ruinedOrgasmSceneCounter * 5;
 				
-				gainedRomance *= effectsMultiplier;
-				gainedSexualTension *= effectsMultiplier;
-				gainedSubmission *= effectsMultiplier;
-				gainedEnmity *= effectsMultiplier;
-				gainedLoveDrive *= effectsMultiplier;
-				gainedPleasureDrive *= effectsMultiplier;
-				gainedCooperationDrive *= effectsMultiplier;
-				gainedDominationDrive *= effectsMultiplier;
+				gainedRomance *= effectsMultiplier * (1 + ((gC(charKey).mood.intimate - gC(charKey).mood.angry - gC(charKey).mood.bored) / 100));
+				gainedSexualTension *= effectsMultiplier * (1 + ((gC(charKey).mood.aroused + gC(charKey).mood.flirty - gC(charKey).mood.bored) / 200));
+				gainedSubmission *= effectsMultiplier * (1 + ((- gC(charKey).mood.dominant + gC(charKey).mood.submissive) / 100));
+				gainedEnmity *= effectsMultiplier * (1 + ((gC(charKey).mood.angry - gC(charKey).mood.submissive) / 100));
+				gainedLoveDrive *= effectsMultiplier * (1 + ((gC(charKey).mood.intimate * 2 + gC(charKey).mood.friendly - gC(charKey).mood.angry * 2 - gC(charKey).mood.bored) / 300));
+				gainedPleasureDrive *= effectsMultiplier * (1 + ((gC(charKey).mood.aroused + gC(charKey).mood.flirty - gC(charKey).mood.bored) / 200));
+				gainedCooperationDrive *= effectsMultiplier * (1 + ((gC(charKey).mood.intimate + gC(charKey).mood.friendly * 2 - gC(charKey).mood.angry * 2 - gC(charKey).mood.bored) / 300));
+				gainedDominationDrive *= effectsMultiplier * (1 + ((gC(charKey).mood.dominant - gC(charKey).mood.submissive) / 100));
+					
 				// Apply changes
 					// Relations
 				for ( var charKey2 of allChars ) {
@@ -239,6 +240,37 @@ window.processGenericSexSceneEffects = function() {
 			}
 		}
 	}		
+	
+	// Mood changes
+	for ( var cK of allChars ) {
+		if ( gC(cK).hasLead && State.variables.sc.enabledLead == "fixed" ) {
+			gC(cK).mood.flirty *= 0.5;
+			gC(cK).mood.aroused *= 0.5;
+			gC(cK).mood.applyChange("friendly",10);
+			gC(cK).mood.applyChange("intimate",10);
+		} else {
+			if ( gC(cK).orgasmSceneCounter > 0 ) { // Had normal orgasms
+				gC(cK).mood.flirty *= 0.5;
+				gC(cK).mood.aroused *= 0.5;
+				gC(cK).mood.applyChange("friendly",10);
+				gC(cK).mood.applyChange("intimate",10);
+			} else if ( gC(cK).ruinedOrgasmSceneCounter > 0 ) { // Only had ruined orgasms
+				gC(cK).mood.applyChange("angry",25);
+				gC(cK).mood.applyChange("submissive",25);
+				gC(cK).mood.applyChange("aroused",25);
+				gC(cK).mood.flirty *= 0.5;
+				gC(cK).mood.friendly *= 0.5;
+				gC(cK).mood.intimate *= 0.5;
+				gC(cK).mood.dominant *= 0.5;
+			} else { // Had no orgasms
+				gC(cK).mood.applyChange("angry",10);
+				gC(cK).mood.applyChange("bored",25);
+				gC(cK).mood.flirty *= 0.5;
+				gC(cK).mood.friendly *= 0.5;
+				gC(cK).mood.intimate *= 0.5;
+			}
+		}
+	}
 	
 	for ( var cK of allChars ) {
 		resultsMessage += allCharsMsgs[cK].msg + "\n";
@@ -359,6 +391,7 @@ window.processGenericMapBattleEffects = function() {
 	if ( flagStaleMate == false ) {
 		if ( winner != "chPlayerCharacter" ) { // NPC victory
 			potentialBattleDemands = getAllPotentialBattleDemands(winner,loser,stakes,infamyMult);
+			
 			var battleDemandData = selectBattleDemandFromList(potentialBattleDemands);
 			var extra1 = battleDemandData[2];
 			var extra2 = battleDemandData[3];

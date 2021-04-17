@@ -17,7 +17,7 @@ window.createSystemEventSearchForScrolls = function(minutes,characters) {
 			// Form weighted list
 			var wList = new weightedList();
 			for ( var scr of availableScrolls ) {
-				wList[scr] = new weightedElement(scr,State.variables.scrollsList[scr].getWeight());
+				wList[scr] = new weightedElement(scr,setup.scrollsList[scr].getWeight());
 			}
 		
 			// Get found scrolls
@@ -43,7 +43,7 @@ window.createSystemEventSearchForScrolls = function(minutes,characters) {
 			var eventResults = "";
 			var scrollsTitles = [];
 			for ( var scr of foundScrolls ) {
-				scrollsTitles.push(State.variables.scrollsList[scr].title);
+				scrollsTitles.push(setup.scrollsList[scr].title);
 			}
 			eventResults += stringArrayToText(scrollsTitles) + " were found.\n\n";
 		}
@@ -94,9 +94,9 @@ window.createSystemEventStudyRandomScroll = function(minutes,characters) {
 			reorderCharactersStudiedScrolls(characters); // Variable cleaning
 			for ( var character of nCharacters ) { gC(character).studiedScrollToday = true; } // Set studied today flag
 			
-			var eventMsg = State.variables.scrollsList[scrollKey].firstTimeEffect(nCharacters) // Effect and results message
-						 + "\n__" + State.variables.scrollsList[scrollKey].title + "__:\n\n"
-						 + State.variables.scrollsList[scrollKey].getContent() + "\n\n";
+			var eventMsg = setup.scrollsList[scrollKey].firstTimeEffect(nCharacters) // Effect and results message
+						 + "\n__" + setup.scrollsList[scrollKey].title + "__:\n\n"
+						 + setup.scrollsList[scrollKey].getContent() + "\n\n";
 			return eventMsg;
 		}
 		}
@@ -108,7 +108,7 @@ window.createSystemEventStudyRandomScroll = function(minutes,characters) {
 window.createSystemEventStudySpecificScroll = function(characters,scrollKey) {
 	var sEvent = new systemEvent(30,characters,"studyScroll","Studying a scroll",function(cList) {
 			var eventMsg = "This shouldn't happen.";
-			if ( State.variables.scrollsList[scrollKey] != undefined ) {
+			if ( setup.scrollsList[scrollKey] != undefined ) {
 				var nCharacters = []; // Select valid characters
 				for ( var character of cList ) {
 					if ( gC(character).studiedScrolls.includes(scrollKey) == false ) {
@@ -119,11 +119,10 @@ window.createSystemEventStudySpecificScroll = function(characters,scrollKey) {
 				reorderCharactersStudiedScrolls(cList); // Variable cleaning
 				for ( var character of nCharacters ) { gC(character).studiedScrollToday = true; } // Set studied today flag
 				
-				eventMsg = State.variables.scrollsList[scrollKey].firstTimeEffect(nCharacters) // Effect and results message
-							 + "\n__" + State.variables.scrollsList[scrollKey].title + "__:\n\n"
-							 + State.variables.scrollsList[scrollKey].getContent() + "\n\n";
+				eventMsg = setup.scrollsList[scrollKey].firstTimeEffect(nCharacters) // Effect and results message
+							 + "\n__" + setup.scrollsList[scrollKey].title + "__:\n\n"
+							 + setup.scrollsList[scrollKey].getContent() + "\n\n";
 			} else {
-				// State.variables.logL1.push("Error trying to read scroll: " + scrollKey);
 			}
 			return eventMsg;
 		}
@@ -145,14 +144,14 @@ window.formatPassageMenuSelectScroll = function() {
 	for ( var scr of gC("chPlayerCharacter").foundScrolls ) {
 		if ( gC("chPlayerCharacter").studiedScrolls.includes(scr) == false ) {
 			// Command to start study specific scroll event
-			passageText += "- " + '<<link [[' + State.variables.scrollsList[scr].title + '|Interlude]]>><<script>>'
+			passageText += "- " + '<<link [[' + setup.scrollsList[scr].title + '|Interlude]]>><<script>>'
 						 + 'State.variables.compass.ongoingEvents.push(createSystemEventStudySpecificScroll(getPlayerCharsGroup(),"' + scr + '"));\n'
 						 + 'State.variables.compass.sortOnGoingEventsByTime();\n'
 						 + 'signCharsActive(getPlayerCharsGroup());\n'
 						 + 'State.variables.compass.flagMenuInMap = false;\n'
 						 + 'State.variables.compass.mapMenuPassage = "";\n'
 						 + 'State.variables.compass.pushAllTimeToAdvance();'
-						 + '<</' + 'script>><</' + 'link>> - ' + getScrollTypeText(State.variables.scrollsList[scr]) + '\n';
+						 + '<</' + 'script>><</' + 'link>> - ' + getScrollTypeText(setup.scrollsList[scr]) + '\n';
 		}
 	}
 	passageText += "\n" + getButtonExitMapMenu();
@@ -174,7 +173,7 @@ window.createSystemEventSisRound = function(characters,sisKey) {
 			if ( State.variables.compass.sisList[this.sisKey].charList.includes("chPlayerCharacter") ) {
 				State.variables.compass.sisList[this.sisKey].preInitiateNewRoundWithPC();
 			} else {
-				State.variables.compass.sisList[this.sisKey].preInitiateNewRoundNoPC();
+				State.variables.compass.sisList[this.sisKey].preInitiateNewRoundNoPC(true);
 			}
 		}
 	);

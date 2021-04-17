@@ -128,7 +128,7 @@ window.PersonalRoom = function() {
 		return bText;
 	}
 	this.getButtonReadScroll = function(scrollKey) {
-		var bText = "<<l" + "ink [[" + State.variables.scrollsList[scrollKey].title + "|Personal Room]]>><<s" + "cript>>";
+		var bText = "<<l" + "ink [[" + setup.scrollsList[scrollKey].title + "|Personal Room]]>><<s" + "cript>>";
 			bText += "State.variables.personalRoom.roomState = 'scrolls';\n";
 			bText += "State.variables.personalRoom.selectedScroll = '" + scrollKey + "';\n";
 			bText += "<</s" + "cript>><</l" + "ink>>";
@@ -326,14 +326,13 @@ window.PersonalRoom = function() {
 		var passageText = "__Studied scrolls__:\n";
 		for ( var scr of gC("chPlayerCharacter").studiedScrolls ) {
 			passageText += "- " + this.getButtonReadScroll(scr) + "\n";
-			// passageText += "- " + State.variables.scrollsList[scr].title + "\n";
 		}
 		passageText += "\n" + this.getButtonBackToMain();
 		return passageText;
 	}
 	this.getReReadScrollPassage = function(scrollKey) {
-		var passageText = "__" + State.variables.scrollsList[scrollKey].title + "__:\n\n"
-						+ State.variables.scrollsList[scrollKey].getContent() + "\n\n"
+		var passageText = "__" + setup.scrollsList[scrollKey].title + "__:\n\n"
+						+ setup.scrollsList[scrollKey].getContent() + "\n\n"
 						+ this.getButtonReadScrolls() + "\n"
 						+ this.getButtonBackToMain();
 		return passageText;
@@ -458,6 +457,7 @@ window.PersonalRoom = function() {
 			for ( var rel in gC(character).relations ) {
 				if ( gC(character).relations[rel] instanceof Relation ) {
 					var iRelation = gC(character).relations[rel];
+					//var mult = 1.0; // Decay value is multiplied by this
 					if ( gC(character).relations[rel].processNewDay() ) {
 						// Notify relation change
 						if ( character == "chPlayerCharacter" ) {
@@ -499,9 +499,10 @@ window.PersonalRoom = function() {
 		// Temple period
 		initTrainingPeriodPassionTemple();
 		
-		// AI social priorities
+		// AI social and training priorities
 		for ( var character of arrayMinusA(getCandidatesKeysArray(),"chPlayerCharacter") ) {
 			setSocialAiCandidateGoals(gC(character).socialAi);
+			setTrainingGoals(character);
 		}
 		
 		// Clean compass
@@ -579,7 +580,7 @@ window.attemptEquipSelectedItem = function() {
 }
 
 window.getCustomizeMoodWindow = function() {
-	var wText = "__Customize Mood Menu__\nSet each mood's desired value.\nYour character's mood will gradually move towards your set values.\nUse only positive integer numbers.\n\nCurrent maximum modifier: " + getCharsMaximumMoodModifier("chPlayerCharacter") + "\n\n";
+	var wText = "__Customize Mood Menu__\nSet each mood's desired value.\nYour character's mood will gradually move towards your set values.\nUse only positive integer numbers.\n\nCurrent maximum modifier: " + getCharsMaximumMoodModifier("chPlayerCharacter").toFixed(1) + "\n\n";
 	var moodsList = [ "Friendly","Intimate","Flirty","Aroused","Dominant","Submissive","Bored","Angry" ];
 	var currentMoodMods = State.variables.playerCustomMoods;
 	var i = 0;
@@ -784,6 +785,9 @@ window.npcsEquipBondage = function() {
 						} else {
 							var chosenBondageId = chooseBestBondageForTargetByActor(getItemListEquippableOnChar(subChar,usableBondage),subChar,character);
 							equipObjectOnWearer(chosenBondageId,subChar,gRelTypeAb(character,subChar).days);
+							if ( subChar == "chPlayerCharacter" ) {
+								State.variables.personalRoom.prMessages += gC(character).getFormattedName() + " has locked " + getEquipDataById(chosenBondageId).name + " on " + gC(subChar).getFormattedName() + ". It will remain locked for as many days as your special relationship is expected to last.\n";
+							}
 							arrayMinusA(usableBondage,chosenBondageId);
 							newActiveSubChars.push(subChar);
 						}

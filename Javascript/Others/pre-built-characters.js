@@ -130,6 +130,8 @@ window.createNashillbyir = function() {
 	
 	// Affinities
 	character.combatAffinities.physical.strength += 5;
+	character.combatAffinities.weapon.strength += 10;
+	character.combatAffinities.weapon.resistance += 10;
 	character.combatAffinities.magic.frailty += 5;
 	character.combatAffinities.pain.resistance += 10;
 	
@@ -137,7 +139,7 @@ window.createNashillbyir = function() {
 		// Tastes
 	character.tastes.foreplay.w = 95;
 	character.tastes.oral.w = 90;
-	character.tastes.fullsex.w = 115;
+	//character.tastes.fullsex.w = 115;
 	character.tastes.talk.w = 105;
 	character.tastes.useBreasts.w = 95;
 	character.tastes.useHands.w = 105;
@@ -218,7 +220,7 @@ window.createPadmiri = function() {
 	// Personality
 		// Tastes
 	character.tastes.foreplay.w = 105;
-	character.tastes.fullsex.w = 105;
+	//character.tastes.fullsex.w = 105;
 	character.tastes.useDick.w = 95;
 	character.tastes.usePussy.w = 105;
 	character.tastes.useEyes.w = 110;
@@ -310,7 +312,7 @@ window.createCarine = function() {
 	character.tastes.foreplay.w = 95;
 	character.tastes.oral.w = 95;
 	character.tastes.talk.w = 85;
-	character.tastes.fullsex.w = 120;
+	//character.tastes.fullsex.w = 120;
 	character.tastes.useDick.w = 110;
 	character.tastes.useBreasts.w = 90;
 	character.tastes.useMouth.w = 90;
@@ -402,7 +404,7 @@ window.createValtan = function() {
 	character.tastes.foreplay.w = 105;
 	character.tastes.oral.w = 90;
 	character.tastes.talk.w = 105;
-	character.tastes.fullsex.w = 110;
+	//character.tastes.fullsex.w = 110;
 	character.tastes.usePussy.w = 115;
 	character.tastes.useAnus.w = 105;
 	character.tastes.useEyes.w = 105;
@@ -414,7 +416,7 @@ window.createValtan = function() {
 	character.tastes.charm.w = 110;
 	character.tastes.receivePain.w = 60;
 	character.tastes.usePain.w = 60;
-	character.tastes.denial.w = 5000;
+	character.tastes.denial.w = 60;
 	
 	// Drives
 	setDriveValues(character.dImprovement,850,2);
@@ -488,7 +490,7 @@ window.createMaaterasu = function() {
 	character.tastes.foreplay.w = 95;
 	character.tastes.oral.w = 95;
 	character.tastes.talk.w = 105;
-	character.tastes.fullsex.w = 110;
+	//character.tastes.fullsex.w = 110;
 	character.tastes.usePussy.w = 105;
 	character.tastes.useDick.w = 105;
 	character.tastes.targetDick.w = 105;

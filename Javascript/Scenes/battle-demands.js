@@ -164,8 +164,12 @@ window.createBdemandHumillitation = function() {
 		var meritDifference = gC(target).merit - gC(actor).merit;
 		if ( meritDifference < 0 ) { meritDifference = 0; }
 		else if ( meritDifference > 10 ) { meritDifference = 10; }
+		meritDifference = meritDifference * getCharsDrivePercent(actor,"dAmbition") * 6;
 		var drivesFactor = gC(actor).dAmbition.level * 0.5;
 		var value = limitedRandomInt(2) + relationFactor - infamyExcess + meritDifference + drivesFactor;
+		if ( gC(actor).mission == "humilliate" ) { value = (value + 10) * 2; }
+		if ( gC(actor).mission == "gainDomination" ) { value = (value + 5) * 1.5; }
+		if ( gC(actor).socialAi.rivalTs.includes(target) ) { value *= 1.3; }
 		return [getBattleDemandChoiceValueNpc(value,this,extra1,extra2)];
 	}
 	
@@ -209,6 +213,12 @@ window.createBdemandForceSex = function() {
 		}
 		State.variables.compass.characterEventEndsPrematurely(target);
 		State.variables.compass.characterEventEndsPrematurely(actor);
+		
+		// Relocate actor and target
+		if ( gC(actor).getRefugeRoomInMap() != "none" ) {
+			State.variables.compass.moveCharsToRoom([actor,target],gC(actor).getRefugeRoomInMap());
+		}
+		// Event
 		eventToPile(createSystemEventDominantSexEffects([actor,target]));
 		return 1;
 	}
@@ -238,6 +248,10 @@ window.createBdemandForceSex = function() {
 		var drivesFactor = gC(actor).dPleasure.level * 2;
 		if ( getCharsDrivePercent(actor,"dPleasure") < 0.1 ) { drivesFactor = -25; }
 		var value = 0 + limitedRandomInt(4) + relationFactor - infamyExcess + drivesFactor;
+		if ( gC(actor).mission == "gainDomination" ) { value = (value + 8) * 1.8; }
+		if ( gC(actor).mission == "forceSex" ) { value = (value + 10) * 2; }
+		if ( gC(actor).socialAi.conquestTs.includes(target) ) { value *= 1.3; }
+		if ( gC(actor).socialAi.covetTs.includes(target) ) { value *= 1.5; }
 		return [getBattleDemandChoiceValueNpc(value,this,extra1,extra2)];
 	}
 	
@@ -285,7 +299,7 @@ window.createBdemandForceServitude = function() {
 		var days = 3;
 		
 		var msg = gC(actor).getFormattedName() + " will force " + gC(target).getFormattedName() + " to be " + gC(actor).posPr + " servant for " + days +" days.\n"
-				+ gC(actor).getFormattedName() + " will get " + infamy.toFixed(1) + " infamy."
+				+ gC(actor).getFormattedName() + " will get " + infamy.toFixed(1) + " infamy. "
 				+ gC(target).getFormattedName() + "'s submission, rivalry and enmity towards " + gC(actor).getFormattedName() + " have slightly increased.";
 		return msg;
 	}
@@ -302,6 +316,12 @@ window.createBdemandForceServitude = function() {
 		var drivesFactor = gC(actor).dDomination.level * 1.5 + gC(actor).dAmbition.level * 0.5;
 		if ( getCharsDrivePercent(actor,"dCooperation") > 0.25 ) { drivesFactor = -25; }
 		var value = limitedRandomInt(4) + relationFactor - infamyExcess + meritDifference;
+		if ( gC(actor).mission == "weakenEnemy" ) {	value = (value + 7) * 1.75; }
+		if ( gC(actor).mission == "gainDomination" ) { value = (value + 5) * 1.5; }
+		if ( gC(actor).mission == "forceSex" ) { value = (value + 3) * 1.3; }
+		if ( gC(actor).mission == "gainSubmissive" ) { value = (value + 10) * 2; }
+		if ( gC(actor).socialAi.covetTs.includes(target) ) { value *= 1.6; }
+		if ( gC(actor).socialAi.conquestTs.includes(target) ) { value *= 2; }
 		return [getBattleDemandChoiceValueNpc(value,this,extra1,extra2)];
 	}
 	
@@ -352,7 +372,7 @@ window.createBdemandForceLiberation = function() {
 		var infamy = this.calculateInfamy(actor,target,battleWeight,infamyMultiplier);
 		var days = 3;
 		var msg = gC(actor).getFormattedName() + " will liberate " + gC(extra1).getFormattedName() + " from " + gC(target).getFormattedName() + ".\n"
-				+ gC(actor).getFormattedName() + " will lose " + -infamy.toFixed(1) + " infamy."
+				+ gC(actor).getFormattedName() + " will lose " + -infamy.toFixed(1) + " infamy. "
 				+ gC(target).getFormattedName() + "'s rivalry towards " + gC(actor).getFormattedName() + " has slightly increased.\n"
 				+ gC(extra1).getFormattedName() + "'s friendship and romance towards " + gC(actor).getFormattedName() + " have increased.\n";
 		return msg;
@@ -382,8 +402,15 @@ window.createBdemandForceLiberation = function() {
 				var drivesFactor = gC(actor).dCooperation.level * 2;
 				var value = limitedRandomInt(5) + relationFactor - infamyExcess + drivesFactor;
 				
+				if ( gC(actor).mission == "weakenEnemy" ) {	value = (value + 5) * 1.5; }
+				if ( gC(actor).mission == "liberateFriend" && ( gC(actor).socialAi.allyTs.includes(subChar) || gC(actor).socialAi.loveTs.includes(subChar) ) ) {
+					value = (value + 20) * 3;
+				}
+				if ( gC(actor).socialAi.loveTs.includes(subChar) ) { value *= 2; }
+				if ( gC(actor).socialAi.allyTs.includes(subChar) ) { value *= 1.6; }	
+		
 				if ( choicesList.length == 0 ) { choicesList = [getBattleDemandChoiceValueNpc(value,this,extra1,extra2)]; }
-				else { choiceslist = choicesList.concat([getBattleDemandChoiceValueNpc(value,this,extra1,extra2)]); }
+				else { choicesList = choicesList.concat([getBattleDemandChoiceValueNpc(value,this,extra1,extra2)]); }
 			}
 		}
 		return choicesList;
@@ -472,9 +499,13 @@ window.createBdemandStealServant = function() {
 				var drivesFactor = gC(actor).dDomination.level * 1.5 + gC(actor).dAmbition.level * 1;
 				if ( getCharsDrivePercent(actor,"dCooperation") > 0.25 ) { drivesFactor = -25; }
 				var value = limitedRandomInt(5) + relationFactor - infamyExcess;
+				if ( gC(actor).mission == "weakenEnemy" ) {	value = (value + 3) * 1.3; }
+				if ( gC(actor).mission == "gainSubmissive" ) { value = (value + 10) * 2; }
+				if ( gC(actor).socialAi.conquestTs.includes(subChar) ) { value *= 2; }
+				if ( gC(actor).socialAi.covetTs.includes(subChar) ) { value *= 1.6; }
 				
 				if ( choicesList.length == 0 ) { choicesList = [getBattleDemandChoiceValueNpc(value,this,extra1,extra2)]; }
-				else { choiceslist = choicesList.concat([getBattleDemandChoiceValueNpc(value,this,extra1,extra2)]); }
+				else { choicesList = choicesList.concat([getBattleDemandChoiceValueNpc(value,this,extra1,extra2)]); }
 			}
 		}
 		return choicesList;
@@ -639,6 +670,10 @@ window.createBdemandForceBondage = function() {
 		if ( getCharsDrivePercent(actor,"dCooperation") > 0.25 ) { drivesFactor = -gC(actor).dCooperation.level * 2; }
 		var dangerFactor = (quantifyCharacterStrength(target) - quantifyCharacterStrength(actor)) / 10;
 		var value = limitedRandomInt(3) + relationFactor - infamyExcess + drivesFactor + dangerFactor;
+		if ( gC(actor).mission == "weakenEnemy" ) {	value = (value + 10) * 2; }
+		if ( gC(actor).mission == "gainDomination" ) { value = (value + 3) * 1.3; }
+		if ( gC(actor).socialAi.conquestTs.includes(target) ) { value *= 1.5; }
+		if ( gC(actor).socialAi.rivalTs.includes(target) ) { value *= 1.8; }
 		return [getBattleDemandChoiceValueNpc(value,this,extra1,extra2)];
 	}	
 	
@@ -738,12 +773,15 @@ window.createBdemandUnequipBondage = function() {
 				relationFactor = rLvlAbt(actor,charKey,"friendship") * 1 + rLvlAbt(actor,charKey,"romance") * 2 - rLvlAbt(actor,charKey,"rivalry") * 1 - rLvlAbt(actor,charKey,"enmity") * 2;
 			} else {
 				relationFactor = 50;
+				if ( gC(actor).mission == "weakenEnemy" ) {	relationFactor *= 2; }
 			}
 			var drivesFactor = gC(actor).dCooperation.level * 2;
 			var value = 1 + limitedRandomInt(3) + relationFactor + drivesFactor;
+			if ( gC(actor).socialAi.loveTs.includes(charKey) ) { value *= 1.7; }
+			if ( gC(actor).socialAi.allyTs.includes(charKey) ) { value *= 1.5; }
 				
 			if ( choicesList.length == 0 ) { choicesList = [getBattleDemandChoiceValueNpc(value,this,extra1,extra2)]; }
-			else { choiceslist = choicesList.concat([getBattleDemandChoiceValueNpc(value,this,extra1,extra2)]); }
+			else { choicesList = choicesList.concat([getBattleDemandChoiceValueNpc(value,this,extra1,extra2)]); }
 		}
 		
 		return choicesList;

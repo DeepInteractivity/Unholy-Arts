@@ -520,7 +520,7 @@ window.createSaPushHipsBack = function() {
 		results.value += lustDamage;
 		results.description += randomFromList( [
 								(ktn(actorKey) + " pressed " + gC(actorKey).posPr + " hips back against " + ktn(target)
-								+ ", getting impaled in " + gC(target).posPr + " their " + dickWord() + "."),
+								+ ", getting impaled in " + gC(target).posPr + " " + dickWord() + "."),
 								(ktn(actorKey) + " pushed " + gC(actorKey).posPr + " " + pussyWord() + " hard against  "
 								+ ktn(target) + "'s " + dickWord() + ".")
 								] );
@@ -660,7 +660,7 @@ window.createSaPushDickBack = function() {
 	sa.reqTags.push("diffTarget");
 	sa.requiredPassiveCAs.push("mountDick");
 	
-	sa.flavorTags.push("fullsex","useDick","targetDick","bottom");
+	sa.flavorTags.push("fullsex","useDick","targetPussy","bottom");
 	
 	sa.description = "The character pushes their dick back against someone else's genitals. Target must already be riding the actor."
 				   + "\n\nSingle target action.\n\nFull sex."
@@ -825,7 +825,7 @@ window.createSaFuckFace = function() {
 		var willpowerDamageTarget = (getChar(actorKey).physique.getValue() / 20 + getChar(actorKey).agility.getValue() / 20);
 		gC(actor).lust.changeValue(-lustDamageSelf);
 		gC(target).lust.changeValue(-lustDamageTarget);
-		gC(target).lust.changeValue(-willpowerDamageTarget);
+		gC(target).willpower.changeValue(-willpowerDamageTarget);
 		results.value += lustDamageTarget;
 		
 		results.description += randomFromList( [

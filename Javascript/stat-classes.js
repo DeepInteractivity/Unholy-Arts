@@ -49,6 +49,17 @@ window.Bar = function(maxValue) {
 		var overflow = this.changeValue(finalChange);
 		return overflow;
 	}
+	this.attackInConversation = function(change) {
+		var finalChange = 0;
+		if ( this.current >= this.max * 0.1 ) {
+			finalChange = change * (( 1 + ( this.weakness * 0.01 ) ) / ( 1 + this.resistance * 0.01 ));
+			this.changeValue(finalChange);
+			if ( this.current < this.max * 0.1 ) {
+				this.current = this.max * 0.1;
+			}
+		}
+		return finalChange;
+	}
 	
 	this.restore = function() {
 		this.current = this.max;
@@ -291,6 +302,8 @@ window.formulaDriveLevelPoints = function(level) { // Returns the required point
 	return formula;
 	// 0 , 250 , 600 , 1050 , 1600 , 2250
 }
+
+// getCharsDrivePercent at character-class.js
 
 // Constructors, serializers, etc.
 Drive.prototype._init = function (obj) {
@@ -590,6 +603,8 @@ window.flavorAffinities = function() {
 		this[typeA] = new flavorAffinity(typeA);
 		this[typeB] = new flavorAffinity(typeB);
 	}
+	
+	this.weapon = new flavorAffinity("weapon");
 	
 	this.drain = new flavorAffinity("drain");
 	

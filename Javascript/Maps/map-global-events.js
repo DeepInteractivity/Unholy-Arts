@@ -13,6 +13,7 @@ window.createTrainingEndEvent = function(minutes) {
 													   + "[[Continue|Jobs Screen]]";
 		}
 	);
+	sEvent.executeWithoutCharacters = true;
 	return sEvent;
 }
 
@@ -27,6 +28,7 @@ window.createSocializationEndEvent = function(minutes) {
 													   + '<</s' + 'cript>><</' + 'link>>';
 		}
 	);
+	sEvent.executeWithoutCharacters = true;
 	return sEvent;
 }
 

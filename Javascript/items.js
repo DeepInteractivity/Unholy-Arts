@@ -228,9 +228,8 @@ setup.equipDataList[equipmentType.COLLAR] = new equipmentData("Collar","bodypart
 setup.equipDataList[equipmentType.BLINDFOLD] = new equipmentData("Blindfold","bodypart","eyes",
 	function(owner,wearer) { // Put on
 		if ( getRelation(wearer,owner) != undefined ) {
-			getRelation(wearer,owner).submission.levelMod += 1;
-			getRelation(wearer,owner).rivalry.levelMod += 2;
-			getRelation(wearer,owner).enmity.levelMod += 1;
+			getRelation(wearer,owner).submission.levelMod += 2;
+			getRelation(wearer,owner).rivalry.levelMod += 1;
 		}
 		gC(wearer).perception.sumModifier -= 5;
 		gC(wearer).perception.multModifier -= 0.4;
@@ -239,9 +238,8 @@ setup.equipDataList[equipmentType.BLINDFOLD] = new equipmentData("Blindfold","bo
 	},
 	function(owner,wearer) { // Put out
 		if ( getRelation(wearer,owner) != undefined ) {
-			getRelation(wearer,owner).submission.levelMod -= 1;
-			getRelation(wearer,owner).rivalry.levelMod -= 2;
-			getRelation(wearer,owner).enmity.levelMod -= 1;
+			getRelation(wearer,owner).submission.levelMod -= 2;
+			getRelation(wearer,owner).rivalry.levelMod -= 1;
 		}
 		gC(wearer).perception.sumModifier += 5;
 		gC(wearer).perception.multModifier += 0.4;
@@ -253,18 +251,16 @@ setup.equipDataList[equipmentType.BLINDFOLD] = new equipmentData("Blindfold","bo
 setup.equipDataList[equipmentType.MOUTHGAG] = new equipmentData("Mouth gag","bodypart","mouth",
 	function(owner,wearer) { // Put on
 		if ( getRelation(wearer,owner) != undefined ) {
-			getRelation(wearer,owner).submission.levelMod += 1;
-			getRelation(wearer,owner).rivalry.levelMod += 2;
-			getRelation(wearer,owner).enmity.levelMod += 1;
+			getRelation(wearer,owner).submission.levelMod += 2;
+			getRelation(wearer,owner).rivalry.levelMod += 1;
 		}
 		gC(wearer).charisma.sumModifier -= 5;
 		gC(wearer).charisma.multModifier -= 0.4;
 	},
 	function(owner,wearer) { // Put out
 		if ( getRelation(wearer,owner) != undefined ) {
-			getRelation(wearer,owner).submission.levelMod -= 1;
-			getRelation(wearer,owner).rivalry.levelMod -= 2;
-			getRelation(wearer,owner).enmity.levelMod -= 1;			
+			getRelation(wearer,owner).submission.levelMod -= 2;
+			getRelation(wearer,owner).rivalry.levelMod -= 1;		
 		}
 		gC(wearer).charisma.sumModifier += 5;
 		gC(wearer).charisma.multModifier += 0.4;
@@ -274,9 +270,9 @@ setup.equipDataList[equipmentType.MOUTHGAG] = new equipmentData("Mouth gag","bod
 setup.equipDataList[equipmentType.HANDCUFFS] = new equipmentData("Handcuffs","bodypart","arms",
 	function(owner,wearer) { // Put on
 		if ( getRelation(wearer,owner) != undefined ) {
-			getRelation(wearer,owner).submission.levelMod += 2;
-			getRelation(wearer,owner).rivalry.levelMod += 2;
-			getRelation(wearer,owner).enmity.levelMod += 2;
+			getRelation(wearer,owner).submission.levelMod += 3;
+			getRelation(wearer,owner).rivalry.levelMod += 1;
+			getRelation(wearer,owner).enmity.levelMod += 1;
 		}
 		gC(wearer).agility.sumModifier -= 3;
 		gC(wearer).agility.multModifier -= 0.3;
@@ -285,9 +281,9 @@ setup.equipDataList[equipmentType.HANDCUFFS] = new equipmentData("Handcuffs","bo
 	},
 	function(owner,wearer) { // Put out
 		if ( getRelation(wearer,owner) != undefined ) {
-			getRelation(wearer,owner).submission.levelMod -= 2;
-			getRelation(wearer,owner).rivalry.levelMod -= 2;
-			getRelation(wearer,owner).enmity.levelMod -= 2;
+			getRelation(wearer,owner).submission.levelMod -= 3;
+			getRelation(wearer,owner).rivalry.levelMod -= 1;
+			getRelation(wearer,owner).enmity.levelMod -= 1;
 		}
 		gC(wearer).agility.sumModifier += 3;
 		gC(wearer).agility.multModifier += 0.3;
@@ -299,9 +295,9 @@ setup.equipDataList[equipmentType.HANDCUFFS] = new equipmentData("Handcuffs","bo
 setup.equipDataList[equipmentType.FEETCUFFS] = new equipmentData("Feetcuffs","bodypart","legs",
 	function(owner,wearer) { // Put on
 		if ( getRelation(wearer,owner) != undefined ) {
-			getRelation(wearer,owner).submission.levelMod += 2;
-			getRelation(wearer,owner).rivalry.levelMod += 2;
-			getRelation(wearer,owner).enmity.levelMod += 2;
+			getRelation(wearer,owner).submission.levelMod += 3;
+			getRelation(wearer,owner).rivalry.levelMod += 1;
+			getRelation(wearer,owner).enmity.levelMod += 1;
 		}
 		gC(wearer).agility.sumModifier -= 2;
 		gC(wearer).agility.multModifier -= 0.2;
@@ -310,9 +306,9 @@ setup.equipDataList[equipmentType.FEETCUFFS] = new equipmentData("Feetcuffs","bo
 	},
 	function(owner,wearer) { // Put out
 		if ( getRelation(wearer,owner) != undefined ) {
-			getRelation(wearer,owner).submission.levelMod -= 2;
-			getRelation(wearer,owner).rivalry.levelMod -= 2;
-			getRelation(wearer,owner).enmity.levelMod -= 2;
+			getRelation(wearer,owner).submission.levelMod -= 3;
+			getRelation(wearer,owner).rivalry.levelMod -= 1;
+			getRelation(wearer,owner).enmity.levelMod -= 1;
 		}
 		gC(wearer).agility.sumModifier += 2;
 		gC(wearer).agility.multModifier += 0.2;
@@ -324,8 +320,8 @@ setup.equipDataList[equipmentType.FEETCUFFS] = new equipmentData("Feetcuffs","bo
 setup.equipDataList[equipmentType.NIPPLESUCKERS] = new equipmentData("Nipple suckers","bodypart","breasts",
 	function(owner,wearer) { // Put on
 		if ( getRelation(wearer,owner) != undefined ) {
-			getRelation(wearer,owner).submission.levelMod += 1;
-			getRelation(wearer,owner).sexualTension.levelMod += 1;
+			getRelation(wearer,owner).submission.levelMod += 2;
+			getRelation(wearer,owner).sexualTension.levelMod += 2;
 			getRelation(wearer,owner).rivalry.levelMod += 1;
 		}
 		gC(wearer).lust.weakness += 10;
@@ -333,8 +329,8 @@ setup.equipDataList[equipmentType.NIPPLESUCKERS] = new equipmentData("Nipple suc
 	},
 	function(owner,wearer) { // Put out
 		if ( getRelation(wearer,owner) != undefined ) {
-			getRelation(wearer,owner).submission.levelMod -= 1;
-			getRelation(wearer,owner).sexualTension.levelMod -= 1;
+			getRelation(wearer,owner).submission.levelMod -= 2;
+			getRelation(wearer,owner).sexualTension.levelMod -= 2;
 			getRelation(wearer,owner).rivalry.levelMod -= 1;
 		}
 		removeAlteredStateByAcr(wearer,"Npsk");
@@ -345,8 +341,8 @@ setup.equipDataList[equipmentType.NIPPLESUCKERS] = new equipmentData("Nipple suc
 setup.equipDataList[equipmentType.BUTTPLUG] = new equipmentData("Buttplug","bodypart","anus",
 	function(owner,wearer) { // Put on
 		if ( getRelation(wearer,owner) != undefined ) {
-			getRelation(wearer,owner).submission.levelMod += 1;
-			getRelation(wearer,owner).sexualTension.levelMod += 1;
+			getRelation(wearer,owner).submission.levelMod += 2;
+			getRelation(wearer,owner).sexualTension.levelMod += 2;
 			getRelation(wearer,owner).rivalry.levelMod += 1;
 		}
 		gC(wearer).alteredStates.push(createASbuttplug());
@@ -355,8 +351,8 @@ setup.equipDataList[equipmentType.BUTTPLUG] = new equipmentData("Buttplug","body
 	},
 	function(owner,wearer) { // Put out
 		if ( getRelation(wearer,owner) != undefined ) {
-			getRelation(wearer,owner).submission.levelMod -= 1;
-			getRelation(wearer,owner).sexualTension.levelMod -= 1;
+			getRelation(wearer,owner).submission.levelMod -= 2;
+			getRelation(wearer,owner).sexualTension.levelMod -= 2;
 			getRelation(wearer,owner).rivalry.levelMod -= 1;
 		}
 		removeAlteredStateByAcr(wearer,"Btpg");
@@ -368,10 +364,10 @@ setup.equipDataList[equipmentType.BUTTPLUG] = new equipmentData("Buttplug","body
 setup.equipDataList[equipmentType.CHASTITYBELT] = new equipmentData("Chastity belt","bodypart","pussy",
 	function(owner,wearer) { // Put on
 		if ( getRelation(wearer,owner) != undefined ) {
-			getRelation(wearer,owner).submission.levelMod += 3;
-			getRelation(wearer,owner).sexualTension.levelMod += 3;
-			getRelation(wearer,owner).rivalry.levelMod += 2;
-			getRelation(wearer,owner).enmity.levelMod += 2;
+			getRelation(wearer,owner).submission.levelMod += 4;
+			getRelation(wearer,owner).sexualTension.levelMod += 4;
+			getRelation(wearer,owner).rivalry.levelMod += 1;
+			getRelation(wearer,owner).enmity.levelMod += 1;
 		}
 		gC(wearer).intelligence.sumModifier -= 2;
 		gC(wearer).intelligence.multModifier -= 0.2;
@@ -382,10 +378,10 @@ setup.equipDataList[equipmentType.CHASTITYBELT] = new equipmentData("Chastity be
 	},
 	function(owner,wearer) { // Put out
 		if ( getRelation(wearer,owner) != undefined ) {
-			getRelation(wearer,owner).submission.levelMod -= 3;
-			getRelation(wearer,owner).sexualTension.levelMod -= 3;
-			getRelation(wearer,owner).rivalry.levelMod -= 2;
-			getRelation(wearer,owner).enmity.levelMod -= 2;
+			getRelation(wearer,owner).submission.levelMod -= 4;
+			getRelation(wearer,owner).sexualTension.levelMod -= 4;
+			getRelation(wearer,owner).rivalry.levelMod -= 1;
+			getRelation(wearer,owner).enmity.levelMod -= 1;
 		}
 		gC(wearer).intelligence.sumModifier += 2;
 		gC(wearer).intelligence.multModifier += 0.2;
@@ -399,10 +395,10 @@ setup.equipDataList[equipmentType.CHASTITYBELT] = new equipmentData("Chastity be
 setup.equipDataList[equipmentType.CHASTITYCAGE] = new equipmentData("Chastity cage","bodypart","dick",
 	function(owner,wearer) { // Put on
 		if ( getRelation(wearer,owner) != undefined ) {
-			getRelation(wearer,owner).submission.levelMod += 3;
-			getRelation(wearer,owner).sexualTension.levelMod += 3;
-			getRelation(wearer,owner).rivalry.levelMod += 2;
-			getRelation(wearer,owner).enmity.levelMod += 2;
+			getRelation(wearer,owner).submission.levelMod += 4;
+			getRelation(wearer,owner).sexualTension.levelMod += 4;
+			getRelation(wearer,owner).rivalry.levelMod += 1;
+			getRelation(wearer,owner).enmity.levelMod += 1;
 		}
 		gC(wearer).intelligence.sumModifier -= 2;
 		gC(wearer).intelligence.multModifier -= 0.2;
@@ -413,10 +409,10 @@ setup.equipDataList[equipmentType.CHASTITYCAGE] = new equipmentData("Chastity ca
 	},
 	function(owner,wearer) { // Put out
 		if ( getRelation(wearer,owner) != undefined ) {
-			getRelation(wearer,owner).submission.levelMod -= 3;
-			getRelation(wearer,owner).sexualTension.levelMod -= 3;
-			getRelation(wearer,owner).rivalry.levelMod -= 2;
-			getRelation(wearer,owner).enmity.levelMod -= 2;
+			getRelation(wearer,owner).submission.levelMod -= 4;
+			getRelation(wearer,owner).sexualTension.levelMod -= 4;
+			getRelation(wearer,owner).rivalry.levelMod -= 1;
+			getRelation(wearer,owner).enmity.levelMod -= 1;
 		}
 		gC(wearer).intelligence.sumModifier += 2;
 		gC(wearer).intelligence.multModifier += 0.2;

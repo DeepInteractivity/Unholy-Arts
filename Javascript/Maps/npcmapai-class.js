@@ -318,7 +318,7 @@ window.createMapAiGoalChallenge = function(charKey,targetCharKey) {
 	goal.createEvent = function() { // Adds an event to the events pile
 		var flagPlayerIsInvolved = false;
 		var flagTargetIsInSis = State.variables.compass.isCharacterInSis(this.targetChar);
-		var stakes = limitedRandomInt(2) + 1;
+		var stakes = selectNpcChallengeStakes(charKey);
 		
 		var flagSetIdle = true;
 		if ( this.targetChar == "chPlayerCharacter" ) { flagPlayerIsInvolved = true; }
@@ -350,6 +350,17 @@ window.createMapAiGoalChallenge = function(charKey,targetCharKey) {
 		}
 	}
 	return goal;
+}
+window.selectNpcChallengeStakes = function(cK) {
+	var stakes = 1;
+	
+	if ( gC(cK).mission == "humilliate" ) { stakes = 1 + limitedRandomInt(1); }
+	else if ( gC(cK).mission == "weakenEnemy" || gC(cK).mission == "gainDomination" || gC(cK).mission == "forceSex" ) { stakes = 2 + limitedRandomInt(1); }
+	else if ( gC(cK).mission == "gainSubmissive" ) { stakes = 3; }
+	else if ( gC(cK).mission == "liberateFriend" ) { stakes = 2; }
+	else { stakes = 1 + limitedRandomInt(2); }
+	
+	return stakes;
 }
 
 window.createMapAiGoalPursueAndAssault = function(charKey,targetCharKey) {

@@ -217,6 +217,7 @@ window.initCommandTestsPeriodPassionTemple = function() {
 
 window.initFakePeriodPassionTemple = function() {
 	// Fake training period
+		State.variables.logL1.push("startTraining");
 	// Place Candidates on map
 	State.variables.compass.initializeMap("mapTrainingGrounds","westLibrary");
 	var chars = getCandidatesKeysArray();
@@ -235,6 +236,7 @@ window.initFakePeriodPassionTemple = function() {
 		}
 	}
 	
+		State.variables.logL1.push("firstCheckingAi");
 	State.variables.compass.allCharsCheckMapAi();
 	
 	// Set period variables
@@ -245,10 +247,13 @@ window.initFakePeriodPassionTemple = function() {
 	State.variables.compass.ongoingEvents.push(createFakePeriodEndEvent(periodMins));
 	State.variables.compass.periodEndsTip = getRelativeTimeString(periodMins);
 	
+		State.variables.logL1.push("startingEvents");
 	State.variables.compass.sortOnGoingEventsByTime();
 	State.variables.compass.timeToAdvance = periodMins;
 	State.variables.compass.pushAllTimeToAdvance();
+		State.variables.logL1.push("finishedEvents");
 	// Fake socialization period
+		State.variables.logL1.push("startingSocialization");
 	// Place Candidates on map
 	State.variables.compass.initializeMap("mapTrainingGrounds","westLibrary");
 	var chars = getCandidatesKeysArray();
@@ -267,6 +272,7 @@ window.initFakePeriodPassionTemple = function() {
 		}
 	}
 	
+		State.variables.logL1.push("checkingAi");
 	State.variables.compass.allCharsCheckMapAi();
 	
 	// Set period variables
@@ -277,23 +283,40 @@ window.initFakePeriodPassionTemple = function() {
 	State.variables.compass.ongoingEvents.push(createFakePeriodEndEvent(periodMins));
 	State.variables.compass.periodEndsTip = getRelativeTimeString(periodMins);
 	
+		State.variables.logL1.push("startingEvents");
 	State.variables.compass.sortOnGoingEventsByTime();
 	State.variables.compass.timeToAdvance = periodMins;
 	State.variables.compass.pushAllTimeToAdvance();
+		State.variables.logL1.push("finishingEvents");
 	
 		spawnMerchants();
 		npcsBuyItems();
 		npcsEquipBondage();
+		State.variables.logL1.push("endDayEffects");
 	State.variables.personalRoom.endDayEffects();
 	State.variables.personalRoom.endDayRelationMoodEffects();
 }
 window.initFakePeriodPassionTempleXtimes = function(times) {
+	gC("chClaw").baseMood.angry = 0;
+	gC("chAte").baseMood.bored = 0;
 	State.variables.enabledMerchants = [0,30];
 	try {
 	var i = 0;
 	while ( i < times ) {
+		State.variables.logL1 = [];
 		i++;
+		State.variables.logL1.push("fakePeriod");
 		initFakePeriodPassionTemple();
+		State.variables.logL1.push("perRoom");
+		State.variables.personalRoom.initPersonalRoom();
+		
+		State.variables.logL1.push("socPri");
+		// AI social priorities
+		for ( var character of arrayMinusA(getCandidatesKeysArray(),"chPlayerCharacter") ) {
+			setSocialAiCandidateGoals(gC(character).socialAi);
+		}
+		
+		State.variables.logL1.push("finishedDay");
 	}
 	} catch(e) {
 		State.variables.logL2.errorLog = e.message;
@@ -321,9 +344,7 @@ window.initFakePeriodPassionTempleXtimes = function(times) {
 			drivesData += " - - - ";
 		}
 	}
-	State.variables.logL1.statsData = statsData;
-	State.variables.logL1.drivesData = drivesData;
-	State.variables.logL1.meritData = meritData;
+	State.variables.logL3 = statsData + drivesData + meritData;
 }
 
 

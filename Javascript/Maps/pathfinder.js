@@ -17,7 +17,6 @@ window.Pathfinder = function(mapKey,charGroup,startingRoomKey,isNodeValidTarget)
 			this.nodesList[tRoom.key] = new pfNode(tRoom.key);
 		}
 	}												//																						//
-	
 	// Closed, Closing and Open Nodes refer to the nodes' keys, not the node objects
 	this.closedNodes = [];
 	
@@ -135,7 +134,6 @@ window.Pathfinder = function(mapKey,charGroup,startingRoomKey,isNodeValidTarget)
 			this.openNodes = [];
 		}
 		if ( State.variables.zFlagDbPf == true && false ) {
-			State.variables.logL1.push("asked to format all things");
 			this.debugInfo = this.formatAllNodesInfo();
 		}
 	}
@@ -146,7 +144,6 @@ window.Pathfinder = function(mapKey,charGroup,startingRoomKey,isNodeValidTarget)
 		return this.validNodesList;
 	}
 	this.getShortestValidRoute = function() {
-		
 		var shortestRoute = [];
 		this.mainFinder();
 		
@@ -154,7 +151,6 @@ window.Pathfinder = function(mapKey,charGroup,startingRoomKey,isNodeValidTarget)
 		if ( closestNode != null ) {
 			shortestRoute = this.formatNodeRoute(closestNode);
 		}
-		
 		return shortestRoute;
 	}
 	this.getAllValidRoutes = function() {

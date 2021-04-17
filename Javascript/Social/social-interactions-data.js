@@ -1,3 +1,4 @@
+
  // Both vectors (frie,inti,flir,arou,domi,subm,bore,angr) (frie,sext,roma,domi,subm,riva,enmi)
 ///// MOOD VECTOR /////
 // Vector containing mood data. Custom functions to sum mood vector and multiplying them by a given factor
@@ -49,6 +50,8 @@ window.relationVectorXFactor = function(rv,factor) {
 	return rVector;
 }
 
+// frie,inti,flir,arou,domi,subm,bore,angr
+// frie,sext,roma,domi,subm,riva,enmi
 ///// SOCIAL INTERACTIONS DATA /////
 
 window.SocInt = function() {
@@ -62,7 +65,11 @@ window.SocInt = function() {
 	this.sis = null;
 	
 	this.tags = [];
+	this.driveTags = [];
+	this.strategyTags = [];
 	this.socialDriveCost = 0;
+	this.energyCost = 0;
+	this.willpowerCost = 0;
 	this.priority = 0;
 	
 	this.weight = 0;
@@ -76,7 +83,7 @@ window.SocInt = function() {
 	this.isUsable = function(sis,actor,target,observers,extraData) {
 		// Determines if the interaction is usable on the selected target
 		var flagUsable = false;
-		if ( gC(actor).socialdrive.current >= this.socialDriveCost ) {
+		if ( gC(actor).socialdrive.current >= this.socialDriveCost && gC(actor).energy.current >= this.energyCost && gC(actor).willpower.current >= this.willpowerCost ) {
 			flagUsable = true;
 		}
 		return flagUsable;
@@ -85,6 +92,9 @@ window.SocInt = function() {
 	
 	this.calculateExtraEffect = function() { return null; }
 	this.extraEffect = null;
+	this.evaluateSuccess = function(actor,target,topic) { // Function for AI: It evalues the chance of the interaction's extra effect being successful.
+		return true;
+	}
 	
 	this.getMoodMultiplier = function() { return 1; }
 	this.getMoodVectorTarget = function() { return null; }
@@ -95,6 +105,11 @@ window.SocInt = function() {
 	this.getRelationVectorTarget = function() { return null; }
 	this.getRelationVectorActor = function() { return null; }
 	this.getRelationVectorObservers = function() { return null; }
+	
+	this.getLustDamage = function(actor,target) { return 0; }
+	this.getWillpowerDamage = function(actor,target) { return 0; }
+	this.getEnergyDamage = function(actor,target) { return 0; }
+	this.furtherEffects = function(sis) { return 0; }
 	
 	this.getDescription = function() {
 		//var desc = '<span style="color:darkgray"'+'>[' + this.title + ']</'+'span> ';
@@ -188,8 +203,9 @@ window.getChatSocInt = function(type) {
 		socInt.key += "Feelings";
 		socInt.title += " about feelings";
 		socInt.tags.push("intimate");
+		socInt.driveTags.push("dLove");
 		socInt.calculateExtraEffect = function() {
-			if ( gC(this.actor).mood.intimate > 50 || gC(this.actor).mood.angry > 50 ) {
+			if ( gC(this.actor).mood.intimate > 50 || gC(this.actor).mood.angry > 30 ) {
 				this.getDescription = function() {
 					var desc = (ktn(this.actor) + " made a great effort to explain " + gC(this.actor).posPr + " feelings.");
 					return desc;
@@ -370,6 +386,7 @@ window.getGreetSocInt = function(type) {
 		socInt.key = "greetFlirtatious";
 		socInt.title = "Flirty greet";
 		socInt.tags = ["flirty"];
+		socInt.driveTags.push("dPleasure");
 		socInt.socialDriveCost = 3;
 	
 		socInt.getWeight = function(sis,actor,target,observers,extraData) {
@@ -704,6 +721,239 @@ window.getGossipAbout = function(charKey,name) {
 	return socInt;
 }
 
+	// Praise CHARACTER
+window.getPraiseChar = function(charKey,name) {
+	var socInt = new SocInt();
+	socInt.key = "praiseChar" + firstToCap(charKey);
+	socInt.title = "Praise " + name;
+	socInt.socialDriveCost = 2;
+	socInt.priority = 0;
+	socInt.tags.push("friendly");
+	
+	socInt.topic = charKey;
+	socInt.weight = 2; // Starting weight
+	
+	socInt.getDescription = function() {
+		var desc = randomFromList( [
+						(ktn(this.actor) + " speaks highly of " + ktn(this.topic) + ", hoping to persuade " + ktn(this.target) + " about " + gC(this.topic).posPr + " virtues."),
+						(ktn(this.actor) + " comments that " + gC(this.actor).perPr + " holds " + ktn(this.topic) + " in high esteem."),
+						(ktn(this.actor) + " only has nice words for " + ktn(this.topic) + ".") ] );
+		desc += "\n" + ktn(this.target) + "'s opinion about " + ktn(this.topic) + " improved."
+		
+		return desc;
+	}
+
+	socInt.isValid = function(sis,actor,target,observers,extraData) {
+		var flagValid = true;
+		if ( sis.charList.includes(this.topic) || ( gC(actor).hasFreeBodypart("mouth") == false ) ) {
+			flagValid = false;
+		}
+		return flagValid;
+	}
+	socInt.getWeight = function(sis,actor,target,observers,extraData) {
+		var nWeight = this.weight + gC(actor).mood.friendly * 0.03 + gC(actor).mood.intimate * 0.05;
+		return this.weight;
+	}
+	
+	socInt.getMoodMultiplier = function() {
+		var mult = 1;
+		mult += (gC(this.actor).charisma.getValue() * 0.02);
+		return mult;
+	}
+	socInt.getMoodVectorTarget = function() {
+		var mVector = new MoodVector(1,2,0,0,0,0,-1,0);
+		return mVector;
+	}
+	socInt.getMoodVectorActor = function() {
+		var mVector = new MoodVector(1,1,0,0,0,0,0,0);
+		return mVector;
+	}
+	socInt.getMoodVectorObservers = function() {
+		var mVector = new MoodVector(1,0,0,0,0,0,0,0);
+		return mVector;
+	}
+	
+	socInt.getRelationMultiplier = function() {
+		var mult = 1;
+		mult += (gC(this.actor).charisma.getValue() * 0.02);
+		return mult;
+	}
+	socInt.getRelationVectorTarget = function() {
+		var rVector = new RelationVector(1,0,0,0,0,0,0);
+		return rVector;
+	}
+	socInt.getRelationVectorActor = function() {
+		var rVector = new RelationVector(1,0,0,0,0,0,0);
+		return rVector;
+	}
+	socInt.getRelationVectorObservers = function() {
+		var rVector = new RelationVector(0,0,0,0,0,0,0);
+		return rVector;
+	}
+	
+	socInt.calculateExtraEffect = function() {
+		var score = 0;
+		// Does the target dislike the actor or the topic too much?
+		score += rLvlAbt(this.target,this.actor,"friendship") * 1 + rLvlAbt(this.target,this.actor,"romance") * 1 - rLvlAbt(this.target,this.actor,"rivalry") * 1 - rLvlAbt(this.target,this.actor,"enmity") * 2;
+		if ( gC(this.target).relations.hasOwnProperty(this.topic) ) {
+			score += (rLvlAbt(this.target,this.topic,"friendship") * 1 + rLvlAbt(this.target,this.topic,"romance") * 1 - rLvlAbt(this.target,this.topic,"rivalry") * 1 - rLvlAbt(this.target,this.topic,"enmity") * 2) * (0.8 + limitedRandom(0.7));
+		}
+		
+		if ( score >= 0 ) {
+			// Success
+			if ( gC(this.target).relations.hasOwnProperty(this.topic) ) {
+				gC(this.target).relations[this.topic].friendship.stv += 5 + gC(this.actor).charisma.getValue() * 0.05;
+				gC(this.target).relations[this.topic].enmity.stv -= 1 + gC(this.actor).charisma.getValue() * 0.02;
+			}
+		} else {
+			// Failure
+			this.getDescription = function() {
+				var desc = (ktn(this.actor) + " spoke highly of " + ktn(this.topic) + ", but " + ktn(this.target) + " doesn't look convinced.\n" + ktn(this.target) + "'s opinion about " + ktn(this.topic) + " worsened.");
+				return desc;
+			}
+			this.getMoodVectorTarget = function() {
+				var mVector = new MoodVector(0,0,0,0,0,0,2,0);
+				return mVector;
+			}
+			this.getRelationVectorTarget = function() {
+				var rVector = new RelationVector(-1,0,0,0,0,0,0);
+				return rVector;
+			}
+			if ( gC(this.target).relations.hasOwnProperty(this.topic) ) {
+				gC(this.target).relations[this.topic].friendship.stv -= 2 + gC(this.actor).charisma.getValue() * 0.02;
+				gC(this.target).relations[this.topic].enmity.stv += 2 + gC(this.actor).charisma.getValue() * 0.02;
+			}
+		}
+	}
+	socInt.evaluateSuccess = function(actor,target,topic) {
+		var flagSuccess = false;
+		var score = rLvlAbt(target,actor,"friendship") * 1 + rLvlAbt(target,actor,"romance") * 1 - rLvlAbt(target,actor,"rivalry") * 1 - rLvlAbt(target,actor,"enmity") * 2;
+		score += limitedRandomInt(10) - 5;
+		if ( score >= 0 ) { flagSuccess = true; }
+		return flagSuccess;
+	}
+	
+	return socInt;
+}
+	
+	// Criticize CHARACTER
+window.getCriticizeChar = function(charKey,name) {
+	var socInt = new SocInt();
+	socInt.key = "criticizeChar" + firstToCap(charKey);
+	socInt.title = "Criticize " + name;
+	socInt.socialDriveCost = 2;
+	socInt.priority = 0;
+	socInt.tags.push("angry");
+	
+	socInt.topic = charKey;
+	socInt.weight = 2; // Starting weight
+	
+	socInt.getDescription = function() {
+		var desc = randomFromList( [
+						(ktn(this.actor) + " speaks ill of " + ktn(this.topic) + "."),
+						(ktn(this.actor) + " complains about " + ktn(this.topic) + "'s attitude."),
+						(ktn(this.actor) + " criticizes " + ktn(this.topic) + " behind " + gC(this.topic).posPr + " back.") ] );
+		desc += "\n" + ktn(this.target) + "'s opinion about " + ktn(this.topic) + " worsened."
+		
+		return desc;
+	}
+
+	socInt.isValid = function(sis,actor,target,observers,extraData) {
+		var flagValid = true;
+		if ( sis.charList.includes(this.topic) || ( gC(actor).hasFreeBodypart("mouth") == false ) ) {
+			flagValid = false;
+		}
+		return flagValid;
+	}
+	socInt.getWeight = function(sis,actor,target,observers,extraData) {
+		var nWeight = this.weight + gC(actor).mood.friendly * 0.02 + gC(actor).mood.intimate * 0.03 + gC(actor).mood.bored * 0.02 + gC(actor).mood.angry * 0.01;
+		return this.weight;
+	}
+	
+	socInt.getMoodMultiplier = function() {
+		var mult = 1;
+		mult += (gC(this.actor).charisma.getValue() * 0.02);
+		return mult;
+	}
+	socInt.getMoodVectorTarget = function() {
+		var mVector = new MoodVector(1,0,0,0,0,0,-1,-1);
+		return mVector;
+	}
+	socInt.getMoodVectorActor = function() {
+		var mVector = new MoodVector(1,0,0,0,0,0,1,0);
+		return mVector;
+	}
+	socInt.getMoodVectorObservers = function() {
+		var mVector = new MoodVector(0,0,0,0,0,0,1,0);
+		return mVector;
+	}
+	
+	socInt.getRelationMultiplier = function() {
+		var mult = 1;
+		mult += (gC(this.actor).charisma.getValue() * 0.02); 
+		return mult;
+	}
+	socInt.getRelationVectorTarget = function() {
+		var rVector = new RelationVector(1,0,0,0,0,0,0);
+		return rVector;
+	}
+	socInt.getRelationVectorActor = function() {
+		var rVector = new RelationVector(1,0,0,0,0,0,0);
+		return rVector;
+	}
+	socInt.getRelationVectorObservers = function() {
+		var rVector = new RelationVector(0,0,0,0,0,0,0);
+		return rVector;
+	}
+	
+	socInt.calculateExtraEffect = function() {
+		var score = 0;
+		// Does the target dislike the actor or the topic too much?
+		score += rLvlAbt(this.target,this.actor,"friendship") * 1 + rLvlAbt(this.target,this.actor,"romance") * 1 - rLvlAbt(this.target,this.actor,"rivalry") * 1 - rLvlAbt(this.target,this.actor,"enmity") * 2;
+		if ( gC(this.target).relations.hasOwnProperty(this.topic) ) {
+			score -= (rLvlAbt(this.target,this.topic,"friendship") * 1 + rLvlAbt(this.target,this.topic,"romance") * 1 - rLvlAbt(this.target,this.topic,"rivalry") * 1 - rLvlAbt(this.target,this.topic,"enmity") * 2) * (0.8 + limitedRandom(0.7));
+		}
+		
+		if ( score >= 0 ) {
+			// Success
+			if ( gC(this.target).relations.hasOwnProperty(this.topic) ) {
+				gC(this.target).relations[this.topic].friendship.stv -= 2 + gC(this.actor).charisma.getValue() * 0.03;
+				gC(this.target).relations[this.topic].enmity.stv += 4 + gC(this.actor).charisma.getValue() * 0.04;
+				gC(this.target).relations[this.topic].rivalry.stv += 2 + gC(this.actor).charisma.getValue() * 0.02;
+			}
+		} else {
+			// Failure
+			this.getDescription = function() {
+				var desc = (ktn(this.actor) + " denounced " + ktn(this.topic) + ", but " + ktn(this.target) + " doesn't look convinced.\n" + ktn(this.target) + "'s opinion about " + ktn(this.topic) + " improved slightly.");
+				return desc;
+			}
+			this.getMoodVectorTarget = function() {
+				var mVector = new MoodVector(0,0,0,0,0,0,2,2);
+				return mVector;
+			}
+			this.getRelationVectorTarget = function() {
+				var rVector = new RelationVector(-2,0,0,0,0,1,1);
+				return rVector;
+			}
+			if ( gC(this.target).relations.hasOwnProperty(this.topic) ) {
+				gC(this.target).relations[this.topic].friendship.stv += 1 + gC(this.actor).charisma.getValue() * 0.01;
+			}
+		}
+	}
+	socInt.evaluateSuccess = function(actor,target,topic) {
+		var flagSuccess = false;
+		var score = rLvlAbt(target,actor,"friendship") * 1 + rLvlAbt(target,actor,"romance") * 1 - rLvlAbt(target,actor,"rivalry") * 1 - rLvlAbt(target,actor,"enmity") * 2;
+		if ( gC(target).relations.hasOwnProperty(topic) ) {
+			score -= (rLvlAbt(target,topic,"friendship") * 1 + rLvlAbt(target,topic,"romance") * 1 - rLvlAbt(target,topic,"rivalry") * 1 - rLvlAbt(target,topic,"enmity") * 2) * (0.8 + limitedRandom(0.7));
+		}
+		score += limitedRandomInt(10) - 5;
+		if ( score >= 0 ) { flagSuccess = true; }
+		return flagSuccess;
+	}
+	
+	return socInt;
+}
+
 	// Ask about values
 window.getAskAboutValues = function(type) {
 	var socInt = new SocInt();
@@ -810,7 +1060,13 @@ window.getAskAboutValues = function(type) {
 			}
 		}
 	}
-	
+	socInt.evaluateSuccess = function(actor,target,topic) {
+		var flagSuccess = false;
+		var score = gC(target).mood.friendly + gC(target).mood.intimate * 2 + rLvlAbt(target,actor,"friendship") * 10 + rLvlAbt(target,actor,"romance") * 10 - (25 + gC(target).mood.angry * 4 + gC(target).mood.bored * 2 + rLvlAbt(target,actor,"enmity") * 20);
+		score += limitedRandomInt(20) - 10;
+		if ( score >= 0 ) { flagSuccess = true; }
+		return flagSuccess;
+	}
 	return socInt;
 }
 
@@ -890,6 +1146,7 @@ window.getComplimentSocInt = function(type) {
 		//socInt.key += "Mood";
 		socInt.title = "Compliment mood";
 		socInt.tags.push("friendly");
+		socInt.driveTags.push("dCooperation");
 		// Mood
 		socInt.getMoodVectorTarget = function() {
 			var mVector = new MoodVector(3,0,0,0,0,0,0,-1);
@@ -920,8 +1177,8 @@ window.getComplimentSocInt = function(type) {
 		case "looks":				// Looks
 		//socInt.key += "Looks";
 		socInt.title = "Compliment looks";
-		socInt.tags.push("friendly");
-		socInt.tags.push("flirty");
+		socInt.tags.push("friendly","flirty","aroused");
+		socInt.driveTags.push("dPleasure");
 		// Moods
 		socInt.getMoodVectorTarget = function() {
 			var mVector = new MoodVector(1,0,2,1,0,0,0,0);
@@ -952,8 +1209,8 @@ window.getComplimentSocInt = function(type) {
 		case "personality":				// Looks
 		//socInt.key += "Personality";
 		socInt.title = "Compliment personality";
-		socInt.tags.push("intimate");
-		socInt.tags.push("flirty");
+		socInt.tags.push("friendly","intimate","flirty");
+		socInt.driveTags.push("dLove");
 		// Moods
 		socInt.getMoodVectorTarget = function() {
 			var mVector = new MoodVector(1,1,2,0,0,0,0,-1);
@@ -995,6 +1252,7 @@ window.getPatronizeSocInt = function() {
 	
 	socInt.weight = 10; // Starting weight
 	socInt.tags.push("dominant");
+	socInt.driveTags.push("dDomination");
 	
 	socInt.isValid = function(sis,actor,target,observers,extraData) {
 		var flagValid = false;
@@ -1056,12 +1314,233 @@ window.getPatronizeSocInt = function() {
 	return socInt;
 }
 
+	// Apologize
+window.getApologizeSocInt = function() {
+	var socInt = new SocInt();
+	socInt.key = "apologize";
+	socInt.title = "Apologize";
+	socInt.socialDriveCost = 2;
+	socInt.priority = 0;
+	
+	socInt.weight = 20; // Starting weight
+	socInt.tags.push("submissive");
+	socInt.driveTags.push("dCooperation");
+	socInt.strategyTags.push("angerDown");
+	
+	socInt.isValid = function(sis,actor,target,observers,extraData) {
+		var flagValid = true;
+		
+		return flagValid;
+	}
+	
+	socInt.getWeight = function(sis,actor,target,observers,extraData) {
+		var nWeight = this.weight - gC(actor).mood.dominant * 0.2 + gC(actor).mood.submissive * 0.4 + gC(actor).mood.angry * 0.2;
+		return nWeight;
+	}
+	
+	socInt.getDescription = function() {
+		var desc = randomFromList( [
+								(ktn(this.actor) + " backed down and repented " + gC(this.actor).posPr + " attitude."),
+								(ktn(this.actor) + " apologized to " + ktn(this.target) + "."),
+								(ktn(this.actor) + " bowed " + gC(this.actor).posPr + " head in repentace.") ] );
+		return desc;
+	}
+	
+	// Moods
+	socInt.getMoodMultiplier = function() {
+		var mult = 1;
+		mult += (gC(this.actor).charisma.getValue() * 0.02);
+		return mult;
+	}
+	socInt.getMoodVectorTarget = function() {
+		var mVector = new MoodVector(1,1,0,0,3,-1,0,-5);
+		return mVector;
+	}
+	socInt.getMoodVectorActor = function() {
+		var mVector = new MoodVector(0,0,0,0,0,2,0,-3);
+		return mVector;
+	}
+	socInt.getMoodVectorObservers = function() {
+		var mVector = new MoodVector(1,0,0,0,0,0,0,-2);
+		return mVector;
+	}
+	
+	socInt.getRelationMultiplier = function() {
+		var mult = 1;
+		mult += (gC(this.actor).charisma.getValue() * 0.04);
+		return mult;
+	}
+	socInt.getRelationVectorTarget = function() {
+		var rVector = new RelationVector(1,0,0,3,-1,-1,-1);
+		return rVector;
+	}
+	socInt.getRelationVectorActor = function() {
+		var rVector = new RelationVector(0,0,0,0,2,-2,0);
+		return rVector;
+	}
+	socInt.getRelationVectorObservers = function() {
+		var rVector = new RelationVector(1,0,0,0,0,0,0);
+		return rVector;
+	}
+	
+	return socInt;
+}
+
+	// Cool moods down
+window.getCoolMoodsDownSocInt = function() {
+	var socInt = new SocInt();
+	socInt.key = "coolMoodsDown";
+	socInt.title = "Cool moods down";
+	socInt.socialDriveCost = 2;
+	socInt.priority = 0;
+	
+	socInt.weight = 5; // Starting weight
+	socInt.tags.push("friendly");
+	socInt.driveTags.push("dAmbition");
+	socInt.strategyTags.push("angerDown");
+	
+	socInt.isValid = function(sis,actor,target,observers,extraData) {
+		var flagValid = false;
+		if ( gC(actor).hasFreeBodypart("mouth") ) {
+			flagValid = true;
+		}
+		return flagValid;
+	}
+	
+	socInt.getWeight = function(sis,actor,target,observers,extraData) {
+		var nWeight = this.weight + gC(actor).mood.dominant * 0.1 + gC(actor).mood.bored * 0.2 + gC(actor).mood.angry * 0.2;
+		return nWeight;
+	}
+	
+	socInt.getDescription = function() {
+		var desc = randomFromList( [
+								(ktn(this.actor) + " suggested to cool the ambient down."),
+								(ktn(this.actor) + " breathed calmly, and asked the other to do the same before continuing."),
+								(ktn(this.actor) + " diplomatically asked to relax.") ] );
+		return desc;
+	}
+	
+	// Moods
+	socInt.getMoodMultiplier = function() {
+		var mult = 1;
+		mult += (gC(this.actor).charisma.getValue() * 0.02);
+		return mult;
+	}
+	socInt.getMoodVectorTarget = function() {
+		var mVector = new MoodVector(0,0,-2,-2,-1,-2,1,-3);
+		return mVector;
+	}
+	socInt.getMoodVectorActor = function() {
+		var mVector = new MoodVector(0,0,-2,-2,-2,-2,1,-4);
+		return mVector;
+	}
+	socInt.getMoodVectorObservers = function() {
+		var mVector = new MoodVector(0,0,-1,-1,-1,-1,1,-2);
+		return mVector;
+	}
+	
+	socInt.getRelationMultiplier = function() {
+		var mult = 1;
+		mult += (gC(this.actor).charisma.getValue() * 0.04);
+		return mult;
+	}
+	socInt.getRelationVectorTarget = function() {
+		var rVector = new RelationVector(0,-1,0,0,0,0,0);
+		return rVector;
+	}
+	socInt.getRelationVectorActor = function() {
+		var rVector = new RelationVector(0,0,0,0,0,0,0);
+		return rVector;
+	}
+	socInt.getRelationVectorObservers = function() {
+		var rVector = new RelationVector(0,-1,0,0,0,0,0);
+		return rVector;
+	}
+	
+	return socInt;
+}
+	
+	// Assert yourself
+window.getSelfAssertSocInt = function() {
+	var socInt = new SocInt();
+	socInt.key = "selfAssert";
+	socInt.title = "Assert yourself";
+	socInt.socialDriveCost = 2;
+	socInt.priority = 0;
+	
+	socInt.weight = 5; // Starting weight
+	socInt.tags.push("dominant");
+	socInt.driveTags.push("dDomination","dAmbition");
+	socInt.strategyTags.push("selfSubmissionDown");
+	
+	socInt.isValid = function(sis,actor,target,observers,extraData) {
+		var flagValid = false;
+		if ( gC(actor).hasFreeBodypart("mouth") && gC(actor).hasFreeBodypart("eyes") ) {
+			flagValid = true;
+		}
+		return flagValid;
+	}
+	
+	socInt.getWeight = function(sis,actor,target,observers,extraData) {
+		var nWeight = this.weight + gC(actor).mood.submissive * 0.2 + gC(actor).mood.dominant * 0.2 + gC(actor).mood.angry * 0.2;
+		return nWeight;
+	}
+	
+	socInt.getDescription = function() {
+		var desc = randomFromList( [
+								(ktn(this.actor) + " complained about " + ktn(this.target) + "'s attitude."),
+								(ktn(this.actor) + " crossed " + gC(this.actor).posPr + " arms, with an assertive expression."),
+								(ktn(this.actor) + " locked " + gC(this.actor).posPr + " eyes on " + ktn(this.target) + "'s, challenging " + gC(this.target).posPr + " gaze.") ] );
+		return desc;
+	}
+	
+	// Moods
+	socInt.getMoodMultiplier = function() {
+		var mult = 1;
+		mult += (gC(this.actor).charisma.getValue() * 0.02);
+		return mult;
+	}
+	socInt.getMoodVectorTarget = function() {
+		var mVector = new MoodVector(-2,0,-1,0,-2,0,0,0);
+		return mVector;
+	}
+	socInt.getMoodVectorActor = function() {
+		var mVector = new MoodVector(-1,0,-1,0,0,-4,0,0);
+		return mVector;
+	}
+	socInt.getMoodVectorObservers = function() {
+		var mVector = new MoodVector(-1,0,-1,0,0,0,1,0);
+		return mVector;
+	}
+	
+	socInt.getRelationMultiplier = function() {
+		var mult = 1;
+		mult += (gC(this.actor).charisma.getValue() * 0.04);
+		return mult;
+	}
+	socInt.getRelationVectorTarget = function() {
+		var rVector = new RelationVector(-1,0,0,-2,0,0,0);
+		return rVector;
+	}
+	socInt.getRelationVectorActor = function() {
+		var rVector = new RelationVector(0,0,0,0,-2,0,0);
+		return rVector;
+	}
+	socInt.getRelationVectorObservers = function() {
+		var rVector = new RelationVector(0,0,0,0,0,0,0);
+		return rVector;
+	}
+	
+	return socInt;
+}
+
 	// GiveStroke
 window.getGiveStrokeSocInt = function(type) {
 	var socInt = new SocInt();
 	socInt.key = "giveStroke";
 	socInt.title = "Give Stroke";
 	socInt.tags.push("intimate","aroused","dominant");
+	socInt.driveTags.push("dLove");
 	socInt.socialDriveCost = 4;
 	
 	socInt.topic = type;
@@ -1159,7 +1638,26 @@ window.getGiveStrokeSocInt = function(type) {
 				var rVector = new RelationVector(0,0,0,0,0,0,0);
 				return rVector;
 			}
+		} else {
+			this.getLustDamage = function(actor,target) {
+				var damage = 0.5 + gCstat(actor,"charisma") * 0.005 + gCstat(actor,"agility") * 0.015;
+				return damage;
+			}
+			this.furtherEffects = function(sis) {
+				var eText = "\n" + gC(this.target).formattedName + " received " + textLustDamage(-gC(this.target).lust.attackInConversation(-this.getLustDamage(this.actor,this.target))) + ".";
+				sis.extraEffects += eText; 
+			}
 		}
+	}
+	socInt.evaluateSuccess = function(actor,target,topic) {
+		var flagSuccess = false;
+		var score = gC(target).mood.friendly + gC(target).mood.intimate + gC(target).mood.flirty + gC(target).mood.aroused
+						+ gC(target).mood.submissive + rLvlAbt(target,actor,"submission") * 10 + rLvlAbt(target,actor,"sexualTension") * 10
+						+ rLvlAbt(target,actor,"romance") * 10 - ( 25 + gC(target).mood.dominant + gC(target).mood.angry + rLvlAbt(target,actor,"domination") * 10
+						+ rLvlAbt(target,actor,"rivalry") * 10 + rLvlAbt(target,actor,"enmity") * 10);
+		score += limitedRandomInt(20) - 10;
+		if ( score >= 0 ) { flagSuccess = true; }
+		return flagSuccess;
 	}
 	
 	switch(type) {
@@ -1219,6 +1717,7 @@ window.getAskForStrokeSocInt = function(type) {
 	socInt.title = "Give Stroke";
 	socInt.tags.push("friendly","aroused","submissive");
 	socInt.socialDriveCost = 3;
+	socInt.driveTags.push("dLove");
 	
 	socInt.topic = type;
 	socInt.weight = 5; // Starting weight
@@ -1252,7 +1751,7 @@ window.getAskForStrokeSocInt = function(type) {
 		return mult;
 	}
 	socInt.getMoodVectorTarget = function() {
-		var mVector = new MoodVector(2,0,1,2,2,0,0,0);
+		var mVector = new MoodVector(2,1,1,2,2,0,-1,-1);
 		return mVector;
 	}
 	socInt.getMoodVectorActor = function() {
@@ -1270,7 +1769,7 @@ window.getAskForStrokeSocInt = function(type) {
 		return mult;
 	}
 	socInt.getRelationVectorTarget = function() {
-		var rVector = new RelationVector(2,2,1,2,0,0,0);
+		var rVector = new RelationVector(2,2,2,2,0,0,0);
 		return rVector;
 	}
 	socInt.getRelationVectorActor = function() {
@@ -1365,7 +1864,25 @@ window.getAskForStrokeSocInt = function(type) {
 				var rVector = new RelationVector(0,0,0,0,0,0,0);
 				return rVector;
 			}
+		} else {
+			this.getLustDamage = function(actor,target) {
+				var damage = 0.5 + gCstat(target,"charisma") * 0.005 + gCstat(target,"agility") * 0.015;
+				return damage;
+			}
+			this.furtherEffects = function(sis) {
+				var eText = "\n" + gC(this.actor).formattedName + " received " + textLustDamage(-gC(this.actor).lust.attackInConversation(-this.getLustDamage(this.actor,this.target))) + ".";
+				sis.extraEffects += eText; 
+			}
 		}
+	}
+	socInt.evaluateSuccess = function(actor,target,topic) {
+		var flagSuccess = false;
+		var score = gC(target).mood.friendly + gC(target).mood.intimate + gC(target).mood.flirty + gC(target).mood.aroused
+						+ rLvlAbt(target,actor,"sexualTension") * 10 + rLvlAbt(target,actor,"romance") * 10 - ( 15 + gC(target).mood.angry * 10 + rLvlAbt(target,actor,"rivalry") * 10
+						+ rLvlAbt(target,actor,"enmity") * 10 );
+		score += limitedRandomInt(10) - 5;
+		if ( score >= 0 ) { flagSuccess = true; }
+		return flagSuccess;
 	}
 	
 	return socInt;
@@ -1377,6 +1894,7 @@ window.getInsultSocInt = function(type) {
 	socInt.key = "insult";
 	socInt.title = "Insult";
 	socInt.tags.push("angry");
+	socInt.strategyTags.push("romanceRival");
 	socInt.socialDriveCost = 2;
 	
 	socInt.topic = type;
@@ -1469,7 +1987,6 @@ window.getInsultSocInt = function(type) {
 	return socInt;
 }
 
-
 	// Hold hands
 window.getHandholdingSocInt = function(type) {
 	var socInt = new SocInt();
@@ -1479,6 +1996,7 @@ window.getHandholdingSocInt = function(type) {
 	socInt.priority = 0;
 	
 	socInt.tags = ["intimate","flirty"];
+	socInt.driveTags.push("dLove");
 	
 	socInt.weight = 20; // Starting weight
 	
@@ -1586,11 +2104,21 @@ window.getHandholdingSocInt = function(type) {
 			}
 		}
 	}
+	socInt.evaluateSuccess = function(actor,target,topic) {
+		var flagSuccess = false;
+		var score = gC(target).mood.friendly + gC(target).mood.intimate + gC(target).mood.flirty + gC(target).mood.aroused
+						+ gC(target).mood.submissive + rLvlAbt(target,actor,"submission") * 10 + rLvlAbt(target,actor,"sexualTension") * 10
+						+ rLvlAbt(target,actor,"romance") * 10 - ( 30 + gC(target).mood.dominant + gC(target).mood.angry + rLvlAbt(target,actor,"domination") * 10
+						+ rLvlAbt(target,actor,"rivalry") * 10 + rLvlAbt(target,actor,"enmity") * 10);
+		score += limitedRandomInt(20) - 10;
+		if ( score >= 0 ) { flagSuccess = true; }
+		return flagSuccess;
+	}
 	
 	return socInt;
 }
 
-	// Embrace
+	// Embrace 
 window.getEmbraceSocInt = function(type) {
 	var socInt = new SocInt();
 	socInt.key = "embrace";
@@ -1599,6 +2127,7 @@ window.getEmbraceSocInt = function(type) {
 	socInt.priority = 0;
 	
 	socInt.tags = ["intimate"];
+	socInt.driveTags.push("dLove");
 	
 	socInt.weight = 20; // Starting weight
 	
@@ -1625,7 +2154,7 @@ window.getEmbraceSocInt = function(type) {
 	
 	socInt.getMoodMultiplier = function() {
 		var mult = 1;
-		mult += (gC(this.actor).will.getValue() * 0.02);
+		mult += (gC(this.actor).will.getValue() * 0.01 + gC(this.actor).physique.getValue() * 0.01 + gC(this.actor).resilience.getValue() * 0.01);
 		return mult;
 	}
 	socInt.getMoodVectorTarget = function() {
@@ -1643,7 +2172,7 @@ window.getEmbraceSocInt = function(type) {
 	
 	socInt.getRelationMultiplier = function() {
 		var mult = 1;
-		mult += (gC(this.actor).will.getValue() * 0.02);
+		mult += (gC(this.actor).will.getValue() * 0.01 + gC(this.actor).physique.getValue() * 0.01 + gC(this.actor).resilience.getValue() * 0.01);
 		return mult;
 	}
 	socInt.getRelationVectorTarget = function() {
@@ -1696,7 +2225,26 @@ window.getEmbraceSocInt = function(type) {
 				var rVector = new RelationVector(0,0,0,0,0,0,0);
 				return rVector;
 			}
+		} else {
+			this.getLustDamage = function(actor,target) {
+				var damage = 0.5 + gCstat(actor,"will") * 0.01 + gCstat(actor,"physique") * 0.01 + gCstat(actor,"resilience") * 0.01;
+				return damage;
+			}
+			this.furtherEffects = function(sis) {
+				var eText = "\n" + gC(this.target).formattedName + " received " + textLustDamage(-gC(this.target).lust.attackInConversation(-this.getLustDamage(this.actor,this.target))) + ".";
+				sis.extraEffects += eText; 
+			}
 		}
+	}
+	socInt.evaluateSuccess = function(actor,target,topic) {
+		var flagSuccess = false;
+		var score = gC(target).mood.friendly + gC(target).mood.intimate + gC(target).mood.flirty + gC(target).mood.aroused
+						+ gC(target).mood.submissive + rLvlAbt(target,actor,"submission") * 10 + rLvlAbt(target,actor,"sexualTension") * 10
+						+ rLvlAbt(target,actor,"romance") * 10 - (40 + gC(target).mood.dominant + gC(target).mood.angry + rLvlAbt(target,actor,"domination") * 10
+						+ rLvlAbt(target,actor,"rivalry") * 10 + rLvlAbt(target,actor,"enmity") * 10);
+		score += limitedRandomInt(20) - 10;
+		if ( score >= 0 ) { flagSuccess = true; }
+		return flagSuccess;
 	}
 	
 	return socInt;
@@ -1711,6 +2259,7 @@ window.getSensualStroke = function(type) {
 	socInt.priority = 0;
 	
 	socInt.tags = ["aroused"];
+	socInt.driveTags.push("dPleasure");
 	
 	socInt.topic = type;
 	
@@ -1738,7 +2287,7 @@ window.getSensualStroke = function(type) {
 	
 	socInt.getMoodMultiplier = function() {
 		var mult = 1;
-		mult += (gC(this.actor).will.getValue() * 0.02) + (gC(this.actor).agility.getValue() * 0.02);
+		mult += (gC(this.actor).charisma.getValue() * 0.01) + (gC(this.actor).will.getValue() * 0.01) + (gC(this.actor).agility.getValue() * 0.02);
 		return mult;
 	}
 	socInt.getMoodVectorTarget = function() {
@@ -1756,7 +2305,7 @@ window.getSensualStroke = function(type) {
 	
 	socInt.getRelationMultiplier = function() {
 		var mult = 1;
-		mult += (gC(this.actor).will.getValue() * 0.02);
+		mult += (gC(this.actor).charisma.getValue() * 0.01) + (gC(this.actor).will.getValue() * 0.01) + (gC(this.actor).agility.getValue() * 0.02);
 		return mult;
 	}
 	socInt.getRelationVectorTarget = function() {
@@ -1816,7 +2365,289 @@ window.getSensualStroke = function(type) {
 				var rVector = new RelationVector(0,0,0,0,0,0,0);
 				return rVector;
 			}
+		} else {
+			this.getLustDamage = function(actor,target) {
+				var damage = 1 + gCstat(actor,"will") * 0.01 + gCstat(actor,"charisma") * 0.01 + gCstat(actor,"agility") * 0.02;
+				return damage;
+			}
+			this.furtherEffects = function(sis) {
+				var eText = "\n" + gC(this.target).formattedName + " received " + textLustDamage(-gC(this.target).lust.attackInConversation(-this.getLustDamage(this.actor,this.target))) + ".";
+				sis.extraEffects += eText; 
+			}
 		}
+	}
+	socInt.evaluateSuccess = function(actor,target,topic) {
+		var flagSuccess = false;
+		var score = gC(target).mood.friendly + gC(target).mood.intimate + gC(target).mood.flirty + gC(target).mood.aroused
+						+ gC(target).mood.submissive + rLvlAbt(target,actor,"submission") * 10 + rLvlAbt(target,actor,"sexualTension") * 10
+						+ rLvlAbt(target,actor,"romance") * 10 - ( 60 + gC(target).mood.dominant + gC(target).mood.angry + rLvlAbt(target,actor,"domination") * 10
+						+ rLvlAbt(target,actor,"rivalry") * 10 + rLvlAbt(target,actor,"enmity") * 10);
+		score += limitedRandomInt(20) - 10;
+		if ( score >= 0 ) { flagSuccess = true; }
+		return flagSuccess;
+	}
+	
+	return socInt;
+}
+window.getStrokeButtSocInt = function() {
+	var socInt = new SocInt();
+	socInt.key = "strokeButt";
+	socInt.title = "Stroke butt";
+	socInt.socialDriveCost = 4;
+	socInt.priority = 0;
+	
+	socInt.tags = ["aroused","dominant"];
+	socInt.driveTags.push("dPleasure");
+	
+	socInt.weight = 10; // Starting weight
+	
+	socInt.isValid = function(sis,actor,target,observers,extraData) {
+		var flagValid = false;
+		if ( gC(actor).mood.angry < 15 && ( gC(actor).mood.aroused > 35 ) && gC(actor).hasFreeBodypart("arms") ) {
+			flagValid = true;
+		}
+		return flagValid;
+	}
+	socInt.getWeight = function(sis,actor,target,observers,extraData) {
+		var nWeight = this.weight;
+		nWeight *= 1 + gC(actor).mood.aroused * 1 + gC(actor).mood.flirty * 0.2 - gC(actor).mood.angry * 0.1;
+		return nWeight;
+	}
+	
+	socInt.getDescription = function() {
+		var desc = randomFromList( [ 
+								(ktn(this.actor) + " discreetly rested " + gC(this.actor).posPr + " hand on " + ktn(this.target) + "'s ass, acting like it's a most natural gesture."),
+								(ktn(this.actor) + " took a handful of " + ktn(this.target) + "'s buttocks and massaged it."),
+								(ktn(this.actor) + "'s hand grabbed " + ktn(this.target) + "'s butt and played with it like it was its toy.") ] );
+								
+		return desc;
+	}
+	
+	socInt.getMoodMultiplier = function() {
+		var mult = 1;
+		mult += ((gC(this.actor).will.getValue() * 0.02) + (gC(this.actor).agility.getValue() * 0.01) + (gC(this.actor).physique.getValue() * 0.01));
+		return mult;
+	}
+	socInt.getMoodVectorTarget = function() {
+		var mVector = new MoodVector(0,0,2,4,-1,2,0,0);
+		return mVector;
+	}
+	socInt.getMoodVectorActor = function() {
+		var mVector = new MoodVector(0,0,1,3,1,-1,0,0);
+		return mVector;
+	}
+	socInt.getMoodVectorObservers = function() {
+		var mVector = new MoodVector(0,0,0,1,-1,0,0,0);
+		return mVector;
+	}
+	
+	socInt.getRelationMultiplier = function() {
+		var mult = 1;
+		mult += ((gC(this.actor).will.getValue() * 0.02) + (gC(this.actor).agility.getValue() * 0.01) + (gC(this.actor).physique.getValue() * 0.01));
+		return mult;
+	}
+	socInt.getRelationVectorTarget = function() {
+		var rVector = new RelationVector(0,5,2,0,3,0,0);
+		return rVector;
+	}
+	socInt.getRelationVectorActor = function() {
+		var rVector = new RelationVector(0,3,1,2,0,0,0);
+		return rVector;
+	}
+	socInt.getRelationVectorObservers = function() {
+		var rVector = new RelationVector(0,0,0,0,0,0,0);
+		return rVector;
+	}
+	
+	socInt.calculateExtraEffect = function() {
+		var successVars = gC(this.target).mood.friendly * 0.5 + gC(this.target).mood.intimate * 0.5 + gC(this.target).mood.flirty + gC(this.target).mood.aroused * 2
+						+ gC(this.target).mood.submissive + rLvlAbt(this.target,this.actor,"submission") * 15 + rLvlAbt(this.target,this.actor,"sexualTension") * 10
+						+ rLvlAbt(this.target,this.actor,"romance") * 5;
+		// Base difficulty: 75
+		var failureVars = 75 + gC(this.target).mood.dominant + gC(this.target).mood.angry + rLvlAbt(this.target,this.actor,"domination") * 15
+						+ rLvlAbt(this.target,this.actor,"rivalry") * 10 + rLvlAbt(this.target,this.actor,"enmity") * 20;
+		if ( failureVars > successVars ) {
+			this.getDescription = function() {
+				var desc = (ktn(this.actor) + " tried to grab " + ktn(this.target) + "'s butt, but was met with reprobation!");
+				desc 	+= " (" + successVars.toFixed(2) + " vs " + failureVars.toFixed(2) + ")";
+				return desc;
+			}
+			this.getMoodVectorTarget = function() {
+				var mVector = new MoodVector(-1,-1,-1,1,0,-2,0,3);
+				return mVector;
+			}
+			this.getMoodVectorActor = function() {
+				var mVector = new MoodVector(-1,-1,-1,-1,-1,0,1,1);
+				return mVector;
+			}
+			this.getMoodVectorObservers = function() {
+				var mVector = new MoodVector(-1,-1,-1,-1,0,0,0,0);
+				return mVector;
+			}
+			this.getRelationVectorTarget = function() {
+				var rVector = new RelationVector(-1,0,0,0,-2,0,2);
+				return rVector;
+			}
+			this.getRelationVectorActor = function() {
+				var rVector = new RelationVector(0,-1,0,-1,0,0,1);
+				return rVector;
+			}
+			this.getRelationVectorObservers = function() {
+				var rVector = new RelationVector(-1,0,0,0,0,0,0);
+				return rVector;
+			}
+		} else {
+			this.getLustDamage = function(actor,target) {
+				var damage = 2 + ((gC(this.actor).will.getValue() * 0.02) + (gC(this.actor).agility.getValue() * 0.01) + (gC(this.actor).physique.getValue() * 0.01));
+				return damage;
+			}
+			this.furtherEffects = function(sis) {
+				var eText = "\n" + gC(this.target).formattedName + " received " + textLustDamage(-gC(this.target).lust.attackInConversation(-this.getLustDamage(this.actor,this.target))) + ".";
+				sis.extraEffects += eText; 
+			}
+		}
+	}
+	socInt.evaluateSuccess = function(actor,target,topic) {
+		var flagSuccess = false;
+		var score = gC(target).mood.friendly * 0.5 + gC(target).mood.intimate * 0.5 + gC(target).mood.flirty + gC(target).mood.aroused * 2
+						+ gC(target).mood.submissive + rLvlAbt(target,actor,"submission") * 15 + rLvlAbt(target,actor,"sexualTension") * 10
+						+ rLvlAbt(target,actor,"romance") * 5 - ( 75 + gC(target).mood.dominant + gC(target).mood.angry + rLvlAbt(target,actor,"domination") * 15
+						+ rLvlAbt(target,actor,"rivalry") * 10 + rLvlAbt(target,actor,"enmity") * 20 );
+		score += limitedRandomInt(20) - 10;
+		if ( score >= 0 ) { flagSuccess = true; }
+		return flagSuccess;
+	}
+
+	return socInt;
+}
+window.getTeaseCrotchSocInt = function() {
+	var socInt = new SocInt();
+	socInt.key = "teaseCrotch";
+	socInt.title = "Tease crotch";
+	socInt.socialDriveCost = 5;
+	socInt.priority = 0;
+	
+	socInt.tags = ["aroused"];
+	socInt.driveTags.push("dPleasure");
+	
+	socInt.weight = 10; // Starting weight
+	
+	socInt.isValid = function(sis,actor,target,observers,extraData) {
+		var flagValid = false;
+		if ( gC(actor).mood.angry < 20 && ( gC(actor).mood.aroused > 40 ) && gC(actor).hasFreeBodypart("arms") ) {
+			flagValid = true;
+		}
+		return flagValid;
+	}
+	socInt.getWeight = function(sis,actor,target,observers,extraData) {
+		var nWeight = this.weight;
+		nWeight *= 1 + gC(actor).mood.aroused * 0.9 + gC(actor).mood.flirty * 0.3 - gC(actor).mood.angry * 0.2;
+		return nWeight;
+	}
+	
+	socInt.getDescription = function() {
+		var desc = randomFromList( [ 
+								(ktn(this.actor) + " slid a finger next to " + ktn(this.target) + "'s nethers, teasing " + gC(this.target).comPr + "."),
+								(ktn(this.actor) + " teased " + ktn(this.target) + " crotch with " + gC(this.actor).posPr + " hands."),
+								(ktn(this.actor) + " caressed " + ktn(this.target) + "'s waist, dangerously close to " + gC(this.target).posPr + " genitals.") ] );
+								
+		return desc;
+	}
+	
+	socInt.getMoodMultiplier = function() {
+		var mult = 1;
+		mult += ((gC(this.actor).will.getValue() * 0.02) + (gC(this.actor).agility.getValue() * 0.03));
+		return mult;
+	}
+	socInt.getMoodVectorTarget = function() {
+		var mVector = new MoodVector(0,1,3,5,-1,1,-3,0);
+		return mVector;
+	}
+	socInt.getMoodVectorActor = function() {
+		var mVector = new MoodVector(0,0,2,3,0,-1,-2,0);
+		return mVector;
+	}
+	socInt.getMoodVectorObservers = function() {
+		var mVector = new MoodVector(0,0,0,2,-1,0,-1,0);
+		return mVector;
+	}
+	
+	socInt.getRelationMultiplier = function() {
+		var mult = 1;
+		mult += ((gC(this.actor).will.getValue() * 0.02) + (gC(this.actor).agility.getValue() * 0.03));
+		return mult;
+	}
+	socInt.getRelationVectorTarget = function() {
+		var rVector = new RelationVector(0,6,3,0,2,1,0);
+		return rVector;
+	}
+	socInt.getRelationVectorActor = function() {
+		var rVector = new RelationVector(0,4,2,2,0,0,0);
+		return rVector;
+	}
+	socInt.getRelationVectorObservers = function() {
+		var rVector = new RelationVector(0,1,0,0,0,0,0);
+		return rVector;
+	}
+	
+	socInt.calculateExtraEffect = function() {
+		var successVars = gC(this.target).mood.friendly * 0.5 + gC(this.target).mood.intimate * 0.5 + gC(this.target).mood.flirty + gC(this.target).mood.aroused * 2
+						+ gC(this.target).mood.submissive + rLvlAbt(this.target,this.actor,"submission") * 15 + rLvlAbt(this.target,this.actor,"sexualTension") * 10
+						+ rLvlAbt(this.target,this.actor,"romance") * 5;
+		// Base difficulty: 75
+		var failureVars = 75 + gC(this.target).mood.dominant + gC(this.target).mood.angry + rLvlAbt(this.target,this.actor,"domination") * 10
+						+ rLvlAbt(this.target,this.actor,"rivalry") * 10 + rLvlAbt(this.target,this.actor,"enmity") * 20;
+		if ( failureVars > successVars ) {
+			this.getDescription = function() {
+				var desc = (ktn(this.actor) + " teased " + ktn(this.target) + "'s nethers, but " + gC(this.target).perPr + " reprobated the gesture!");
+				desc 	+= " (" + successVars.toFixed(2) + " vs " + failureVars.toFixed(2) + ")";
+				return desc;
+			}
+			
+			this.getMoodVectorTarget = function() {
+				var mVector = new MoodVector(-1,-2,-1,1,0,-2,-1,3);
+				return mVector;
+			}
+			this.getMoodVectorActor = function() {
+				var mVector = new MoodVector(-1,-1,-1,-1,-1,0,1,1);
+				return mVector;
+			}
+			this.getMoodVectorObservers = function() {
+				var mVector = new MoodVector(-1,-1,-1,-1,0,0,0,0);
+				return mVector;
+			}
+			this.getRelationVectorTarget = function() {
+				var rVector = new RelationVector(-1,0,0,0,-2,0,2);
+				return rVector;
+			}
+			this.getRelationVectorActor = function() {
+				var rVector = new RelationVector(0,-1,0,-1,0,0,1);
+				return rVector;
+			}
+			this.getRelationVectorObservers = function() {
+				var rVector = new RelationVector(-1,0,0,0,0,0,0);
+				return rVector;
+			}
+		} else {
+			this.getLustDamage = function(actor,target) {
+				var damage = 2.5 + ((gC(this.actor).will.getValue() * 0.02) + (gC(this.actor).agility.getValue() * 0.03));
+				return damage;
+			}
+			this.furtherEffects = function(sis) {
+				var eText = "\n" + gC(this.target).formattedName + " received " + textLustDamage(-gC(this.target).lust.attackInConversation(-this.getLustDamage(this.actor,this.target))) + ".";
+				sis.extraEffects += eText; 
+			}
+		}
+	}
+	socInt.evaluateSuccess = function(actor,target,topic) {
+		var flagSuccess = false;
+		var score = gC(target).mood.friendly * 0.5 + gC(target).mood.intimate * 0.5 + gC(target).mood.flirty + gC(target).mood.aroused * 2
+						+ gC(target).mood.submissive + rLvlAbt(target,actor,"submission") * 15 + rLvlAbt(target,actor,"sexualTension") * 10
+						+ rLvlAbt(target,actor,"romance") * 5 - (75 + gC(target).mood.dominant + gC(target).mood.angry + rLvlAbt(target,actor,"domination") * 10
+						+ rLvlAbt(target,actor,"rivalry") * 10 + rLvlAbt(target,actor,"enmity") * 20);
+		score += limitedRandomInt(20) - 10;
+		if ( score >= 0 ) { flagSuccess = true; }
+		return flagSuccess;
 	}
 	
 	return socInt;
@@ -1831,6 +2662,7 @@ window.getKissSocInt = function(type) {
 	socInt.priority = 0;
 	
 	socInt.tags = ["intimate","aroused"];
+	socInt.driveTags.push("dLove");
 	
 	socInt.weight = 25; // Starting weight
 	
@@ -1939,7 +2771,26 @@ window.getKissSocInt = function(type) {
 				var rVector = new RelationVector(0,0,0,0,0,0,0);
 				return rVector;
 			}
+		} else {
+			this.getLustDamage = function(actor,target) {
+				var damage = 1 + gCstat(actor,"will") * 0.01 + gCstat(actor,"charisma") * 0.01 + gCstat(actor,"agility") * 0.02;
+				return damage;
+			}
+			this.furtherEffects = function(sis) {
+				var eText = "\n" + gC(this.target).formattedName + " received " + textLustDamage(-gC(this.target).lust.attackInConversation(-this.getLustDamage(this.actor,this.target))) + ".";
+				sis.extraEffects += eText; 
+			}
 		}
+	}
+	socInt.evaluateSuccess = function(actor,target,topic) {
+		var flagSuccess = false;
+		var score = gC(target).mood.friendly + gC(target).mood.intimate + gC(target).mood.flirty + gC(target).mood.aroused
+						+ gC(target).mood.submissive + rLvlAbt(target,actor,"submission") * 10 + rLvlAbt(target,actor,"sexualTension") * 10
+						+ rLvlAbt(target,actor,"romance") * 10 - ( 50 + gC(target).mood.dominant + gC(target).mood.angry + rLvlAbt(target,actor,"domination") * 10
+						+ rLvlAbt(target,actor,"rivalry") * 10 + rLvlAbt(target,actor,"enmity") * 10);
+		score += limitedRandomInt(20) - 10;
+		if ( score >= 0 ) { flagSuccess = true; }
+		return flagSuccess;
 	}
 	
 	return socInt;
@@ -1952,10 +2803,11 @@ window.getHypnoticGlanceSocInt = function(type) {
 	var socInt = new SocInt();
 	socInt.key = "hypnoticGlance";
 	socInt.title = "Hypnotic Glance";
-	socInt.socialDriveCost = 5;
-	socInt.priority = 0;
+	socInt.socialDriveCost = 3;
+	socInt.willpowerCost = 2;
 	
 	socInt.tags = ["dominant"];
+	socInt.driveTags.push("dDomination");
 	
 	socInt.weight = 10; // Starting weight
 	
@@ -1969,7 +2821,7 @@ window.getHypnoticGlanceSocInt = function(type) {
 	socInt.isUsable = function(sis,actor,target,observers,extraData) {
 		// Determines if the interaction is usable on the selected target
 		var flagUsable = false;
-		if ( (gC(actor).socialdrive.current >= this.socialDriveCost) && gC(actor).hasFreeBodypart("eyes") ) {
+		if ( (gC(actor).socialdrive.current >= this.socialDriveCost && gC(actor).energy.current >= this.energyCost && gC(actor).willpower.current >= this.willpowerCost) && gC(actor).hasFreeBodypart("eyes") ) {
 			flagUsable = true;
 		}
 		return flagUsable;
@@ -2024,6 +2876,15 @@ window.getHypnoticGlanceSocInt = function(type) {
 		return rVector;
 	}
 	
+	socInt.getWillpowerDamage = function(actor,target) {
+		var damage = 1 + gCstat(actor,"will") * 0.025 + gCstat(actor,"charisma") * 0.015;
+		return damage;
+	}
+	socInt.furtherEffects = function(sis) {
+		var eText = "\n" + gC(this.target).formattedName + " received " + textWillpowerDamage(-gC(this.target).willpower.attackInConversation(-this.getWillpowerDamage(this.actor,this.target))) + ".";
+		sis.extraEffects += eText; 
+	}
+	
 	return socInt;
 }
 
@@ -2036,6 +2897,8 @@ window.getRelaxingScent = function(type) {
 	socInt.priority = 0;
 	
 	socInt.tags = ["friendly","intimate","submissive"];
+	socInt.driveTags.push("dCooperation");
+	socInt.strategyTags.push("angerDown","selfSubmissionDown");
 	
 	socInt.weight = 10; // Starting weight
 	
@@ -2108,10 +2971,12 @@ window.getTelephaticConnection = function(type) {
 	var socInt = new SocInt();
 	socInt.key = "telephaticConnection";
 	socInt.title = "Telephatic Connection";
-	socInt.socialDriveCost = 5;
+	socInt.socialDriveCost = 2;
+	socInt.willpowerCost = 2;
 	socInt.priority = 0;
 	
 	socInt.tags = ["friendly","intimate"];
+	socInt.driveTags = ["dLove"];
 	
 	socInt.weight = 10; // Starting weight
 	
@@ -2121,7 +2986,7 @@ window.getTelephaticConnection = function(type) {
 	socInt.isUsable = function(sis,actor,target,observers,extraData) {
 		// Determines if the interaction is usable on the selected target
 		var flagUsable = false;
-		if ( (gC(actor).socialdrive.current >= this.socialDriveCost) ) {
+		if ( (gC(actor).socialdrive.current >= this.socialDriveCost && gC(actor).energy.current >= this.energyCost && gC(actor).willpower.current >= this.willpowerCost) ) {
 			flagUsable = true;
 		}
 		return flagUsable;
@@ -2207,14 +3072,25 @@ window.siDatabase = function() {
 	this.gossipAboutChNash = getGossipAbout("chNash","Nashillbyir");
 	this.gossipAboutChClaw = getGossipAbout("chClaw","Claw");
 	this.gossipAboutChAte = getGossipAbout("chAte","Maaterasu");
+	// Praise/Criticize char
+	var it = 0;
+	var charNames = ["Player","Valtan","Padmiri","Nashillbyir","Claw","Maaterasu"];
+	for ( var charKey of ["chPlayerCharacter","chVal","chMir","chNash","chClaw","chAte"] ) {
+		this[("praiseChar" + firstToCap(charKey))] = getPraiseChar(charKey,charNames[it]);
+		this[("criticizeChar" + firstToCap(charKey))] = getCriticizeChar(charKey,charNames[it]);
+		it++;
+	}
 	// Ask about values
 	this.askAboutValues = getAskAboutValues("nothing");
 	// Compliment
 	this.complimentMood = getComplimentSocInt("mood");
 	this.complimentLooks = getComplimentSocInt("looks");
 	this.complimentPersonality = getComplimentSocInt("personality");
-	// Patronize
+	// Patronize, apologize, cool moods down, assert yourself
 	this.patronize = getPatronizeSocInt();
+	this.apologize = getApologizeSocInt();
+	this.coolMoodsDown = getCoolMoodsDownSocInt();
+	this.selfAssert = getSelfAssertSocInt();
 	// Give Stroke
 	this.giveStrokeEar = getGiveStrokeSocInt("ear");
 	this.giveStrokeFace = getGiveStrokeSocInt("face");
@@ -2231,6 +3107,8 @@ window.siDatabase = function() {
 	this.handholding = getHandholdingSocInt("");
 	this.embrace = getEmbraceSocInt("");
 	this.sensualStrokeLegs = getSensualStroke("legs");
+	this.strokeButt = getStrokeButtSocInt();
+	this.teaseCrotch = getTeaseCrotchSocInt();
 	this.kiss = getKissSocInt("kiss");
 };
 

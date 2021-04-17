@@ -642,7 +642,7 @@ window.scene = function() {
 		
 		if ( this.sceneType == "bs" ) {
 			// Reorder data
-			var actionsInfo = new weightedList();
+			var actionsInfo = new weightedList(); 
 			var charKeys = this.teamAcharKeys.concat(this.teamBcharKeys);
 			for ( var actK of this.teamAchosenActions ) {
 				actionsInfo[this.teamAcharKeys[i]] = [ this.teamAcharKeys[i] , actK , this.teamAchosenTargets[i] ];
@@ -662,12 +662,14 @@ window.scene = function() {
 			var j = charKeys.length;
 			while ( j > 0 ) {
 				var currentC = randomFromWeightedList(wL); // Take weighted random char
-				var currentA = actionsInfo[currentC][1]; // Execute action
-				var actionName = "[" + setup.saList[currentA].name + "] ";
-				this.actionsDescription += colorText(actionName,"darkgray");
-				this.actionsDescription += tryExecuteAction(currentA,currentC,actionsInfo[currentC][2]).description;
-				this.actionsDescription += "\n";
-				delete wL[currentC]; // Delete from weighted list
+				if ( actionsInfo[currentC] != undefined ) {
+					var currentA = actionsInfo[currentC][1]; // Execute action
+					var actionName = "[" + setup.saList[currentA].name + "] ";
+					this.actionsDescription += colorText(actionName,"darkgray");
+					this.actionsDescription += tryExecuteAction(currentA,currentC,actionsInfo[currentC][2]).description;
+					this.actionsDescription += "\n";
+					delete wL[currentC]; // Delete from weighted list
+				}
 				j--; // Reduce j
 			}
 		}

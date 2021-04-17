@@ -1,3 +1,5 @@
+setup.conversationRelationMultiplier = 3; // Conversation relationship changes are multiplied by this constant.
+
 ////////// SIS Player Info  //////////
 // Short set of data containing controls info
 window.SisPlayerInfo = function() {
@@ -93,6 +95,9 @@ window.SocIntSys = function(key,charList) {
 	this.charMoodChanges = []; // It gains each character as a property, its value is a mood vector
 	this.charRelChanges = []; // It gains each character as a property, which gains each other character as its own property, their values
 							  // are relationship vectors
+	this.extraEffects = "";
+	
+	this.tempLeftSis = [];
 	
 	// UI
 	this.formatPassageText = function() {
@@ -285,21 +290,38 @@ window.SocIntSys = function(key,charList) {
 		if ( this.relationChangesDescription != "" ) {
 			this.descriptionsText += this.relationChangesDescription + "\n";
 		}
+		if ( this.extraEffects != "" ) {
+			this.descriptionsText += '\n<span style="color:darkgray"'+'>__Extra effects__:</'+'span>' + this.extraEffects;
+			this.extraEffects = "";
+		}
 	}
 	
 	this.formatInteractionChoice = function(si) {
 		var iText = "";
 		
 		if ( getSiByKey(si).isUsable(this,"chPlayerCharacter",State.variables.sisPlayerInfo.currentTarget,[],0) == false ) {
-			iText = '<span style="color:firebrick"'+'>Locked: ' + getSiByKey(si).title + " (Cost: " + getSiByKey(si).socialDriveCost + ")"
-       			  + '</'+'span>';
+			iText = '<span style="color:firebrick"'+'>Locked: ' + getSiByKey(si).title + " (Cost: " + getSiByKey(si).socialDriveCost;
+				if ( getSiByKey(si).energyCost > 0 ) {
+					iText += ", " + getSiByKey(si).energyCost;
+				}
+				if ( getSiByKey(si).willpowerCost > 0 ) {
+					iText += ", " + getSiByKey(si).willpowerCost;
+				}
+       		iText += ")" + '</'+'span>';
 		} else {
 			iText = "- ";
 			for ( var tag of getSiByKey(si).tags ) {
 					iText += '<span title="' + firstToCap(tag) + '">' + img(tag) + "</" + "span> ";
 			}
 			iText += this.getButtonPlayerPicksAction(si,State.variables.sisPlayerInfo.currentTarget)
-			      + " (Cost: " + '<span style="color:khaki"' + '>' + getSiByKey(si).socialDriveCost + '</'+'span>)';
+			      + " (Cost: " + '<span style="color:khaki"' + '>' + getSiByKey(si).socialDriveCost + '</'+'span>';
+				  if ( getSiByKey(si).energyCost > 0 ) {
+					  iText += ', <span style="color:darkslateblue"' + '>' + getSiByKey(si).energyCost + '</' + 'span>'
+				  }
+				  if ( getSiByKey(si).willpowerCost > 0 ) {
+					  iText += ', <span style="color:limegreen"' + '>' + getSiByKey(si).willpowerCost + '</' + 'span>'
+				  }
+			iText += ')';
 		}
 		
 		return iText;
@@ -389,12 +411,12 @@ window.SocIntSys = function(key,charList) {
 	this.npcsMakeInterRoundDecisions = function() {
 		var actions = [];
 		var chars = [];
+		
 		for ( var character of this.charList ) { chars.push(character) }
 		
 		for ( var character of chars ) {
 			gC(character).wasPromptedInCurrentSisRound = false;
 		}
-		
 		for ( var character of this.charList ) {	// Get all actions from characters
 			if ( character != "chPlayerCharacter" && gC(character).followingTo == "" ) {
 				var charAction = gC(character).socialAi.getInterRoundBehavior(this);
@@ -407,9 +429,11 @@ window.SocIntSys = function(key,charList) {
 		for ( var action of actions ) {				// Execute all actions, provided it's possible
 			var actor = action[0];
 			var target = action[2];
+	if ( this.tempLeftSis.includes(actor) == false && this.tempLeftSis.includes(target) == false ) {
 			if ( target == "" ) {
 				switch(action[1]) {
 					case "leave":							// Leaving
+						this.tempLeftSis.push(actor);
 						this.charsLeaveSis(getCharGroup(actor));
 						this.importantMessages += getCharNames(getCharGroup(actor)) + " has left the conversation.\n";
 						if ( actor == State.variables.sisPlayerInfo.currentTarget ) {
@@ -438,10 +462,13 @@ window.SocIntSys = function(key,charList) {
 					case "dominantSex":					// Invite egalitarian sex
 						this.executeStandardSistEffects(2,actor,target);
 						break;
+					case "companionshipRelation":					// Invite egalitarian sex
+						this.executeStandardSistEffects(7,actor,target);
+						break;
 				}
 			}
+	}
 		}
-		
 		for ( var character of chars ) {
 			gC(character).wasPromptedInCurrentSisRound = false;
 		}
@@ -473,8 +500,10 @@ window.SocIntSys = function(key,charList) {
 	}
 	
 	// Logic (The heavy stuff)
-	this.preInitiateNewRoundNoPC = function() {
-		this.npcsMakeInterRoundDecisions();
+	this.preInitiateNewRoundNoPC = function(flagInterrounds) {
+		if ( flagInterrounds ) {
+			this.npcsMakeInterRoundDecisions();
+		}
 		if ( this.charList.length > 0 ) {
 			this.initiateNewRound();
 		}
@@ -490,6 +519,7 @@ window.SocIntSys = function(key,charList) {
 
 	}
 	this.processRound = function() {
+		this.tempLeftSis = [];
 		// Data clean
 		this.charMoodChanges = [];
 		this.charRelChanges = [];
@@ -499,26 +529,31 @@ window.SocIntSys = function(key,charList) {
 		this.feedCharInteractionsOptionsList();
 		var charsNactions = []; // List of lists with charKeys, targetKeys and interactions keys,
 								// such as [["chVal","chNash","flirt"],["chNash","chVal","patronize"]]
+							
 		charsNactions = this.processCharsInteractions();
 		charsNactions = this.orderInteractions(charsNactions);
 		
 		var interactionsList = [];
 		for ( var cNa in charsNactions ) {
-			interactionsList.push(this.createInteraction(charsNactions[cNa]));
+			if (charsNactions[cNa][2] != "doNothing") {
+				interactionsList.push(this.createInteraction(charsNactions[cNa]));
+			}
 		}
-		
 		// Process interactions' logic
 		for ( var interaction of interactionsList ) {
 			this.interactionExtraEffect(interaction);
 			this.interactionMoodChanges(interaction);
 			this.interactionRelationChanges(interaction);
+			interaction.furtherEffects(this);
 			gC(interaction.actor).socialdrive.current -= interaction.socialDriveCost;
+			gC(interaction.actor).willpower.current -= interaction.willpowerCost;
+			gC(interaction.actor).energy.current -= interaction.energyCost;
 			this.interactionsDescription += interaction.getDescription() + "\n";
 		}
 		
 		// Remember player pick
 		State.variables.sisPlayerInfo.lastTarget = State.variables.sisPlayerInfo.currentTarget;
-		
+			
 		// End round
 		this.roundsData.push(charsNactions);
 		this.roundsCount++;
@@ -535,6 +570,7 @@ window.SocIntSys = function(key,charList) {
 			else {
 				// TO DO: AI
 				// Temporary: AI characters use a random weighted action
+				/*
 				var target = randomFromList(arrayMinusA(this.charList,character));			// Target is chosen at random
 				
 				if ( target != undefined && target != null ) {
@@ -558,6 +594,21 @@ window.SocIntSys = function(key,charList) {
 													   // and chooses the most appropiate one
 					}
 				}
+				*/
+				
+				var offeredInteractions = this.getOfferedInteractionsToChar(character,getCharsNumberInteractions(character));	// Character is offered interactions
+				
+				var usableInteractions = [];
+				for ( var interaction of offeredInteractions ) {							// Unusable interactions are purged
+					if ( interaction != "errorWList" ) {
+						if ( getSiByKey(interaction).isUsable(this,character,character,[],null) ) {
+							usableInteractions.push(interaction);
+						}
+					}
+				}
+					
+				var chosenInteraction = chooseActorsSISinteractionTarget(character,this,usableInteractions);
+				results.push([character,chosenInteraction[1],chosenInteraction[0]]);
 			}
 		}
 		return results;
@@ -603,7 +654,7 @@ window.SocIntSys = function(key,charList) {
 		}
 	}
 	this.interactionRelationChanges = function(interaction) {
-		var relationMultiplier = interaction.getRelationMultiplier();
+		var relationMultiplier = interaction.getRelationMultiplier() * setup.conversationRelationMultiplier;
 		
 		// Target
 		var rV = gC(interaction.target).applyRelationVector(interaction.actor,relationVectorXFactor(interaction.getRelationVectorTarget(),relationMultiplier));
@@ -677,7 +728,7 @@ window.SocIntSys = function(key,charList) {
 			if ( (this.charList.length > 1) && (this.getCorrespondingRoundEventPos() == -1) ) {
 				// If there's no associated event, Player leaves, and there are other characters in conversation,
 				// generate new round event
-				this.preInitiateNewRoundNoPC();
+				this.preInitiateNewRoundNoPC(false);
 			}
 		}
 		
@@ -737,7 +788,7 @@ window.SocIntSys = function(key,charList) {
 		if ( (this.charList.length > 1) && (this.getCorrespondingRoundEventPos() == -1) ) {
 			// If there's no associated event, Player leaves, and there are other characters in conversation,
 			// generate new round event
-			this.preInitiateNewRoundNoPC();
+			this.preInitiateNewRoundNoPC(false);
 		}
 	}
 	this.remainingCharsLeaveSis = function() {

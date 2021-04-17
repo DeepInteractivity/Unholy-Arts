@@ -32,8 +32,8 @@ window.RelPar = function(shortTerm,longTerm) {
 	this.level = 0; // Level, determined at the start of the day
 	this.levelMod = 0; // Level modifier, gets summed to current level
 	
-	this.processNewDay = function() {
-		var f = this.stv / 100.0;
+	this.processNewDay = function(mult) {
+		var f = (this.stv * mult) / 100.0;
 		this.stv -= f * 5; // Remove 5% of current Short Term Value
 		this.ltv += f; // Add 1% of current Short Term Value
 		var levelChanges = formulaRelParLevel(this);
@@ -120,7 +120,22 @@ window.Relation = function(targetCharKey) {
 	this.processNewDay = function() {
 		var anyChanges = false;
 		for ( var stat of [ "friendship" , "sexualTension" , "romance" , "domination" , "submission" , "rivalry" , "enmity" ] ) {
-			if ( this[stat].processNewDay() ) {
+			var mult = 1.0;
+			var statDiff = 0;
+			if ( stat == "friendship" || stat == "romance" ) {
+				statDiff = (this.friendship.level + this.romance.level - this.enmity.level * 2) / 2;
+			} else if ( stat == "enmity" ) {
+				statDiff = - (this.friendship.level - this.romance.level + this.enmity.level * 2) / 2;
+			} else if ( stat == "submission" ) {
+				statDiff = this.submission.level - this.domination.level;
+			} else if ( stat == "domination" ) {
+				statDiff = - this.submission.level + this.domination.level;
+			}
+			if ( statDiff >= 9 ) { mult = 1.6; }
+			else if ( statDiff >= 6 ) { mult = 1.4; }
+			else if ( statDiff >= 3 ) { mult = 1.2; }
+			else if ( statDiff <= -6 ) { mult = 0.8; }
+			if ( this[stat].processNewDay(mult) ) {
 				anyChanges = true;
 			}
 			this.anger = 0;

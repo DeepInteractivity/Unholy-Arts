@@ -333,8 +333,25 @@ window.randomFromWeightedList = function(wList) {
 			chosenItem = getFirstElementFromWeightedList(wList);
 		}
 	}
-	
 	return chosenItem;
+}
+window.randomFromWeightedListPercentThreshold = function(wList,threshold) {
+	// Similar to randomFromList(), except that options with weights lower than the highest weight*threshold are not taken into account
+	var newWlist = new weightedList();
+	
+	// Get highest value
+	var highest = -1;
+	for ( var item of wList ) {
+		if ( item.w > highest ) { highest = item.w; }
+	}
+	// Remove unvalid options
+	for ( var item of wList ) {
+		if ( item.w >= (highest * threshold) ) {
+			newWlist.push(item);
+		}
+	}
+	// Get random option
+	return randomFromWeightedList(newWlist);
 }
 window.listIntoWeightedList = function(list) {
 	var wList = new weightedList();
@@ -348,7 +365,7 @@ window.createPreferencesWeightedList = function() {
 	var wl = new weightedList();
 	wl.foreplay = new weightedElement("foreplay",100);
 	wl.oral = new weightedElement("oral",100);
-	wl.fullsex = new weightedElement("fullsex",110);
+	wl.fullsex = new weightedElement("fullsex",300);
 	wl.talk = new weightedElement("talk",100);
 	wl.useDick = new weightedElement("useDick",100);
 	wl.usePussy = new weightedElement("usePussy",100);
@@ -479,7 +496,7 @@ window.getHotfixButton = function() {
 	//var	bText	  = "\n\n<<l" + "ink [[Apply lag fix|Personal Room]]>><<s" + "cript>>\n";
 	//	bText 	 += "applyLagFix();\n";
 	//	bText	 += "<</s" + "cript>><</l" + "ink>>\n\n";
-	// var bText = "";
+	 var bText = "";
 	return bText;
 }
 
