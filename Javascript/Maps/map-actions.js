@@ -53,6 +53,7 @@ window.createSystemEventSearchForScrolls = function(minutes,characters) {
 	);
 	sEvent.flagMayBeInterrupted = false;
 	sEvent.applyEffectIfForcedToEnd = false;
+	sEvent.priority = 2;
 	return sEvent;
 }
 window.createSearchForScrollsAction = function() {
@@ -103,6 +104,7 @@ window.createSystemEventStudyRandomScroll = function(minutes,characters) {
 	);
 	sEvent.flagMayBeInterrupted = false;
 	sEvent.applyEffectIfForcedToEnd = false;
+	sEvent.priority = 2;
 	return sEvent;
 }
 window.createSystemEventStudySpecificScroll = function(characters,scrollKey) {
@@ -129,6 +131,7 @@ window.createSystemEventStudySpecificScroll = function(characters,scrollKey) {
 	);
 	sEvent.flagMayBeInterrupted = false;
 	sEvent.applyEffectIfForcedToEnd = false;
+	sEvent.priority = 2;
 	return sEvent;
 }
 
@@ -154,11 +157,11 @@ window.formatPassageMenuSelectScroll = function() {
 						 + '<</' + 'script>><</' + 'link>> - ' + getScrollTypeText(setup.scrollsList[scr]) + '\n';
 		}
 	}
-	passageText += "\n" + getButtonExitMapMenu();
+	passageText += "\n" + getButtonExitMapMenu("Exit Menu");
 	State.variables.compass.mapMenuPassage = passageText;
 }
-window.getButtonExitMapMenu = function() {
-	var bText = "<<l" + "ink [[Exit Menu|Map]]>><<s" + "cript>>\n";
+window.getButtonExitMapMenu = function(buttonName) {
+	var bText = "<<l" + "ink [[" + buttonName + "|Map]]>><<s" + "cript>>\n";
 		bText 	 += "State.variables.compass.flagMenuInMap = false;\n";
 		bText 	 += "State.variables.compass.mapMenuPassage = '';\n";
 		bText	 += "<</s" + "cript>><</l" + "ink>>";
@@ -183,6 +186,7 @@ window.createSystemEventSisRound = function(characters,sisKey) {
 	sEvent.applyEffectIfForcedToEnd = false;
 	sEvent.flagSignCharsAsIdleOnEnd = false;
 	sEvent.flagDontPushTimeYet = true;
+	sEvent.priority = 4;
 	return sEvent;
 }
 
@@ -194,6 +198,7 @@ window.createSystemEventScene = function(characters,minutes,label) {
 	sEvent.flagMayBeInterrupted = false;
 	sEvent.flagMayChangeGroups = false;
 	sEvent.label = label;
+	sEvent.priority = 5;
 	return sEvent;
 }
 window.createSystemEventStandardSexScene = function(characters) {
@@ -203,6 +208,7 @@ window.createSystemEventStandardSexScene = function(characters) {
 	sEvent.flagMayBeInterrupted = false;
 	sEvent.flagMayChangeGroups = false;
 	sEvent.label = "sexScene";
+	sEvent.priority = 5;
 	return sEvent;
 }
 
@@ -214,14 +220,16 @@ window.createSystemEventDominantSexEffects = function(characters) {
 			if ( characters.length >= 2 ) {
 				// Start scene
 				State.variables.sc.startScene(
-			"ss","fixed",[dommingChar],dommedChars,"The water flows quietly.",endConditionTurns,30,"Scene Results");
+			"ss","fixed",[dommingChar],dommedChars,"The water flows quietly.",endConditionTurns,gSettings().stdSxScDur,"Scene Results");
 				State.variables.sc.endSceneScript = processGenericSexSceneEffects;
 				// Assign AI
 				for ( var charKey of characters ) {
 					if ( charKey == "chPlayerCharacter" ) {
 					} else if ( charKey == dommingChar ) {
+						gC(charKey).aiAlgorythm = createAiWeightedMissionsByTaste();
 						gC(charKey).aiAlgorythm.setRoleDomination();
 					} else {
+						gC(charKey).aiAlgorythm = createAiWeightedMissionsByTaste();
 						gC(charKey).aiAlgorythm.setRoleSubmission();
 					}
 				}
@@ -237,6 +245,47 @@ window.createSystemEventDominantSexEffects = function(characters) {
 	sEvent.flagMayBeInterrupted = false;
 	sEvent.flagMayChangeGroups = false;
 	sEvent.label = "sexScene";
+	sEvent.priority = 5;
+	return sEvent;
+}
+
+window.createSystemEventAltDominantSexEffects = function(charsA,charsB) {
+	var characters = charsA.concat(charsB);
+	var sEvent = new systemEvent(20,characters,"scene","Scene",function(characters) {
+			var dommingChar = this.charsA[0];
+			var dommedChars = arrayMinusA(characters,dommingChar);
+			
+			if ( characters.length >= 2 ) {
+				// Start scene
+				State.variables.sc.startScene(
+			"ss","fixed",[dommingChar],dommedChars,"The water flows quietly.",endConditionTurns,gSettings().stdSxScDur,"Scene Results");
+				State.variables.sc.endSceneScript = processGenericSexSceneEffects;
+				// Assign AI
+				for ( var charKey of characters ) {
+					if ( charKey == "chPlayerCharacter" ) {
+					} else if ( charKey == dommingChar ) {
+						gC(charKey).aiAlgorythm = createAiWeightedMissionsByTaste();
+						gC(charKey).aiAlgorythm.setRoleDomination();
+					} else {
+						gC(charKey).aiAlgorythm = createAiWeightedMissionsByTaste();
+						gC(charKey).aiAlgorythm.setRoleSubmission();
+					}
+				}
+				// Assign lead
+				gC(dommingChar).hasLead = true;
+				// Auto-solve?
+				if ( characters.includes("chPlayerCharacter") == false ) {
+					State.variables.sc.autoResolveScene();
+				}
+			}
+		}
+	);
+	sEvent.charsA = charsA;
+	sEvent.charsB = charsB;
+	sEvent.flagMayBeInterrupted = false;
+	sEvent.flagMayChangeGroups = false;
+	sEvent.label = "sexScene";
+	sEvent.priority = 5;
 	return sEvent;
 }
 
@@ -261,6 +310,7 @@ window.createSystemEventBattle = function(charactersTeamA,charactersTeamB,specta
 	sEvent.flagMayBeInterrupted = false;
 	sEvent.flagMayChangeGroups = false;
 	sEvent.label = label;
+	sEvent.priority = 5;
 	return sEvent;
 }
 window.createSystemEventStandardAssault = function(charactersTeamA,charactersTeamB,spectators) {
@@ -291,6 +341,7 @@ window.createSystemEventStandardAssault = function(charactersTeamA,charactersTea
 	sEvent.flagMayBeInterrupted = false;
 	sEvent.flagMayChangeGroups = false;
 	sEvent.label = "assault";
+	sEvent.priority = 5;
 	return sEvent;
 }
 window.createSystemEventStandardChallenge = function(charactersTeamA,charactersTeamB,spectators,stakes) {
@@ -321,6 +372,7 @@ window.createSystemEventStandardChallenge = function(charactersTeamA,charactersT
 	sEvent.flagMayBeInterrupted = false;
 	sEvent.flagMayChangeGroups = false;
 	sEvent.label = "challenge";
+	sEvent.priority = 5;
 	return sEvent;
 }
 
@@ -348,6 +400,70 @@ window.createSystemEventLiberationChallenge = function(charactersTeamA,character
 	sEvent.flagMayBeInterrupted = false;
 	sEvent.flagMayChangeGroups = false;
 	sEvent.label = "challenge";
+	sEvent.priority = 5;
+	return sEvent;
+}
+
+// Special
+
+	// Respec
+window.createRespecAction = function() {
+	var action = new mapAction("respect","Accept the green orb's gift",createSystemEventSearchForScrolls,false);
+	action.description = "The characters will look for useful, unread scrolls around the library.";
+	action.tags.push("scrolls","searchScrolls");
+	action.recMins = 10;
+	sEvent.priority = 9;
+	return action;
+}
+window.getButtonMapMenuRespec = function() {
+	var bText = "<<l" + "ink [[Accept the green orb's gift|Map]]>><<s" + "cript>>\n";
+		bText 	 += "State.variables.compass.flagMenuInMap = true;\n";
+		bText 	 += "formatPassageMenuRespect();\n";
+		bText	 += "<</s" + "cript>><</l" + "ink>>";
+		return bText;
+	}
+window.formatPassageMenuRespect = function() {
+	var passageText = '<span style="color:gray">//"Greetings, Candidate. Are you here to accept the gift?"//</span>\n\n';
+	passageText += '<span style="color:khaki">You may switch three pairs of stats. The switched stats will exchange their values, experience and affinities. You may only do this once.</span>\n\n';
+	var i = 1;
+	while ( i < 7 ) {
+		State.variables.StVars[("check" + i)] = "physique";
+		i++;
+	}
+	i = 1;
+	while ( i < 4 ) {
+		passageText += `Pair ${i}: ` + '<<listbox "$StVars.check' + i + '" autoselect>>\n';
+		for ( var st of getStatNamesArray() ) {
+			passageText += '<<option "' + firstToCap(st) + '" "' + st + '">>\n';
+		}
+		passageText += '<</listbox>> - <<listbox "$StVars.check' + (i+3) + '" autoselect>>\n';
+		for ( var st of getStatNamesArray() ) {
+			passageText += '<<option "' + firstToCap(st) + '" "' + st + '">>\n';
+		}
+		passageText += '<</listbox>>\n';
+		i++;
+	}
+	passageText += '\n <<link [[Respec your talents|Interlude]]>><<s' + 'cript>>'
+				 + 'State.variables.compass.ongoingEvents.push(createSystemEventRespec(getPlayerCharsGroup()));\n'
+				 + 'State.variables.compass.sortOnGoingEventsByTime();\n'
+				 + 'signCharsActive(getPlayerCharsGroup());\n'
+				 + 'State.variables.compass.flagMenuInMap = false;\n'
+				 + 'State.variables.compass.mapMenuPassage = "";\n'
+				 + 'State.variables.compass.pushAllTimeToAdvance();'
+				 + '<</' + 'script>><</' + 'link>>\n';
+	passageText += "\n" + getButtonExitMapMenu("Cancel Respec");
+	State.variables.compass.mapMenuPassage = passageText;
+}
+window.createSystemEventRespec = function(characters) {
+	var sEvent = new systemEvent(30,characters,"respec","Respec-ing",function(cList) {
+			var eventMsg = "Taototh projects the orb's energy over you, covering you in light. The secrets of your body, your psyche, your soul, are all laid nude to him, and he carefully manipulates them.\n\n"
+			+ "A long while later, the orb shatters, and you realize you were out of yourself. When you recover consciousness, you feel like a completely new person.\n\n";
+			reassignPlayerStats();
+			return eventMsg;
+		}
+	);
+	sEvent.flagMayBeInterrupted = false;
+	sEvent.applyEffectIfForcedToEnd = false;
 	return sEvent;
 }
 

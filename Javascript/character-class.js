@@ -1,12 +1,13 @@
+window.img = function(imageKey) {
+	return State.variables.imgList[imageKey];
+};
+
 ////////// CHARACTER CLASS //////////
 window.Character = function(name, varName) {
 	this.name = name || "noName";
 	this.varName = varName || "BEWARE: THIS MUST BE DECLARED!";
 	this.nameColor = "lightcyan";
 	this.formattedName = '<span style="color:'+this.nameColor+'">'+this.name+'</span>';
-	
-	this.getName = function() { return this.name; };
-	this.getFormattedName = function() { return this.formattedName; };
 	
 	this.names = [ this.getName() , this.getName() , this.getName() ];
 	
@@ -18,20 +19,8 @@ window.Character = function(name, varName) {
 	
 	// Currencies
 	this.merit = 0;
-	this.changeMerit = function(value) {
-		this.merit += value;
-		if ( this.merit < 0 ) {
-			this.merit = 0;
-		}
-	}
 	this.money = 0; // Veerens, silver coins
 	this.infamy = 0;
-	this.changeInfamy = function(value) {
-		this.infamy += value;
-		if ( this.infamy < 0 ) {
-			this.infamy = 0;
-		}
-	}
 	
 	// Base stats
 	this.physique = new Stat();
@@ -49,19 +38,6 @@ window.Character = function(name, varName) {
 	this.willpower = new Bar(100);
 	this.energy = new Bar(100);
 	this.socialdrive = new Bar(100);
-	
-	/*
-	this.recalculateMaxBars = function() {
-		this.lust.max = float2int(70 + (this.physique.value * 1 + this.agility.value * 1 + this.resilience.value * 1
-					  + this.will.value * 1 + this.intelligence.value * 1 + this.perception.value * 1
-					  + this.empathy.value * 1 + this.charisma.value * 1 + this.luck.value * 1) / 3);
-		this.willpower.max = float2int(70 + this.will.value * 1 + this.intelligence.value * 1 + this.perception.value * 1);
-		this.energy.max = float2int(70 + this.physique.value * 1 + this.agility.value * 1 + this.resilience.value * 1);
-		this.socialdrive.max = float2int(70 + this.empathy.value * 1 + this.charisma.value * 1 + this.luck.value * 1);
-		for ( var sBar of ["lust","willpower","energy","socialdrive"] ) {
-			this[sBar].current = this[sBar].max;
-		}
-	} */
 	
 	// Group
 	this.followingTo = "";
@@ -88,17 +64,6 @@ window.Character = function(name, varName) {
 	
 	// Altered states
 	this.alteredStates = [];
-	this.cleanStates = function() {
-		var newAlteredStates = [];
-		for ( var as of this.alteredStates ) {
-			if ( as.flagRemove == false ) {
-				newAlteredStates.push(as);
-			} else {
-				as.cancelEffect(this.varName);
-			}
-		}
-		this.alteredStates = newAlteredStates;
-	}
 	
 	// Images
 	this.fullPortrait = null; // If it exists, it must be returned from a function
@@ -121,46 +86,7 @@ window.Character = function(name, varName) {
 		legs : new Bodypart("legs","legs"),
 		neck : new Bodypart("neck","neck")
 	};
-	
-	this.addBodypart = function(key,name) {
-		this.body[key] = new Bodypart(key,name);
-	}
-	this.removeBodypart = function(key) {
-		delete this.body[key];
-	}
-	this.addFemaleParts = function() {
-		this.addBodypart("breasts","breasts");
-		this.addBodypart("pussy","pussy");
-		this.addBodypart("anus","anus");
-	}
-	
-	this.hasFreeBodypart = function(part) {
-		var flag = false;
-		
-		if ( this.body.hasOwnProperty(part) ) {
-			if ( this.body[part].state == "free" ) {
-				flag = true;
-			}
-		}
-		
-		return flag;
-	}
-	
-	this.lockBodypart = function(part) {
-		if ( this.body.hasOwnProperty(part) ) {
-			if ( this.body[part].state == "free" ) {
-				this.body[part].state = "locked";
-			}
-		}
-	}
-	this.freeBodypart = function(part) {
-		if ( this.body.hasOwnProperty(part) ) {
-			if ( this.body[part].state == "locked" ) {
-				this.body[part].state = "free";
-			}
-		}
-	}
-	
+
 	// Drives
 	this.dImprovement = new Drive(0,0);
 	this.dPleasure = new Drive(0,0);
@@ -179,94 +105,14 @@ window.Character = function(name, varName) {
 	this.subChars = []; // Characters that this character has dominant relationships with
 	this.egaChars = []; // Characters that this character has egalitarian relationships with
 	
+	this.cbl = []; // Casus belli list: targets that actor may attack for no infamy cost
+	
 	// Misc. info
 	this.daysWithoutSex = 0;
 	this.sexScenesToday = 0;
 	
 	this.likedTopics = [];
 	
-	this.applyRelationVector = function(target,relationVector) {
-		// Applies the values of a relation vector as changes to the character's relation with the target
-		this.relations[target].friendship.stv += relationVector.friendship;
-		this.relations[target].sexualTension.stv += relationVector.sexualTension;
-		this.relations[target].romance.stv += relationVector.romance;
-		this.relations[target].domination.stv += relationVector.domination;
-		this.relations[target].submission.stv += relationVector.submission;
-		this.relations[target].rivalry.stv += relationVector.rivalry;
-		this.relations[target].enmity.stv += relationVector.enmity;
-		
-		return relationVector;
-	}
-	
-	this.applyMoodVector = function(moodVector) {
-		// Applies the values of a mood vector as changes to the character's mood
-		// Real changes to the mod are returned
-		var realChanges = new MoodVector(0,0,0,0,0,0,0,0);
-		
-		realChanges.friendly = this.mood.applyChange("friendly",moodVector.friendly);
-		realChanges.intimate = this.mood.applyChange("intimate",moodVector.intimate);
-		realChanges.flirty = this.mood.applyChange("flirty",moodVector.flirty);
-		realChanges.aroused = this.mood.applyChange("aroused",moodVector.aroused);
-		realChanges.dominant = this.mood.applyChange("dominant",moodVector.dominant);
-		realChanges.submissive = this.mood.applyChange("submissive",moodVector.submissive);
-		realChanges.bored = this.mood.applyChange("bored",moodVector.bored);
-		realChanges.angry = this.mood.applyChange("angry",moodVector.angry);
-		
-		return realChanges;
-	}
-	this.applyMoodyMoodVector = function(moodVector) {
-		// Applies the values of a mood vector as changes to the character's mood
-		// Real changes to the mod are returned
-		// With this function, the target's anger reduces some mood effects, and friendliness and intimacy reduce anger
-		var realChanges = new MoodVector(0,0,0,0,0,0,0,0);
-		var moodyMoodVector = new MoodVector( (moodVector.friendly * (200 - this.mood.angry - this.mood.bored) * 0.005) ,
-		(moodVector.intimate * (200 - this.mood.angry - this.mood.bored) * 0.005) , (moodVector.flirty * (200 - this.mood.angry - this.mood.bored) * 0.005) ,
-		(moodVector.aroused * (200 - this.mood.angry - this.mood.bored) * 0.005), moodVector.dominant , moodVector.submissive , moodVector.bored ,
-		(moodVector.angry * (200 - this.mood.friendly - this.mood.intimate) * 0.005) );
-		
-		realChanges.friendly = this.mood.applyChange("friendly",moodyMoodVector.friendly);
-		realChanges.intimate = this.mood.applyChange("intimate",moodyMoodVector.intimate);
-		realChanges.flirty = this.mood.applyChange("flirty",moodyMoodVector.flirty);
-		realChanges.aroused = this.mood.applyChange("aroused",moodyMoodVector.aroused);
-		realChanges.dominant = this.mood.applyChange("dominant",moodyMoodVector.dominant);
-		realChanges.submissive = this.mood.applyChange("submissive",moodyMoodVector.submissive);
-		realChanges.bored = this.mood.applyChange("bored",moodyMoodVector.bored);
-		realChanges.angry = this.mood.applyChange("angry",moodyMoodVector.angry);
-		
-		return realChanges;
-	}
-	
-	this.restoreMood = function() {
-		this.mood.friendly = this.baseMood.friendly;
-		this.mood.intimate = this.baseMood.intimate;
-		this.mood.flirty = this.baseMood.flirty;
-		this.mood.aroused = this.baseMood.aroused;
-		this.mood.dominant = this.baseMood.dominant;
-		this.mood.submissive = this.baseMood.submissive;
-		this.mood.bored = this.baseMood.bored;
-		this.mood.angry = this.baseMood.angry;
-	}
-	this.applyMoodDecay = function() {
-		var decayMult = 0.02;
-		this.mood.friendly -= (this.mood.friendly - this.baseMood.friendly) * decayMult;
-		this.mood.intimate -= (this.mood.intimate - this.baseMood.intimate) * decayMult;
-		this.mood.flirty -= (this.mood.flirty - this.baseMood.flirty) * decayMult;
-		this.mood.aroused -= (this.mood.aroused - this.baseMood.aroused) * decayMult;
-		this.mood.dominant -= (this.mood.dominant - this.baseMood.dominant) * decayMult;
-		this.mood.submissive -= (this.mood.submissive - this.baseMood.submissive) * decayMult;
-		this.mood.bored -= (this.mood.bored - this.baseMood.bored) * decayMult;
-		this.mood.angry -= (this.mood.angry - this.baseMood.angry) * decayMult;
-	}
-	
-	this.getIsAvailableForSocialInteractions = function(initiator) {
-		var flagAvailable = this.availableSocialInteractions;
-		if ( this.followingTo != "" && this.followingTo != initiator ) {
-			if ( State.variables.compass.findFirstSisIdInvolvingCharacter(this.varName) == -1 ) {
-				flagAvailable = false;
-			}
-		}
-		return flagAvailable;
-	}
 	this.availableSocialInteractions = true; // If false, it isn't possible to begin dynamic social interactions with a given character
 	
 	// Virginities list
@@ -275,103 +121,22 @@ window.Character = function(name, varName) {
 		anal : new Virginity("anus","Anal",true,false),
 		dick : new Virginity("dick","Penile",true,false)
 	};
-	this.makeVirginitiesUnknown = function() {
-		for ( var virginity in this.virginities ) {
-			this.virginities[virginity].taken = true;
-			this.virginities[virginity].taker = "unknown";
-			this.virginities[virginity].method = "unknown";
-		}
-	}
-	
+		
 	// Orgasms
 	this.orgasmCounter = 0;
 	this.orgasmSceneCounter = 0;
 	this.ruinedOrgasmSceneCounter = 0;
+	this.mindblowingOrgasmSC = 0;
+	
+	this.turnPrefTags = [];
 	
 	this.koed = false; // Flag: has the character been defeated in the current battle
-	
-	this.tryOrgasm = function() {
-		var overflow = -1;
-		
-		if ( this.lust.current <= 0 ) {
-			overflow = -this.lust.current;
-			this.orgasmCounter++;
-			if ( isCharsOrgasmRuined(this.varName) == false ) {
-				this.orgasmSceneCounter++;
-				this.lust.current = this.lust.max;
-			} else {
-				this.ruinedOrgasmSceneCounter++;
-				this.lust.current = this.lust.max * 0.80;
-				this.energy.changeValue(-this.energy.max * 0.1);
-				this.willpower.changeValue(-this.willpower.max * 0.1);
-				this.socialdrive.changeValue(-this.socialdrive.max * 0.1);
-			}
-		}
-		
-		return overflow;
-	}
 	
 	// Known moves
 	this.saList = ["doNothing","struggle"];
 	
 	// Known extra social actions
 	this.extraSocIntList = [];
-	
-	// Management
-	this.restoreBars = function() {						// RESTORE BARS FUNC
-		this.lust.restore();
-		this.willpower.restore();
-		this.energy.restore();
-		this.socialdrive.restore();
-	}
-	
-	this.cleanLead = function() {
-		this.lead = 50;
-		this.hasLead = false;
-	}
-	
-	this.sortSaList = function() {
-		var sortedList = ["doNothing"];
-		
-		// Add single use actions
-		for ( var sa of this.saList ) {
-			if ( setup.saList[sa].tags.includes("sUse") ) {
-				if ( sortedList.includes(sa) == false ) {
-					sortedList.push(sa);
-				}
-			}
-		}
-		
-		// Add continued actions
-		for ( var sa of this.saList ) {
-			if ( setup.saList[sa].tags.includes("cAct") ) {
-				if ( sortedList.includes(sa) == false ) {
-					sortedList.push(sa);
-				}
-			}
-		}
-		
-		// Add positional actions
-		for ( var sa of this.saList ) {
-			if ( setup.saList[sa].tags.includes("pos") ) {
-				if ( sortedList.includes(sa) == false ) {
-					sortedList.push(sa);
-				}
-			}
-		}
-		
-		// Add pounce actions
-		for ( var sa of this.saList ) {
-			if ( setup.saList[sa].tags.includes("bPos") ) {
-				if ( sortedList.includes(sa) == false ) {
-					sortedList.push(sa);
-				}
-			}
-		}
-		
-		// Replace char.saList
-		this.saList = sortedList;
-	}
 	
 	// Others
 	this.getRandomName = function() {
@@ -393,17 +158,225 @@ window.Character = function(name, varName) {
 	
 	this.speechColor = "lavenderblush";
 	this.colorStyleKey = 'color: '+this.speechColor;
-	this.setSpeechColor = function(colorKey) {					// SET SPEECH COLOR
+	
+	// this.turnTags = []; // Added and gotten by functions, see below Character class. These are labels that only last for the duration of a scene turn
+	
+	// Personality
+	this.tastes = createPreferencesWeightedList();
+	
+		// Pronouns
+	this.perPr = "it"; // Personal pronoun
+	this.comPr = "it"; // Personal pronoun as complement
+	this.refPr = "itself"; // Reflexive pronoun
+	this.posPr = "its"; // Possessive pronoun
+	this.inPosPr = "its"; // Independent Possessive
+
+	// Maps
+	this.currentRoom = ""; // Key refering to the room the character is currently placed at. If no map is active, this should be equal to "".
+	
+	this.refugeRooms = []; // List of 2-element arrays. First element is map key, second element is room key.
+	this.getRefugeRoomInMap = function() {
+		var room = "none";
+		var cMapName = State.variables.compass.currentMap;
+		for ( var rr of this.refugeRooms ) {
+			if ( rr[0] == cMapName ) {
+				room = rr[1];
+			}
+		}
+		return room;
+	}
+	
+	// Scrolls
+	this.foundScrolls = [];
+	this.studiedScrolls = [];
+	
+	this.studiedScrollToday = false;
+	
+	// Equipment
+	this.ownedEquipment = []; // List of owned equipment's IDs.
+	this.weaponID = -1; // ID of equipped weapon.
+	
+	// AI
+	this.mapAi = new NpcMapAi(this.varName);
+	this.sisAi = new NpcSisAi(this.varName);
+	this.globalAi = new NpcGlobalAi(this.varName);
+	this.socialAi = new NpcSocialAi(this.varName);
+	
+	// System
+	this.wasPromptedInCurrentSisRound = false;
+};
+
+// More character methods
+Character.prototype.getName = function() { return this.name; };
+Character.prototype.getFormattedName = function() { return this.formattedName; };
+Character.prototype.changeMerit = function(value) {
+		this.merit += value;
+		if ( this.merit < 0 ) {
+			this.merit = 0;
+		}
+	}
+Character.prototype.changeInfamy = function(value) {
+		this.infamy += value;
+		if ( this.infamy < 0 ) {
+			this.infamy = 0;
+		}
+	}
+
+Character.prototype.cleanStates = function() {
+		var newAlteredStates = [];
+		for ( var as of this.alteredStates ) {
+			if ( as.flagRemove == false ) {
+				newAlteredStates.push(as);
+			} else {
+				as.cancelEffect(this.varName);
+			}
+		}
+		this.alteredStates = newAlteredStates;
+	}
+
+Character.prototype.addBodypart = function(key,name) {
+		this.body[key] = new Bodypart(key,name);
+	}
+Character.prototype.removeBodypart = function(key) {
+		delete this.body[key];
+	}
+Character.prototype.addFemaleParts = function() {
+		this.addBodypart("breasts","breasts");
+		this.addBodypart("pussy","pussy");
+		this.addBodypart("anus","anus");
+	}
+Character.prototype.addMaleParts = function() {
+		this.addBodypart("dick","dick");
+		this.addBodypart("anus","anus");
+	}
+	
+Character.prototype.hasFreeBodypart = function(part) {
+		var flag = false;
+		
+		if ( this.body.hasOwnProperty(part) ) {
+			if ( this.body[part].state == "free" ) {
+				flag = true;
+			}
+		}
+		
+		return flag;
+	}
+	
+Character.prototype.lockBodypart = function(part) {
+		if ( this.body.hasOwnProperty(part) ) {
+			if ( this.body[part].state == "free" ) {
+				this.body[part].state = "locked";
+			}
+		}
+	}
+Character.prototype.freeBodypart = function(part) {
+		if ( this.body.hasOwnProperty(part) ) {
+			if ( this.body[part].state == "locked" ) {
+				this.body[part].state = "free";
+			}
+		}
+	}
+	
+Character.prototype.applyRelationVector = function(target,relationVector) {
+		// Applies the values of a relation vector as changes to the character's relation with the target
+		this.relations[target].friendship.stv += relationVector.friendship;
+		this.relations[target].sexualTension.stv += relationVector.sexualTension;
+		this.relations[target].romance.stv += relationVector.romance;
+		this.relations[target].domination.stv += relationVector.domination;
+		this.relations[target].submission.stv += relationVector.submission;
+		this.relations[target].rivalry.stv += relationVector.rivalry;
+		this.relations[target].enmity.stv += relationVector.enmity;
+		
+		return relationVector;
+	}
+Character.prototype.applyMoodVector = function(moodVector) {
+		// Applies the values of a mood vector as changes to the character's mood
+		// Real changes to the mod are returned
+		var realChanges = new MoodVector(0,0,0,0,0,0,0,0);
+		
+		realChanges.friendly = this.mood.applyChange("friendly",moodVector.friendly);
+		realChanges.intimate = this.mood.applyChange("intimate",moodVector.intimate);
+		realChanges.flirty = this.mood.applyChange("flirty",moodVector.flirty);
+		realChanges.aroused = this.mood.applyChange("aroused",moodVector.aroused);
+		realChanges.dominant = this.mood.applyChange("dominant",moodVector.dominant);
+		realChanges.submissive = this.mood.applyChange("submissive",moodVector.submissive);
+		realChanges.bored = this.mood.applyChange("bored",moodVector.bored);
+		realChanges.angry = this.mood.applyChange("angry",moodVector.angry);
+		
+		return realChanges;
+	}
+Character.prototype.applyMoodyMoodVector = function(moodVector) {
+		// Applies the values of a mood vector as changes to the character's mood
+		// Real changes to the mod are returned
+		// With this function, the target's anger reduces some mood effects, and friendliness and intimacy reduce anger
+		var realChanges = new MoodVector(0,0,0,0,0,0,0,0);
+		var moodyMoodVector = new MoodVector( (moodVector.friendly * (200 - this.mood.angry - this.mood.bored) * 0.005) ,
+		(moodVector.intimate * (200 - this.mood.angry - this.mood.bored) * 0.005) , (moodVector.flirty * (200 - this.mood.angry - this.mood.bored) * 0.005) ,
+		(moodVector.aroused * (200 - this.mood.angry - this.mood.bored) * 0.005), moodVector.dominant , moodVector.submissive , moodVector.bored ,
+		(moodVector.angry * (200 - this.mood.friendly - this.mood.intimate) * 0.005) );
+		
+		realChanges.friendly = this.mood.applyChange("friendly",moodyMoodVector.friendly);
+		realChanges.intimate = this.mood.applyChange("intimate",moodyMoodVector.intimate);
+		realChanges.flirty = this.mood.applyChange("flirty",moodyMoodVector.flirty);
+		realChanges.aroused = this.mood.applyChange("aroused",moodyMoodVector.aroused);
+		realChanges.dominant = this.mood.applyChange("dominant",moodyMoodVector.dominant);
+		realChanges.submissive = this.mood.applyChange("submissive",moodyMoodVector.submissive);
+		realChanges.bored = this.mood.applyChange("bored",moodyMoodVector.bored);
+		realChanges.angry = this.mood.applyChange("angry",moodyMoodVector.angry);
+		
+		return realChanges;
+	}
+Character.prototype.restoreMood = function() {
+		this.mood.friendly = this.baseMood.friendly;
+		this.mood.intimate = this.baseMood.intimate;
+		this.mood.flirty = this.baseMood.flirty;
+		this.mood.aroused = this.baseMood.aroused;
+		this.mood.dominant = this.baseMood.dominant;
+		this.mood.submissive = this.baseMood.submissive;
+		this.mood.bored = this.baseMood.bored;
+		this.mood.angry = this.baseMood.angry;
+	}
+Character.prototype.applyMoodDecay = function() {
+		var decayMult = 0.02;
+		this.mood.friendly -= (this.mood.friendly - this.baseMood.friendly) * decayMult;
+		this.mood.intimate -= (this.mood.intimate - this.baseMood.intimate) * decayMult;
+		this.mood.flirty -= (this.mood.flirty - this.baseMood.flirty) * decayMult;
+		this.mood.aroused -= (this.mood.aroused - this.baseMood.aroused) * decayMult;
+		this.mood.dominant -= (this.mood.dominant - this.baseMood.dominant) * decayMult;
+		this.mood.submissive -= (this.mood.submissive - this.baseMood.submissive) * decayMult;
+		this.mood.bored -= (this.mood.bored - this.baseMood.bored) * decayMult;
+		this.mood.angry -= (this.mood.angry - this.baseMood.angry) * decayMult;
+	}
+	
+Character.prototype.getIsAvailableForSocialInteractions = function(initiator) {
+		var flagAvailable = this.availableSocialInteractions;
+		if ( this.followingTo != "" && this.followingTo != initiator ) {
+			if ( State.variables.compass.findFirstSisIdInvolvingCharacter(this.varName) == -1 ) {
+				flagAvailable = false;
+			}
+		}
+		return flagAvailable;
+	}
+	
+Character.prototype.makeVirginitiesUnknown = function() {
+		for ( var virginity in this.virginities ) {
+			this.virginities[virginity].taken = true;
+			this.virginities[virginity].taker = "unknown";
+			this.virginities[virginity].method = "unknown";
+		}
+	}
+
+Character.prototype.setSpeechColor = function(colorKey) {					// SET SPEECH COLOR
 		this.speechColor = colorKey;
 		this.colorStyleKey = 'color: '+this.speechColor;
 	}
 	
-	this.setColors = function(nameColor,speechColor) {
+Character.prototype.setColors = function(nameColor,speechColor) {
 		this.setNameColor(nameColor);
 		this.setSpeechColor(speechColor);
 	}
 	
-	this.setBaseAttributes = function(ph,ag,re,wi,nt,pe,em,ch,lu) {
+Character.prototype.setBaseAttributes = function(ph,ag,re,wi,nt,pe,em,ch,lu) {
 		this.physique.value = ph;
 		this.agility.value = ag;
 		this.resilience.value = re;
@@ -414,7 +387,7 @@ window.Character = function(name, varName) {
 		this.charisma.value = ch;
 		this.luck.value = lu;
 	}
-	this.setAffinities = function(ph,ag,re,wi,nt,pe,em,ch,lu) {
+Character.prototype.setAffinities = function(ph,ag,re,wi,nt,pe,em,ch,lu) {
 		this.physique.affinity = ph;
 		this.agility.affinity = ag;
 		this.resilience.affinity = re;
@@ -425,60 +398,66 @@ window.Character = function(name, varName) {
 		this.charisma.affinity = ch;
 		this.luck.affinity = lu;
 	}
-	
-	this.cleanAccumulatedDamages = function() {
+
+Character.prototype.cleanAccumulatedDamages = function() {
 		this.lust.cleanDamage();
 		this.willpower.cleanDamage();
 	}
 	
-	// this.turnTags = []; // Added and gotten by functions, see below Character class. These are labels that only last for the duration of a scene turn
-	
-	// Personality
-	this.tastes = createPreferencesWeightedList();
-	this.tastes.useDick.w = 110;
-	this.tastes.usePussy.w = 110;
-	this.tastes.targetDick.w = 110;
-	this.tastes.targetPussy.w = 110;
-	this.tastes.useAnus.w = 65;
-	this.tastes.targetAnus.w = 65;
-	
-		// Pronouns
-	this.perPr = "it"; // Personal pronoun
-	this.comPr = "it"; // Personal pronoun as complement
-	this.refPr = "itself"; // Reflexive pronoun
-	this.posPr = "its"; // Possessive pronoun
-	this.inPosPr = "its"; // Independent Possessive
-	this.assignFemeninePronouns = function() {
-		this.perPr = "she";
-		this.comPr = "her";
-		this.refPr = "herself";
-		this.posPr = "her";
-		this.inPosPr = "hers";
+Character.prototype.tryOrgasm = function() {
+		var overflow = -1;
+		var type = "none";
+		if ( this.lust.current <= 0 ) {
+			overflow = -this.lust.current;
+			this.orgasmCounter++;
+			if ( isCharsOrgasmRuined(this.varName) == false ) { 
+				if ( isOrgasmMindblowing(this.varName) ) {		// Mindblowing
+					this.mindblowingOrgasmSC++;
+					this.lust.current = this.lust.max;
+					this.willpower.changeValue(-this.willpower.max * 0.2);
+					type = "mindblowing";
+				} else {										// Normal orgasm
+					this.orgasmSceneCounter++;
+					this.lust.current = this.lust.max;
+					type = "normal";
+				}
+			} else { 											// Ruined orgasm
+				this.ruinedOrgasmSceneCounter++;
+				this.lust.current = this.lust.max * 0.80;
+				this.energy.changeValue(-this.energy.max * 0.1);
+				this.willpower.changeValue(-this.willpower.max * 0.1);
+				this.socialdrive.changeValue(-this.socialdrive.max * 0.1);
+				type = "ruined";
+				if ( limitedRandomInt(100) > 30 ) {
+					this.tastes.denial.w += limitedRandomInt(4);
+				}
+			}
+		}
+		
+		return [overflow,type];
 	}
-	this.assignMasculinePronouns = function() {
-		this.perPr = "he";
-		this.comPr = "him";
-		this.refPr = "himself";
-		this.posPr = "his";
-		this.inPosPr = "his";
+Character.prototype.influenceSexPrefs = function(probability,intensity) {
+	for ( var tag of this.turnPrefTags ) {
+		if ( probability > limitedRandomInt(100) ) {
+			this.tastes[tag].w += intensity;
+		}
 	}
-	this.assignItPronouns = function() {
-		this.perPr = "it";
-		this.comPr = "it";
-		this.refPr = "itself";
-		this.posPr = "its";
-		this.inPosPr = "its";
-	}
-	
+}
+		
 	// Text message functions
-	this.textBars = function() { // Bars
+	
+Character.prototype.textBars = function() { // Bars
 		var text = "";
 		if ( this.koed ) {
 			text += colorText("KO","darkgray") + "\n";
 		} else {
 			// Lead
 			if ( State.variables.sc.enabledLead == "dynamic" ) {
-				text += this.textLeadBar() + "\n";
+				if ( doesCharHaveSceneTag(this.varName,"noLead") ) {
+					text += '<span style="color:darkgray">Lead disabled\n</span>'
+				} else {
+					text += this.textLeadBar() + "\n";
+				}
 			}
 			else if ( State.variables.sc.enabledLead == "fixed" && this.hasLead == true ) {
 				text += '<span style="color:darkgray"'+'>Leading</'+'span>'+'\n';
@@ -525,7 +504,8 @@ window.Character = function(name, varName) {
 		text += "/" + this.socialdrive.max.toFixed(0) + "\n";
 		return text;
 	}
-	this.textStats = function() {
+
+Character.prototype.textStats = function() {
 		var text = "";
 		var descriptions = [ getPhysiqueDescription() , getAgilityDescription() , getResilienceDescription() , getWillDescription() , getIntelligenceDescription() , getPerceptionDescription() , getEmpathyDescription() , getCharismaDescription() , getLuckDescription() ];
 		var i = 0;
@@ -545,14 +525,14 @@ window.Character = function(name, varName) {
 		}
 		return text;
 	}
-	this.textLeadBar = function() {
+Character.prototype.textLeadBar = function() {
 		var text = '<span style="color:darkgray">Lead: </span>' + this.lead.toFixed(2) + " / 100";
 		if ( this.hasLead == true ) {
 			text += '<span style=' + '"color:darkgray"' + '> Leading</span>';
 		}
 		return text;
 	}
-	this.textControlBar = function() {
+Character.prototype.textControlBar = function() {
 		var text = '<span style="color:darkgray">Control: </span>';
 		if ( this.control == this.maxControl ) {
 			text += this.control + "/" + this.maxControl;
@@ -569,7 +549,7 @@ window.Character = function(name, varName) {
 
 		return text;
 	}
-	this.textAlteredStates = function() {
+Character.prototype.textAlteredStates = function() {
 		var text = '<span style="color:darkgray">';
 		var i = 0;
 		for ( var as of this.alteredStates ) {
@@ -587,17 +567,24 @@ window.Character = function(name, varName) {
 		text += '</span>';
 		return text;
 	}
-	this.textLustBar = function() {
+
+Character.prototype.textLustBar = function() {
 		var imgLust = img("lust");
 		return ( imgLust + ' <span style="color:lightcoral">Lust: </span>' + this.lust.current.toFixed(2) + "/" + this.lust.max.toFixed(0) );
 	}
-	this.lustBarText = this.textLustBar();
-	this.textWillpowerBar = function() {
+	
+Character.prototype.lustBarText = function() {
+		var imgLust = img("lust");
+		return ( imgLust + ' <span style="color:lightcoral">Lust: </span>' + this.lust.current.toFixed(2) + "/" + this.lust.max.toFixed(0) );
+	}
+Character.prototype.textWillpowerBar = function() {
 		return ( img("willpower") + ' <span style="color:darkslateblue">Willpower: </span>' + this.willpower.current.toFixed(2) + "/" + this.willpower.max.toFixed(0) );
 	}
-	this.willpowerBarText = this.textWillpowerBar();
+Character.prototype.willpowerBarText = function() {
+		return ( img("willpower") + ' <span style="color:darkslateblue">Willpower: </span>' + this.willpower.current.toFixed(2) + "/" + this.willpower.max.toFixed(0) );
+	}
 	
-	this.textAccumulatedDamages = function() { // Accumulated Damage
+Character.prototype.textAccumulatedDamages = function() { // Accumulated Damage
 		var text = this.name + ": ";
 		if ( this.lust.accumulatedDamage > 0 ) {
 			text += "Lust: " + this.lust.accumulatedDamage.toFixed(2) + ", ";
@@ -609,15 +596,9 @@ window.Character = function(name, varName) {
 		return text;
 	}
 	
-	this.textBodyparts = function() { // Bodyparts
+Character.prototype.textBodyparts = function() { // Bodyparts
 		var text = "";
-		/*
-		for ( var part in this.body ) {
-			//text += part.textToUI();
-			if ( this.body[part].key == "dick" || this.body[part].key == "pussy" ) {
-				text += this.body[part].textToUI();
-			}
-		} */
+		
 		var bpList = ["pussy","dick","anus","breasts","mouth","eyes","neck","arms","legs","tail"];
 		for ( var part of bpList ) {
 			if ( this.body.hasOwnProperty(part) ) {
@@ -628,8 +609,97 @@ window.Character = function(name, varName) {
 		return text;
 	}
 	
+	// Pronouns
+Character.prototype.assignFemeninePronouns = function() {
+		this.perPr = "she";
+		this.comPr = "her";
+		this.refPr = "herself";
+		this.posPr = "her";
+		this.inPosPr = "hers";
+	}
+Character.prototype.assignMasculinePronouns = function() {
+		this.perPr = "he";
+		this.comPr = "him";
+		this.refPr = "himself";
+		this.posPr = "his";
+		this.inPosPr = "his";
+	}
+Character.prototype.assignItPronouns = function() {
+		this.perPr = "it";
+		this.comPr = "it";
+		this.refPr = "itself";
+		this.posPr = "its";
+		this.inPosPr = "its";
+	}
+Character.prototype.getDiminutive = function() { return randomFromList(["girl"]); };
+	
+	// Management
+Character.prototype.restoreBars = function() {						// RESTORE BARS FUNC
+		this.lust.restore();
+		this.willpower.restore();
+		this.energy.restore();
+		this.socialdrive.restore();
+	}
+	
+Character.prototype.cleanLead = function() {
+		this.lead = 50;
+		this.hasLead = false;
+	}
+	
+Character.prototype.sortSaList = function() {
+		var sortedList = ["doNothing"];
+		
+		// Add single use actions
+		for ( var sa of this.saList ) {
+			if ( setup.saList[sa].tags.includes("sUse") ) {
+				if ( sortedList.includes(sa) == false ) {
+					sortedList.push(sa);
+				}
+			}
+		}
+		
+		// Add continued actions
+		for ( var sa of this.saList ) {
+			if ( setup.saList[sa].tags.includes("cAct") ) {
+				if ( sortedList.includes(sa) == false ) {
+					sortedList.push(sa);
+				}
+			}
+		}
+		
+		// Add positional actions
+		for ( var sa of this.saList ) {
+			if ( setup.saList[sa].tags.includes("pos") ) {
+				if ( sortedList.includes(sa) == false ) {
+					sortedList.push(sa);
+				}
+			}
+		}
+		
+		// Add composite positional actions
+		for ( var sa of this.saList ) {
+			if ( setup.saList[sa].tags.includes("cpos") ) {
+				if ( sortedList.includes(sa) == false ) {
+					sortedList.push(sa);
+				}
+			}
+		}
+		
+		// Add pounce actions
+		for ( var sa of this.saList ) {
+			if ( setup.saList[sa].tags.includes("bPos") ) {
+				if ( sortedList.includes(sa) == false ) {
+					sortedList.push(sa);
+				}
+			}
+		}
+		
+		// Replace char.saList
+		this.saList = sortedList;
+	}
+
 	// Character stats screen view
-	this.getCharacterUIbarInfo = function() { // Returns a string that generates the character's basic info when displayed on Sugarcube 2
+Character.prototype.getCharacterUIbarInfo = function() { // Returns a string that generates the character's basic info when displayed on Sugarcube 2
 		var string = "<div align='center'>\ " + generateTitledName(this.varName) + " (" + this.getCharScreenButton("Status") + ")\n";
 		if ( this.avatar != null ) {
 			string += this.avatar() + "\n";
@@ -638,7 +708,7 @@ window.Character = function(name, varName) {
 		string += this.textBars() + "\n";
 		return string;
 	}
-	this.getCharacterScreenInfo = function() { // Returns a string that generates the character's stats screen when displayed on Sugarcube 2
+Character.prototype.getCharacterScreenInfo = function() { // Returns a string that generates the character's stats screen when displayed on Sugarcube 2
 		var string = "__" + this.formattedName + "__\n";
 		// TODO: Divide textBars to textBars and textStats, divided by a vertical line
 		//string += '<div class="split left"><div class="centered"><p>' + this.textBars() + '</p></div></div>';
@@ -653,7 +723,7 @@ window.Character = function(name, varName) {
 		return string;
 	}
 	
-	this.getCharScreenButton = function(handler) {
+Character.prototype.getCharScreenButton = function(handler) {
 		var text = '<<click "' + handler + '">>'
 				   + '<<' + 'script>>'
 				   + 'State.variables.charScreenFocus = "' + this.varName + '"; '
@@ -665,41 +735,7 @@ window.Character = function(name, varName) {
 		return text;
 	}
 
-	// Maps
-	this.currentRoom = ""; // Key refering to the room the character is currently placed at. If no map is active, this should be equal to "".
 	
-	this.refugeRooms = []; // List of 2-element arrays. First element is map key, second element is room key.
-	this.getRefugeRoomInMap = function() {
-		var room = "none";
-		var cMapName = State.variables.compass.currentMap;
-		for ( var rr of this.refugeRooms ) {
-			if ( rr[0] == cMapName ) {
-				room = rr[1];
-			}
-		}
-		return room;
-	}
-	
-	// Scrolls
-	this.foundScrolls = [];
-	this.studiedScrolls = [];
-	
-	this.studiedScrollToday = false;
-	
-	// Equipment
-	this.ownedEquipment = []; // List of owned equipment's IDs.
-	this.weaponID = -1; // ID of equipped weapon.
-	
-	// AI
-	this.mapAi = new NpcMapAi(this.varName);
-	this.sisAi = new NpcSisAi(this.varName);
-	this.globalAi = new NpcGlobalAi(this.varName);
-	this.socialAi = new NpcSocialAi(this.varName);
-	
-	// System
-	this.wasPromptedInCurrentSisRound = false;
-};
-
 // Previously at character class
 
 // Stats and bars
@@ -827,6 +863,7 @@ window.charLosesFollowers = function(unfollowedChar) {
 }
 window.charFollowsChar = function(followingChar,followedChar,flagPayingDebt) {
 	charLosesFollowers(followingChar);
+	gC(followingChar).mission = "";
 	if ( gC(followingChar).followingTo != "" ) {
 		charUnfollowsChar(followingChar,gC(followingChar).followingTo);
 	}
@@ -838,6 +875,12 @@ window.charFollowsChar = function(followingChar,followedChar,flagPayingDebt) {
 	if ( flagPayingDebt ) {
 		gC(followingChar).followingForDebt = true;
 		gC(followingChar).startedFollowingAt = [ State.variables.daycycle.hours , State.variables.daycycle.minutes ];
+	}
+	
+	// Join appropriate Sis
+	var sisId = State.variables.compass.findFirstSisIdInvolvingCharacter(followedChar);
+	if ( sisId != -1 ) {
+		State.variables.compass.sisList[sisId].charJoinsSis(followingChar);
 	}
 	
 	// Notify player if appropriate
@@ -887,7 +930,7 @@ window.applyFollowingDebt = function(charKey) {
 	}
 }
 
-	// Turn tags
+	// Turn tags ( "denied" ) 
 window.getCharTurnTags = function(charKey) {
 	var turnTags = [];
 	if ( gC(charKey).hasOwnProperty("turnTags") ) {
@@ -906,6 +949,56 @@ window.doesCharHaveTurnTag = function(charKey,tag) {
 	var flag = false;
 	if ( gC(charKey).hasOwnProperty("turnTags") ) {
 		if ( gC(charKey).turnTags.includes(tag) ) {
+			flag = true;
+		}
+	}
+	return flag;
+}
+
+	// Scene tags ( "noLead" )
+window.getCharSceneTags = function(charKey) {
+	var sceneTags = [];
+	if ( gC(charKey).hasOwnProperty("sceneTags") ) {
+		sceneTags = gC(charKey).sceneTags;
+	}
+	return sceneTags;
+}
+window.addSceneTagToChar = function(tag,charKey) {
+	if ( gC(charKey).hasOwnProperty("sceneTags") ) {
+		gC(charKey).sceneTags.push(tag);
+	} else {
+		gC(charKey).sceneTags = [tag];
+	}
+}
+window.doesCharHaveSceneTag = function(charKey,tag) {
+	var flag = false;
+	if ( gC(charKey).hasOwnProperty("sceneTags") ) {
+		if ( gC(charKey).sceneTags.includes(tag) ) {
+			flag = true;
+		}
+	}
+	return flag;
+}
+
+	// Day tags ( "liberationAttempt" )
+window.getCharSceneTags = function(charKey) {
+	var dayTags = [];
+	if ( gC(charKey).hasOwnProperty("dayTags") ) {
+		dayTags = gC(charKey).dayTags;
+	}
+	return dayTags;
+}
+window.addDayTagToChar = function(tag,charKey) {
+	if ( gC(charKey).hasOwnProperty("dayTags") ) {
+		gC(charKey).dayTags.push(tag);
+	} else {
+		gC(charKey).dayTags = [tag];
+	}
+}
+window.doesCharHaveDayTag = function(charKey,tag) {
+	var flag = false;
+	if ( gC(charKey).hasOwnProperty("dayTags") ) {
+		if ( gC(charKey).dayTags.includes(tag) ) {
 			flag = true;
 		}
 	}
@@ -936,6 +1029,15 @@ window.isCharsOrgasmRuined = function(charKey) {
 				}
 			}
 		}
+	}
+	return flag;
+}
+window.isOrgasmMindblowing = function(charKey) {
+	var flag = false;
+	var overflowPercent = -(gC(charKey).lust.current/gC(charKey).lust.max);
+	var overflowScore = gC(charKey).orgasmSceneCounter - (gC(charKey).mindblowingOrgasmSC * 3) + (overflowPercent * 1.5);
+	if ( overflowScore > 2.4 ) {
+		flag = true;
 	}
 	return flag;
 }
@@ -1116,6 +1218,44 @@ window.getThreeKindredCharStats = function(charKey) { // Returns the character's
 	return kindredStats;
 }
 
+	// Body
+window.charHasLockedBodypart = function(charKey,bodypartKey) {
+	var flag = false;
+	if ( gC(charKey).body.hasOwnProperty(bodypartKey) ) {
+		if ( gC(charKey).body[bodypartKey].state == "locked" ) {
+			flag = true;
+		}
+	}
+	return flag;
+}
+
+window.returnCharsUnlockedGenitals = function(charKey) {
+	var unlockedGenitals = [];
+	if ( gC(charKey).hasFreeBodypart("dick") ) {
+		unlockedGenitals.push("dick");
+	}
+	if ( gC(charKey).hasFreeBodypart("pussy") ) {
+		unlockedGenitals.push("pussy");
+	}
+	return unlockedGenitals;
+}
+
+	// States
+window.removeCharsStates = function(charKey) {
+	for ( var as of gC(charKey).alteredStates ) {
+		as.cancelEffect(charKey);
+	}
+	gC(charKey).alteredStates = [];
+}
+
+	// Casus belli
+window.actorGetsCbAgainstTarget = function(actor,target) {
+	gC(actor).cbl.push(target);
+	if ( gC(actor).socialAi.rivalTs.includes(target) == false ) {
+		gC(actor).socialAi.rivalTs.push(target);
+	}
+}
+
 // Auxiliar UI
 
 window.textCharactersDrives = function(character) {
@@ -1130,3 +1270,126 @@ window.textCharactersDrives = function(character) {
 	}
 	return desc;
 }
+
+window.textCharactersTastes = function(character) {
+	var desc = "";
+	var iFlag = false;
+	var flagDisplay = true;
+	for ( var t in gC(character).tastes ) {
+	flagDisplay = true;
+	
+	if ( gC(character).tastes[t].content == "useDick" ) {
+		if ( gC(character).body.hasOwnProperty("dick") == false ) { flagDisplay = false; }
+	} else if ( gC(character).tastes[t].content == "usePussy" ) {
+		if ( gC(character).body.hasOwnProperty("pussy") == false ) { flagDisplay = false; }
+	} else if ( gC(character).tastes[t].content == "useAnus" ) {
+		if ( gC(character).body.hasOwnProperty("anus") == false ) { flagDisplay = false; }
+	} else if ( gC(character).tastes[t].content == "useBreasts" ) {
+		if ( gC(character).body.hasOwnProperty("breasts") == false ) { flagDisplay = false; }
+	} else if ( gC(character).tastes[t].content == "useMouth" ) {
+		if ( gC(character).body.hasOwnProperty("mouth") == false ) { flagDisplay = false; }
+	} else if ( gC(character).tastes[t].content == "useEyes" ) {
+		if ( gC(character).body.hasOwnProperty("eyes") == false ) { flagDisplay = false; }
+	} else if ( gC(character).tastes[t].content == "useHands" ) {
+		if ( gC(character).body.hasOwnProperty("arms") == false ) { flagDisplay = false; }
+	} else if ( gC(character).tastes[t].content == "useLegs" ) {
+		if ( gC(character).body.hasOwnProperty("legs") == false ) { flagDisplay = false; }
+	} else if ( gC(character).tastes[t].content == "useTail" ) {
+		if ( gC(character).body.hasOwnProperty("tail") == false ) { flagDisplay = false; }
+	}
+		if ( flagDisplay ) {
+			if ( gC(character).tastes[t] instanceof weightedElement ) {
+				if ( gC(character).tastes[t].content != "continuedAction" && gC(character).tastes[t].content != "position" ) {
+					iFlag = "//";
+					if ( gC(character).tastes[t].r == 2 ) {
+						desc += "[img[img/sysIcons/redPlus.png]]";
+						iFlag = "__";
+					} else if ( gC(character).tastes[t].r == 1 ) {
+						iFlag = "";
+						desc += "[img[img/sysIcons/bluePlus.png]]";
+					} else {
+						desc += "    ";
+					}
+					desc += " ";
+					if ( iFlag != false ) { desc += iFlag; }
+					switch ( gC(character).tastes[t].content ) {
+						case "foreplay":
+							desc += "Foreplay"; break;
+						case "oral":
+							desc += "Oral";	break;
+						case "fullsex":
+							desc += "Full sex";	break;
+						case "talk":
+							desc += "Banter"; break;
+						case "useDick":
+							desc += "Use dick"; break;
+						case "usePussy":
+							desc += "Use pussy"; break;
+						case "useAnus":
+							desc += "Use anus"; break;
+						case "useBreasts":
+							desc += "Use breasts"; break;
+						case "useMouth":
+							desc += "Use mouth"; break;
+						case "useEyes":
+							desc += "Use eyes"; break;
+						case "useHands":
+							desc += "Use hands"; break;
+						case "useLegs":
+							desc += "Use legs"; break;
+						case "useTail":
+							desc += "Use tail"; break;
+						case "targetDick":
+							desc += "Target dick"; break;
+						case "targetPussy":
+							desc += "Target pussy"; break;
+						case "targetBreasts":
+							desc += "Target breasts"; break;
+						case "targetAnus":
+							desc += "Target anus"; break;
+						case "targetMouth":
+							desc += "Target mouth"; break;
+						case "targetEyes":
+							desc += "Target eyes"; break;
+						case "targetHands":
+							desc += "Target hands"; break;
+						case "targetLegs":
+							desc += "Target legs"; break;
+						case "targetTail":
+							desc += "Target tail"; break;
+						case "top":
+							desc += "Top"; break;
+						case "bottom":
+							desc += "Bottom"; break;
+						case "domination":
+							desc += "Domination"; break;
+						case "submission":
+							desc += "Submission"; break;
+						case "bondage":
+							desc += "Bondage"; break;
+						case "teasing":
+							desc += "Teasing"; break;
+						case "hypnosis":
+							desc += "Hypnosis"; break;
+						case "draining":
+							desc += "Draining"; break;
+						case "charm":
+							desc += "Charm"; break;
+						case "romantic":
+							desc += "Romantic"; break;
+						case "usePain":
+							desc += "Use pain"; break;
+						case "receivePain":
+							desc += "Receive pain"; break;
+						case "denial":
+							desc += "Denial"; break;
+					}
+					if ( iFlag != false ) { desc += iFlag; }
+					desc += " - W:" + gC(character).tastes[t].w + "\n";
+				}
+			}
+		}
+	}
+	return desc;
+}
+

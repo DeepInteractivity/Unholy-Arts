@@ -31,11 +31,14 @@ window.RelPar = function(shortTerm,longTerm) {
 	this.ltv = longTerm; // Long Term Value
 	this.level = 0; // Level, determined at the start of the day
 	this.levelMod = 0; // Level modifier, gets summed to current level
-	
-	this.processNewDay = function(mult) {
+};
+
+RelPar.prototype.processNewDay = function(mult) {
 		var f = (this.stv * mult) / 100.0;
+		if ( this.stv < 0 ) { this.stv *= 0.5; } // Reduce effect of negative stv
 		this.stv -= f * 5; // Remove 5% of current Short Term Value
 		this.ltv += f; // Add 1% of current Short Term Value
+		if ( this.ltv < 0 ) { this.ltv = 0; } // Prevent negative ltv
 		var levelChanges = formulaRelParLevel(this);
 		this.level += levelChanges;
 		if ( levelChanges != 0 ) {
@@ -44,7 +47,6 @@ window.RelPar = function(shortTerm,longTerm) {
 			return false;
 		}
 	}
-};
 
 window.formulaRelParLevel = function(RelPar) { // Returns the level of a given RelPar
 	var newLevel = 0;
@@ -116,8 +118,9 @@ window.Relation = function(targetCharKey) {
 	this.relType = null;
 	
 	this.anger = 0; // Anger works independently and is resetted each day. // Not implemented, may get deleted completely
-	
-	this.processNewDay = function() {
+};
+
+Relation.prototype.processNewDay = function() {
 		var anyChanges = false;
 		for ( var stat of [ "friendship" , "sexualTension" , "romance" , "domination" , "submission" , "rivalry" , "enmity" ] ) {
 			var mult = 1.0;
@@ -142,7 +145,6 @@ window.Relation = function(targetCharKey) {
 		}
 		return anyChanges;
 	}
-};
 
 window.checkAndCreateRelations = function(charList) { // This function checks every character in a given list, checks if they have relations, and
 													// creates them if they don't 
@@ -196,6 +198,18 @@ window.getRelation = function(actor,target) {
 	return gC(actor).relations[target];
 }
 
+window.initRelationshipDataAmongAllActiveCharacters = function() {
+	for ( var charA of getActiveSimulationCharactersArray() ) {
+		for ( var charB of getActiveSimulationCharactersArray() ) {
+			if ( charA != charB ) {
+				if ( getRelation(charA,charB) == undefined ) {
+					gC(charA).relations[charB] = new Relation(charB);
+				}
+			}
+		}
+	}
+}
+
 // Constructors, serializers, etc.
 Relation.prototype._init = function (obj) {
 	Object.keys(obj).forEach(function (pn) {
@@ -232,7 +246,7 @@ window.getRelationshipDescription = function(charA,charB) {
 	if ( fr == 0 && ro == 0 && se == 0 && dom == 0 && sub == 0 && ri == 0 && en == 0 ) {
 		results = [(gC(charA).getFormattedName() + " is indifferent towards " + gC(charB).getFormattedName() + "."),"0",0];
 	} else if ( (fr+ro) > (ri+en) ) { // Positive relationship
-		if ( (fr+ro) > (se*2) ) { // Not sexually focused
+		if ( (fr+ro) > (se*1.5) ) { // Not sexually focused
 			var dsBalance = (dom-sub) / (fr+ro);
 			inValue = fr+ro;
 			if ( inValue > 15 ) { intensity = 2; }
@@ -261,8 +275,8 @@ window.getRelationshipDescription = function(charA,charB) {
 				}
 			}
 		} else { // Sexually focused
-			var dsBalance = (dom-sub) / (se*2);
-			inValue = se*2;
+			var dsBalance = (dom-sub) / (se*1.5);
+			inValue = se*1.5;
 			if ( inValue > 15 ) { intensity = 2; }
 			else if ( inValue > 7 ) { intensity = 1; }
 			if ( dsBalance >= 0.25 ) { // Domination is dominant
@@ -272,7 +286,7 @@ window.getRelationshipDescription = function(charA,charB) {
 			} else if ( dsBalance <= -0.25 ) { // Submission is dominant
 				if ( intensity == 0 ) { results = [(gC(charA).getFormattedName() + " is aroused by " + gC(charB).getFormattedName() + "."),"1ba",0]; }
 				else if ( intensity == 1 ) { results = [(gC(charA).getFormattedName() + " looks up to " + gC(charB).getFormattedName() + " with respect and lust."),"1ba",1]; }
-				else { results = [(gC(charA).getFormattedName() + " melts is desire and devotion for " + gC(charB).getFormattedName() + "."),"1ba",2]; }
+				else { results = [(gC(charA).getFormattedName() + " melts in desire and devotion for " + gC(charB).getFormattedName() + "."),"1ba",2]; }
 			} else { // No domination
 				if ( intensity == 0 ) { results = [(gC(charA).getFormattedName() + " lusts after " + gC(charB).getFormattedName() + "."),"1bc",0]; }
 				else if ( intensity == 1 ) { results = [(gC(charA).getFormattedName() + " gets excited with " + gC(charB).getFormattedName() + "'s company."),"1bc",1]; }
@@ -280,7 +294,7 @@ window.getRelationshipDescription = function(charA,charB) {
 			}
 		}
 	} else { // Negative relationship
-		if ( (ri+en) > (se*2) ) { // Not sexually focused
+		if ( (ri+en) > (se*1.5) ) { // Not sexually focused
 			var dsBalance = (dom-sub) / (ri+en);
 			inValue = ri+en;
 			if ( inValue > 15 ) { intensity = 2; }

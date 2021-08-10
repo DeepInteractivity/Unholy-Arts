@@ -10,6 +10,7 @@ window.SisPlayerInfo = function() {
 	
 	this.flagRejectedSis = false;
 	this.rejectedSisPassage = "";
+	this.playerPrompt = "";
 	
 	this.clean = function() {
 		this.currentTarget = "";
@@ -75,6 +76,7 @@ window.SocIntSys = function(key,charList) {
 	this.interactionsDescription = "";
 	this.moodChangesDescription = "";
 	this.relationChangesDescription = "";
+	this.expGainsDescription = "";
 	this.descriptionsText = ""; // Sums all descriptions about the last round's results
 	
 	this.passageText = "TestText";
@@ -104,7 +106,7 @@ window.SocIntSys = function(key,charList) {
 		
 		this.passageText = "";
 		
-		if ( State.variables.sisPlayerInfo.flagRejectedSis == false && this.flagPlayerIsPrompted == false ) {
+		if ( State.variables.sisPlayerInfo.playerPrompt == "" && State.variables.sisPlayerInfo.flagRejectedSis == false && this.flagPlayerIsPrompted == false ) {
 			// Important messages
 			if ( this.importantMessages != "" ) {
 				this.passageText += "<div class='standardBox'>" + colorText(this.importantMessages,"red") + "</div>\n";
@@ -149,9 +151,20 @@ window.SocIntSys = function(key,charList) {
 				
 				this.passageText += this.formatPlayerInteractionsToTarget(State.variables.sisPlayerInfo.currentTarget,this.charInteractions[it]);
 				
-				if ( gC("chPlayerCharacter").followingTo == "" ) {
-					// Specific interactions
-					this.passageText += "\n" + this.getButtonSisSpecifics();
+				var flagExtraOptions = true;
+				if ( this.flagPlayerTakenToScene == true ) {
+					flagExtraOptions = false;
+				} else if ( gC("chPlayerCharacter").followingTo != "" ) {
+					if ( (gC("chPlayerCharacter").followingTo == gC("chPlayerCharacter").domChar) || (gC("chPlayerCharacter").followingForDebt == true) ) {
+						flagExtraOptions = false;
+					}
+				}
+				
+				if ( flagExtraOptions ) {
+					if ( gC("chPlayerCharacter").followingTo == "" ) {
+						// Specific interactions
+						this.passageText += "\n" + this.getButtonSisSpecifics();
+					}
 					
 					// Get out of SIS
 					this.passageText += "\n" + this.getButtonEndSis();
@@ -160,6 +173,10 @@ window.SocIntSys = function(key,charList) {
 			else { // Player alone
 				this.passageText += this.getButtonEndDeadSis();
 			}
+		}
+		else if ( State.variables.sisPlayerInfo.playerPrompt != "" ) {
+			this.passageText = State.variables.sisPlayerInfo.playerPrompt;
+			State.variables.sisPlayerInfo.playerPrompt = "";
 		}
 		else if ( this.flagPlayerIsPrompted ) {
 			this.passageText = this.playerPromptText;
@@ -288,10 +305,13 @@ window.SocIntSys = function(key,charList) {
 			this.descriptionsText += this.moodChangesDescription + "\n";
 		}
 		if ( this.relationChangesDescription != "" ) {
-			this.descriptionsText += this.relationChangesDescription + "\n";
+			this.descriptionsText += this.relationChangesDescription;
+		}
+		if ( this.expGainsDescription != "" ) {
+			this.descriptionsText += '\n\n<span style="color:darkgray"'+'>__Experience__:</'+'span>' + this.expGainsDescription;
 		}
 		if ( this.extraEffects != "" ) {
-			this.descriptionsText += '\n<span style="color:darkgray"'+'>__Extra effects__:</'+'span>' + this.extraEffects;
+			this.descriptionsText += '\n\n<span style="color:darkgray"'+'>__Extra effects__:</'+'span>' + this.extraEffects;
 			this.extraEffects = "";
 		}
 	}
@@ -369,7 +389,17 @@ window.SocIntSys = function(key,charList) {
 		
 		for ( var iKey of allInteractions.concat(allExtraInteractions) ) {
 			if ( getSiByKey(iKey).isValid(this,character,"chDummy",[],null) ) {
-				validInteractions.push(iKey);
+				var valid = true;
+				if ( gSettings().lewdMales == "disable" ) {
+					if ( character != "chPlayerCharacter" && gC(character).perPr == "he" ) {
+						if ( getSiByKey(iKey).tags.includes("flirty") || getSiByKey(iKey).tags.includes("aroused") ) {
+							valid = false;
+						}
+					}
+				}
+				if ( valid ) {
+					validInteractions.push(iKey);
+				}
 			}
 		}
 		
@@ -409,11 +439,11 @@ window.SocIntSys = function(key,charList) {
 	}
 	
 	this.npcsMakeInterRoundDecisions = function() {
+		var allowOtherCostlyDecisions = true;
 		var actions = [];
 		var chars = [];
 		
 		for ( var character of this.charList ) { chars.push(character) }
-		
 		for ( var character of chars ) {
 			gC(character).wasPromptedInCurrentSisRound = false;
 		}
@@ -429,45 +459,38 @@ window.SocIntSys = function(key,charList) {
 		for ( var action of actions ) {				// Execute all actions, provided it's possible
 			var actor = action[0];
 			var target = action[2];
-	if ( this.tempLeftSis.includes(actor) == false && this.tempLeftSis.includes(target) == false ) {
-			if ( target == "" ) {
-				switch(action[1]) {
-					case "leave":							// Leaving
-						this.tempLeftSis.push(actor);
-						this.charsLeaveSis(getCharGroup(actor));
-						this.importantMessages += getCharNames(getCharGroup(actor)) + " has left the conversation.\n";
-						if ( actor == State.variables.sisPlayerInfo.currentTarget ) {
-							State.variables.sisPlayerInfo.autoSelectNewTarget();
+			if ( this.tempLeftSis.includes(actor) == false && this.tempLeftSis.includes(target) == false ) {
+					if ( target == "" ) {
+						switch(action[1]) {
+							case "leave":							// Leaving
+								this.tempLeftSis.push(actor);
+								this.charsLeaveSis(getCharGroup(actor));
+								this.importantMessages += getCharNames(getCharGroup(actor)) + " has left the conversation.\n";
+								if ( actor == State.variables.sisPlayerInfo.currentTarget ) {
+									State.variables.sisPlayerInfo.autoSelectNewTarget();
+								}
+								break;
 						}
-						break;
-				}
-			}
-			else if ( this.charList.includes(target) && gC(target).wasPromptedInCurrentSisRound == false ) {
-				if ( target == "chPlayerCharacter" ) { gC("chPlayerCharacter").wasPromptedInCurrentSisRound = true; }
-				switch(action[1]) {
-					case "leave":							// Leaving
-						this.charsLeaveSis(getCharGroup(actor));
-						this.importantMessages += gC(actor).getName() + " has left the conversation.\n";
-						if ( actor == State.variables.sisPlayerInfo.currentTarget ) {
-							State.variables.sisPlayerInfo.autoSelectNewTarget();
+					}
+					else if ( this.charList.includes(target) && gC(target).wasPromptedInCurrentSisRound == false ) {
+						if ( target == "chPlayerCharacter" ) { gC("chPlayerCharacter").wasPromptedInCurrentSisRound = true; }
+						switch(action[1]) {
+							case "leave":							// Leaving
+								this.charsLeaveSis(getCharGroup(actor));
+								this.importantMessages += gC(actor).getName() + " has left the conversation.\n";
+								if ( actor == State.variables.sisPlayerInfo.currentTarget ) {
+									State.variables.sisPlayerInfo.autoSelectNewTarget();
+								}
+								break;
 						}
-						break;
-						
-					case "egalitarianSex":					// Invite egalitarian sex
-						this.executeStandardSistEffects(0,actor,target);
-						break;
-					case "submissiveSex":					// Invite egalitarian sex
-						this.executeStandardSistEffects(1,actor,target);
-						break;
-					case "dominantSex":					// Invite egalitarian sex
-						this.executeStandardSistEffects(2,actor,target);
-						break;
-					case "companionshipRelation":					// Invite egalitarian sex
-						this.executeStandardSistEffects(7,actor,target);
-						break;
-				}
+						if ( action[1] != "leave" ) {
+							if ( allowOtherCostlyDecisions ) {
+								this.executeStandardSistEffects(action[1],actor,target);
+								allowOtherCostlyDecisions = false;
+							}
+						}
+					}
 			}
-	}
 		}
 		for ( var character of chars ) {
 			gC(character).wasPromptedInCurrentSisRound = false;
@@ -475,7 +498,8 @@ window.SocIntSys = function(key,charList) {
 	}
 	this.executeStandardSistEffects = function(sistId,actor,target) {
 		// This gets executed when a character other than the player's executes a sist. For player, check processTopicResult()
-		var sist = State.variables.sistDB[sistId];
+		// var sist = State.variables.sistDB[sistId];
+		var sist = setup.sistDB[sistId];
 		if ( sist.isPossible(actor,target) ) { // Is it possible
 			if ( gC(actor).socialdrive.current >= sist.getSocialdriveOfferCost(actor,target) ) {
 				gC(actor).socialdrive.current -= sist.getSocialdriveOfferCost(actor,target);
@@ -499,6 +523,22 @@ window.SocIntSys = function(key,charList) {
 		
 	}
 	
+	this.applyExpGains = function(charsNactions) {
+		var roundMult = this.roundsCount * 0.2 - ((this.roundsCount * 0.2) % 1);
+		if ( roundMult > 3 ) { roundMult = 3; }
+		if ( roundMult >= 1 ) {
+			var mult = roundMult * ( 0.4 + this.charList.length * 0.3 );
+			for ( var cNa of charsNactions ) {
+				var charKey = cNa[0];
+				var chaExp = 2 * gC(charKey).charisma.affinity * mult;
+				var empExp = 2 * gC(charKey).empathy.affinity * mult;
+				gC(charKey).charisma.experience += chaExp;
+				gC(charKey).empathy.experience += empExp;
+				this.expGainsDescription += "\n" + gC(charKey).getFormattedName() + " has gained " + chaExp.toFixed(1) + " and " + empExp.toFixed(1) + " charisma and empathy exp.";
+			}
+		}
+	}
+	
 	// Logic (The heavy stuff)
 	this.preInitiateNewRoundNoPC = function(flagInterrounds) {
 		if ( flagInterrounds ) {
@@ -512,11 +552,14 @@ window.SocIntSys = function(key,charList) {
 		this.npcsMakeInterRoundDecisions();
 	}
 	this.initiateNewRound = function() {
-		var newSevent = createSystemEventSisRound(this.charList,this.key);
-		State.variables.compass.ongoingEvents.push(newSevent);
+		if ( State.variables.compass.flagEndedScenario == false ) {
+			var newSevent = createSystemEventSisRound(this.charList,this.key);
+			State.variables.compass.ongoingEvents.push(newSevent);
 
-		State.variables.compass.sortOnGoingEventsByTime();
-
+			State.variables.compass.sortOnGoingEventsByTime();
+		} else {
+			
+		}
 	}
 	this.processRound = function() {
 		this.tempLeftSis = [];
@@ -524,8 +567,10 @@ window.SocIntSys = function(key,charList) {
 		this.charMoodChanges = [];
 		this.charRelChanges = [];
 		this.interactionsDescription = "";
+		this.expGainsDescription = "";
 		
 		// Get interactions and order them
+		this.charInteractions = [];
 		this.feedCharInteractionsOptionsList();
 		var charsNactions = []; // List of lists with charKeys, targetKeys and interactions keys,
 								// such as [["chVal","chNash","flirt"],["chNash","chVal","patronize"]]
@@ -535,8 +580,18 @@ window.SocIntSys = function(key,charList) {
 		
 		var interactionsList = [];
 		for ( var cNa in charsNactions ) {
-			if (charsNactions[cNa][2] != "doNothing") {
-				interactionsList.push(this.createInteraction(charsNactions[cNa]));
+			if (charsNactions[cNa][2] != "doNothing" && charsNactions[cNa][2] != "") {
+				var valid = true;
+				if ( gSettings().lewdMales == "disable" ) {
+					if ( getSiByKey(charsNactions[cNa][2]).tags.includes("flirty") || getSiByKey(charsNactions[cNa][2]).tags.includes("aroused") ) {
+						if ( isLewdingPossible(charsNactions[cNa][0],charsNactions[cNa][1]) == false ) {
+							valid = false;
+						}
+					}
+				}
+				if ( valid ) {
+					interactionsList.push(this.createInteraction(charsNactions[cNa]));
+				}
 			}
 		}
 		// Process interactions' logic
@@ -550,6 +605,8 @@ window.SocIntSys = function(key,charList) {
 			gC(interaction.actor).energy.current -= interaction.energyCost;
 			this.interactionsDescription += interaction.getDescription() + "\n";
 		}
+		
+		this.applyExpGains(charsNactions);
 		
 		// Remember player pick
 		State.variables.sisPlayerInfo.lastTarget = State.variables.sisPlayerInfo.currentTarget;
@@ -723,7 +780,7 @@ window.SocIntSys = function(key,charList) {
 		this.charLeavesSisAiProtocol(character);
 		this.charList = arrayMinusA(this.charList,character);
 		
-		if ( character == "chPlayerCharacter" ) {
+		if ( character == "chPlayerCharacter" ) { // Player clause
 			State.variables.sisPlayerInfo.clean();
 			if ( (this.charList.length > 1) && (this.getCorrespondingRoundEventPos() == -1) ) {
 				// If there's no associated event, Player leaves, and there are other characters in conversation,
@@ -737,7 +794,15 @@ window.SocIntSys = function(key,charList) {
 			State.variables.compass.ongoingEvents[i].removeCharFromEvent(character); // characters = arrayMinusA(State.variables.compass.ongoingEvents[i].characters,character);
 		}
 		
-		if ( this.charList.length < 2 ) {
+		if ( gC(character).followedBy.length > 0 ) { // Followers leave
+			for ( var charKey of  gC(character).followedBy ) {
+				if ( this.charList.includes(charKey) ) {
+					this.charLeavesSis(charKey);
+				}
+			}
+		}
+		
+		if ( this.charList.length < 2 ) { // Check Sis End
 			if ( this.charList[0] == "chPlayerCharacter" ) {
 				this.flagPlayerLeftAlone = true;
 			}
@@ -753,12 +818,8 @@ window.SocIntSys = function(key,charList) {
 			}
 		}
 		
-		if ( gC(character).followedBy.length > 0 ) {
-			for ( var charKey of  gC(character).followedBy ) {
-				if ( this.charList.includes(charKey) ) {
-					this.charLeavesSis(charKey);
-				}
-			}
+		if ( this.charList.includes("chPlayerCharacter") ) { // Autoselect new player's target
+			State.variables.sisPlayerInfo.autoSelectNewTarget();
 		}
 	}
 	this.charsLeaveSis = function(charList) {
@@ -820,10 +881,11 @@ window.SocIntSys = function(key,charList) {
 	
 	this.feedCharInteractionsOptionsList = function() {
 		var i = 0;
-		for ( var character of this.charList ) {
-			// TO DO
-			this.charInteractions[i] = this.getOfferedInteractionsToChar(character,(getCharsNumberInteractions(character)));
-			i++;
+		if ( this.charInteractions.length != this.charList.length ) {
+			for ( var character of this.charList ) {
+				this.charInteractions[i] = this.getOfferedInteractionsToChar(character,(getCharsNumberInteractions(character)));
+				i++;
+			}
 		}
 	}
 	
@@ -852,16 +914,18 @@ window.SocIntSys = function(key,charList) {
 		return j;
 	}
 	
-	this.setSisPlayerPrompt = function(promptText,extra,rejectCost) {
+	this.setSisPlayerPrompt = function(promptText,extra,rejectCost,actor,target,sT) {
 		// Extra is a keyword that specifies specific behavior
 		this.flagPlayerIsPrompted = true;
 		this.playerPromptText = promptText;
 		switch ( extra ) {
 			case "default":
-				this.playerPromptText += "\n" + this.getButtonRejectSisPrompt(rejectCost);
+				this.playerPromptText += "\n" + this.getButtonRejectSisPrompt(rejectCost,sT,actor,target);
 				break;
 			case "relTypeForcesToAccept":
 				this.playerPromptText += "\n" + colorText("Locked:","firebrick") + " Your special relationship doesn't allow you to refuse.";
+				break;
+			case "noExtra":
 				break;
 		}
 	}
@@ -909,7 +973,8 @@ window.SocIntSys = function(key,charList) {
 	}
 	this.getButtonEndSis = function() {
 		var bText = "<<l" + "ink [[Leave conversation|Map]]>><<s" + "cript>>\n";
-		bText 	 += "State.variables.compass.sisList[" + this.key + "].charsLeaveSis(getCharGroup('chPlayerCharacter'));";
+		bText	 += "playerLeavesSis();\n";
+		//bText 	 += "State.variables.compass.sisList[" + this.key + "].charsLeaveSis(getCharGroup('chPlayerCharacter'));";
 		bText	 += "<</s" + "cript>><</l" + "ink>>";
 		return bText;
 	}
@@ -928,9 +993,12 @@ window.SocIntSys = function(key,charList) {
 		return bText;
 	}
 
-	this.getButtonRejectSisPrompt = function(cost) {
+	this.getButtonRejectSisPrompt = function(cost,sT,actor,target) {
 		var bText = "<<l" + "ink [[Reject|Social Interactions]]>><<s" + "cript>>\n";
 		bText	 += "State.variables.chPlayerCharacter.willpower.current -=" + cost + ";\n";
+		if ( sT != -1 ) {
+			bText += "setup.sistDB['" + sT + "'].getFailEffect('" + actor + "','chPlayerCharacter');\n";
+		}
 		bText 	 += "State.variables.compass.sisList[" + this.key + "].endSisPlayerPrompt();";
 		bText	 += "<</s" + "cript>><</l" + "ink>>";
 		if ( cost > 0 ) {
@@ -971,6 +1039,17 @@ window.SocIntSys = function(key,charList) {
 		return validCharsList;
 	}
 };
+
+window.playerLeavesSis = function() {
+	var sisId = State.variables.compass.findFirstSisIdInvolvingCharacter("chPlayerCharacter");
+	var playerFollowsTo = gC("chPlayerCharacter").followingTo;
+	if ( playerFollowsTo == "" ) {
+		State.variables.compass.sisList[sisId].charsLeaveSis(getCharGroup('chPlayerCharacter'));
+	} else {
+		charUnfollowsChar("chPlayerCharacter",playerFollowsTo);
+		State.variables.compass.sisList[sisId].charsLeaveSis(['chPlayerCharacter']);
+	}
+}
 
 // Constructors, serializers, etc.
 SocIntSys.prototype._init = function (obj) {
@@ -1029,4 +1108,5 @@ window.scoreIntoInteractions = function(score) {
 	else if ( score >= 20 ) { n = 4; }
 	return n;
 }
+
 

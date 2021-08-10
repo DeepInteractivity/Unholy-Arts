@@ -1,258 +1,236 @@
 ////////// TEMPLE MAPS ////////// 
 
-State.variables.mapTrainingGrounds = new Chart("mapTrainingGrounds","Passion Temple");
-State.variables.mapTrainingGrounds.icon = "temple-map.png";
-
-State.variables.mapTrainingGrounds.rooms.westLibrary = new Room("westLibrary","West Library");
-State.variables.mapTrainingGrounds.rooms.westLibrary.connections =
+setup.mapTrainingGrounds = [];
+setup.mapTrainingGrounds.westLibrary = new RoomInfo(
+	"westLibrary", // Key
+	"West Library", // Title
+	"library-med.png", // Med Icon
+	"library.png", // Icon
+	"Shelves full of dramatic plays fill most sides of the room. There are also some chairs and tables reserved for studying.", // Description
 	[ new RoomConnection('eastLibrary',2) ,
-	  new RoomConnection('amphitheater',2) ,
-	  new RoomConnection('dummies',2) ,
-	  new RoomConnection('mainLibrary',2) ];
-State.variables.mapTrainingGrounds.rooms.westLibrary.displayConnections = function() {
-	return createStandardDisplayConnections(this.connections);
-}
-State.variables.mapTrainingGrounds.rooms.westLibrary.getActions = function(characters) {
-	var actions = [ createTrainingActionDramaReading() ];
-	return actions;
-}
-State.variables.mapTrainingGrounds.rooms.westLibrary.description = "Shelves full of dramatic plays fill most sides of the room. "
-																 + "There are also some chairs and tables reserved for studying.";
-State.variables.mapTrainingGrounds.rooms.westLibrary.icon = "library.png";
-State.variables.mapTrainingGrounds.rooms.westLibrary.medIcon = "library-med.png";
+		  new RoomConnection('amphitheater',2) ,
+		  new RoomConnection('dummies',2) ,
+		  new RoomConnection('mainLibrary',2) ], // Connections
+	function(characters) {
+		var actions = [ createTrainingActionDramaReading() ];
+		return actions;
+	}, // getActions
+	[31,128]
+);
 
-State.variables.mapTrainingGrounds.rooms.eastLibrary = new Room("eastLibrary","East Library");
-State.variables.mapTrainingGrounds.rooms.eastLibrary.connections =
+setup.mapTrainingGrounds.eastLibrary = new RoomInfo(
+	"eastLibrary", // Key
+	"East Library", // Title
+	"library-med.png", // Med Icon
+	"library.png", // Icon
+	"Everywhere you look at, there are scrolls containing mystic wisdom collected through the ages. Their very presence taints the air.", // Description
 	[ new RoomConnection('westLibrary',2) ,
 	  new RoomConnection('dummies',2) ,
 	  new RoomConnection('field',2) ,
-	  new RoomConnection('mainLibrary',2) ];
-State.variables.mapTrainingGrounds.rooms.eastLibrary.displayConnections = function() {
-	return createStandardDisplayConnections(this.connections);
-}
-State.variables.mapTrainingGrounds.rooms.eastLibrary.getActions = function(characters) {
-	var actions = [ createTrainingActionEnergyReading() ];
-	return actions;
-}
-State.variables.mapTrainingGrounds.rooms.eastLibrary.description = "Everywhere you look at, there are scrolls containing mystic wisdom "
-																 + "collected through the ages. Their very presence taints the air.";
-State.variables.mapTrainingGrounds.rooms.eastLibrary.icon = "library.png";
-State.variables.mapTrainingGrounds.rooms.eastLibrary.medIcon = "library-med.png";
-
-State.variables.mapTrainingGrounds.rooms.amphitheater = new Room("amphitheater","Amphitheater");
-State.variables.mapTrainingGrounds.rooms.amphitheater.connections =
+	  new RoomConnection('mainLibrary',2) ], // Connections
+	function(characters) {
+		var actions = [ createTrainingActionEnergyReading() ];
+		return actions;
+	}, // getActions
+	[73,128]
+);
+setup.mapTrainingGrounds.amphitheater = new RoomInfo(
+	"amphitheater", // Key
+	"Amphitheater", // Title
+	"amphietheater-med.png", // Med Icon
+	"amphietheater.png", // Icon
+	"A grand, circular stone platform is surrounded by several stone benches. It reminds you of home.", // Description
 	[ new RoomConnection('westBridge',2) ,
 	  new RoomConnection('dummies',2) ,
-	  new RoomConnection('westLibrary',2) ];
-State.variables.mapTrainingGrounds.rooms.amphitheater.displayConnections = function() {
-	return createStandardDisplayConnections(this.connections);
-}
-State.variables.mapTrainingGrounds.rooms.amphitheater.getActions = function(characters) {
-	var actions = [ createTrainingActionDramaActing() ];
-	return actions;
-}
-State.variables.mapTrainingGrounds.rooms.amphitheater.description = "A grand, circular stone platform is surrounded by several stone benches. "
-																 + "It reminds you of home.";
-State.variables.mapTrainingGrounds.rooms.amphitheater.icon = "amphietheater.png";
-State.variables.mapTrainingGrounds.rooms.amphitheater.medIcon = "amphietheater-med.png";
-
-State.variables.mapTrainingGrounds.rooms.dummies = new Room("dummies","Dummies");
-State.variables.mapTrainingGrounds.rooms.dummies.connections =
+	  new RoomConnection('westLibrary',2) ], // Connections
+	function(characters) {
+		var actions = [ createTrainingActionDramaActing() ];
+		return actions;
+	}, // getActions
+	[9,89]
+);
+setup.mapTrainingGrounds.dummies = new RoomInfo(
+	"dummies", // Key
+	"Dummies", // Title
+	"dummies-med.png", // Med Icon
+	"dummies.png", // Icon
+	"This place is filled with straw men, wrapped with strong leather but fluffy if you push them. They're perfect if you need to kick something.", // description
 	[ new RoomConnection('eastBridge',2) ,
 	  new RoomConnection('field',2) ,
 	  new RoomConnection('eastLibrary',2) ,
 	  new RoomConnection('westLibrary',2) ,
 	  new RoomConnection('amphitheater',2) ,
-	  new RoomConnection('westBridge',2) ];
-State.variables.mapTrainingGrounds.rooms.dummies.displayConnections = function() {
-	return createStandardDisplayConnections(this.connections);
-}
-State.variables.mapTrainingGrounds.rooms.dummies.getActions = function(characters) {
-	var actions = [ createTrainingActionAerobics() ,
-					createTrainingActionSpellcasting() ];
-	return actions;
-}
-State.variables.mapTrainingGrounds.rooms.dummies.description = "This place is filled with straw men, wrapped with strong leather but fluffy if you "
-															 + "push them. They're perfect if you need to kick something.";
-State.variables.mapTrainingGrounds.rooms.dummies.icon = "dummies.png";
-State.variables.mapTrainingGrounds.rooms.dummies.medIcon = "dummies-med.png";
-
-State.variables.mapTrainingGrounds.rooms.field = new Room("field","Field");
-State.variables.mapTrainingGrounds.rooms.field.connections =
+	  new RoomConnection('westBridge',2) ], // Connections
+	function(characters) {
+		var actions = [ createTrainingActionAerobics() ,
+						createTrainingActionSpellcasting() ];
+		return actions;
+	}, // getActions
+	[52,89]
+);
+setup.mapTrainingGrounds.field = new RoomInfo(
+	"field", // Key
+	"Field", // Title
+	"field-med.png", // Med Icon
+	"field.png", // Icon
+	"This is the clearest area in the training grounds. You're guaranteed to find a spot in which you can unleash hellflames without destroying anything.", // description
 	[ new RoomConnection('lowerWaterfall',2) ,
 	  new RoomConnection('southNaturalWall',2) ,
 	  new RoomConnection('eastLibrary',2) ,
 	  new RoomConnection('dummies',2) ,
-	  new RoomConnection('eastBridge',2) ];
-State.variables.mapTrainingGrounds.rooms.field.displayConnections = function() {
-	return createStandardDisplayConnections(this.connections);
-}
-State.variables.mapTrainingGrounds.rooms.field.getActions = function(characters) {
-	var actions = [ createTrainingActionSpellcasting() ];
-	return actions;
-}
-State.variables.mapTrainingGrounds.rooms.field.description = "This is the clearest area in the training grounds. You're guaranteed to find a spot "
-														   + "in which you can unleash hellflames without destroying anything.";
-State.variables.mapTrainingGrounds.rooms.field.icon = "field.png";
-State.variables.mapTrainingGrounds.rooms.field.medIcon = "field-med.png";
-
-State.variables.mapTrainingGrounds.rooms.westBridge = new Room("westBridge","West Bridge");
-State.variables.mapTrainingGrounds.rooms.westBridge.connections =
+	  new RoomConnection('eastBridge',2) ], // Connections
+	function(characters) {
+		var actions = [ createTrainingActionSpellcasting() ];
+		return actions;
+	}, // getActions
+	[93,88]
+);
+setup.mapTrainingGrounds.westBridge = new RoomInfo(
+	"westBridge", // Key
+	"West Bridge", // Title
+	"bridge-med.png", // Med Icon
+	"bridge.png", // Icon
+	"Looking downstream, you see the water leaving the training grounds, passing below the Temple's walls.", // description
 	[ new RoomConnection('forest',2) ,
 	  new RoomConnection('dummies',2) ,
-	  new RoomConnection('amphitheater',2) ];
-State.variables.mapTrainingGrounds.rooms.westBridge.displayConnections = function() {
-	return createStandardDisplayConnections(this.connections);
-}
-State.variables.mapTrainingGrounds.rooms.westBridge.getActions = function(characters) {
-	var actions = [ createTrainingActionSwimming() ];
-	return actions;
-}
-State.variables.mapTrainingGrounds.rooms.westBridge.description = "Looking downstream, you see the water leaving the training grounds, passing below "
-																+ "the Temple's walls.";
-State.variables.mapTrainingGrounds.rooms.westBridge.icon = "bridge.png";
-State.variables.mapTrainingGrounds.rooms.westBridge.medIcon = "bridge-med.png";
-
-State.variables.mapTrainingGrounds.rooms.eastBridge = new Room("eastBridge","East Bridge");
-State.variables.mapTrainingGrounds.rooms.eastBridge.connections =
+	  new RoomConnection('amphitheater',2) ], // Connections
+	function(characters) {
+		var actions = [ createTrainingActionSwimming() ];
+		return actions;
+	}, // getActions
+	[30,55]
+);
+setup.mapTrainingGrounds.eastBridge = new RoomInfo(
+	"eastBridge", // Key
+	"East Bridge", // Title
+	"bridge-med.png", // Med Icon
+	"bridge.png", // Icon
+	"Looking upstream, you see a decently sized waterfall, and an even bigger one behind it.", // description
 	[ new RoomConnection('lake',2) ,
 	  new RoomConnection('lowerWaterfall',2) ,
 	  new RoomConnection('field',2) ,
-	  new RoomConnection('dummies',2) ];
-State.variables.mapTrainingGrounds.rooms.eastBridge.displayConnections = function() {
-	return createStandardDisplayConnections(this.connections);
-}
-State.variables.mapTrainingGrounds.rooms.eastBridge.getActions = function(characters) {
-	var actions = [ createTrainingActionSwimming() ];
-	return actions;
-}
-State.variables.mapTrainingGrounds.rooms.eastBridge.description = "Looking upstream, you see a decently sized waterfall, and an even bigger one "
-																+ "behind it.";
-State.variables.mapTrainingGrounds.rooms.eastBridge.icon = "bridge.png";
-State.variables.mapTrainingGrounds.rooms.eastBridge.medIcon = "bridge-med.png";
-																
-State.variables.mapTrainingGrounds.rooms.forest = new Room("forest","Forest");
-State.variables.mapTrainingGrounds.rooms.forest.connections =
+	  new RoomConnection('dummies',2) ], // Connections
+	function(characters) {
+		var actions = [ createTrainingActionSwimming() ];
+		return actions;
+	}, // getActions
+	[74,54]
+);
+setup.mapTrainingGrounds.forest = new RoomInfo(
+	"forest", // Key
+	"Forest", // Title
+	"forest-med.png", // Med Icon
+	"forest.png", // Icon
+	"The trees are shaken by the wind.", // description
 	[ new RoomConnection('lake',2) ,
-	  new RoomConnection('westBridge',2) ];
-State.variables.mapTrainingGrounds.rooms.forest.displayConnections = function() {
-	return createStandardDisplayConnections(this.connections);
-}
-State.variables.mapTrainingGrounds.rooms.forest.getActions = function(characters) {
-	var actions = [ createTrainingActionMeditation(),
-					createRestingActionStandard() ];
-	return actions;
-}
-State.variables.mapTrainingGrounds.rooms.forest.description = "The trees are shaken by the wind.";
-State.variables.mapTrainingGrounds.rooms.forest.icon = "forest.png";
-State.variables.mapTrainingGrounds.rooms.forest.medIcon = "forest-med.png";
-			
-State.variables.mapTrainingGrounds.rooms.lake = new Room("lake","Lake");
-State.variables.mapTrainingGrounds.rooms.lake.connections =
+	  new RoomConnection('westBridge',2) ], // Connections
+	function(characters) {
+		var actions = [ createTrainingActionMeditation(),
+						createRestingActionStandard() ];
+		return actions;
+	}, // getActions
+	[31,18]
+);
+setup.mapTrainingGrounds.lake = new RoomInfo(
+	"lake", // Key
+	"Lake", // Title
+	"lake-med.png", // Med Icon
+	"lake.png", // Icon
+	"It smells like wet grass.", // description
 	[ new RoomConnection('northNaturalWall',2) ,
 	  new RoomConnection('lowerWaterfall',2) ,
 	  new RoomConnection('eastBridge',2) ,
-	  new RoomConnection('forest',2) ];
-State.variables.mapTrainingGrounds.rooms.lake.displayConnections = function() {
-	return createStandardDisplayConnections(this.connections);
-}
-State.variables.mapTrainingGrounds.rooms.lake.getActions = function(characters) {
-	var actions = [ createTrainingActionAerobics() , 
-					createTrainingActionMeditation() ];
-	return actions;
-}
-State.variables.mapTrainingGrounds.rooms.lake.description = "It smells like wet grass.";
-State.variables.mapTrainingGrounds.rooms.lake.icon = "lake.png";
-State.variables.mapTrainingGrounds.rooms.lake.medIcon = "lake-med.png";
-
-State.variables.mapTrainingGrounds.rooms.lowerWaterfall = new Room("lowerWaterfall","Lower Waterfall");
-State.variables.mapTrainingGrounds.rooms.lowerWaterfall.connections =
+	  new RoomConnection('forest',2) ], // Connections
+	function(characters) {
+		var actions = [ createTrainingActionAerobics() , 
+						createTrainingActionMeditation() ];
+		return actions;
+	}, // getActions
+	[74,18]
+);
+setup.mapTrainingGrounds.lowerWaterfall = new RoomInfo(
+	"lowerWaterfall", // Key
+	"Lower Waterfall", // Title
+	"waterfall-med.png", // Med Icon
+	"waterfall.png", // Icon
+	"The falling water crashes violently against the river. Against this noise, you find peace.", // description
 	[ new RoomConnection('field',2) ,
 	  new RoomConnection('eastBridge',2) ,
-	  new RoomConnection('lake',2) ];
-State.variables.mapTrainingGrounds.rooms.lowerWaterfall.displayConnections = function() {
-	return createStandardDisplayConnections(this.connections);
-}
-State.variables.mapTrainingGrounds.rooms.lowerWaterfall.getActions = function(characters) {
-	var actions = [ createTrainingActionWaterfallMeditation() ];
-	return actions;
-}
-State.variables.mapTrainingGrounds.rooms.lowerWaterfall.description = "The falling water crashes violently against the river. Against this noise, "
-																	+ "you find peace.";
-State.variables.mapTrainingGrounds.rooms.lowerWaterfall.icon = "waterfall.png";
-State.variables.mapTrainingGrounds.rooms.lowerWaterfall.medIcon = "waterfall-med.png";
-
-State.variables.mapTrainingGrounds.rooms.southNaturalWall = new Room("southNaturalWall","Natural Wall South");
-State.variables.mapTrainingGrounds.rooms.southNaturalWall.connections =
+	  new RoomConnection('lake',2) ], // Connections
+	function(characters) {
+		var actions = [ createTrainingActionWaterfallMeditation() ];
+		return actions;
+	}, // getActions
+	[110,35]
+);
+setup.mapTrainingGrounds.southNaturalWall = new RoomInfo(
+	"southNaturalWall", // Key
+	"Natural Wall South", // Title
+	"natural-wall-med.png", // Med Icon
+	"natural-wall.png", // Icon
+	"Rock walls at one side and cliffs at its opposite. Stairs carved in stone connect this place with the field.", // description
 	[ new RoomConnection('northNaturalWall',2) ,
 	  new RoomConnection('upperWaterfall',2) ,
-	  new RoomConnection('field',2) ];
-State.variables.mapTrainingGrounds.rooms.southNaturalWall.displayConnections = function() {
-	return createStandardDisplayConnections(this.connections);
-}
-State.variables.mapTrainingGrounds.rooms.southNaturalWall.getActions = function(characters) {
-	var actions = [ createTrainingActionAnaerobics() ];
-	return actions;
-}
-State.variables.mapTrainingGrounds.rooms.southNaturalWall.description = "Rock walls at one side and cliffs at its opposite. Stairs carved in stone connect "
-																	  + "this place with the field.";
-State.variables.mapTrainingGrounds.rooms.southNaturalWall.icon = "natural-wall.png";
-State.variables.mapTrainingGrounds.rooms.southNaturalWall.medIcon = "natural-wall-med.png";
-
-State.variables.mapTrainingGrounds.rooms.northNaturalWall = new Room("northNaturalWall","Natural Wall North");
-State.variables.mapTrainingGrounds.rooms.northNaturalWall.connections =
+	  new RoomConnection('field',2) ], // Connections
+	function(characters) {
+		var actions = [ createTrainingActionAnaerobics() ];
+		return actions;
+	}, // getActions
+	[133,63]
+);
+setup.mapTrainingGrounds.northNaturalWall = new RoomInfo(
+	"northNaturalWall", // Key
+	"Natural Wall North", // Title
+	"natural-wall-med.png", // Med Icon
+	"natural-wall.png", // Icon
+	"Rock walls at one side and cliffs at its opposite. Stairs carved in stone connect this place with the lake.", // description
 	[ new RoomConnection('lake',2) ,
 	  new RoomConnection('upperWaterfall',2) ,
-	  new RoomConnection('southNaturalWall',2) ];
-State.variables.mapTrainingGrounds.rooms.northNaturalWall.displayConnections = function() {
-	return createStandardDisplayConnections(this.connections);
-}
-State.variables.mapTrainingGrounds.rooms.northNaturalWall.getActions = function(characters) {
-	var actions = [ createTrainingActionAnaerobics() ];
-	return actions;
-}
-State.variables.mapTrainingGrounds.rooms.northNaturalWall.description = "Rock walls at one side and cliffs at its opposite. Stairs carved in stone connect "
-																	  + "this place with the lake.";
-State.variables.mapTrainingGrounds.rooms.northNaturalWall.icon = "natural-wall.png";
-State.variables.mapTrainingGrounds.rooms.northNaturalWall.medIcon = "natural-wall-med.png";
-																	  
-State.variables.mapTrainingGrounds.rooms.upperWaterfall = new Room("upperWaterfall","Upper Waterfall");
-State.variables.mapTrainingGrounds.rooms.upperWaterfall.connections =
+	  new RoomConnection('southNaturalWall',2) ], // Connections
+	function(characters) {
+		var actions = [ createTrainingActionAnaerobics() ];
+		return actions;
+	}, // getActions
+	[134,8]
+);
+setup.mapTrainingGrounds.upperWaterfall = new RoomInfo(
+	"upperWaterfall", // Key
+	"Upper Waterfall", // Title
+	"waterfall-med.png", // Med Icon
+	"waterfall.png", // Icon
+	"This is the most secluded place of the training grounds. If you look up, you can contemplate the immense mountain that gives home to the Temple.", // description
 	[ new RoomConnection('northNaturalWall',2) ,
-	  new RoomConnection('southNaturalWall',2) ];
-State.variables.mapTrainingGrounds.rooms.upperWaterfall.displayConnections = function() {
-	return createStandardDisplayConnections(this.connections);
-}
-State.variables.mapTrainingGrounds.rooms.upperWaterfall.getActions = function(characters) {
-	var actions = [ createTrainingActionWaterfallMeditation() ,
-					createTrainingActionEnergyReading() ];
-	return actions;
-}
-State.variables.mapTrainingGrounds.rooms.upperWaterfall.description = "This is the most secluded place of the training grounds. If you look up, you can "
-																	+ "contemplate the immense mountain that gives home to the Temple.";
-State.variables.mapTrainingGrounds.rooms.upperWaterfall.icon = "waterfall.png";
-State.variables.mapTrainingGrounds.rooms.upperWaterfall.medIcon = "waterfall-med.png";
-
-State.variables.mapTrainingGrounds.rooms.mainLibrary = new Room("mainLibrary","Main Library");
-State.variables.mapTrainingGrounds.rooms.mainLibrary.connections =
+	  new RoomConnection('southNaturalWall',2) ], // Connections
+	function(characters) {
+		var actions = [ createTrainingActionWaterfallMeditation() ,
+						createTrainingActionEnergyReading() ];
+		return actions;
+	}, // getActions
+	[134,8]
+);
+setup.mapTrainingGrounds.mainLibrary = new RoomInfo(
+	"mainLibrary", // Key
+	"Main Library", // Title
+	"library-med.png", // Med Icon
+	"library.png", // Icon
+	"This great room is probably bigger than the West and East wings combined. The vast majority of the Confined Valley's history is here.", // description
 	[ new RoomConnection('eastLibrary',2) ,
 	  new RoomConnection('westLibrary',2) ,
-	  new RoomConnection('grandHall',2) ];
-State.variables.mapTrainingGrounds.rooms.mainLibrary.displayConnections = function() {
-	return createStandardDisplayConnections(this.connections);
-}
-State.variables.mapTrainingGrounds.rooms.mainLibrary.getActions = function(characters) {
-	var actions = [];
-	if ( getScrollsCharMayFind(characters[0]).length > 0 ) {
-		actions.push(createSearchForScrollsAction());
-	}
-	actions.push(createRestingActionStandard());
-	if ( ( characters[0] != "chPlayerCharacter" ) && ( gC(characters[0]).studiedScrollToday == false ) ) {
-		actions.push(createStyduRandomScrollMapAction());
-	}
-	return actions;
-}
-State.variables.mapTrainingGrounds.rooms.mainLibrary.getCustomActionsText = function(characters) {
+	  new RoomConnection('grandHall',2) ], // Connections
+	function(characters) {
+		var actions = [];
+		if ( getScrollsCharMayFind(characters[0]).length > 0 ) {
+			actions.push(createSearchForScrollsAction());
+		}
+		actions.push(createRestingActionStandard());
+		if ( ( characters[0] != "chPlayerCharacter" ) && ( gC(characters[0]).studiedScrollToday == false ) ) {
+			actions.push(createStyduRandomScrollMapAction());
+		}
+		return actions;
+	}, // getActions
+	[52,159]
+);
+setup.mapTrainingGrounds.mainLibrary.getCustomActionsText = function(characters) {
 	var cText = "";
 	if ( ( gC(characters[0]).foundScrolls.length > gC(characters[0]).studiedScrolls.length ) && ( gC(characters[0]).studiedScrollToday == false ) ) {
 		cText = "Study a scroll<sup><span title='Pick a specific scroll and the characters will study its contents.'>(?)</span></sup> "
@@ -268,62 +246,59 @@ State.variables.mapTrainingGrounds.rooms.mainLibrary.getCustomActionsText = func
 	}
 	return cText;
 }
-State.variables.mapTrainingGrounds.rooms.mainLibrary.description = "This great room is probably bigger than the West and East wings combined. "
-																 + "The vast majority of the Confined Valley's history is here.";
-State.variables.mapTrainingGrounds.rooms.mainLibrary.combatAllowed = false;
-State.variables.mapTrainingGrounds.rooms.mainLibrary.icon = "library.png";
-State.variables.mapTrainingGrounds.rooms.mainLibrary.medIcon = "library-med.png";
+setup.mapTrainingGrounds.mainLibrary.combatAllowed = false;
 
-// Grand Hall
-State.variables.mapTrainingGrounds.rooms.grandHall = new Room("grandHall","Grand Hall");
-State.variables.mapTrainingGrounds.rooms.grandHall.connections =
+setup.mapTrainingGrounds.grandHall = new RoomInfo(
+	"grandHall", // Key
+	"Grand Hall", // Title
+	"greathall-med.png", // Med Icon
+	"greathall.png", // Icon
+	"The Statue of the Goddess looks over its creation.", // description
 	[ new RoomConnection('mainLibrary',2) ,
 	  new RoomConnection('roomsOuterNorth',2) ,
 	  new RoomConnection('roomsOuterSouth',2) ,
 	  new RoomConnection('fulfillmentCorridor',2) ,
-	  new RoomConnection('ambitionCorridor',2) ];
-State.variables.mapTrainingGrounds.rooms.grandHall.displayConnections = function() {
-	return createStandardDisplayConnections(this.connections);
-}
-State.variables.mapTrainingGrounds.rooms.grandHall.description = "The Statue of the Goddess looks over its creation.";
-State.variables.mapTrainingGrounds.rooms.grandHall.combatAllowed = false;
-State.variables.mapTrainingGrounds.rooms.grandHall.icon = "greathall.png";
-State.variables.mapTrainingGrounds.rooms.grandHall.medIcon = "greathall-med.png";
-	
-// Room Wings
-State.variables.mapTrainingGrounds.rooms.roomsOuterNorth = new Room("roomsOuterNorth","Rooms - Outer North Wing");
-State.variables.mapTrainingGrounds.rooms.roomsOuterNorth.connections =
+	  new RoomConnection('ambitionCorridor',2) ], // Connections
+	null, // getActions
+	[95,193]
+);
+setup.mapTrainingGrounds.roomsOuterNorth = new RoomInfo(
+	"roomsOuterNorth", // Key
+	"Rooms - Outer North Wing", // Title
+	"corridor-left-med.png", // Med Icon
+	"corridor-left.png", // Icon
+	"This corridor is connected by stairs to the Grand Hall. You can find the rooms of the priestesses and other long-term residents here.", // description
 	[ new RoomConnection('grandHall',2) ,
-	  new RoomConnection('roomsInnerNorth',2) ];
-State.variables.mapTrainingGrounds.rooms.roomsOuterNorth.displayConnections = function() {
-	return createStandardDisplayConnections(this.connections);
-}
-State.variables.mapTrainingGrounds.rooms.roomsOuterNorth.description = "This corridor is connected by stairs to the Grand Hall. You can find "
-																	 + "the rooms of the priestesses and other long-term residents here.";
-State.variables.mapTrainingGrounds.rooms.roomsOuterNorth.combatAllowed = false;
-State.variables.mapTrainingGrounds.rooms.roomsOuterNorth.icon = "corridor-left.png";
-State.variables.mapTrainingGrounds.rooms.roomsOuterNorth.medIcon = "corridor-left-med.png";
-	
-State.variables.mapTrainingGrounds.rooms.roomsInnerNorth = new Room("roomsInnerNorth","Rooms - Inner North Wing");
-State.variables.mapTrainingGrounds.rooms.roomsInnerNorth.connections =
+	  new RoomConnection('roomsInnerNorth',2) ], // Connections
+	null, // getActions
+	[41,221]
+); 
+setup.mapTrainingGrounds.roomsInnerNorth = new RoomInfo(
+	"roomsInnerNorth", // Key
+	"Rooms - Inner North Wing", // Title
+	"corridor-left-med.png", // Med Icon
+	"corridor-left.png", // Icon
+	"The halls get darker as you advance.", // description
 	[ new RoomConnection('roomsOuterNorth',2) ,
-	  new RoomConnection('roomsInnerSouth',2) ];
-State.variables.mapTrainingGrounds.rooms.roomsInnerNorth.displayConnections = function() {
-	return createStandardDisplayConnections(this.connections);
-}
-State.variables.mapTrainingGrounds.rooms.roomsInnerNorth.description = "The halls get darker as you advance.";
-State.variables.mapTrainingGrounds.rooms.roomsInnerNorth.combatAllowed = false;
-State.variables.mapTrainingGrounds.rooms.roomsInnerNorth.icon = "corridor-left.png";
-State.variables.mapTrainingGrounds.rooms.roomsInnerNorth.medIcon = "corridor-left-med.png";
-																		 
-State.variables.mapTrainingGrounds.rooms.roomsInnerSouth = new Room("roomsInnerSouth","Rooms - Inner South Wing");
-State.variables.mapTrainingGrounds.rooms.roomsInnerSouth.connections =
+	  new RoomConnection('roomsInnerSouth',2) ], // Connections
+	null, // getActions
+	[15,249]
+);
+setup.mapTrainingGrounds.roomsInnerSouth = new RoomInfo(
+	"roomsInnerSouth", // Key
+	"Rooms - Inner South Wing", // Title
+	"corridor-right-med.png", // Med Icon
+	"corridor-right.png", // Icon
+	"You can find your room here, as well as those of other Candidates.", // description
 	[ new RoomConnection('roomsInnerNorth',2) ,
 	  new RoomConnection('roomsOuterSouth',2) ,
 	  new RoomConnection('playerRoom',1),
 	  new RoomConnection('mirRoom',1),
-	  new RoomConnection('ateRoom',1) ];
-State.variables.mapTrainingGrounds.rooms.roomsInnerSouth.getConnections = function(characters) {
+	  new RoomConnection('ateRoom',1) ], // Connections
+	null, // getActions
+	[41,278]
+);
+setup.mapTrainingGrounds.roomsInnerSouth.getConnections = function(characters) {
 	var rooms = [this.connections[0],this.connections[1]];
 	if ( characters.includes("chPlayerCharacter") ) {
 		rooms.push(this.connections[2]);
@@ -336,40 +311,42 @@ State.variables.mapTrainingGrounds.rooms.roomsInnerSouth.getConnections = functi
 	}
 	return rooms;
 }
-State.variables.mapTrainingGrounds.rooms.roomsInnerSouth.displayConnections = function() {
+setup.mapTrainingGrounds.roomsInnerSouth.displayConnections = function() {
 	var string = getLinkToRoom(this.connections[0].loc,"Go to " + getCurrentMap().rooms[this.connections[0].loc].title,this.connections[0].distance)
-			    + " " + displayCharIconsInRoom(this.connections[0].loc) + "\n";
+			    + " (" + colorText(2,"khaki") + ") " + displayCharIconsInRoom(this.connections[0].loc) + "\n";
 	string += getLinkToRoom(this.connections[1].loc,"Go to " + getCurrentMap().rooms[this.connections[1].loc].title,this.connections[1].distance)
-			    + " " + displayCharIconsInRoom(this.connections[1].loc) + "\n";
+			    + " (" + colorText(2,"khaki") + ") " + displayCharIconsInRoom(this.connections[1].loc) + "\n";
 	string += getLinkToRoom(this.connections[2].loc,"Go to " + getCurrentMap().rooms[this.connections[2].loc].title,this.connections[2].distance)
-			    + " " + displayCharIconsInRoom(this.connections[2].loc) + "\n";
+			    + " (" + colorText(1,"khaki") + ") " + displayCharIconsInRoom(this.connections[2].loc) + "\n";
 	if ( getPlayerCharsGroup().includes("chMir") ) {
 		string += getLinkToRoom(this.connections[3].loc,"Go to " + getCurrentMap().rooms[this.connections[3].loc].title,this.connections[3].distance)
-			    + " " + displayCharIconsInRoom(this.connections[3].loc) + "\n";
+			    + " (" + colorText(1,"khaki") + ") " + displayCharIconsInRoom(this.connections[3].loc) + "\n";
 	} else {
 		string += colorText("You can't enter Padmiri's room without Padmiri.\n","red");
 	}
 	if ( getPlayerCharsGroup().includes("chAte") ) {
 		string += getLinkToRoom(this.connections[4].loc,"Go to " + getCurrentMap().rooms[this.connections[4].loc].title,this.connections[4].distance)
-			    + " " + displayCharIconsInRoom(this.connections[4].loc) + "\n";
+			    + " (" + colorText(1,"khaki") + ") " + displayCharIconsInRoom(this.connections[4].loc) + "\n";
 	} else {
 		string += colorText("You can't enter Maaterasu's room without Maaterasu.\n","red");
 	}
 	return string;
 }
-State.variables.mapTrainingGrounds.rooms.roomsInnerSouth.description = "You can find your room here, as well as those of other Candidates.";
-State.variables.mapTrainingGrounds.rooms.roomsInnerSouth.combatAllowed = false;
-State.variables.mapTrainingGrounds.rooms.roomsInnerSouth.icon = "corridor-right.png";
-State.variables.mapTrainingGrounds.rooms.roomsInnerSouth.medIcon = "corridor-right-med.png";
-
-State.variables.mapTrainingGrounds.rooms.roomsOuterSouth = new Room("roomsOuterSouth","Rooms - Outer South Wing");
-State.variables.mapTrainingGrounds.rooms.roomsOuterSouth.connections =
+setup.mapTrainingGrounds.roomsOuterSouth = new RoomInfo(
+	"roomsOuterSouth", // Key
+	"Rooms - Outer South Wing", // Title
+	"corridor-right-med.png", // Med Icon
+	"corridor-right.png", // Icon
+	"This room is connected by stairs to the Grand Hall. You can find the rooms of other Candidates here.", // description
 	[ new RoomConnection('roomsInnerSouth',2) ,
 	  new RoomConnection('grandHall',2),
 	  new RoomConnection('clawRoom',1),
 	  new RoomConnection('nashRoom',1),
-	  new RoomConnection('valRoom',1) ];
-State.variables.mapTrainingGrounds.rooms.roomsOuterSouth.getConnections = function(characters) {
+	  new RoomConnection('valRoom',1) ], // Connections
+	null, // getActions
+	[67,250]
+);
+setup.mapTrainingGrounds.roomsOuterSouth.getConnections = function(characters) {
 	var rooms = [this.connections[0],this.connections[1]];
 	if ( characters.includes("chClaw") ) {
 		rooms.push(this.connections[2]);
@@ -382,214 +359,222 @@ State.variables.mapTrainingGrounds.rooms.roomsOuterSouth.getConnections = functi
 	}
 	return rooms;
 }
-State.variables.mapTrainingGrounds.rooms.roomsOuterSouth.displayConnections = function() {
+setup.mapTrainingGrounds.roomsOuterSouth.displayConnections = function() {
 	var string = getLinkToRoom(this.connections[0].loc,"Go to " + getCurrentMap().rooms[this.connections[0].loc].title,this.connections[0].distance)
-			    + " " + displayCharIconsInRoom(this.connections[0].loc) + "\n";
+			    + " (" + colorText(2,"khaki") + ") " + displayCharIconsInRoom(this.connections[0].loc) + "\n";
 	string += getLinkToRoom(this.connections[1].loc,"Go to " + getCurrentMap().rooms[this.connections[1].loc].title,this.connections[1].distance)
-			    + " " + displayCharIconsInRoom(this.connections[1].loc) + "\n";
+			    + " (" + colorText(2,"khaki") + ") " + displayCharIconsInRoom(this.connections[1].loc) + "\n";
 	if ( getPlayerCharsGroup().includes("chClaw") ) {
 		string += getLinkToRoom(this.connections[2].loc,"Go to " + getCurrentMap().rooms[this.connections[2].loc].title,this.connections[2].distance)
-			    + " " + displayCharIconsInRoom(this.connections[2].loc) + "\n";
+			    + " (" + colorText(1,"khaki") + ") " + displayCharIconsInRoom(this.connections[2].loc) + "\n";
 	} else {
 		string += colorText("You can't enter Claw's room without Claw.\n","red");
 	}
 	if ( getPlayerCharsGroup().includes("chNash") ) {
 		string += getLinkToRoom(this.connections[3].loc,"Go to " + getCurrentMap().rooms[this.connections[3].loc].title,this.connections[3].distance)
-			    + " " + displayCharIconsInRoom(this.connections[3].loc) + "\n";
+			    + " (" + colorText(1,"khaki") + ") " + displayCharIconsInRoom(this.connections[3].loc) + "\n";
 	} else {
 		string += colorText("You can't enter Nashillbyir's room without Nashillbyir.\n","red");
 	}
 	if ( getPlayerCharsGroup().includes("chVal") ) {
 		string += getLinkToRoom(this.connections[4].loc,"Go to " + getCurrentMap().rooms[this.connections[4].loc].title,this.connections[4].distance)
-			    + " " + displayCharIconsInRoom(this.connections[4].loc) + "\n";
+			    + " (" + colorText(1,"khaki") + ") " + displayCharIconsInRoom(this.connections[4].loc) + "\n";
 	} else {
 		string += colorText("You can't enter Valtan's room without Valtan.\n","red");
 	}
 	return string;
 }
-State.variables.mapTrainingGrounds.rooms.roomsOuterSouth.description = "This room is connected by stairs to the Grand Hall. You can find "
-																	 + "the rooms of other Candidates here.";
-State.variables.mapTrainingGrounds.rooms.roomsOuterSouth.combatAllowed = false;
-State.variables.mapTrainingGrounds.rooms.roomsOuterSouth.icon = "corridor-right.png";
-State.variables.mapTrainingGrounds.rooms.roomsOuterSouth.medIcon = "corridor-right-med.png";
+setup.mapTrainingGrounds.grandHall.combatAllowed = false;
+setup.mapTrainingGrounds.roomsOuterNorth.combatAllowed = false;
+setup.mapTrainingGrounds.roomsInnerNorth.combatAllowed = false;
+setup.mapTrainingGrounds.roomsOuterSouth.combatAllowed = false;
+setup.mapTrainingGrounds.roomsInnerSouth.combatAllowed = false;
 
-// Rooms
-State.variables.mapTrainingGrounds.rooms.playerRoom = new Room("playerRoom","Player Room");
-State.variables.mapTrainingGrounds.rooms.playerRoom.connections =
-	[ new RoomConnection('roomsInnerSouth',1) ];
-State.variables.mapTrainingGrounds.rooms.playerRoom.displayConnections = function() {
-	return createStandardDisplayConnections(this.connections);
-}
-State.variables.mapTrainingGrounds.rooms.playerRoom.getActions = function(characters) {
-	var actions = [ createRestingActionStandard() ];
-	return actions;
-}
-State.variables.mapTrainingGrounds.rooms.playerRoom.description = "It's too early to go to sleep. Go get busy.";
-State.variables.mapTrainingGrounds.rooms.playerRoom.combatAllowed = false;
-State.variables.mapTrainingGrounds.rooms.playerRoom.icon = "candidates-room.png";
-State.variables.mapTrainingGrounds.rooms.playerRoom.medIcon = "candidates-room-med.png";
+setup.mapTrainingGrounds.playerRoom = new RoomInfo(
+	"playerRoom", // Key
+	"Player Room", // Title
+	"candidates-room-med.png", // Med Icon
+	"candidates-room.png", // Icon
+	"It's too early to go to sleep. Go get busy.", // description
+	[ new RoomConnection('roomsInnerSouth',1) ], // Connections
+	function(characters) {
+		var actions = [ createRestingActionStandard() ];
+		return actions;
+	}, // getActions
+	[9,316]
+);
+setup.mapTrainingGrounds.mirRoom = new RoomInfo(
+	"mirRoom", // Key
+	"Padmiri's Room", // Title
+	"candidates-room-med.png", // Med Icon
+	"candidates-room.png", // Icon
+	"A bed made of giant leaves sits at the center of the room. Vines, mushrooms, roots and many other plants grow around the walls.", // description
+	[ new RoomConnection('roomsInnerSouth',1) ], // Connections
+	function(characters) {
+		var actions = [ createRestingActionStandard() ];
+		return actions;
+	}, // getActions
+	[34,320]
+);
+setup.mapTrainingGrounds.ateRoom = new RoomInfo(
+	"ateRoom", // Key
+	"Maaterasu's Room", // Title
+	"candidates-room-med.png", // Med Icon
+	"candidates-room.png", // Icon
+	"A strange purple orb at the top of a gray pillar watches your every move.", // description
+	[ new RoomConnection('roomsInnerSouth',1) ], // Connections
+	function(characters) {
+		var actions = [ createRestingActionStandard() ];
+		return actions;
+	}, // getActions
+	[59,316]
+);
+setup.mapTrainingGrounds.clawRoom = new RoomInfo(
+	"clawRoom", // Key
+	"Fiercest Claw's Room", // Title
+	"candidates-room-med.png", // Med Icon
+	"candidates-room.png", // Icon
+	"A lone dummy stands at the center of the room, severely injured. Someone's been scratching it.", // description
+	[ new RoomConnection('roomsOuterSouth',1) ], // Connections
+	function(characters) {
+		var actions = [ createRestingActionStandard() ];
+		return actions;
+	}, // getActions
+	[105,287]
+);
+setup.mapTrainingGrounds.nashRoom = new RoomInfo(
+	"nashRoom", // Key
+	"Nashillbyir's Room", // Title
+	"candidates-room-med.png", // Med Icon
+	"candidates-room.png", // Icon
+	"Weapon frames decorate the walls, featuring a staff, a pike and a bow.", // description
+	[ new RoomConnection('roomsOuterSouth',1) ], // Connections
+	function(characters) {
+		var actions = [ createRestingActionStandard() ];
+		return actions;
+	}, // getActions
+	[115,263]
+);
+setup.mapTrainingGrounds.valRoom = new RoomInfo(
+	"valRoom", // Key
+	"Valtan's Room", // Title
+	"candidates-room-med.png", // Med Icon
+	"candidates-room.png", // Icon
+	"A large pond covers most of the room.", // description
+	[ new RoomConnection('roomsOuterSouth',1) ], // Connections
+	function(characters) {
+		var actions = [ createRestingActionStandard() ];
+		return actions;
+	}, // getActions
+	[106,238]
+);
+setup.mapTrainingGrounds.playerRoom.combatAllowed = false;
+setup.mapTrainingGrounds.mirRoom.combatAllowed = false;
+setup.mapTrainingGrounds.ateRoom.combatAllowed = false;
+setup.mapTrainingGrounds.clawRoom.combatAllowed = false;
+setup.mapTrainingGrounds.nashRoom.combatAllowed = false;
+setup.mapTrainingGrounds.valRoom.combatAllowed = false;
 
-State.variables.mapTrainingGrounds.rooms.mirRoom = new Room("mirRoom","Mir's Room");
-State.variables.mapTrainingGrounds.rooms.mirRoom.connections =
-	[ new RoomConnection('roomsInnerSouth',1) ];
-State.variables.mapTrainingGrounds.rooms.mirRoom.displayConnections = function() {
-	return createStandardDisplayConnections(this.connections);
-}
-State.variables.mapTrainingGrounds.rooms.mirRoom.getActions = function(characters) {
-	var actions = [ createRestingActionStandard() ];
-	return actions;
-}
-State.variables.mapTrainingGrounds.rooms.mirRoom.description = "A bed made of giant leaves sits at the center of the room. "
-		+ "Vines, mushrooms, roots and many other plants grow around the walls.";
-State.variables.mapTrainingGrounds.rooms.mirRoom.combatAllowed = false;
-State.variables.mapTrainingGrounds.rooms.mirRoom.icon = "candidates-room.png";
-State.variables.mapTrainingGrounds.rooms.mirRoom.medIcon = "candidates-room-med.png";
-
-State.variables.mapTrainingGrounds.rooms.ateRoom = new Room("ateRoom","Ate's Room");
-State.variables.mapTrainingGrounds.rooms.ateRoom.connections =
-	[ new RoomConnection('roomsInnerSouth',1) ];
-State.variables.mapTrainingGrounds.rooms.ateRoom.displayConnections = function() {
-	return createStandardDisplayConnections(this.connections);
-}
-State.variables.mapTrainingGrounds.rooms.ateRoom.getActions = function(characters) {
-	var actions = [ createRestingActionStandard() ];
-	return actions;
-}
-State.variables.mapTrainingGrounds.rooms.ateRoom.description = "A strange purple orb at the top of a gray pillar watches "
-		+ "your every move.";
-State.variables.mapTrainingGrounds.rooms.ateRoom.combatAllowed = false;
-State.variables.mapTrainingGrounds.rooms.ateRoom.icon = "candidates-room.png";
-State.variables.mapTrainingGrounds.rooms.ateRoom.medIcon = "candidates-room-med.png";
-
-State.variables.mapTrainingGrounds.rooms.clawRoom = new Room("clawRoom","Claw's Room");
-State.variables.mapTrainingGrounds.rooms.clawRoom.connections =
-	[ new RoomConnection('roomsOuterSouth',1) ];
-State.variables.mapTrainingGrounds.rooms.clawRoom.displayConnections = function() {
-	return createStandardDisplayConnections(this.connections);
-}
-State.variables.mapTrainingGrounds.rooms.clawRoom.getActions = function(characters) {
-	var actions = [ createRestingActionStandard() ];
-	return actions;
-}
-State.variables.mapTrainingGrounds.rooms.clawRoom.description = "A lone dummy stands at the center of the room, "
-		+ "severely injured. Someone's been scratching it.";
-State.variables.mapTrainingGrounds.rooms.clawRoom.combatAllowed = false;
-State.variables.mapTrainingGrounds.rooms.clawRoom.icon = "candidates-room.png";
-State.variables.mapTrainingGrounds.rooms.clawRoom.medIcon = "candidates-room-med.png";
-
-State.variables.mapTrainingGrounds.rooms.nashRoom = new Room("nashRoom","Nash's Room");
-State.variables.mapTrainingGrounds.rooms.nashRoom.connections =
-	[ new RoomConnection('roomsOuterSouth',1) ];
-State.variables.mapTrainingGrounds.rooms.nashRoom.displayConnections = function() {
-	return createStandardDisplayConnections(this.connections);
-}
-State.variables.mapTrainingGrounds.rooms.nashRoom.getActions = function(characters) {
-	var actions = [ createRestingActionStandard() ];
-	return actions;
-}
-State.variables.mapTrainingGrounds.rooms.nashRoom.description = "Weapon frames decorate the walls, featuring a "
-		+ "staff, a pike and a bow.";
-State.variables.mapTrainingGrounds.rooms.nashRoom.combatAllowed = false;
-State.variables.mapTrainingGrounds.rooms.nashRoom.icon = "candidates-room.png";
-State.variables.mapTrainingGrounds.rooms.nashRoom.medIcon = "candidates-room-med.png";
-
-State.variables.mapTrainingGrounds.rooms.valRoom = new Room("valRoom","Val's Room");
-State.variables.mapTrainingGrounds.rooms.valRoom.connections =
-	[ new RoomConnection('roomsOuterSouth',1) ];
-State.variables.mapTrainingGrounds.rooms.valRoom.displayConnections = function() {
-	return createStandardDisplayConnections(this.connections);
-}
-State.variables.mapTrainingGrounds.rooms.valRoom.getActions = function(characters) {
-	var actions = [ createRestingActionStandard() ];
-	return actions;
-}
-State.variables.mapTrainingGrounds.rooms.valRoom.description = "A large pond covers most of the room."
-State.variables.mapTrainingGrounds.rooms.valRoom.combatAllowed = false;
-State.variables.mapTrainingGrounds.rooms.valRoom.icon = "candidates-room.png";
-State.variables.mapTrainingGrounds.rooms.valRoom.medIcon = "candidates-room-med.png";
-
-// Fulfillment Corridor
-
-State.variables.mapTrainingGrounds.rooms.fulfillmentCorridor = new Room("fulfillmentCorridor","Fulfillment Corridor");
-State.variables.mapTrainingGrounds.rooms.fulfillmentCorridor.connections =
+setup.mapTrainingGrounds.fulfillmentCorridor = new RoomInfo(
+	"fulfillmentCorridor", // Key
+	"Fulfillment Corridor", // Title
+	"fulfillment-corridor-med.png", // Med Icon
+	"fulfillment-corridor.png", // Icon
+	"Lavish chandeliers and some inner windows create a calid illumination.", // description
 	[ new RoomConnection('grandHall',2) ,
 	  new RoomConnection('diningHall',2) ,
-	  new RoomConnection('publicBaths',2) ];
-State.variables.mapTrainingGrounds.rooms.fulfillmentCorridor.displayConnections = function() {
-	return createStandardDisplayConnections(this.connections);
-}
-State.variables.mapTrainingGrounds.rooms.fulfillmentCorridor.description = "Lavish chandeliers and some inner windows create a calid illumination.";
-State.variables.mapTrainingGrounds.rooms.fulfillmentCorridor.combatAllowed = false;
-State.variables.mapTrainingGrounds.rooms.fulfillmentCorridor.icon = "fulfillment-corridor.png";
-State.variables.mapTrainingGrounds.rooms.fulfillmentCorridor.medIcon = "fulfillment-corridor-med.png";
-
-State.variables.mapTrainingGrounds.rooms.diningHall = new Room("diningHall","Dining Hall");
-State.variables.mapTrainingGrounds.rooms.diningHall.connections =
-	[ new RoomConnection('fulfillmentCorridor',2) ];
-State.variables.mapTrainingGrounds.rooms.diningHall.displayConnections = function() {
-	return createStandardDisplayConnections(this.connections);
-}
-State.variables.mapTrainingGrounds.rooms.diningHall.getActions = function(characters) {
-	var actions = [ createRestingActionStandard() ];
-	return actions;
-}
-State.variables.mapTrainingGrounds.rooms.diningHall.description = "A long table stands along the room. Half a hundred people would be able to eat here.";
-State.variables.mapTrainingGrounds.rooms.diningHall.combatAllowed = false;
-State.variables.mapTrainingGrounds.rooms.diningHall.icon = "dininghall.png";
-State.variables.mapTrainingGrounds.rooms.diningHall.medIcon = "dininghall-med.png";
-
-State.variables.mapTrainingGrounds.rooms.publicBaths = new Room("publicBaths","Public Baths");
-State.variables.mapTrainingGrounds.rooms.publicBaths.connections =
-	[ new RoomConnection('fulfillmentCorridor',2) ];
-State.variables.mapTrainingGrounds.rooms.publicBaths.displayConnections = function() {
-	return createStandardDisplayConnections(this.connections);
-}
-State.variables.mapTrainingGrounds.rooms.publicBaths.getActions = function(characters) {
-	var actions = [ createRestingActionStandard() ];
-	return actions;
-}
-State.variables.mapTrainingGrounds.rooms.publicBaths.description = "Termal waters similar to those you found at your room. There is, however, a chill "
-																 + "in the air.";
-State.variables.mapTrainingGrounds.rooms.publicBaths.combatAllowed = false;
-State.variables.mapTrainingGrounds.rooms.publicBaths.icon = "public-bath.png";
-State.variables.mapTrainingGrounds.rooms.publicBaths.medIcon = "public-bath-med.png";
-
-// Ambition Corridor
-
-State.variables.mapTrainingGrounds.rooms.ambitionCorridor = new Room("ambitionCorridor","Ambition Corridor");
-State.variables.mapTrainingGrounds.rooms.ambitionCorridor.connections =
+	  new RoomConnection('publicBaths',2) ], // Connections
+	null, // getActions
+	[151,166]
+);
+setup.mapTrainingGrounds.diningHall = new RoomInfo(
+	"diningHall", // Key
+	"Dining Hall", // Title
+	"dininghall-med.png", // Med Icon
+	"dininghall.png", // Icon
+	"A long table stands along the room. Half a hundred people would be able to eat here.", // description
+	[ new RoomConnection('fulfillmentCorridor',2) ], // Connections
+	function(characters) {
+		var actions = [ createRestingActionStandard() ];
+		return actions;
+	}, // getActions
+	[137,131]
+);
+setup.mapTrainingGrounds.publicBaths = new RoomInfo(
+	"publicBaths", // Key
+	"Public Baths", // Title
+	"public-bath-med.png", // Med Icon
+	"public-bath.png", // Icon
+	"Termal waters similar to those you found at your room. There is, however, a chill in the air.", // description
+	[ new RoomConnection('fulfillmentCorridor',2) ], // Connections
+	function(characters) {
+		var actions = [ createRestingActionStandard() ];
+		return actions;
+	}, // getActions
+	[166,131]
+);
+setup.mapTrainingGrounds.ambitionCorridor = new RoomInfo(
+	"ambitionCorridor", // Key
+	"Ambition Corridor", // Title
+	"ambition-corridor-med.png", // Med Icon
+	"ambition-corridor.png", // Icon
+	"Austere lighting, stern decorations.", // description
 	[ new RoomConnection('grandHall',2) ,
 	  new RoomConnection('storage',2) ,
-	  new RoomConnection('starsTower',2) ];
-State.variables.mapTrainingGrounds.rooms.ambitionCorridor.displayConnections = function() {
-	return createStandardDisplayConnections(this.connections);
+	  new RoomConnection('starsTower',2) ], // Connections
+	null, // getActions
+	[156,219]
+);
+setup.mapTrainingGrounds.storage = new RoomInfo(
+	"storage", // Key
+	"Storage", // Title
+	"storage-med.png", // Med Icon
+	"storage.png", // Icon
+	"All kinds of tools and materials are saved here. You aren't allowed to take any.", // description
+	[ new RoomConnection('ambitionCorridor',2) ], // Connections
+	null, // getActions
+	[191,205]
+);
+setup.mapTrainingGrounds.starsTower = new RoomInfo(
+	"starsTower", // Key
+	"Stars Tower", // Title
+	"startower-med.png", // Med Icon
+	"startower.png", // Icon
+	"Blue crystals surround the room's candles, printing their color into everything. You can find a telescope and several tools of geometric calculation.", // description
+	[ new RoomConnection('ambitionCorridor',2) ], // Connections
+	null, // getActions
+	[191,234]
+);
+setup.mapTrainingGrounds.starsTower.getCustomActionsText = function(characters) {
+	var cText = "";
+	if ( State.variables.StVarsList.includes("go0") && quantifyCharacterVacuumStrength("chPlayerCharacter") < (18*9) ) {
+		cText = getButtonMapMenuRespec() + "<sup><span title='You will have a one-time opportunity to switch the values of three pairs of stats.'>(?)</span></sup> " + "\n";
+	}
+	return cText;
 }
-State.variables.mapTrainingGrounds.rooms.ambitionCorridor.description = "Austere lighting, stern decorations.";
-State.variables.mapTrainingGrounds.rooms.ambitionCorridor.combatAllowed = false;
-State.variables.mapTrainingGrounds.rooms.ambitionCorridor.icon = "ambition-corridor.png";
-State.variables.mapTrainingGrounds.rooms.ambitionCorridor.medIcon = "ambition-corridor-med.png";
+setup.mapTrainingGrounds.fulfillmentCorridor.combatAllowed = false;
+setup.mapTrainingGrounds.diningHall.combatAllowed = false;
+setup.mapTrainingGrounds.publicBaths.combatAllowed = false;
+setup.mapTrainingGrounds.ambitionCorridor.combatAllowed = false;
+setup.mapTrainingGrounds.storage.combatAllowed = false;
+setup.mapTrainingGrounds.starsTower.combatAllowed = false;
 
-State.variables.mapTrainingGrounds.rooms.storage = new Room("storage","Storage");
-State.variables.mapTrainingGrounds.rooms.storage.connections =
-	[ new RoomConnection('ambitionCorridor',2) ];
-State.variables.mapTrainingGrounds.rooms.storage.displayConnections = function() {
-	return createStandardDisplayConnections(this.connections);
+////////////////////////////////////////////
+
+//State.variables.mapTrainingGrounds = new Chart("mapTrainingGrounds","Passion Temple");
+//State.variables.mapTrainingGrounds.icon = "temple-map.png";
+
+//State.variables.mapTrainingGrounds.autogenerateRooms("mapTrainingGrounds");
+
+window.initMapTrainingGrounds = function() {
+	State.variables.mapTrainingGrounds = new Chart("mapTrainingGrounds","Passion Temple");
+	State.variables.mapTrainingGrounds.diagramDimensions = [217,346];
+	State.variables.mapTrainingGrounds.icon = "temple-map.png";
+
+	State.variables.mapTrainingGrounds.autogenerateRooms("mapTrainingGrounds");
 }
-State.variables.mapTrainingGrounds.rooms.storage.description = "All kinds of tools and materials are saved here. You aren't allowed to take any.";
-State.variables.mapTrainingGrounds.rooms.storage.combatAllowed = false;
-State.variables.mapTrainingGrounds.rooms.storage.icon = "storage.png";
-State.variables.mapTrainingGrounds.rooms.storage.medIcon = "storage-med.png";
-
-State.variables.mapTrainingGrounds.rooms.starsTower = new Room("starsTower","Stars Tower");
-State.variables.mapTrainingGrounds.rooms.starsTower.connections =
-	[ new RoomConnection('ambitionCorridor',2) ];
-State.variables.mapTrainingGrounds.rooms.starsTower.displayConnections = function() {
-	return createStandardDisplayConnections(this.connections);
+initMapTrainingGrounds();
+window.deinitMapTrainingGrounds = function() {
+	delete State.variables.mapTrainingGrounds;
 }
-State.variables.mapTrainingGrounds.rooms.starsTower.description = "Blue crystals surround the room's candles, printing their color into everything. "
-																+ "You can find a telescope and several tools of geometric calculation.";
-State.variables.mapTrainingGrounds.rooms.starsTower.combatAllowed = false;
-State.variables.mapTrainingGrounds.rooms.starsTower.icon = "startower.png";
-State.variables.mapTrainingGrounds.rooms.starsTower.medIcon = "startower-med.png";
-
 

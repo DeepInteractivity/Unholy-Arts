@@ -13,24 +13,28 @@ window.JobsAssigner = function() {
 	
 	this.lastWorkInfo = "";
 	
+};
+
+// Methods
+
 	// Management
-	this.createInitialJobs = function() {
+JobsAssigner.prototype.createInitialJobs = function() {
 		this.possibleJobs.push(createRepairsJob(),createCleaningJob(),createTendCropsJob(),createBookResearchJob(),createOutdoorsCleaningJob(),
 							   createAnalyzeFloraJob(),createDramaWritingJob(),createDramaCatalogueJob(),createSalfisGatheringJob());
 	}
 	
-	this.cleanWorkloads = function() {
+JobsAssigner.prototype.cleanWorkloads = function() {
 		for ( var job of this.possibleJobs ) {
 			job.availableWorkloads = 0;
 			job.characters = [];
 		}
 	}
-	this.cleanWorkHours = function() {
+JobsAssigner.prototype.cleanWorkHours = function() {
 		this.initialWorkHours = State.variables.simCycPar.templeWorkHours;
 		this.remainingWorkHours = this.initialWorkHours;
 	}
 	
-	this.createRandomWorkloads = function(workloads) {
+JobsAssigner.prototype.createRandomWorkloads = function(workloads) {
 		var i = 0;
 		while ( i < workloads ) {
 			this.possibleJobs[limitedRandomInt(this.possibleJobs.length - 1)].availableWorkloads++;
@@ -38,21 +42,21 @@ window.JobsAssigner = function() {
 		}
 	}
 	
-	this.sortCandidates = function() { // Randomly decides the order in which Candidates will pick their jobs, and adds them to candidatesInfo
+JobsAssigner.prototype.sortCandidates = function() { // Randomly decides the order in which Candidates will pick their jobs, and adds them to candidatesInfo
 		this.candidatesInfo = [];
-		var sortedCandidates = shuffleArray(getCandidatesKeysArray());
+		var sortedCandidates = getRandomizedActiveSimulationCharactersArray();
 		for ( var candidate of sortedCandidates ) {
 			this.candidatesInfo.push([candidate,""]);
 		}
 	}
-	this.sortCandidatesPCfirst = function() {
+JobsAssigner.prototype.sortCandidatesPCfirst = function() {
 		this.candidatesInfo = [["chPlayerCharacter",""]];
 		var sortedCandidates = shuffleArray("chNash","chVal","chClaw","chMir","chAte");
 		for ( var candidate of sortedCandidates ) {
 			this.candidatesInfo.push([candidate,""]);
 		}
 	}
-	this.sortCandidatesPClast = function() {
+JobsAssigner.prototype.sortCandidatesPClast = function() {
 		this.candidatesInfo = [];
 		var sortedCandidates = shuffleArray("chNash","chVal","chClaw","chMir","chAte");
 		for ( var candidate of sortedCandidates ) {
@@ -61,7 +65,7 @@ window.JobsAssigner = function() {
 		this.candidatesInfo.push(["chPlayerCharacter",""]);
 	}
 	
-	this.getAvailableJobsKeys = function() {
+JobsAssigner.prototype.getAvailableJobsKeys = function() {
 		var jobKeys = [];
 		for ( var job of this.possibleJobs ) {
 			if ( (job.availableWorkloads - job.takenWorkloads) > 0 ) {
@@ -75,7 +79,7 @@ window.JobsAssigner = function() {
 		return jobKeys;
 	}
 	
-	this.candidatesChooseJobs = function(candidatesKeys) { // Calls the AI function for each of these candidates to choose their jobs, and assigns them
+JobsAssigner.prototype.candidatesChooseJobs = function(candidatesKeys) { // Calls the AI function for each of these candidates to choose their jobs, and assigns them
 		for ( var candidate of candidatesKeys ) {
 			var jobKey = this.candidateChoosesJobRandom(candidate);
 			this.assignJobToChar(candidate,jobKey);
@@ -84,12 +88,12 @@ window.JobsAssigner = function() {
 	
 	// UI
 		// Jobs assignation
-	this.jobsInfoToPassageText = function() {
+JobsAssigner.prototype.jobsInfoToPassageText = function() {
 		for ( var job of this.possibleJobs ) {
 			this.passageText += getJobDisplayText(job) + "\n";
 		}
 	}
-	this.availableJobsInfoToPassageText = function() {
+JobsAssigner.prototype.availableJobsInfoToPassageText = function() {
 		for ( var job of this.possibleJobs ) {
 			if ( job.availableWorkloads > 0 ) {
 				this.passageText += getJobDisplayText(job) + "\n";
@@ -97,7 +101,7 @@ window.JobsAssigner = function() {
 		}
 	}
 	
-	this.getCandidatesInfoPassageText = function() {
+JobsAssigner.prototype.getCandidatesInfoPassageText = function() {
 		var text = "";
 		for ( var candidate of this.candidatesInfo ) {
 			text += gC(candidate[0]).formattedName;
@@ -109,18 +113,18 @@ window.JobsAssigner = function() {
 		return text;
 	}
 	
-	this.formatStartingPassageText = function() {
+JobsAssigner.prototype.formatStartingPassageText = function() {
 		this.passageText += "__Candidates' order__:\n";
 		this.passageText += this.getCandidatesInfoPassageText();
 		this.passageText += "\nThese are today's available jobs:";
 		this.passageText += "\n\n";
 		this.availableJobsInfoToPassageText();
 	}
-	this.passageTextToInitialState = function() {
+JobsAssigner.prototype.passageTextToInitialState = function() {
 		// this.passageText = this.getAdvanceToPlayerChoiceStateButton() + "\n\n";
 		this.formatStartingPassageText();
 	}
-	this.formatFinalJobAssignationPassageText = function() {
+JobsAssigner.prototype.formatFinalJobAssignationPassageText = function() {
 		this.passageText = "" + this.getAdvanceToModeChoiceButton() + "\n\n";
 		this.passageText += "__Candidates' order__:\n";
 		this.passageText += this.getCandidatesInfoPassageText();
@@ -128,7 +132,7 @@ window.JobsAssigner = function() {
 		this.passageText += "\n\n";
 		this.availableJobsInfoToPassageText();
 	}
-	this.formatManualModePassageText = function() {
+JobsAssigner.prototype.formatManualModePassageText = function() {
 		this.passageText = "__Remaining working hours__: " + this.remainingWorkHours;
 		
 		var i = 0;
@@ -168,26 +172,26 @@ window.JobsAssigner = function() {
 			this.passageText += "\n" + this.getFinishWorkButton();
 		}
 	}
-	this.formatAutoModePassageText = function() {
+JobsAssigner.prototype.formatAutoModePassageText = function() {
 		this.passageText = "Work complete.\n\n";
 		this.passageText += this.lastWorkInfo;
 		this.passageText += this.getFinishWorkButton();
 	}
 	
 		// Actual jobs
-	this.passageTextToPlayerChoosesMode = function() {
+JobsAssigner.prototype.passageTextToPlayerChoosesMode = function() {
 		this.passageText = "Choose the work mode:\n\n";
 		this.passageText += this.getManualModeButton() + ": you will be asked how much effort you wish to use each round.\n";
 		this.passageText += this.getAutoModeButton() + ": the amount of effort you put will be automatically decided.\n";
 	}
 	
 	// AI
-	this.candidateChoosesJobRandom = function(charKey) { // Returns key of chosen job
+JobsAssigner.prototype.candidateChoosesJobRandom = function(charKey) { // Returns key of chosen job
 		var avJobKeys = shuffleArray(this.getAvailableJobsKeys());
 		return avJobKeys[0];
 	}
 	
-	this.candidateChoosesEffort = function(charKey,job) {
+JobsAssigner.prototype.candidateChoosesEffort = function(charKey,job) {
 		var effort = 1; // Low
 		if ( job.tier == 1 ) {
 			if ( gC(charKey)[job.bar].current >= 80 ) {
@@ -198,7 +202,7 @@ window.JobsAssigner = function() {
 	}
 	
 	// Logic
-	this.assignJobToChar = function(charKey,jobKey) {
+JobsAssigner.prototype.assignJobToChar = function(charKey,jobKey) {
 		var jobI = 0; // Job Index
 		var charI = 0; // Character Index
 		while ( this.possibleJobs[jobI].key != jobKey ) {
@@ -212,14 +216,14 @@ window.JobsAssigner = function() {
 		this.possibleJobs[jobI].takenWorkloads++;
 		this.candidatesInfo[charI][1] = this.possibleJobs[jobI].title;
 	}	
-	this.charactersBeforePCchooseJobs = function() {
+JobsAssigner.prototype.charactersBeforePCchooseJobs = function() {
 		var charI = 0; // Char Index
 		while ( this.candidatesInfo[charI][0] != "chPlayerCharacter" ) {
 			this.candidatesChooseJobs([this.candidatesInfo[charI][0]]);
 			charI++;
 		}
 	}	
-	this.charactersAfterPCchooseJobs = function() {
+JobsAssigner.prototype.charactersAfterPCchooseJobs = function() {
 		var charI = 0; // Char Index
 		while ( this.candidatesInfo[charI][0] != "chPlayerCharacter" ) {
 			charI++;
@@ -231,7 +235,7 @@ window.JobsAssigner = function() {
 		}
 	}
 	
-	this.playerWorksOneHour = function(effort) {
+JobsAssigner.prototype.playerWorksOneHour = function(effort) {
 		var i = 0;
 		while ( this.candidatesInfo[i][0] != "chPlayerCharacter" ) { i++; }
 		var l = 0;
@@ -242,7 +246,7 @@ window.JobsAssigner = function() {
 		
 		this.minusOneRemainingHour();
 	}
-	this.playerAutoWorks = function() {
+JobsAssigner.prototype.playerAutoWorks = function() {
 		var i = 0;
 		while ( this.candidatesInfo[i][0] != "chPlayerCharacter" ) { i++; }
 		var l = 0;
@@ -257,7 +261,7 @@ window.JobsAssigner = function() {
 			i++;
 		}
 	}
-	this.npcCandidatesWork = function() {
+JobsAssigner.prototype.npcCandidatesWork = function() {
 		for ( var job of this.possibleJobs ) {
 			for ( var character of job.characters ) {
 					if ( character != "chPlayerCharacter" ) {
@@ -272,7 +276,7 @@ window.JobsAssigner = function() {
 		}
 	}
 	
-	this.minusOneRemainingHour = function() {
+JobsAssigner.prototype.minusOneRemainingHour = function() {
 		// This function removes one remaining hour, and adds an hour to the current time. This is only invoked when the player is working.
 		State.variables.daycycle.addHours(1);
 		this.remainingWorkHours--;
@@ -281,7 +285,7 @@ window.JobsAssigner = function() {
 	// Buttons
 	
 		// No longer in use
-	this.getAdvanceToPlayerChoiceStateButton = function() {
+JobsAssigner.prototype.getAdvanceToPlayerChoiceStateButton = function() {
 		var bText = "<<l" + "ink [[Continue|Jobs Screen]]>><<s" + "cript>>\n";
 		bText	 += "State.variables.jobsAssigner.charactersBeforePCchooseJobs();\n";
 		bText	 += "State.variables.jobsAssigner.flagPlayerIsChoosing = true;\n";
@@ -291,7 +295,7 @@ window.JobsAssigner = function() {
 		return bText;
 	}
 	
-	this.getPlayerChoosesJobButton = function(jobKey) {
+JobsAssigner.prototype.getPlayerChoosesJobButton = function(jobKey) {
 		/*var bText = "<<l" + "ink [[Continue|Jobs Screen]]>><<s" + "cript>>\n";
 		bText	 += 'State.variables.jobsAssigner.assignJobToChar("chPlayerCharacter","' + jobKey + '");\n';
 		bText	 += "State.variables.jobsAssigner.flagPlayerIsChoosing = false;\n";
@@ -321,20 +325,20 @@ window.JobsAssigner = function() {
 		return bText;
 	}
 	
-	this.getAdvanceToModeChoiceButton = function() {
+JobsAssigner.prototype.getAdvanceToModeChoiceButton = function() {
 		var bText = "<<l" + "ink [[Choose work mode|Jobs Screen]]>><<s" + "cript>>\n";
 		bText	 += "State.variables.jobsAssigner.npcCandidatesWork();";
 		bText	 += "State.variables.jobsAssigner.passageTextToPlayerChoosesMode();";
 		bText	 += "<</s" + "cript>><</l" + "ink>>";
 		return bText;
 	}
-	this.getManualModeButton = function() {
+JobsAssigner.prototype.getManualModeButton = function() {
 		var bText = "<<l" + "ink [[Manual Mode|Jobs Screen]]>><<s" + "cript>>\n";
 		bText	 += "State.variables.jobsAssigner.formatManualModePassageText();";
 		bText	 += "<</s" + "cript>><</l" + "ink>>";
 		return bText;
 	}
-	this.getAutoModeButton = function() {
+JobsAssigner.prototype.getAutoModeButton = function() {
 		var bText = "<<l" + "ink [[Auto Mode|Jobs Screen]]>><<s" + "cript>>\n";
 		bText	 += "State.variables.jobsAssigner.playerAutoWorks();";		
 		bText	 += "State.variables.jobsAssigner.formatAutoModePassageText();";
@@ -342,7 +346,7 @@ window.JobsAssigner = function() {
 		return bText;
 	}
 	
-	this.getLowEffortButton = function(name,effortsAmount) {
+JobsAssigner.prototype.getLowEffortButton = function(name,effortsAmount) {
 		var i = 0;
 		var bText = "<<l" + "ink [[" + name + "|Jobs Screen]]>><<s" + "cript>>\n";
 		while ( i < effortsAmount ) {
@@ -353,7 +357,7 @@ window.JobsAssigner = function() {
 		bText	 += "<</s" + "cript>><</l" + "ink>>";
 		return bText;
 	}
-	this.getMediumEffortButton = function(name,effortsAmount) {
+JobsAssigner.prototype.getMediumEffortButton = function(name,effortsAmount) {
 		var i = 0;
 		var bText = "<<l" + "ink [[" + name + "|Jobs Screen]]>><<s" + "cript>>\n";
 		while ( i < effortsAmount ) {
@@ -364,7 +368,7 @@ window.JobsAssigner = function() {
 		bText	 += "<</s" + "cript>><</l" + "ink>>";
 		return bText;
 	}
-	this.getHighEffortButton = function(name,effortsAmount) {
+JobsAssigner.prototype.getHighEffortButton = function(name,effortsAmount) {
 		var i = 0;
 		var bText = "<<l" + "ink [[" + name + "|Jobs Screen]]>><<s" + "cript>>\n";
 		while ( i < effortsAmount ) {
@@ -376,17 +380,18 @@ window.JobsAssigner = function() {
 		return bText;
 	}
 	
-	this.getFinishWorkButton = function() {
+JobsAssigner.prototype.getFinishWorkButton = function() {
 		var bText = "The work period is now finished. The Candidates are free for the rest of the day.";
 		bText	 += "\n\n<<l" + "ink [[Continue|Map]]>><<s" + "cript>>\n";
 		bText	 += "State.variables.jobsAssigner.passageText = '';\n";
+		bText	 += "State.variables.jobsAssigner.lastWorkInfo = '';\n";
 		bText	 += "initSocializationPeriodPassionTemple();";
 		bText	 += "<</s" + "cript>><</l" + "ink>>";
 		return bText;
 	}
 	
 	// Engine
-	this.initJobsAssigner = function() {
+JobsAssigner.prototype.initJobsAssigner = function() {
 		// Init
 		this.lastWorkInfo = "";
 		this.possibleJobs = [];
@@ -395,10 +400,9 @@ window.JobsAssigner = function() {
 		// Management
 		this.cleanWorkloads();
 		this.cleanWorkHours();
-		this.createRandomWorkloads(7);
-		
-		// Temporary
-		//this.candidatesChooseJobs(getCandidatesKeysArray());
+		var workloads = State.variables.activeSimulationCharacters.length;
+		workloads = workloads * 1.2 - 1;
+		this.createRandomWorkloads(workloads);
 		
 		// Candidates before player choose work
 		this.charactersBeforePCchooseJobs();
@@ -408,7 +412,6 @@ window.JobsAssigner = function() {
 		this.passageText = "";
 		this.passageTextToInitialState();		
 	}
-};
 
 State.variables.jobsAssigner = new JobsAssigner();
 

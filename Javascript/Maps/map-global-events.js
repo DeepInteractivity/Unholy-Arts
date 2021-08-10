@@ -14,6 +14,7 @@ window.createTrainingEndEvent = function(minutes) {
 		}
 	);
 	sEvent.executeWithoutCharacters = true;
+	sEvent.priority = 100;
 	return sEvent;
 }
 
@@ -29,6 +30,7 @@ window.createSocializationEndEvent = function(minutes) {
 		}
 	);
 	sEvent.executeWithoutCharacters = true;
+	sEvent.priority = 100;
 	return sEvent;
 }
 
@@ -43,6 +45,23 @@ window.createFakePeriodEndEvent = function(minutes) {
 													   + "[[Continue|Quickstarts]]";
 		}
 	);
+	sEvent.priority = 100;
+	return sEvent;
+}
+
+window.createTestMapEndEvent = function(minutes) {
+	var sEvent = new systemEvent(minutes,["chDummy"],"scenarioEnd","End of training",function(cList) {
+			// Finish map period
+			State.variables.compass.finishMapSimulation();
+			//deinitMapGleamingCaverns();
+			initMapTrainingGrounds();
+			
+			// UI
+			State.variables.compass.scenarioEndPassage = "The test is over. Shutting down Gleaming Caverns and initializating Passion Temple. Going back to debug menu.\n\n"
+													   + "[[Continue|Quickstarts]]";
+		}
+	);
+	sEvent.priority = 100;
 	return sEvent;
 }
 

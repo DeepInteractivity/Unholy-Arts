@@ -10,68 +10,6 @@ window.Bar = function(maxValue) {
 	
 	this.accumulatedDamage = 0;
 	
-	this.calculateCost = function(baseCost) {
-		var modifier = this.tainted;
-		if ( modifier < 0 ) {
-			modifier = 0;
-		}
-		return (baseCost * ( 1 + (modifier * 0.01)));
-	}
-	this.applyCost = function(baseCost) {
-		var modifier = this.tainted;
-		if ( modifier < 0 ) {
-			modifier = 0;
-		}
-		this.changeValue(-baseCost * ( 1 + (modifier * 0.01)));
-	}
-	
-	this.changeValue = function(change) { // Use this function whenever it is desired to add to rest to the bar's current value.
-		
-		var overflow = 0;
-		if ( -change > this.current ) { overflow = -change - this.current; }
-		
-		this.current += change; // Apply changes
-		if (this.current > this.max) {
-			this.current = this.max;
-		} else if (this.current < 0) {
-			// this.current = 0 ; // Removed to allow negative overflows
-		}
-		
-		if ( change < 0 ) { // Accumulated damage
-			this.accumulatedDamage -= change;
-		}
-		
-		return overflow;
-	}
-	
-	this.attack = function(change) {
-		var finalChange = change * (( 1 + ( this.weakness * 0.01 ) ) / ( 1 + this.resistance * 0.01 ));
-		var overflow = this.changeValue(finalChange);
-		return overflow;
-	}
-	this.attackInConversation = function(change) {
-		var finalChange = 0;
-		if ( this.current >= this.max * 0.1 ) {
-			finalChange = change * (( 1 + ( this.weakness * 0.01 ) ) / ( 1 + this.resistance * 0.01 ));
-			this.changeValue(finalChange);
-			if ( this.current < this.max * 0.1 ) {
-				this.current = this.max * 0.1;
-			}
-		}
-		return finalChange;
-	}
-	
-	this.restore = function() {
-		this.current = this.max;
-	}
-	this.deplete = function() {
-		this.current = 0;
-	}
-	this.cleanDamage = function() {
-		this.accumulatedDamage = 0;
-	}
-	
-	
 };
 
 	// Bar related functions
@@ -95,6 +33,68 @@ window.getBarPercentage = function(target,bar) {
 	var pr = gC(target)[bar].current / gC(target)[bar].max;
 	return pr;
 }
+
+// Bar methods
+Bar.prototype.calculateCost = function(baseCost) {
+		var modifier = this.tainted;
+		if ( modifier < 0 ) {
+			modifier = 0;
+		}
+		return (baseCost * ( 1 + (modifier * 0.01)));
+	}
+Bar.prototype.applyCost = function(baseCost) {
+		var modifier = this.tainted;
+		if ( modifier < 0 ) {
+			modifier = 0;
+		}
+		this.changeValue(-baseCost * ( 1 + (modifier * 0.01)));
+	}
+
+Bar.prototype.changeValue = function(change) { // Use this function whenever it is desired to add to rest to the bar's current value.
+		
+		var overflow = 0;
+		if ( -change > this.current ) { overflow = -change - this.current; }
+		
+		this.current += change; // Apply changes
+		if (this.current > this.max) {
+			this.current = this.max;
+		} else if (this.current < 0) {
+			// this.current = 0 ; // Removed to allow negative overflows
+		}
+		
+		if ( change < 0 ) { // Accumulated damage
+			this.accumulatedDamage -= change;
+		}
+		
+		return overflow;
+	}
+
+Bar.prototype.attack = function(change) {
+		var finalChange = change * (( 1 + ( this.weakness * 0.01 ) ) / ( 1 + this.resistance * 0.01 ));
+		var overflow = this.changeValue(finalChange);
+		return overflow;
+	}
+Bar.prototype.attackInConversation = function(change) {
+		var finalChange = 0;
+		if ( this.current >= this.max * 0.1 ) {
+			finalChange = change * (( 1 + ( this.weakness * 0.01 ) ) / ( 1 + this.resistance * 0.01 ));
+			this.changeValue(finalChange);
+			if ( this.current < this.max * 0.1 ) {
+				this.current = this.max * 0.1;
+			}
+		}
+		return finalChange;
+	}
+
+Bar.prototype.restore = function() {
+		this.current = this.max;
+	}
+Bar.prototype.deplete = function() {
+		this.current = 0;
+	}
+Bar.prototype.cleanDamage = function() {
+		this.accumulatedDamage = 0;
+	}
 
 // Constructors, serializers, etc.
 Bar.prototype._init = function (obj) {
@@ -128,39 +128,6 @@ window.Stat = function() {
 	this.multModifier = 1;
 	this.experience = 0;
 	this.affinity = 1.0; // Rate at which experience in gained.
-	
-	this.addExperience = function(exp) {
-		this.experience += exp * this.affinity;
-	}
-	
-	this.tryLevelUp = function() {
-		var flagTryLevelUp = true;
-		var flagLeveledUp = false;
-		var requiredExp = this.getRequiredExp();
-		
-		while ( flagTryLevelUp == true ) {
-			if ( this.experience >= requiredExp ) {
-				flagLeveledUp = true;
-				this.value++;
-				this.experience -= requiredExp;
-				requiredExp = this.getRequiredExp();
-			}
-			else {
-				flagTryLevelUp = false;
-			}
-		}
-		
-		return flagLeveledUp;
-	}
-	
-	this.getRequiredExp = function() { // Returns the required exp to level up this stat
-		return (this.value * 100);
-	}
-	this.getValue = function() { // Returns the real value after modifiers are taken into account
-		var result = (this.value + this.sumModifier) * this.multModifier;
-		if ( result < 0 ) { result = 0; }
-		return result;
-	}
 };
 
 window.fixStatModifiers = function(stat) {
@@ -185,6 +152,40 @@ window.getTextStatExp = function(stat) {
 	}
 	return text;
 }
+
+// Stat Methods
+Stat.prototype.addExperience = function(exp) {
+		this.experience += exp * this.affinity;
+	}
+
+Stat.prototype.tryLevelUp = function() {
+		var flagTryLevelUp = true;
+		var flagLeveledUp = false;
+		var requiredExp = this.getRequiredExp();
+		
+		while ( flagTryLevelUp == true ) {
+			if ( this.experience >= requiredExp ) {
+				flagLeveledUp = true;
+				this.value++;
+				this.experience -= requiredExp;
+				requiredExp = this.getRequiredExp();
+			}
+			else {
+				flagTryLevelUp = false;
+			}
+		}
+		
+		return flagLeveledUp;
+	}
+
+Stat.prototype.getRequiredExp = function() { // Returns the required exp to level up this stat
+		return (this.value * 100);
+	}
+Stat.prototype.getValue = function() { // Returns the real value after modifiers are taken into account
+		var result = (this.value + this.sumModifier) * this.multModifier;
+		if ( result < 0 ) { result = 0; }
+		return result;
+	}
 
 // Constructors, serializers, etc.
 Stat.prototype._init = function (obj) {
@@ -214,8 +215,10 @@ window.Bodypart = function(key,name) {
 	this.name = name;
 	this.state = "free";
 	this.bondage = -1; // ID of equipped bondage
-	
-	this.textToUI = function() {
+};
+
+// Bodypart methods
+Bodypart.prototype.textToUI = function() {
 		var text = firstToCap(this.name) + ": ";
 		
 		if ( this.state == "inUse" ) {
@@ -232,7 +235,6 @@ window.Bodypart = function(key,name) {
 		text += "\n";
 		return text;
 	}
-};
 
 // Constructors, serializers, etc.
 Bodypart.prototype._init = function (obj) {
@@ -300,7 +302,7 @@ window.formulaDriveLevelPoints = function(level) { // Returns the required point
 	// var formula = ( level * 200 ) + ( ( level * level ) * 50 );
 	var formula = ( level * 175 ) + ( ( level * level ) * 15 );
 	return formula;
-	// 0 , 250 , 600 , 1050 , 1600 , 2250
+	// 0 , 190 , 410 , 660 , 940 , 1250 , 1590
 }
 
 // getCharsDrivePercent at character-class.js
@@ -335,9 +337,15 @@ window.Mood = function() {
 	this.dominant = 0;
 	this.submissive = 0;
 	this.bored = 0;
-	this.angry = 0;
-	
-	this.applyChange = function(m,value) {
+	this.angry = 0;	
+}
+
+window.getCharMood = function(character,mood) {
+	return State.variables[character].mood[mood];
+}
+
+// Mood methods
+Mood.prototype.applyChange = function(m,value) {
 		var initialM = this[m];
 		this[m] += value;
 		if ( this[m] < 0 ) {
@@ -348,11 +356,8 @@ window.Mood = function() {
 		var difference = this[m] - initialM;
 		return difference;
 	}
-	
-	this.moodDecays = function() {
-		// TO DO
-	}
-	this.resetMood = function() {
+
+Mood.prototype.resetMood = function() {
 		this.friendly = 0;
 		this.intimate = 0;
 		this.flirty = 0;
@@ -362,13 +367,13 @@ window.Mood = function() {
 		this.bored = 0;
 		this.angry = 0;
 	}
-	this.createHtmlGraph = function() {
+Mood.prototype.createHtmlGraph = function() {
 		var gText = createHorizontalGraph(25,150,[["lightgreen",this.friendly],["dodgerblue",this.intimate],["rosybrown",this.flirty],
 					["crimson",this.aroused],["purple",this.dominant],["violet",this.submissive],["darkgray",this.bored],["red",this.angry]],
 					this.createStatsText());
 		return gText;
 	}
-	this.createStatsText = function() {
+Mood.prototype.createStatsText = function() {
 		var t = "Friendly: " + this.friendly.toFixed(2) + "\n";
 		t	 += "Intimate: " + this.intimate.toFixed(2) + "\n";
 		t	 += "Flirty: " + this.flirty.toFixed(2) + "\n";
@@ -379,7 +384,7 @@ window.Mood = function() {
 		t 	 += "Angry: " + this.angry.toFixed(2);
 		return t;
 	}
-	this.getTwoHighestMoods = function() {
+Mood.prototype.getTwoHighestMoods = function() {
 		// I know I could have made a sort, I was tired ok
 		var highMoods = [];
 		for ( var m of ["friendly","intimate","flirty","aroused","dominant","submissive","bored","angry"] ) {
@@ -412,8 +417,8 @@ window.Mood = function() {
 		}
 		return results;
 	}
-	
-	this.getUiText = function() {
+
+Mood.prototype.getUiText = function() {
 		var uText = "";
 		var moods = this.getTwoHighestMoods();
 		if ( moods.length < 1 ) {
@@ -426,12 +431,6 @@ window.Mood = function() {
 		uText += "\n" + this.createHtmlGraph();
 		return uText;
 	}
-	
-}
-
-window.getCharMood = function(character,mood) {
-	return State.variables[character].mood[mood];
-}
 
 // Constructors, serializers, etc.
 Mood.prototype._init = function (obj) {
@@ -463,28 +462,96 @@ window.Virginity = function(type,name,enabled,taken) {
 	this.enabled = enabled; // True/False
 	this.taken = taken; // True/False
 	this.taker = "";
+	this.takerName = "";
 	this.method = "";
-	
-	this.assignTaker = function(taker,method) {
+	this.ctxt = ""; // Either "forced"/"given"/"bs" // Used to generate description in menu
+}
+
+window.provokeVirginityBonusRelationship = function(actor,target) {
+	var description = "";
+	if ( gC(actor).relations[target] != undefined ) {
+		var multiplier1 = getVirginityRelationshipMultiplier(actor,target);
+		var multiplier2 = getVirginityRelationshipMultiplier(target,actor);
+		var ctxt = "";
+		if ( State.variables.sc.sceneType == "ss" ) {
+			if ( State.variables.sc.enabledLead == "fixed" && gC(target).hasLead == false ) {
+				ctxt = "forced";
+				// Target -> Actor: ++Sexual tension +Submission +Romance
+				gC(target).relations[actor].sexualTension.stv += 400 * multiplier2;
+				gC(target).relations[actor].submission.stv += 200 * multiplier2;
+				gC(target).relations[actor].romance.stv += 200 * multiplier2;
+				// Actor -> Target: +Sexual tension +Domination +Romance
+				gC(actor).relations[target].sexualTension.stv += 100 * multiplier1;
+				gC(actor).relations[target].domination.stv += 100 * multiplier1;
+				gC(actor).relations[target].romance.stv += 100 * multiplier1;
+				description = gC(actor).getFormattedName() + "'s and " + gC(target).getFormattedName() + "'s sexual tension and romance and " + gC(target).getFormattedName() + "'s submission have increased.";
+			} else {
+				ctxt = "given";
+				// Target -> Actor: +++Romance +Sexual tension
+				gC(target).relations[actor].sexualTension.stv += 200 * multiplier2;
+				gC(target).relations[actor].romance.stv += 600 * multiplier2;
+				// Actor -> Target: ++Romance +Sexual tension
+				gC(actor).relations[target].sexualTension.stv += 100 * multiplier1;
+				gC(actor).relations[target].romance.stv += 200 * multiplier1;
+				description = gC(actor).getFormattedName() + "'s and " + gC(target).getFormattedName() + "'s romance and sexual tension have increased.";
+			}
+		} else if ( State.variables.sc.sceneType == "bs" ) {
+			ctxt = "bs"; 
+			// Target -> Actor: +++Rivalry
+			gC(target).relations[actor].rivalry.stv += 400 * multiplier2;
+			// Actor -> Target: +Rivalry
+			gC(actor).relations[target].sexualTension.stv += 100 * multiplier1;
+			description = gC(actor).getFormattedName() + "'s and " + gC(target).getFormattedName() + "'s rivalry has increased.";
+		}
+	}
+	return description;
+}
+window.getVirginityRelationshipMultiplier = function(actor,target) {
+	var multiplier = 10 + rLvlAbt(actor,target,"friendship") + rLvlAbt(actor,target,"romance") + rLvlAbt(actor,target,"sexualTension") + rLvlAbt(actor,target,"domination") + rLvlAbt(actor,target,"submission") + rLvlAbt(actor,target,"rivalry") + rLvlAbt(actor,target,"enmity");
+	multiplier *= 0.1;
+	return multiplier;
+}
+
+window.checkCharsVirginityExists = function(charKey,type) {
+	var flag = true;
+	var virginity = gC(charKey).virginities[type];
+	if ( virginity != undefined ) {
+		if ( virginity.taken) {
+			flag = false;
+		}
+	}
+	return flag;
+}
+
+// Class methods
+Virginity.prototype.assignTaker = function(taker,method) {
 		this.taken = true;
 		this.taker = taker;
 		this.method = method;
 	}
-	this.clean = function() {
+Virginity.prototype.clean = function() {
 		this.taken = false;
 		this.taker = "";
 		this.method = "";
 	}
-	this.tryTakeVirginity = function(taker,method,description) {
-		if ( this.taken == false ) {
+Virginity.prototype.tryTakeVirginity = function(taker,method,description) {
+		if ( this.enabled && this.taken == false ) {
 			this.taken = true;
 			this.taker = taker;
+			this.takerName = gC(taker).name;
 			this.method = method;
-			
+			if ( State.variables.sc.sceneType == "ss" ) {
+				if ( State.variables.sc.enabledLead == "fixed" && gC(taker).hasLead == true ) {
+					this.ctxt = "forced";
+				} else {
+					this.ctxt = "given";
+				}
+			} else if ( State.variables.sc.sceneType == "bs" ) {
+				this.ctxt = "bs"; 
+			}
 			State.variables.sc.importantMessages += description + "\n";
 		}
 	}
-}
 
 // Constructors, serializers, etc.
 Virginity.prototype._init = function (obj) {
@@ -516,23 +583,67 @@ window.Position = function() {
 	this.description = "";
 	
 	this.cAction = null; // If it's a battle position, it may have a continued action
+};
+
+window.areCharactersPositionsConnected = function(charA,charB) {
+	var flagAreConnected = false;
+	if ( gC(charA).position.type == "active" ) {
+		if ( gC(charA).position.targetsList.includes(charB) ) { flagAreConnected = true; }
+	}
+	else if ( gC(charA).position.type == "passive" ) {
+		if ( gC(charA).position.initiator == charB ) { flagAreConnected = true; }
+	}
+	return flagAreConnected;
+}
+
+window.findAllConnectedCharsByPositionMinusList = function(charKey,excludedList) {
+	var charList = [charKey];
+	// Initiator
+	var initiator = gC(charKey).position.initiator;
+	if ( initiator != undefined ) {
+		if ( excludedList.includes(initiator) == false && charList.includes(initiator) == false ) {
+			charList = charList.concat(findAllConnectedCharsByPositionMinusList(initiator,charList));
+		}
+	}
+	// TargetsList
+	var targetsList = gC(charKey).position.targetsList;
+	if ( targetsList != undefined ) {
+		for ( var cK of targetsList ) {
+			if ( charList.includes(cK) == false && excludedList.includes(cK) == false ) {
+				charList = charList.concat(findAllConnectedCharsByPositionMinusList(cK,charList));
+			}
+		}
+	}
+	// SecondaryInitiators
+	var secondaryInitiators = gC(charKey).position.secondaryInitiators;
+	if ( secondaryInitiators != undefined ) {
+		for ( var cK of secondaryInitiators ) {
+			if ( charList.includes(cK) == false && excludedList.includes(cK) == false ) {
+				charList = charList.concat(findAllConnectedCharsByPositionMinusList(cK,charList));
+			}
+		}
+	}
 	
-	this.makeActive = function(targetsList) {
+	return charList;
+}
+
+// Position methods
+Position.prototype.makeActive = function(targetsList) {
 		this.type = "active";
 		this.targetsList = targetsList;
 	}
-	this.makePassive = function(initiator) {
+Position.prototype.makePassive = function(initiator) {
 		this.type = "passive";
 		this.initiator = initiator;
 	}
-	
-	this.makePassiveSecondaryInitiators = function(initiator,secondaryInitiators) {
+
+Position.prototype.makePassiveSecondaryInitiators = function(initiator,secondaryInitiators) {
 		this.type = "passive";
 		this.initiator = initiator;
 		this.secondaryInitiators = secondaryInitiators; // List
 	}
-	
-	this.free = function() {
+
+Position.prototype.free = function() {
 		if ( this.cAction != null ) {
 			this.cAction.freeBodyparts();;
 			this.cAction = null;
@@ -557,18 +668,6 @@ window.Position = function() {
 				break;
 		}
 	}
-};
-
-window.areCharactersPositionsConnected = function(charA,charB) {
-	var flagAreConnected = false;
-	if ( gC(charA).position.type == "active" ) {
-		if ( gC(charA).position.targetsList.includes(charB) ) { flagAreConnected = true; }
-	}
-	else if ( gC(charA).position.type == "passive" ) {
-		if ( gC(charA).position.initiator == charB ) { flagAreConnected = true; }
-	}
-	return flagAreConnected;
-}
 
 // Constructors, serializers, etc.
 Position.prototype._init = function (obj) {
@@ -713,12 +812,32 @@ window.removeAlteredStateByAcr = function(charKey,acr) {
 	}
 	gC(charKey).cleanStates();
 }
+window.removeAlteredStateByAcrAndExtra = function(charKey,acr,extraProperty,propertyValue) {
+	for ( var as of gC(charKey).alteredStates ) {
+		if ( as.acr == acr ) {
+			if ( as.hasOwnProperty(extraProperty) ) {
+				if ( as[extraProperty] == propertyValue ) {
+					as.flagRemove = true;
+				}
+			}
+		}
+	}
+	gC(charKey).cleanStates();
+}
 window.getAsTurnEffect = function(as) {
 	var te = null;
 	if ( as.hasOwnProperty("turnEffect") ) {
 		te = as.turnEffect;
 	}
 	return te;
+}
+
+window.doesCharHaveAlteredState = function(charKey,acr) {
+	var flag = false;
+	for ( var as of gC(charKey).alteredStates ) {
+		if ( as.acr == acr ) { flag = true; }
+	}
+	return flag;
 }
 
 // Constructors, serializers, etc.

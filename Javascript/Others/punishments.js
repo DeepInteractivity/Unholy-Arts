@@ -36,7 +36,7 @@ window.countRequiredPunishmentsOnTarget = function(charKey) {
 
 // Apply punishments
 window.applyPunishmentsToCandidates = function() {
-	for ( var charKey of getCandidatesKeysArray() ) {
+	for ( var charKey of getRandomizedActiveSimulationCharactersArray() ) {
 		var reqPunishments = countRequiredPunishmentsOnTarget(charKey);
 		if ( reqPunishments > 0 ) {
 			if ( reqPunishments > countPunishmentBondageOnTarget(charKey) ) {
@@ -48,6 +48,9 @@ window.applyPunishmentsToCandidates = function() {
 }
 window.applyPunishmentBondageOnCharacter = function(charKey) {
 	var validPunishments = getItemListEquippableOnChar(charKey,getCharsUnusedBondage("chDummy"));
+	if ( gSettings().chastity == "disable" ) {
+		validPunishments = purgeChastityItemsFromItemList(validPunishments);
+	}
 	if ( validPunishments.length > 0 ) {
 		var selectedPunishment = randomFromList(validPunishments)
 		equipObjectOnWearer(selectedPunishment,charKey,gSettings().equipmentDuration + 1);

@@ -42,6 +42,8 @@ window.scene = function() {
 	this.turnLimit = -1;
 	
 	this.importantMessages = ""; // f.e.: Virginities list
+	this.genericDialogs = "";
+	this.enabledDialogues = true;
 	this.headingDescription = "";
 	this.outHeadingDescription = "";
 	this.charactersDescription = "";
@@ -85,14 +87,40 @@ window.scene = function() {
 	}
 	// This function is automatically called at the end of every turn. It may be manually changed to create special behavior for a specific scene.
 	
+};
+
+// Methods
 	// Start-up // This must be called whenever the game starts a scene
-	this.startScene = function( sceneType, enabledLead,
-								teamAcharKeys, teamBcharKeys,
+	scene.prototype.startScene = function( sceneType, enabledLead,
+								tAck, tBck,
 								headingDescription,
 								checkEndConditions, endConditionsVars,
 								endScenePassage ) {
 		this.sceneLog = "";
 		this.sceneLog += "Cleaning previous scene. "; //DEP//
+		
+		var teamAcharKeys = [];
+		var teamBcharKeys = [];
+		
+		// Remove males if disabled
+		for ( var cK of tAck ) {
+			var valid = true;
+			if ( gSettings().lewdMales == "disable" && sceneType == "ss" ) {
+				if ( cK != "chPlayerCharacter" && gC(cK).perPr == "he" ) {
+					valid = false;
+				}
+			}
+			if ( valid ) { teamAcharKeys.push(cK); }
+		}
+		for ( var cK of tBck ) {
+			var valid = true;
+			if ( gSettings().lewdMales == "disable" && sceneType == "ss" ) {
+				if ( cK != "chPlayerCharacter" && gC(cK).perPr == "he" ) {
+					valid = false;
+				}
+			}
+			if ( valid ) { teamBcharKeys.push(cK); }
+		}
 		
 		if ( teamBcharKeys.includes("chPlayerCharacter") ) {
 			var tempTeamKeys = teamBcharKeys;
@@ -105,8 +133,24 @@ window.scene = function() {
 		this.sceneConditions = [];
 		this.currentTurn = 1;
 		
-		this.teamAcharKeys = teamAcharKeys;
-		this.teamBcharKeys = teamBcharKeys;
+		var allChars = [];
+		var newTeamAchars = [];
+		var newTeamBchars = [];
+		for ( var cK of teamAcharKeys ) {
+			if ( allChars.includes(cK) == false ) {
+				newTeamAchars.push(cK);
+				allChars.push(cK);
+			}
+		}
+		for ( var cK of teamBcharKeys ) {
+			if ( allChars.includes(cK) == false ) {
+				newTeamBchars.push(cK);
+				allChars.push(cK);
+			}
+		}
+		
+		this.teamAcharKeys = newTeamAchars;
+		this.teamBcharKeys = newTeamBchars;
 		
 		if ( this.enabledLead == "dynamic" ) {
 			this.initiateLeadPoints();
@@ -170,24 +214,24 @@ window.scene = function() {
 		this.formatScenePassage();
 	}
 	
-	this.autoResolveScene = function() {
+	scene.prototype.autoResolveScene = function() {
 		while ( this.flagSceneEnded == false ) {
 			this.executeTurn();
 		}
 		this.cleanScene();
 	}
-	this.autoResolveSceneAlt = function() {
+	scene.prototype.autoResolveSceneAlt = function() {
 		while ( this.flagSceneEnded == false ) {
 			this.executeTurn();
 		}
 	}
 	
 	// Management
-	this.removeContinuedAction = function(caPosition) {
+	scene.prototype.removeContinuedAction = function(caPosition) {
 		this.continuedActions[caPosition].freeBodyparts();
 		this.continuedActions.splice(caPosition,1);
 	}
-	this.removeContinuedActionById = function(caId) {
+	scene.prototype.removeContinuedActionById = function(caId) {
 		//this.continuedActions[caPosition].freeBodyparts();
 		//this.continuedActions.splice(caPosition,1);
 		
@@ -204,7 +248,7 @@ window.scene = function() {
 			//this.cancelActionButtons.splice(j,1);
 		}
 	}
-	this.cleanContinuedActions = function() {
+	scene.prototype.cleanContinuedActions = function() {
 		var i = this.continuedActions.length;
 		
 		while ( i > 0 ) {
@@ -212,7 +256,7 @@ window.scene = function() {
 			this.removeContinuedAction(i);
 		}
 	}
-	this.refreshEndScenePassageScript = function() {
+	scene.prototype.refreshEndScenePassageScript = function() {
 		this.endScenePassageScript = '<p id="continueButton"><<link "Continue" "' + this.endScenePassage + '">>'
 								   + '<<' + 'script>>'
 								   // + 'State.variables.sc.endSceneScript();\n'
@@ -221,7 +265,7 @@ window.scene = function() {
 								   + '<</link>></p>';
 	}
 	
-	this.removeCancelActionButtonByID = function(id) {
+	scene.prototype.removeCancelActionButtonByID = function(id) {
 		var i = 0;
 		var j = -1;
 		for ( var cab of this.cancelActionButtons ) {
@@ -235,9 +279,18 @@ window.scene = function() {
 		}
 	}
 	
-	this.initiateLeadPoints = function() {
+	scene.prototype.initiateLeadPoints = function() {
 		var charKeys = this.teamAcharKeys.concat(this.teamBcharKeys);
-		var rCharKeys = shuffleArray(charKeys);
+		var validCharKeys = [];
+		var purgedCharKeys = [];
+		for ( var charKey of charKeys ) {
+			if ( doesCharHaveSceneTag(charKey,"noLead") ) {
+				purgedCharKeys.push(charKey);
+			} else {
+				validCharKeys.push(charKey);
+			}
+		}
+		var rCharKeys = shuffleArray(validCharKeys);
 		var l = rCharKeys.length;
 		
 		var i = 0;
@@ -252,26 +305,35 @@ window.scene = function() {
 			}
 			i++;
 		}
-		this.setLeadGainRate();
+		
+		for ( var charKey of purgedCharKeys ) {
+			gC(charKey).lead = 0;
+			gC(charKey).hasLead = false;
+		}
+		
+		// Set lead gain rate
+		this.leadGainRate = 100 / (2 * rCharKeys.length);
 	}
-	this.setLeadGainRate = function() {
+	scene.prototype.setLeadGainRate = function() { // OBSOLETE
 		var nChars = this.teamAcharKeys.length + this.teamBcharKeys.length;
 		this.leadGainRate = 100 / (2 * nChars);
 	}
-	this.addTurnLeadPoints = function() {
+	scene.prototype.addTurnLeadPoints = function() {
 		var charKeys = this.teamAcharKeys.concat(this.teamBcharKeys);
 		for ( var key of charKeys ) {
-			gC(key).lead += this.leadGainRate * gC(key).leadMultiplier * (gC(key).willpower.current / gC(key).willpower.max);
-			if ( gC(key).lead > 100 ) {
-				gC(key).lead = 100;
+			if ( doesCharHaveSceneTag(key,"noLead") == false ) {
+				gC(key).lead += this.leadGainRate * gC(key).leadMultiplier * (gC(key).willpower.current / gC(key).willpower.max);
+				if ( gC(key).lead > 100 ) {
+					gC(key).lead = 100;
+				}
 			}
 		}
 	}
-	this.assignNewLead = function() {
+	scene.prototype.assignNewLead = function() {
 		this.giveLeadToChar(randomFromList(this.askedForLead));
 	}
 	
-	this.giveLeadToChar = function(charKey) {
+	scene.prototype.giveLeadToChar = function(charKey) {
 		var charKeys = this.teamAcharKeys.concat(this.teamBcharKeys);
 		for ( var key of charKeys ) {
 			if ( gC(key).hasLead == true ) {
@@ -281,7 +343,7 @@ window.scene = function() {
 		}
 		gC(charKey).hasLead = true;
 	}
-	this.offerLeadToNpcs = function() {
+	scene.prototype.offerLeadToNpcs = function() {
 		var charKeys = this.teamAcharKeys.concat(this.teamBcharKeys);
 		for ( var key of charKeys ) {
 			if ( gC(key).hasLead == false && gC(key).lead == 100 && (key != "chPlayerCharacter") ) {
@@ -289,7 +351,7 @@ window.scene = function() {
 			}
 		}
 	}
-	this.refreshAskForLeadScript = function() {
+	scene.prototype.refreshAskForLeadScript = function() {
 		this.askForLeadScript = "";
 		if ( State.variables.chPlayerCharacter.lead == 100 && State.variables.chPlayerCharacter.hasLead == false && this.enabledLead == "dynamic" ) {
 			this.askForLeadScript = '<<link "Attempt to take Lead" "Scene">>'
@@ -303,54 +365,47 @@ window.scene = function() {
 		// Attempting to take lead at the end of this turn.\n\n
 	}
 	
-	this.cleanLeadPoints = function() {
+	scene.prototype.cleanLeadPoints = function() {
 		var charKeys = this.teamAcharKeys.concat(this.teamBcharKeys);
 		for ( var key of charKeys ) {
 			getChar(key).lead = 0;
 			getChar(key).hasLead = false;
 		}		
 	}
-	this.cleanControl = function() {
+	scene.prototype.cleanControl = function() {
 		var charKeys = this.teamAcharKeys.concat(this.teamBcharKeys);
 		for ( var key of charKeys ) {
 			cleanCharControl(key);
 		}		
 	}
-	this.cleanSceneOrgasms = function() {
+	scene.prototype.cleanSceneOrgasms = function() {
 		var charKeys = this.teamAcharKeys.concat(this.teamBcharKeys);
 		for ( var key of charKeys ) {
 			getChar(key).orgasmSceneCounter = 0;
+			gC(key).mindblowingOrgasmSC = 0;
 			getChar(key).ruinedOrgasmSceneCounter = 0;
 		}		
 	}
-	this.cleanAccumulatedDamages = function() {
+	scene.prototype.cleanAccumulatedDamages = function() {
 		var charKeys = this.teamAcharKeys.concat(this.teamBcharKeys);
 		for ( var key of charKeys ) {
 			getChar(key).cleanAccumulatedDamages();
 		}
 	}
-	this.cancelPosition = function(charKey) {
-		if ( getChar(charKey).position.type == "active" ) {
-			for ( var key of getChar(charKey).position.targetsList ) {
-				getChar(key).position.free();
-			}
-			getChar(charKey).position.free();
+	scene.prototype.cancelPosition = function(charKey) {
+		var affectedChars = findAllConnectedCharsByPositionMinusList(charKey,[]);
+		for ( var cK of affectedChars ) {
+			getChar(cK).position.free();
 		}
-		else if ( getChar(charKey).position.type == "passive" ) {
-			var initiatorKey = getChar(charKey).position.initiator;
-			for ( var key of getChar(initiatorKey).position.targetsList ) {
-				getChar(key).position.free();
-			}
-			getChar(initiatorKey).position.free();
-		}
+		
 	}
-	this.cleanAllPositions = function() {
+	scene.prototype.cleanAllPositions = function() {
 		var charList = this.teamAcharKeys.concat(this.teamBcharKeys);
 		for ( var charKey of charList ) {
 			getChar(charKey).position.free();
 		}
 	}
-	this.cleanAlteredStates = function() {
+	scene.prototype.cleanAlteredStates = function() {
 		var charKeys = this.teamAcharKeys.concat(this.teamBcharKeys);
 		var cleanStates = false;
 		for ( var key of charKeys) {
@@ -366,15 +421,14 @@ window.scene = function() {
 			}
 		}
 	}
-	this.cleanKoedFlags = function() {
+	scene.prototype.cleanKoedFlags = function() {
 		var charKeys = this.teamAcharKeys.concat(this.teamBcharKeys);
 		for ( var key of charKeys ) {
 			getChar(key).koed = false;
 		}	
 	}
 	
-	
-	this.cleanScene = function() {	
+	scene.prototype.cleanScene = function() {	
 		this.endSceneScript();
 		
 		if ( this.sceneType == "ss" ) {
@@ -403,6 +457,15 @@ window.scene = function() {
 		
 		this.sceneType = "";
 		
+		cleanSceneTags();
+		
+		for ( var charKey of this.teamAcharKeys ) {
+			gC(charKey).turnPrefTags = [];
+		}
+		for ( var charKey of this.teamBcharKeys ) {
+			gC(charKey).turnPrefTags = [];
+		}
+		
 		this.teamAcharKeys = [];
 		this.teamBcharKeys = [];
 		
@@ -427,6 +490,8 @@ window.scene = function() {
 		this.turnLimit = -1;
 		
 		this.importantMessages = "";
+		this.genericDialogs = "";
+		this.enabledDialogues = true;
 		this.headingDescription = "";
 		this.charactersDescription = "";
 		this.actionsDescription = "";
@@ -457,7 +522,7 @@ window.scene = function() {
 		}
 	}
 	
-	this.getCharacterContext = function(charKey) {
+	scene.prototype.getCharacterContext = function(charKey) {
 		var charPos = 0;
 		var actionsOnActor = [];
 		var charsOnActor = [];
@@ -511,7 +576,7 @@ window.scene = function() {
 		}
 	}
 	
-	this.isPlayerInScene = function() {
+	scene.prototype.isPlayerInScene = function() {
 		var flagPcInScene = false;
 		
 		if ( this.teamAcharKeys.includes("chPlayerCharacter") || this.teamBcharKeys.includes("chPlayerCharacter") ) {
@@ -521,7 +586,7 @@ window.scene = function() {
 		return flagPcInScene;
 	}
 	
-	this.cleanNegativeBars = function() {
+	scene.prototype.cleanNegativeBars = function() {
 		for ( var character of this.teamAcharKeys.concat(this.teamBcharKeys) ) {
 			for ( var bar of ["willpower","energy","socialdrive"] ) {
 				if ( gC(character)[bar].current < 0 ) {
@@ -531,7 +596,7 @@ window.scene = function() {
 		}
 	}
 	
-	this.setBattleParameters = function(stakes,attacker,defender) {
+	scene.prototype.setBattleParameters = function(stakes,attacker,defender) {
 		this.stakes = stakes;
 		this.aggressor = attacker;
 		this.defender = defender;
@@ -539,7 +604,7 @@ window.scene = function() {
 	
 	// Logic
 	
-	this.isActionAllowed = function(actor,sceneAction) {
+	scene.prototype.isActionAllowed = function(actor,sceneAction) {
 		var isAllowed = true;
 		if ( sceneAction.tags.includes(this.sceneType) == false ) {
 			isAllowed = false;
@@ -547,7 +612,7 @@ window.scene = function() {
 		
 		return isAllowed;
 	}
-	this.listUsableActions = function(actorKey) {
+	scene.prototype.listUsableActions = function(actorKey) {
 		// This function creates a list with the keys of all actions that are usable in some way during this turn by a given character.
 		// This requires to check every action known by the character, and test its usability against any different target.
 		var list = ["doNothing"];
@@ -556,7 +621,7 @@ window.scene = function() {
 		for ( var actionKey of gC(actorKey).saList ) {
 			for ( var target of charList ) {
 				if ( list.includes(actionKey) == false ) {
-					if ( this.isActionAllowed(actorKey,setup.saList[actionKey]) == true && isActionUsable(actionKey,actorKey,[target]).isUsable == true ) {
+					if ( this.isActionAllowed(actorKey,setup.saList[actionKey]) == true && isActionUsable(actionKey,actorKey,[target],false).isUsable == true ) {
 						list.push(actionKey);
 					}
 				}
@@ -565,7 +630,7 @@ window.scene = function() {
 		
 		return list;
 	}
-	this.listUsableActionsOnTarget = function(actorKey,targetKey) {
+	scene.prototype.listUsableActionsOnTarget = function(actorKey,targetKey) {
 		var list = ["doNothing"];
 		var charList = this.teamAcharKeys.concat(this.teamBcharKeys);
 		if ( gC(targetKey).koed ) {
@@ -574,7 +639,7 @@ window.scene = function() {
 			
 		for ( var actionKey of gC(actorKey).saList ) {
 				if ( list.includes(actionKey) == false ) {
-					if ( this.isActionAllowed(actorKey,setup.saList[actionKey]) == true && isActionUsable(actionKey,actorKey,[targetKey]).isUsable == true ) {
+					if ( this.isActionAllowed(actorKey,setup.saList[actionKey]) == true && isActionUsable(actionKey,actorKey,[targetKey],false).isUsable == true ) {
 						list.push(actionKey);
 					}
 				}
@@ -584,7 +649,7 @@ window.scene = function() {
 		return list;
 	}
 	
-	this.checkUnvalidContinuedActions = function() {
+	scene.prototype.checkUnvalidContinuedActions = function() {
 		// Checks every continued action on the scene. If any of them has unvalid positions, they are canceled
 		var i = this.continuedActions.length; // Continued actions are checked from end to start
 		var flagCancelledAction = false;
@@ -601,7 +666,7 @@ window.scene = function() {
 			this.actionsDescription += "\nThe changes in positions forced at least one continued action to be cancelled.\n";
 		}
 	}
-	this.checkUnvalidContinuedAction = function(position) {
+	scene.prototype.checkUnvalidContinuedAction = function(position) {
 		var flagCancelAction = false;
 		var cA = this.continuedActions[position];
 		
@@ -636,7 +701,42 @@ window.scene = function() {
 		return flagCancelAction;
 	}
 	
-	this.executeActions = function() {
+	scene.prototype.applyPrefTurnTags = function() {
+		if ( this.sceneType == "ss" ) {
+			var i = 0;
+			for ( var action of this.teamAchosenActions ) {
+				var actor = this.teamAcharKeys[i];
+				var targets = this.teamAchosenTargets[i];
+				if ( isActionUsable(action,actor,targets,false) ) {
+					for ( var flavorTag of setup.saList[action].flavorTags ) {
+						if ( gC(actor).turnPrefTags.includes(flavorTag) == false ) { gC(actor).turnPrefTags.push(flavorTag); }
+						var opTag = getOppositeTag(flavorTag);
+						for ( var target of targets ) {
+							if ( gC(actor).turnPrefTags.includes(opTag) == false ) { gC(actor).turnPrefTags.push(opTag); }
+						}
+					}
+				}
+				i++;
+			}
+			i = 0;
+			for ( var action of this.teamBchosenActions ) {
+				var actor = this.teamBcharKeys[i];
+				var targets = this.teamBchosenTargets[i];
+				if ( isActionUsable(action,actor,targets,false) ) {
+					for ( var flavorTag of setup.saList[action].flavorTags ) {
+						if ( gC(actor).turnPrefTags.includes(flavorTag) == false ) { gC(actor).turnPrefTags.push(flavorTag); }
+						var opTag = getOppositeTag(flavorTag);
+						for ( var target of targets ) {
+							if ( gC(actor).turnPrefTags.includes(opTag) == false ) { gC(actor).turnPrefTags.push(opTag); }
+						}
+					}
+				}
+				i++;
+			}
+		}
+	}
+	
+	scene.prototype.executeActions = function() {
 		this.actionsDescription = "";
 		var i = 0;
 		
@@ -664,7 +764,8 @@ window.scene = function() {
 				var currentC = randomFromWeightedList(wL); // Take weighted random char
 				if ( actionsInfo[currentC] != undefined ) {
 					var currentA = actionsInfo[currentC][1]; // Execute action
-					var actionName = "[" + setup.saList[currentA].name + "] ";
+					var actionDesc = setup.saList[currentA].description;
+					var actionName = "[<span title=" + '"' + actionDesc + '"' + ">" + setup.saList[currentA].name + "</span>] ";
 					this.actionsDescription += colorText(actionName,"darkgray");
 					this.actionsDescription += tryExecuteAction(currentA,currentC,actionsInfo[currentC][2]).description;
 					this.actionsDescription += "\n";
@@ -677,7 +778,8 @@ window.scene = function() {
 			for (let action of this.teamAchosenActions) {
 				// Each chosen action is called in order. The parameters are the acting character and its list of targets.
 				// Each action returns a description of its effects, which is added to actionsDescription.
-				var actionName = "[" + setup.saList[action].name + "] ";
+				var actionDesc = setup.saList[action].description;
+				var actionName = "[<span title=" + '"' + actionDesc + '"' + ">" + setup.saList[action].name + "</span>] ";
 				this.actionsDescription += colorText(actionName,"darkgray");
 				this.actionsDescription += tryExecuteAction(action,this.teamAcharKeys[i],this.teamAchosenTargets[i]).description;
 				//this.actionsDescription += setup.saList[this.teamAchosenActions[action]].execute(this.teamAcharKeys[i],this.teamAchosenTargets[i]).description;
@@ -686,7 +788,8 @@ window.scene = function() {
 			}
 			i = 0;
 			for (let action of this.teamBchosenActions) {
-				var actionName = "[" + setup.saList[action].name + "] ";
+				var actionDesc = setup.saList[action].description;
+				var actionName = "[<span title=" + '"' + actionDesc + '"' + ">" + setup.saList[action].name + "</span>] ";
 				this.actionsDescription += colorText(actionName,"darkgray");
 				this.actionsDescription += tryExecuteAction(action,this.teamBcharKeys[i],this.teamBchosenTargets[i]).description;
 				//this.actionsDescription += setup.saList[this.teamBchosenActions[action]].execute(this.teamBcharKeys[i],this.teamBchosenTargets[i]).description;
@@ -695,7 +798,7 @@ window.scene = function() {
 			}
 		}
 	}
-	this.updateCancelActionButtons = function() {
+	scene.prototype.updateCancelActionButtons = function() {
 		this.cabID = 0;
 		for ( var ca in this.continuedActions ) {
 			var cancelActionButton = [this.cabID]; // cab is assigned an ID
@@ -716,7 +819,7 @@ window.scene = function() {
 			i++;
 		}
 	}
-	this.executeContinuedActions = function() {
+	scene.prototype.executeContinuedActions = function() {
 		var i = 0;		
 		
 		// Find Positional CAs
@@ -747,6 +850,7 @@ window.scene = function() {
 				cancelActionButton.push("");							// cab is assigned a cancel script
 			}
 			var actionName = colorText(("[" + this.continuedActions[ca].name + "] "),"darkgray");
+			this.continuedActions[ca].continuedTurns++;
 			var actionDescription = this.continuedActions[ca].execute().description;
 //			this.actionsDescription += actionName + actionDescription + "\n";
 			cancelActionButton.push("" + actionName + actionDescription + "\n");
@@ -768,23 +872,34 @@ window.scene = function() {
 		}
 	}
 	
-	this.checkForOrgasms = function() {
+	scene.prototype.checkForOrgasms = function() {
 		var charKeys = this.teamAcharKeys.concat(this.teamBcharKeys);
 		for ( var key of charKeys ) {
-			var overflow = getChar(key).tryOrgasm(); // Overflow is the amount of lust excess after an orgasm.
+			var results = getChar(key).tryOrgasm(); // Overflow is the amount of lust excess after an orgasm.
 													 // If -1, there was no orgasm
-			if ( overflow != -1 ) {
-				var orgasmMessage = this.textOrgasmMessage(key,overflow);
+			var overflow = results[0];
+			var type = results[1];
+			
+			if ( type != "none" ) {
+				var orgasmMessage = this.textOrgasmMessage(key,overflow,type);
 				this.importantMessages += orgasmMessage + "\n";
 				if ( this.sceneType == "bs" ) {
 					gC(key).koed = true; // If battle scene, character gets KO'ed
 					this.cancelPosition(key);
+				} else if ( this.sceneType == "ss" ) {
+					var str = 7;
+					if ( type == "mindblowing" ) {
+						str = 20;
+					} else if ( type == "ruined" ) {
+						str = 15;
+					}
+					gC(key).influenceSexPrefs(50,limitedRandomInt(str));
 				}
 			}
 		}		
 	}
 	
-	this.controlTurnEffects = function() {
+	scene.prototype.controlTurnEffects = function() {
 		var charKeys = this.teamAcharKeys.concat(this.teamBcharKeys);
 		for ( var key of charKeys) {
 			if ( gC(key).position.type != "passive" ) { // Characters on passive positions do not recover control
@@ -807,7 +922,7 @@ window.scene = function() {
 		}
 	}
 	
-	this.alteredStatesTurnEffects = function() {
+	scene.prototype.alteredStatesTurnEffects = function() {
 		var charKeys = this.teamAcharKeys.concat(this.teamBcharKeys);
 		var cleanStates = false;
 		for ( var key of charKeys) {
@@ -815,7 +930,7 @@ window.scene = function() {
 			for ( var as of gC(key).alteredStates ) {
 				if ( as.scope == "scene" ) {
 					as.remainingTurns--; // Reduce remaining turns
-					if ( as.remainingTurns <= 0 ) {
+					if ( as.remainingTurns <= 0 && as.remainingTurns > -1 ) {
 						as.flagRemove = true; // Finish effect
 						cleanStates = true;
 					}
@@ -827,30 +942,38 @@ window.scene = function() {
 		}
 	}
 	
-	this.executeTurn = function() {			
+	scene.prototype.executeTurn = function() {	
 		this.teamAchosenActions = [];  // Clean the stacks
 		this.teamAchosenTargets = [];
 		this.teamBchosenActions = [];
 		this.teamBchosenTargets = [];
 		
 		this.importantMessages = "";
+		this.genericDialogs = "";
 		this.actionsDescription = "";
 		this.extraEffectsDescription = "";
-		this.otherMessages = [];
+		this.otherMessages = [];	
+		
+		for ( var charKey of this.teamAcharKeys ) {
+			gC(charKey).turnPrefTags = [];
+		}
+		for ( var charKey of this.teamBcharKeys ) {
+			gC(charKey).turnPrefTags = [];
+		}
 		
 		// Choose actions
 		var aiResults;
-		for ( var character in this.teamAcharKeys ) { // Player character
-			if ( gC(this.teamAcharKeys[character]).koed ) { // Ko'ed characters can't act
+		for ( var character of this.teamAcharKeys ) { // Player character
+			if ( gC(character).koed ) { // Ko'ed characters can't act
 				this.teamAchosenActions.push("doNothing");
-				this.teamAchosenTargets.push([this.teamAcharKeys[character]]);
+				this.teamAchosenTargets.push([character]);
 			}
-			else if ( this.teamAcharKeys[character] == "chPlayerCharacter" ) {
+			else if ( character == "chPlayerCharacter" ) {
 				this.teamAchosenActions.push(this.pcChosenAction);
 				this.teamAchosenTargets.push(this.pcChosenTargets);
 			} 
-			else if ( getChar(this.teamAcharKeys[character]).aiAlgorythm != 0 ) { // AI Algorythm
-				aiResults = getChar(this.teamAcharKeys[character]).aiAlgorythm.callAction((this.teamAcharKeys[character]),this.teamAcharKeys,this.teamBcharKeys,this.currentTurn);
+			else if ( getChar(character).aiAlgorythm != 0 ) { // AI Algorythm
+				aiResults = getChar(character).aiAlgorythm.callAction((character),this.teamAcharKeys,this.teamBcharKeys,this.currentTurn);
 				this.teamAchosenActions.push(aiResults.actionKey);
 				this.teamAchosenTargets.push(aiResults.targetsIDs);
 			}
@@ -859,17 +982,17 @@ window.scene = function() {
 				this.teamAchosenTargets.push([]);
 			}
 		}
-		for ( var character in this.teamBcharKeys ) { // Player character
-			if ( gC(this.teamBcharKeys[character]).koed ) { // Ko'ed characters can't act
+		for ( var character of this.teamBcharKeys ) { // Player character
+			if ( gC(character).koed ) { // Ko'ed characters can't act
 				this.teamBchosenActions.push("doNothing");
-				this.teamBchosenTargets.push([this.teamBcharKeys[character]]);
+				this.teamBchosenTargets.push([character]);
 			}
-			else if ( getChar(this.teamBcharKeys[character]) == "chPlayerCharacter" ) {
+			else if ( getChar(character) == "chPlayerCharacter" ) {
 				this.teamBchosenActions.push(this.pcChosenAction);
 				this.teamBchosenTargets.push(this.pcChosenTargets);
 			}
-			else if ( getChar(this.teamBcharKeys[character]).aiAlgorythm != 0 ) { // AI Algorythm
-				aiResults = getChar(this.teamBcharKeys[character]).aiAlgorythm.callAction((this.teamBcharKeys[character]),this.teamBcharKeys,this.teamAcharKeys,this.currentTurn);
+			else if ( getChar(character).aiAlgorythm != 0 ) { // AI Algorythm
+				aiResults = getChar(character).aiAlgorythm.callAction((character),this.teamBcharKeys,this.teamAcharKeys,this.currentTurn);
 				this.teamBchosenActions.push(aiResults.actionKey);
 				this.teamBchosenTargets.push(aiResults.targetsIDs);
 			}
@@ -883,6 +1006,7 @@ window.scene = function() {
 		this.cancelActionButtons = [];
 		
 		// Execute actions
+		this.applyPrefTurnTags();
 		this.executeActions();
 		
 		// Execute altered states
@@ -921,14 +1045,17 @@ window.scene = function() {
 
 		// Custom Script
 		this.customScript();
-		
+	
 		// Check importantMessages
 		if ( this.importantMessages != "" ) {
 			var temp = this.importantMessages;
-			this.importantMessages = '<span style="color:red">';
-			this.importantMessages += temp;
-			this.importantMessages += '<' + '/span>\n';
+			//this.importantMessages = '<span style="color:red">';
+			//this.importantMessages += temp;
+			//this.importantMessages += '<' + '/span>\n';
 		}
+		
+		// Generate dialogs
+		this.generateGenericDialogs();
 		
 		// Check heading
 		if ( this.headingDescription != "" ) {
@@ -962,10 +1089,9 @@ window.scene = function() {
 		this.formatScenePassage();
 	}
 	
-	
 	// Logic 2
 	
-	this.checkCancelAction = function(cancellingActorKey,continuedAction) { // This function returns the logic of attempting to cancel a continued action
+	scene.prototype.checkCancelAction = function(cancellingActorKey,continuedAction) { // This function returns the logic of attempting to cancel a continued action
 		var logic = "noCost"; // The action will be cancelled at no cost
 		
 		if ( cancellingActorKey !== continuedAction.initiator ) {
@@ -983,7 +1109,7 @@ window.scene = function() {
 		
 		return logic;
 	}
-	this.returnCancelActionScript = function(logic,caPos,id) { // Returns a string that, when interpreted by Sugarcube 2, allows the player to cancel a
+	scene.prototype.returnCancelActionScript = function(logic,caPos,id) { // Returns a string that, when interpreted by Sugarcube 2, allows the player to cancel a
 															// continued action under specific logic
 		
 		var script = "";
@@ -1022,7 +1148,7 @@ window.scene = function() {
 		return script;
 	}
 	
-	this.returnCancelPlayerPositionScript = function() {
+	scene.prototype.returnCancelPlayerPositionScript = function() {
 		var script = "";
 		var flagNotLeading = false;
 		if ( this.enabledLead != "none" && State.variables.chPlayerCharacter.hasLead == false ) {
@@ -1041,21 +1167,23 @@ window.scene = function() {
 			}
 		}
 		else if ( this.sceneConditions.includes("cantCancelPositions") == false && flagNotLeading == false ) {
-			script = '<<link "Cancel Player Position" "Scene">>'
-				   + '<<' + 'script>>'
-				   + 'State.variables.sc.cancelPosition("chPlayerCharacter");'
-				   + 'State.variables.sc.positionsDescription = "";'
-				   + 'State.variables.sc.actionsDescription = "The position was canceled.";\n';
-				   
-			script += 'State.variables.sc.formatScenePassage();\n'
-				   + '<<' + '/script>>'
-				   + '<</link>>\n';
+			if ( gC("chPlayerCharacter").position.type != "free" ) {
+				script = '<<link "Cancel Player Position" "Scene">>'
+					   + '<<' + 'script>>'
+					   + 'State.variables.sc.cancelPosition("chPlayerCharacter");'
+					   + 'State.variables.sc.positionsDescription = "";'
+					   + 'State.variables.sc.actionsDescription = "The position was canceled.";\n';
+					   
+				script += 'State.variables.sc.formatScenePassage();\n'
+					   + '<<' + '/script>>'
+					   + '<</link>>\n';
+			}
 		}
 		return script;
 	}
 	
 	// Controls
-	this.formatActionsOptionList = function(pcChar) {
+	scene.prototype.formatActionsOptionList = function(pcChar) {
 		this.formattedActionsOptionList = '<<listbox "$sc.pcChosenAction" $sc.pcChosenAction>>\n';
 		for (var actionKey of this.listUsableActions(pcChar.varName)) {
 			if ( this.isActionAllowed(pcChar,setup.saList[actionKey]) == true ) {
@@ -1071,7 +1199,7 @@ window.scene = function() {
 		this.formattedActionsOptionList += '<</listbox>>';
 	}
 	
-	this.formatTargetsOptionList = function() {
+	scene.prototype.formatTargetsOptionList = function() {
 		this.formattedTargetsOptionList = "";
 		var i = 0;
 		for ( var character of this.teamBcharKeys ) {
@@ -1094,22 +1222,22 @@ window.scene = function() {
 		}
 	}
 	
-	this.isPlayerActionUsable = function() {
-		return isActionUsable(this.pcChosenAction,"chPlayerCharacter",this.pcChosenTargets);
+	scene.prototype.isPlayerActionUsable = function() {
+		return isActionUsable(this.pcChosenAction,"chPlayerCharacter",this.pcChosenTargets,false);
 	}
 	
-	this.refreshIsPcActionValid = function() {
+	scene.prototype.refreshIsPcActionValid = function() {
 		this.isPcActionValid = this.isPlayerActionUsable();
 	}
 	
-	this.getButtonHideFullAvatar = function() {
+	scene.prototype.getButtonHideFullAvatar = function() {
 		var bText = "<<l" + "ink [[[ x ]|Scene]]>><<s" + "cript>>";
 		bText 	 += "State.variables.sc.flagFullAvatar = false;\n";
 		bText	 += "State.variables.sc.formatScenePassage();\n";
 		bText	 += "<</s" + "cript>><</l" + "ink>>";
 		return bText;
 	}
-	this.getButtonShowFullAvatar = function(character) {
+	scene.prototype.getButtonShowFullAvatar = function(character) {
 		var bText = "<<l" + "ink [[[ + ]|Scene]]>><<s" + "cript>>";
 		bText 	 += "State.variables.sc.flagFullAvatar = true;\n";
 		bText	 += "State.variables.sc.selectedFullAvatar = '" + character + "';\n";
@@ -1117,19 +1245,58 @@ window.scene = function() {
 		bText	 += "<</s" + "cript>><</l" + "ink>>";
 		return bText;
 	}
-	
+
 	// Descriptions
-	this.textOrgasmMessage = function(charKey,overflow) {
+	scene.prototype.generateGenericDialogs = function() {
+		var dialogs = "";
+		if ( this.enabledDialogues ) {
+			if ( this.sceneType == "ss" ) {
+				var threshold = 65 + ( this.teamAcharKeys.length + this.teamBcharKeys.length ) * 5;
+				if ( threshold > 85 ) { threshold = 85; }
+				var i = 0;
+				while ( i < this.teamAcharKeys.length ) {
+					if ( limitedRandomInt(100) > threshold && (this.teamAcharKeys[i] != this.teamAchosenTargets[i]) ) { // Activate dialog
+						var actionsAgainstActor = getActionsAgainstTarget(this.teamAcharKeys[i]);					
+						var nd = chooseDialogFromList(setup.dialogDB.ssDialogs,this.teamAcharKeys[i],this.teamAchosenTargets[i][0],this.teamAchosenActions[i],actionsAgainstActor);
+						if ( nd != "" ) {
+							if ( dialogs == "" ) { dialogs += nd; }
+							else { dialogs += "\n" + nd; }
+						}
+					}
+					i++;
+				}
+				i = 0;
+				while ( i < this.teamBcharKeys.length ) {
+					if ( limitedRandomInt(100) > threshold && (this.teamBcharKeys[i] != this.teamBchosenTargets[i]) ) { // Activate dialog
+						var actionsAgainstActor = getActionsAgainstTarget(this.teamBcharKeys[i]);					
+						var nd = chooseDialogFromList(setup.dialogDB.ssDialogs,this.teamBcharKeys[i],this.teamBchosenTargets[i][0],this.teamBchosenActions[i],actionsAgainstActor);
+						if ( nd != "" ) {
+							if ( dialogs == "" ) { dialogs += nd; }
+							else { dialogs += "\n" + nd; }
+						}
+					}
+					i++;
+				}
+			}
+		}
+		this.genericDialogs = dialogs;
+	}
+	
+	scene.prototype.textOrgasmMessage = function(charKey,overflow,type) {
 		var orgasmText = "";
-		if ( isCharsOrgasmRuined(charKey) == false ) {
-			orgasmText = getChar(charKey).name + " reached climax for " + (getChar(charKey).lust.max + overflow).toFixed(2) + " total lust damage.";
+		var actionsAgainstActor = getActionsAgainstTargetIncludingSelf(charKey);
+		var description = chooseMessageFromList(setup.dialogDB.orDialogs,charKey,"",type,actionsAgainstActor);
+		if ( type == "ruined" ) {
+			orgasmText = colorText((gC(charKey).name + " almost reached climax for " + (getChar(charKey).lust.max + overflow).toFixed(2) + " total lust damage, but... "),"red") + description + " " + gC(charKey).name + " feels " + gC(charKey).posPr + " strength flowing away.";
+		} else if ( type == "mindblowing" ) {
+			orgasmText = colorText((getChar(charKey).name + " reached a most powerful climax for " + (getChar(charKey).lust.max + overflow).toFixed(2) + " total lust damage. "),"red") + description;
 		} else {
-			orgasmText = gC(charKey).name + " reached climax for " + (getChar(charKey).lust.max + overflow).toFixed(2) + " total lust damage, but the orgasm was ruined! " + gC(charKey).name + " feels " + gC(charKey).posPr + " strength flowing away.";
+			orgasmText = colorText((getChar(charKey).name + " reached climax for " + (getChar(charKey).lust.max + overflow).toFixed(2) + " total lust damage. "),"red") + description;
 		}
 		return orgasmText;
 	}
 	
-	this.refreshCharacterDescriptions = function() {
+	scene.prototype.refreshCharacterDescriptions = function() {
 		
 		this.charactersDescription = "";
 		var flagTeamA = true;
@@ -1157,7 +1324,7 @@ window.scene = function() {
 			this.charactersDescription += barsText + "\n\n";
 		}
 	}
-	this.refreshPositionsDescriptions = function() {
+	scene.prototype.refreshPositionsDescriptions = function() {
 		this.positionsDescription = "";
 		var uncheckedChars = this.teamAcharKeys.concat(this.teamBcharKeys);
 		var checkedChars = [];
@@ -1171,9 +1338,15 @@ window.scene = function() {
 					checkedChars.push(key);
 					
 					if ( gC(key).position.hasOwnProperty("initiator") ) {
-						checkedChars.push(gC(key).position.initiator);
+						var initiator = gC(key).position.initiator
+						checkedChars.push(initiator);
 						if ( gC(key).position.hasOwnProperty("secondaryInitiators") ) {
 							checkedChars = checkedChars.concat(gC(key).position.secondaryInitiators);
+						}
+						if ( gC(initiator).position.hasOwnProperty("targetsList") ) {
+							for ( var t of gC(initiator).position.targetsList ) {
+								checkedChars.push(t);
+							}
 						}
 					}
 					
@@ -1197,7 +1370,7 @@ window.scene = function() {
 		}
 	}
 
-	this.logAccumulatedDamage = function() {
+	scene.prototype.logAccumulatedDamage = function() {
 		var charKeys = this.teamAcharKeys.concat(this.teamBcharKeys );
 		for ( var character of charKeys ) {
 			this.sceneLog += " " + getChar(character).textAccumulatedDamages();
@@ -1205,7 +1378,7 @@ window.scene = function() {
 	}
 
 	// UI
-	this.formatScenePassage = function() {
+	scene.prototype.formatScenePassage = function() {
 		this.formatActionsOptionList(getChar("chPlayerCharacter"));
 		this.formatTargetsOptionList();
 		var pas = "<div>";
@@ -1217,7 +1390,6 @@ window.scene = function() {
 		}
 		// Standard Scene Passage
 		pas += "<div>";
-		if ( this.importantMessages != "" ) { pas += "<div class='standardBox'>" + this.importantMessages + "\\ </div> \n"; }
 		if ( this.outHeadingDescription != "" ) { pas += "<div class='standardBox'>" + this.outHeadingDescription + "\\ </div> \n"; }
 		if ( this.positionsDescription != "" || this.actionsDescription != "" || this.cancelActionButtons.length > 0 ) {
 			pas += "<div class='standardBox'>";
@@ -1236,6 +1408,8 @@ window.scene = function() {
 		if ( this.positionsDescription != "" || this.actionsDescription != "" || this.cancelActionButtons.length > 0 ) {
 			pas += "</div>\n";
 		}
+		if ( this.importantMessages != "" ) { pas += "<div class='standardBox'>" + this.importantMessages + " </div> \n"; }
+		if ( this.genericDialogs != "" ) { pas += "<div class='standardBox'>" + this.genericDialogs + " </div> \n"; }
 		
 		else if ( this.actionsDescription != "" ) { // I know this looks strange.
 			pas += "\n";
@@ -1269,6 +1443,8 @@ window.scene = function() {
 					 if ( ( this.checkEndConditions == endConditionTurns ) && ( this.teamAcharKeys.includes("chPlayerCharacter") || this.teamBcharKeys.includes("chPlayerCharacter") ) ) {
 						 pas += "\n\nRemaining turns: " + (this.endConditionsVars + 1 - this.currentTurn);
 						 //"currentTurn": 2, "turnLimit": -1, "importantMessages": "", "headingDe
+					 } else if ( this.checkEndConditions == endConditionGrapes ) {
+						 pas += "\n\nRemaining grapes: " + State.variables.sc.remainingGrapes;
 					 }
 			} else {						// Player isn't in scene
 				pas += this.getPassTurnButton();
@@ -1281,7 +1457,7 @@ window.scene = function() {
 		this.scenePassage = pas;
 	}
 	
-	this.getActionDescriptionButton = function() {
+	scene.prototype.getActionDescriptionButton = function() {
 		var tButton = "<<cli" + 'ck "Action description">>\n'
 				   + '<<scr' + 'ipt>>' + 'var dialog = Dialog.setup("Action Description", "my-dialog-class");\n'
 				   + 'new Wikifier(dialog, Story.get("Scene Tests Dialog Box").processText());\n'
@@ -1290,7 +1466,7 @@ window.scene = function() {
 				   + '<</c' + 'lick>>';
 		return tButton;
 	}
-	this.getCommitActionButton = function() {
+	scene.prototype.getCommitActionButton = function() {
 		var tButton = '<<l' + 'ink [[Commit action|Scene]]>>\n<<sc' + 'ript>>\n'
 					+ 'State.variables.sc.refreshIsPcActionValid();\n'
 					+ 'if ( State.variables.sc.isPcActionValid.isUsable === false ) {\n'
@@ -1301,18 +1477,18 @@ window.scene = function() {
 					+ '<</s' + 'cript>><</l' + 'ink>><sup>[q]</sup>';
 		return tButton;
 	}
-	this.getPassTurnButton = function() {
-		var tButton = '<<l' + 'ink [[Next Turn|Scene]]>>\n<<sc' + 'ript>>\n'
+	scene.prototype.getPassTurnButton = function() {
+		var tButton = '<<l' + 'ink [[Next turn|Scene]]>>\n<<sc' + 'ript>>\n'
 					+ 'State.variables.sc.executeTurn();\n'
-					+ '<</s' + 'cript>><</l' + 'ink>>';
+					+ '<</s' + 'cript>><</l' + 'ink>><sup>[q]</sup>';
 			// Button to autocomplete battle
 		   tButton += '\n<<l' + 'ink [[Auto-resolve scene|Scene]]>>\n<<sc' + 'ript>>\n'
 					+ 'State.variables.sc.autoResolveSceneAlt();\n'
-					+ '<</s' + 'cript>><</l' + 'ink>>';
+					+ '<</s' + 'cript>><</l' + 'ink>><sup>[w]</sup>';
 		return tButton;
 	}
 
-	this.formatFullAvatarDiv = function() {
+	scene.prototype.formatFullAvatarDiv = function() {
 		var dText = '<<removeclass "#right-ui-bar" "stowed">> \ '
 		
 		if ( gC(this.selectedFullAvatar).fullPortrait != null ) {															// Image
@@ -1327,21 +1503,34 @@ window.scene = function() {
 	}
 	
 	// Meta-controls
-	this.markNextTurnLink = function() {
+	scene.prototype.markNextTurnLink = function() {
 		if ( this.flagSceneActive ) {
-			State.variables.foundLinks = $("#passages a").toArray();
-			var nextTurnLinkPosition = State.variables.foundLinks.length - 1;
-			if ( State.variables.foundLinks[nextTurnLinkPosition].id != undefined ) {
-				State.variables.foundLinks[nextTurnLinkPosition].id = "nextTurnLink";
+			if ( State.variables.sc.teamAcharKeys.includes("chPlayerCharacter") || State.variables.sc.teamBcharKeys.includes("chPlayerCharacter") ) {
+				State.variables.foundLinks = $("#passages a").toArray();
+				var nextTurnLinkPosition = State.variables.foundLinks.length - 1;
+				if ( State.variables.foundLinks[nextTurnLinkPosition].id != undefined ) {
+					State.variables.foundLinks[nextTurnLinkPosition].id = "nextTurnLink";
+				}
+				State.variables.keysAssigned = [["q","nextTurnLink"],["Q","nextTurnLink"]];
+			} else {
+				var e = [];
+				try {
+					State.variables.foundLinks = $("#passages a").toArray();
+					State.variables.keysAssigned = [];
+					var nextTurnLinkPosition = State.variables.foundLinks.length - 2;
+						State.variables.foundLinks[nextTurnLinkPosition].id = "nextTurnLink";
+						State.variables.keysAssigned.push(["q","nextTurnLink"],["Q","nextTurnLink"]);
+					var autoFinishLinkPosition = State.variables.foundLinks.length - 1;
+						State.variables.foundLinks[autoFinishLinkPosition].id = "autoFinishLink";
+						State.variables.keysAssigned.push(["w","autoFinishLink"],["W","autoFinishLink"]);
+				} catch(e) {
+				}
 			}
-			State.variables.keysAssigned = [["q","nextTurnLink"],["Q","nextTurnLink"]];
 		}
 		else {
 			State.variables.keysAssigned = [];
 		}
 	}
-	
-};
 
 // Constructors, serializers, etc.
 scene.prototype._init = function (obj) {
@@ -1446,8 +1635,192 @@ window.createEndConditionStoryBattle = function(passageVictoryTeamA,passageVicto
 	}
 	return customScript;
 }
+window.createEndConditionStoryBattleWithDraw = function(passageVictoryTeamA,passageVictoryTeamB,passageDraw) {
+	var customScript = function(turns) {
+		var flagEndScene = endConditionStandardBattle(turns);
+		if ( State.variables.sc.extraEndInfo == "teamAwin" ) { // Team A wins
+			State.variables.sc.endScenePassage = passageVictoryTeamA;
+		} else if ( State.variables.sc.extraEndInfo == "stalemate" ) { // Draw
+			State.variables.sc.endScenePassage = passageDraw;
+		} else { // Team A doesn't win
+			State.variables.sc.endScenePassage = passageVictoryTeamB;
+		}
+		if ( flagEndScene ) {
+			this.refreshEndScenePassageScript();
+		}
+		return flagEndScene;
+	}
+	return customScript;
+}
 
 //////// OTHER FUNCTIONS ////////
+
+window.getSexDamageMult = function(actor,target,action) {
+	// returns [] ; [0] is damage multiplier ; [1] is description
+	var mult = 1;
+	var luck = gCstat(actor,"luck");
+	var isActor = false;
+	if ( actor == target ) { isActor = true; }
+	// Tastes
+	mult += getSexPrefDamageMult(target,isActor,action);
+	// Luck
+	mult += -0.1 + luckedDiceThrow(luck) * 0.2;
+	return [mult,getMultiplierDescription(mult)];
+}
+
+window.getSexPrefDamageMult = function(target,isActor,action) {
+	var mult = 0;
+	for ( var tag of setup.saList[action].flavorTags ) {
+		if ( tag != "continuedAction" && tag != "position" ) {
+			var cTag = tag;
+			if ( cTag == "foreplay" || cTag == "talk" || cTag == "oral" || cTag == "fullsex" ) {
+				effectMultiplier = 0.5;
+			}
+			var effectMultiplier = 1;
+			// Select valid opposite tag if appropriate
+			if ( tagVector(tag) && isActor == false ) {
+				cTag = getOppositeTag(tag);
+			}
+			// Get extra altered state damage
+			var asV = 0;
+			for ( var as of gC(target).alteredStates ) {
+				if ( as.hasOwnProperty("tag") ) {
+					if ( as.tag == cTag ) {
+						asV = as.intensity * effectMultiplier;
+					}
+				}
+			}
+			// Add rank, get final multiplier
+			mult += gC(target).tastes[cTag].r * (0.03 * effectMultiplier) + asV;
+		}
+	}
+	return mult;
+}
+window.tagVector = function(tag) {
+	// Vectorized tag refers to those which meaning changes depending on whether the action is affecting the actor or the target.
+	// "Foreplay" is a non-vectorized tag. "TargetPussy" is a vectorized tag: if the action affects a target, "usePussy" must be checked instead
+	var flag = true;
+	if ( tag == "foreplay" || tag == "oral" || tag == "fullsex" || tag == "talk" || tag == "bondage" || tag == "teasing" || tag == "hypnosis" || tag == "charm" || tag == "romantic" || tag == "denial" ) {
+		flag = false;
+	}
+	return flag;
+}
+window.getOppositeTag = function(tag) {
+	var rTag = tag;
+	switch(tag) {
+		case "useDick":
+			rTag = "targetDick";
+			break;
+		case "usePussy":
+			rTag = "targetPussy";
+			break;
+		case "useAnus":
+			rTag = "targetAnus";
+			break;
+		case "useBreasts":
+			rTag = "targetBreasts";
+			break;
+		case "useMouth":
+			rTag = "targetMouth";
+			break;
+		case "useEyes":
+			rTag = "targetEyes";
+			break;
+		case "useHands":
+			rTag = "targetHands";
+			break;
+		case "useLegs":
+			rTag = "targetLegs";
+			break;
+		case "useTail":
+			rTag = "targetTail";
+			break;
+		case "targetDick":
+			rTag = "useDick";
+			break;
+		case "targetPussy":
+			rTag = "usePussy";
+			break;
+		case "targetAnus":
+			rTag = "useAnus";
+			break;
+		case "targetBreasts":
+			rTag = "useBreasts";
+			break;
+		case "targetMouth":
+			rTag = "useMouth";
+			break;
+		case "targetEyes":
+			rTag = "useEyes";
+			break;
+		case "targetHands":
+			rTag = "useHands";
+			break;
+		case "targetLegs":
+			rTag = "useLegs";
+			break;
+		case "targetTail":
+			rTag = "useTail";
+			break;
+		case "top":
+			rTag = "bottom";
+			break;
+		case "bottom":
+			rTag = "top";
+			break;
+		case "domination":
+			rTag = "submission";
+			break;
+		case "submission":
+			rTag = "domination";
+			break;
+		case "usePain":
+			rTag = "receivePain";
+			break;
+		case "receivePain":
+			rTag = "usePain";
+			break;
+	}
+	return rTag;
+}
+
+window.getSexDamageMultAlt = function(actor,target,tags) {
+	// returns [] ; [0] is damage multiplier ; [1] is description
+	var mult = 1;
+	var luck = gCstat(actor,"luck");
+	var isActor = false;
+	if ( actor == target ) { isActor = true; }
+	// Tastes
+	mult += getSexPrefDamageMultAlt(target,isActor,tags);
+	// Luck
+	mult += -0.1 + luckedDiceThrow(luck) * 0.2;
+	return [mult,getMultiplierDescription(mult)];
+}
+window.getSexPrefDamageMultAlt = function(target,isActor,tags) {
+	var mult = 0;
+	for ( var tag of tags ) {
+		if ( tag != "continuedAction" && tag != "position" ) {
+			var cTag = tag;
+			if ( tagVector(tag) && isActor == false ) {
+				cTag = getOppositeTag(tag);
+			}
+			mult += gC(target).tastes[cTag].r * 0.03;
+		}
+	}
+	return mult;
+}
+
+window.getMultiplierDescription = function(mult) {
+	var desc = "";
+	if ( mult >= 1.2 ) {
+		if ( mult >= 1.35 ) {
+			desc = colorText(randomFromList(["Burning hot! ","Irresistible! ","Heating up! "]),"orangered");
+		} else {
+			desc = colorText(randomFromList(["Ravishing! ", "Exciting! ","Provoking! "]),"darkorange");
+		}
+	}
+	return desc;
+}
 
 window.addExtraEffectDescription = function(desc) {
 	if ( State.variables.sc.extraEffectsDescription != "" ) { State.variables.sc.extraEffectsDescription += "\n"; }
@@ -1472,4 +1845,116 @@ window.cleanTurnTags = function() {
 	}
 }
 
+window.isCharInPrimaryContinuedAction = function(cK) {
+	var flag = false;
+	for ( var ca of State.variables.sc.continuedActions ) {
+		if ( flag == false ) {
+			if ( ca.rank > 1 ) {
+				if ( ca.initiator == cK || ca.targetsList.includes(cK) ) {
+					flag = true;
+				}
+			}
+		}
+	}
+	return flag;
+}
+
+window.getActionsAgainstTarget = function(target) {
+	var actions = [];
+	var i = 0;
+	while ( i < State.variables.sc.teamAchosenTargets.length ) {
+		if ( State.variables.sc.teamAchosenTargets[i] == target ) {
+			if ( State.variables.sc.teamAcharKeys[i] != target ) {
+				actions.push(State.variables.sc.teamAchosenActions[i]);
+			}
+		}
+		i++;
+	}
+	i = 0;
+	while ( i < State.variables.sc.teamBchosenTargets.length ) {
+		if ( State.variables.sc.teamBchosenTargets[i] == target ) {
+			if ( State.variables.sc.teamBcharKeys[i] != target ) {
+				actions.push(State.variables.sc.teamBchosenActions[i]);
+			}
+		}
+		i++;
+	}
+	return actions;
+}
+window.getActionsAgainstTargetIncludingSelf = function(target) {
+	var actions = [];
+	var i = 0;
+	while ( i < State.variables.sc.teamAchosenTargets.length ) {
+		if ( State.variables.sc.teamAchosenTargets[i] == target ) {
+			actions.push(State.variables.sc.teamAchosenActions[i]);
+		}
+		i++;
+	}
+	i = 0;
+	while ( i < State.variables.sc.teamBchosenTargets.length ) {
+		if ( State.variables.sc.teamBchosenTargets[i] == target ) {
+			actions.push(State.variables.sc.teamBchosenActions[i]);
+		}
+		i++;
+	}
+	return actions;
+}
+window.doesActorsContinuedActionsInvolveBodypart = function(actor,part) {
+	var flag = false;
+	for ( var ca of State.variables.sc.continuedActions ) {
+		if ( ca.initiator == actor ) {
+			if ( ca.initiatorBodyparts.includes(part) ) {
+				flag = true;
+			}
+		}
+		if ( ca.targetsList.includes(actor) ) {
+			if ( ca.targetsBodyparts.includes(part) ) {
+				flag = true;
+			}
+		}
+	}
+	return flag;
+}
+window.doesActorsContinuedActionsInvolveBodypartCombination = function(actor,part,partnerPart) {
+	var flag = false;
+	for ( var ca of State.variables.sc.continuedActions ) {
+		if ( ca.initiator == actor ) {
+			if ( ca.initiatorBodyparts.includes(part) ) {
+				if ( ca.targetsBodyparts.includes(partnerPart) ) {
+					flag = true;
+				}
+			}
+		}
+		if ( ca.targetsList.includes(actor) ) {
+			if ( ca.targetsBodyparts.includes(part) ) {
+				if ( ca.initiatorBodyparts.includes(partnerPart) ) {
+					flag = true;
+				}
+			}
+		}
+	}
+	return flag;
+}
+
+window.anyOtherActorHasFreeBodypart = function(noActor,bodypart) {
+	var hasBodypart = false;
+	var scCharList = arrayMinusA(State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys),noActor);
+	for ( var charKey of scCharList ) {
+		if ( gC(charKey).body.hasOwnProperty(bodypart) ) {
+			if ( gC(charKey).body[bodypart].state != "locked" ) {
+				hasBodypart = true;
+			}
+		}
+	}
+	return hasBodypart;
+}
+
+window.cleanSceneTags = function() {
+	var charList = State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys);
+	for ( var charKey of charList ) {
+		if ( gC(charKey).hasOwnProperty("sceneTags") ) {
+			delete gC(charKey).sceneTags;
+		}
+	}
+}
 

@@ -5,14 +5,22 @@ Config.saves.autosave = false;
 Config.loadDelay = 50;
 Config.history.maxStates = 1;
 
+// State.variables.StVarsList = [];
+// monActUs
+// go0
+// chTts
+
 ////////// GAME SETTINGS CLASS //////////
+
+setup.versionName = "Unholy Arts v0.3.0";
 
 setup.infamySecondThreshold = 1.2;
 setup.infamyThirdThreshold = 1.4;
 
 window.Settings = function() { 
-	this.debugFunctions = false;
+	this.debugFunctions = true;
 	
+	this.stdSxScDur = 30; // Standard Sex Scene Duration
 	this.infamyLimit = 25;
 	this.relationshipsDuration = 3;
 	this.equipmentDuration = 5;
@@ -25,11 +33,13 @@ window.Settings = function() {
 
 	this.difficulty = "normal"; // "easy" / "normal" / "hard"
 	
-	this.futa = "enableAll"; // "enableAll" / "disableMainStory" / "disableAll"
+	this.futa = "enableAll"; // "enableAll" / "playerFuta" / "futaPartners" / "disableMainStory" / "disableAll"
 	
 	this.sexPrefs = "noChanges"; // "noChanges" / "usePussy" / "useDick"
 	
 	this.npcBonus = "none"; // "none" / "bondage" / "hypnosis" / "draining" / "all"
+	
+	this.lewdMales = "enable"; // "enable" / "disable"
 	
 	this.anal = "enable"; // "enable" / "disable"
 	
@@ -68,7 +78,15 @@ window.Settings = function() {
 						   
 	this.allChoices = "";
 	
-	this.formatDifficultyChoices = function() {
+	// Exit button
+	Settings.prototype.exitPassage = "Disclaimer";
+	Settings.prototype.exitButton = "<<l" + "ink [[Save settings and leave|" + this.exitPassage + "]]>><<s" + "cript>>\n"
+					+ "cleanAllSettingsChoices();\n"
+					+ "<</s" + "cript>><</l" + "ink>>";
+};
+
+// Methods
+Settings.prototype.formatDifficultyChoices = function() {
 		this.difficultyChoices = '__Difficulty__' + getDifficultyTooltip() + ':\n' + '<label><<radiobutton "$settings.difficulty" "easy"';
 		if ( this.difficulty == "easy" ) { this.difficultyChoices += " checked"; }
 		this.difficultyChoices += '>> Easy</label>\n'
@@ -79,11 +97,17 @@ window.Settings = function() {
 		if ( this.difficulty == "hard" ) { this.difficultyChoices += " checked"; }	
 		this.difficultyChoices += '>> Hard</label>';
 	}
-	this.formatFutaChoices = function() {
+	Settings.prototype.formatFutaChoices = function() {
 		this.futaChoices = '__Futanari__' + getFutanariTooltip() + ':\n';
 		this.futaChoices += '<label><<radiobutton "$settings.futa" "enableAll"';
 		if ( this.futa == 'enableAll' ) { this.futaChoices += " checked"; }
 		this.futaChoices += '>> Enable all content</label> ' + colorText("(Canon)","green") + '\n'
+						  + '<label><<radiobutton "$settings.futa" "playerFuta"';
+		if ( this.futa == 'playerFuta' ) { this.futaChoices += " checked"; }
+		this.futaChoices += '>> Only futa player, no futa peers</label>\n'
+						  + '<label><<radiobutton "$settings.futa" "futaPartners"';
+		if ( this.futa == 'futaPartners' ) { this.futaChoices += " checked"; }
+		this.futaChoices += '>> Futa peers, but no futa player</label>\n'
 						  + '<label><<radiobutton "$settings.futa" "disableMainStory"';
 		if ( this.futa == 'disableMainStory' ) { this.futaChoices += " checked"; }
 		this.futaChoices += '>> Disable main story content</label>\n'
@@ -91,7 +115,7 @@ window.Settings = function() {
 		if ( this.futa == 'disableAll' ) { this.futaChoices += " checked"; }
 		this.futaChoices += '>> Disable all content</label>';		
 	}
-	this.formatSexPrefChoices = function() { // noChanges usePussy useDick
+	Settings.prototype.formatSexPrefChoices = function() { // noChanges usePussy useDick
 		this.sexPrefChoices = '__Sex preferences__' + getTastesConfigTooltip() + ':\n';
 		this.sexPrefChoices += '<label><<radiobutton "$settings.sexPrefs" "noChanges"';
 		if ( this.sexPrefs == 'noChanges' ) { this.sexPrefChoices += " checked"; }
@@ -104,7 +128,7 @@ window.Settings = function() {
 		this.sexPrefChoices += '>> Use dick</label>';		
 	}
 	
-	this.formatNpcBonusesChoices = function() { // "none" / "bondage" / "hypnosis" / "draining" / "all"
+	Settings.prototype.formatNpcBonusesChoices = function() { // "none" / "bondage" / "hypnosis" / "draining" / "all"
 		this.npcBonusChoices = '__NPC Candidates bonuses__' + getNPCsBonusesTooltip() + ':\n';
 		this.npcBonusChoices += '<label><<radiobutton "$settings.npcBonus" "none"';
 		if ( this.npcBonus == 'none' ) { this.npcBonusChoices += " checked"; }
@@ -123,7 +147,7 @@ window.Settings = function() {
 		this.npcBonusChoices += '>> All</label>';		
 	}
 	
-	this.formatAnalChoices = function() {
+	Settings.prototype.formatAnalChoices = function() {
 		this.analChoices = '__Anal__' + getAnalTooltip() + ':\n';
 		this.analChoices += '<label><<radiobutton "$settings.anal" "enable"';
 		if ( this.anal == 'enable' ) { this.analChoices += " checked"; }
@@ -133,7 +157,7 @@ window.Settings = function() {
 		this.analChoices += '>> Disable</label>';	
 	}
 	
-	this.formatBattleDefeatSexChoices = function() {
+	Settings.prototype.formatBattleDefeatSexChoices = function() {
 		this.battleDefeatSexChoices = '__Sex as result of battles__' + getSexFromBattlesTooltip() + ':\n';
 		this.battleDefeatSexChoices += '<label><<radiobutton "$settings.battleDefeatSex" "enable"';
 		if ( this.battleDefeatSex == 'enable' ) { this.battleDefeatSexChoices += " checked"; }
@@ -142,7 +166,7 @@ window.Settings = function() {
 		if ( this.battleDefeatSex == 'disable' ) { this.battleDefeatSexChoices += " checked"; }
 		this.battleDefeatSexChoices += '>> Disable</label>';	
 	}
-	this.formatServitudeRelationshipsChoices = function() {
+	Settings.prototype.formatServitudeRelationshipsChoices = function() {
 		this.servitudeRelationshipsChoices = '__Servitude relationships__' + getServitudeRelationshipsTooltip() + ': ' + colorText("(Harsh content)","firebrick") + '\n';
 		this.servitudeRelationshipsChoices += '<label><<radiobutton "$settings.servitudeRelationships" "enable"';
 		if ( this.servitudeRelationships == 'enable' ) { this.servitudeRelationshipsChoices += " checked"; }
@@ -151,7 +175,7 @@ window.Settings = function() {
 		if ( this.servitudeRelationships == 'disable' ) { this.servitudeRelationshipsChoices += " checked"; }
 		this.servitudeRelationshipsChoices += '>> Disable</label>';	
 	}
-	this.formatStealingServitudeChoices = function() {
+	Settings.prototype.formatStealingServitudeChoices = function() {
 		this.stealingServitudeChoices = '__Stealing submissives__' + getStealingServitudeTooltip() + ': ' + colorText("(Harsh content)","firebrick") + '\n';
 		this.stealingServitudeChoices += '<label><<radiobutton "$settings.stealingServitudeAllowed" "enable"';
 		if ( this.stealingServitudeAllowed == 'enable' ) { this.stealingServitudeChoices += " checked"; }
@@ -160,7 +184,7 @@ window.Settings = function() {
 		if ( this.stealingServitudeAllowed == 'disable' ) { this.stealingServitudeChoices += " checked"; }
 		this.stealingServitudeChoices += '>> Disable</label>';	
 	}
-	this.formatChastityChoices = function() {
+	Settings.prototype.formatChastityChoices = function() {
 		this.chastityChoices = '__Chastity and ruined orgasms__' + getChastityTooltip() + ': ' + colorText("(Harsh content)","firebrick") + '\n';
 		this.chastityChoices += '<label><<radiobutton "$settings.chastity" "enable"';
 		if ( this.chastity == 'enable' ) { this.chastityChoices += " checked"; }
@@ -169,7 +193,27 @@ window.Settings = function() {
 		if ( this.chastity == 'disable' ) { this.chastityChoices += " checked"; }
 		this.chastityChoices += '>> Disable</label>';	
 	}
-	this.formatAllChoices = function() {
+
+Settings.prototype.formatSexSceneDurationChoices = function() {
+	var chText = "__Generic Sex Scene Duration__ (Standard=30):\n";
+	chText += '<<textbox ' + '"$settings.stdSxScDur" "' + this.stdSxScDur + '">>\n\n'
+	
+	return chText;
+}
+
+Settings.prototype.formatMaleCharsChoices = function() {
+	var chText = "__Male Characters Allowed to be Lewd__"
+			   + ' <span title="Disabling this option will prevent all characters whose personal pronoun is <he> from participating in lewd acts, including: joining sex scenes, using or receiving sex attacks during battles, using or receiving flirty or arousing actions in conversations. This option will not affect a player character whose gender has been changed to male.">^^(?)^^</span>' + ":\n";
+	chText += '<label><<radiobutton "$settings.lewdMales" "enable"';
+	if ( this.lewdMales == "enable" ) { chText += " checked"; }
+	chText += '>> Enable</label>\n';
+	chText += '<label><<radiobutton "$settings.lewdMales" "disable"';
+	if ( this.lewdMales == "disable" ) { chText += " checked"; }
+	chText += '>> Disable</label>';
+	return chText;
+}
+
+	Settings.prototype.formatAllChoices = function() {
 		formatAutosavingChoices();
 		this.formatDifficultyChoices();
 		this.formatFutaChoices();
@@ -188,28 +232,23 @@ window.Settings = function() {
 		if ( this.exitPassage != "Personal Room" ) { // These options shouldn't be accessible after the start of the game
 			this.allChoices += this.difficultyChoices + "\n\n" + this.futaChoices + "\n\n" + this.sexPrefChoices + "\n\n" + this.npcBonusChoices + "\n\n"
 		}
-		this.allChoices += this.analChoices + "\n\n" + this.painChoices + "\n\n"
+		this.allChoices += this.formatSexSceneDurationChoices() + "\n" + this.formatMaleCharsChoices() + "\n\n"
+						+ this.analChoices + "\n\n" + this.painChoices + "\n\n"
 						+ this.battleDefeatSexChoices + "\n\n" + this.servitudeRelationshipsChoices + "\n\n"
 						+ this.stealingServitudeChoices + "\n\n" + this.chastityChoices + "\n\n"
 						+ this.exitButton;
 	}
-	
-	// Exit button
-	this.exitPassage = "Disclaimer";
-	this.exitButton = "<<l" + "ink [[Save settings and leave|" + this.exitPassage + "]]>><<s" + "cript>>\n"
-					+ "cleanAllSettingsChoices();\n"
-					+ "<</s" + "cript>><</l" + "ink>>";
 					
-	this.getButtonExit = function() {
-		var bText = "<<l" + "ink [[Save settings and leave|" + this.exitPassage + "]]>><<s" + "cript>>";
+	Settings.prototype.getButtonExit = function() {
+		var bText = "<<l" + "ink [[Save settings and leave|" + this.exitPassage + "]]>><<s" + "cript>>"
+					+ "cleanAllSettingsChoices();\n"
 		bText	 += "<</s" + "cript>><</l" + "ink>>";
 		return bText;
 	}
-	this.setExitPassage = function(exitPassage) {
+	Settings.prototype.setExitPassage = function(exitPassage) {
 		this.exitPassage = exitPassage;
 		this.exitButton = this.getButtonExit(this.exitPassage);
 	}
-};
 
 window.gSettings = function() {
 	return State.variables.settings;
@@ -227,6 +266,13 @@ window.cleanAllSettingsChoices = function() {
 	State.variables.settings.servitudeRelationshipsChoices = "";
 	State.variables.settings.stealingServitudeChoices = "";
 	State.variables.settings.chastityChoices = "";
+	
+	State.variables.settings.stdSxScDur = parseInt(State.variables.settings.stdSxScDur,10);
+	if ( State.variables.settings.stdSxScDur == undefined || isNaN(State.variables.settings.stdSxScDur) ) {
+		State.variables.settings.stdSxScDur = 30;
+	} else if ( State.variables.settings.stdSxScDur < 1 ) {
+		State.variables.settings.stdSxScDur = 1;
+	}
 }
 
 window.formatAutosavingChoices = function() {
@@ -274,7 +320,6 @@ window.applyDifficultyChanges = function() {
 		case "hypnosis":
 			charactersLearnSceneActions(npcCandidates,["baHypnoticGlance","realHypnoticGlance"]);
 			for ( var npc of npcCandidates ) {
-				gC(npc).extraSocIntList.push("hypnoticGlance");
 			}
 			break;
 		case "draining":
@@ -289,9 +334,6 @@ window.applyDifficultyChanges = function() {
 			break;
 		case "all":
 			charactersLearnSceneActions(npcCandidates,["baHypnoticGlance","realHypnoticGlance","baDrainingKiss","baEnergyDrainingKiss","energyDrainingKiss","baEtherealChains","etherealChains"]);
-			for ( var npc of npcCandidates ) {
-				gC(npc).extraSocIntList.push("hypnoticGlance");
-			}
 			break;
 	}
 	switch(gSettings().sexPrefs) {
@@ -324,7 +366,9 @@ window.getDifficultyTooltip = function() {
 	return tText;
 }
 window.getFutanariTooltip = function() {
-	var tText = '<span title="Futanari are women with both male and female genitalia. Disabling main story content will prevent futanari protagonist transformations, but enable all other futanari content.">^^(?)^^</span>';
+	var tText = '<span title="Futanari are women with both male and female genitalia.\n'
+			  + 'The first three options will provoke futanari transformations on main characters near the start of the game.'
+			  + 'Disabling main story content will prevent futanari protagonist transformations, but enable all other futanari content.">^^(?)^^</span>';
 	return tText;
 }
 window.getAnalTooltip = function() {
@@ -444,8 +488,32 @@ window.isLiberationChallengePossible = function(actor,target) {
 	else if ( getCharsRoom(target).combatAllowed == false ) { // Combat is allowed in target's current room
 		flagPossible = false;
 	}
+	else if ( doesCharHaveDayTag(actor,"liberationAttempt") ) {
+		flagPossible = false;
+	}
 	
 	return flagPossible;
+}
+
+window.isLewdingPossible = function(actor,target) {
+	var flag = true;
+	if ( gSettings().lewdMales == "disable" ) {
+		if ( actor != "chPlayerCharacter" ) {
+			if ( gC(actor).perPr == "he" ) {
+				flag = false;
+			}
+		}
+		if ( flag ) {
+			if ( target == undefined ) {
+				flag = false;
+			} else if ( target != "chPlayerCharacter" ) {
+				if ( gC(target).perPr == "he" ) {
+					flag = false;
+				}
+			}
+		}
+	}
+	return flag;
 }
 
 // Constructors, serializers, etc.
@@ -469,9 +537,9 @@ Settings.prototype.toJSON = function() {
 
 //////////////
 
-setup.creditsGoddessEnthusiast = [ "LessIDableName ","Sordax","Fox McQwerty","ben ","Peter ","Troy Armstrong","Colton Foote","Barnabas Collins","Vadrin ","Jake Ross","Nevyn ","Tyler Kreutzer","Pandavenger ","Chris40 ","He Who Remembers All","Bluebomber ","Brian Keefe","ElCrazy1 ","Hairdevill","Grissie","Jacob LaRiviere","ShardOfCard ","ElrondHubbard ","Thomas Colasanto","Nat Byham","Evgeniy ","Cody Shawver","Brad11 ","tiffany mawhorter","Trickster ","Anonimus Mito","Redace","Alex Srisaard","วํฒนะ มานะภักดี","Oliver_Ritchie ","Ermin Pivac","Alex2011","Scott","anactualgoat ","TheShwig ","Jou Chen","Michael ","Mateusz Karliczek","Robert Crawford","MrTheDarkRed ","Black Rose Valerie","Kandschur ","Andrew Dupuis","mainman879 ","Chris Shaw","Christopher Hopkins","Kevin Andrews","DankMeme ","Anburaru ","Meserym ","Quinzell Antrom","Pandavenger","Logan Villa","Norann","Pingo ","Burckle","Mig Dig","Jan Hynek","Franko Bogdan","Alex Gaskins","Torrin ","Andrew Elvin","ArkSilver ","White Pebble","Gamenerd3 ","Yukari ","Grimaga ","Felkesste","Marcus Lu","Alysha Malone","Dage ","ArtificerZeltara","J AndMck","Snazy","Vkad 64","Dragon","Roze14 ","C Fra","Tyler Trounce","Michael Dennis Eagles","Manraj Dhanda","FirefoxV2 ","Chris","Boopley Boop","Grandius Grimm","Taziah Robinson","Mekhet ","Grumpy ","cbcpdxkq3z","Markus Boos","Remi BB","Jack Fereday","Patrick McCabe","Tyler Kelly","mahdeennave ","Kou Mao","Gavin Winkler","jason cole","Jojolity ","Takos ","Shawn ","AD","Richard Dolder","ZXapol ","Kasen081 ","Nathan Reina","Name ","Lena Elmer","Jake Davis","Aleister Crowley","Alexander Presley","Void-Searcher .","Mikkel Christoffer Kraesing Neergaard","Blake ","Tinwen ","Michael Rydel","Josh white","Desmond Finney","Nemo-Iratus ","Mikhail Petrovic","Jack Jamieson","yospeakr","Tarcc ","Lily Dawn","Zangi ","Richard Whitcher","ErDragon","Duchairn ","DarkyCrusad","aleante ","pebbles ","Keira Nguyen","Windarian ","Omoi T Wilkes","Ryan Lines","Tyler","TJ Gulledge" ];
-setup.creditsPassionTemplePreacher = [ "Ryuko ","Barada Azana","aattss ","Samurai_Jack141 ","Name2146 ","Snakes! ","Irasur","Alex ","Nathaniel Grams","Cory Elliott","SenoirKain ","Andreas","Gura ","ThatsAllFolks ","Joshua Boguth","Joshua Smith","Ross Fountain","Thomas ","Emily S.","Hunter Glad","Devin White","Anon ","hiorka","dark_dragon ","A giant crab","Kai Scheele","pyrite","Georgii Brisuela","Stephen","Stephen Pieper","Weathnarh ","Zergling ","Rodimus Darnath","kirito shiba","Unsung ","NoWorries623 ","Aplysina Cyanobacterium","Terminal_ERROR","Grant Manthey","Matt Miller","Dan Schrader","Slywolf357 ","Vysirez ","Benjamin Grieder","Michael Avellino","Satile ","Kestrel","Paladin_Wiggles_II ","CancerMage ","NightStrike01 ","ZVReaper16","Mcquaqua ","billyboy","Eric Wood","Elisia Seda","Sebastian Baran","Jabbtoth ","Snaked ","MaxTan ","Cyril guillas","Bartolomeo ","Pikarukawa","This Guy","Nemesison ","Sunny Reehal","Joshua Todd Shaffer","TheLastBang ","c0nevs ","Rj Sawyer","Максим Конорев","Jacob Wrightsman","Desseus ","Lexi Knight","CriticalExistenceFailure ","floccinaucinihilipilification ","Friendly Neighbor","이재승 ","NovaDragn ","Chris Douglas","Bob Fruman","StrayWolf ","Skyrim mod lvr","William K Bennett","Spencer Bradford","Phenix995 ","Foolwatchout ","Lunaraia ","Guardx","Curtis1122","Kyle ","Kuma III","Weegee","Wirglays ","DeathbyKimchi ","Yi ","Reddy Allen","Bohrne","Honey Crab","12inpen","Be","k0lt ","Jim S","Joe Barrass","This guy","LunarGuardsman ","CorprealFale","Willayfiddle ","Renpon ","warshotcv ","Something ","Jens Bertrams","Hartmanns Youkai","Aeonian Argos","Joe X","FalconNrOne ","'---- ","Randall H","Anomally","SlamJammer ","acpmage","Christian Adalbert","Dr_Russian ","Aspios ","Gabriel Grey","Chris ","CrysHistory ","Jean Otus","SetsunaYuki","muckenmaker ","Rockstad ","Nathan Taylor","noah ","Konomori ","Rex J Jensen","Red Duke","Shirogitsune","Wazzugazzu","Wesley A. Collins","Hillfillk","Parzival","Tharm","Perseus_paradox ","Austin Anderson","BruceM ","Peter Managarm","Inquisitor Gaia","Elowin ","matthew nemec","Ultrasexy ","YJs ","MajorCoincoin ","Myles ","Mayu The Kitsune","Cotton59 ","Bunne","magenta_bang ","Shadowed Song","Isan-San ","NRFB ","Sam Williams","der","richardTrickle ","Rune ","Hendrijk Watson","Zanaam","Niklas ","Qwazpoi","Pink Wolf","AxiosMIles ","Jacob Perry","BlackDickens ","L","swaginator ","Izanagi15 ","OmcMcAlp ","Layne Landis","DivingRocket","Beebo","Robin ","Kevin Ball","John","Mithrandir ","Silcerius","Rene Bien","segev hype" ];
-setup.creditsPassionTempleClergy = [ "Longwave","Carlos Sierra" ];
+setup.creditsGoddessEnthusiast = [ "LessIDableName ","Sordax","Fox McQwerty","ben ","Peter ","Troy Armstrong","Colton Foote","Barnabas Collins","Vadrin ","Jake Ross","Nevyn ","Tyler Kreutzer","Pandavenger ","Chris40 ","He Who Remembers All","Bluebomber ","Brian Keefe","ElCrazy1 ","Grissie","Jacob LaRiviere","ShardOfCard ","ElrondHubbard ","Thomas Colasanto","Nat Byham","Evgeniy ","Cody Shawver","Brad11 ","tiffany mawhorter","Trickster ","Anonimus Mito","Redace","Alex Srisaard","วํฒนะ มานะภักดี","Oliver_Ritchie ","Ermin Pivac","Alex2011","Scott","anactualgoat ","TheShwig ","Jou Chen","Michael ","Mateusz Karliczek","Robert Crawford","MrTheDarkRed ","Black Rose Valerie","Kandschur ","Andrew Dupuis","mainman879 ","Chris Shaw","Christopher Hopkins","Kevin Andrews","DankMeme ","Anburaru ","Meserym ","Quinzell Antrom","Pandavenger","Logan Villa","Norann","Pingo ","Burckle","Mig Dig","Jan Hynek","Franko Bogdan","Alex Gaskins","Torrin ","Andrew Elvin","ArkSilver ","White Pebble","Gamenerd3 ","Yukari ","Grimaga ","Felkesste","Marcus Lu","Alysha Malone","Dage ","ArtificerZeltara","J AndMck","Snazy","Vkad 64","Dragon","Roze14 ","C Fra","Tyler Trounce","Michael Dennis Eagles","Manraj Dhanda","FirefoxV2 ","Chris","Boopley Boop","Grandius Grimm","Taziah Robinson","Mekhet ","cbcpdxkq3z","Markus Boos","Remi BB","Jack Fereday","Patrick McCabe","Tyler Kelly","mahdeennave ","Kou Mao","Gavin Winkler","jason cole","Jojolity ","Takos ","Shawn ","AD","Richard Dolder","ZXapol ","Kasen081 ","Nathan Reina","Name ","Lena Elmer","Jake Davis","Aleister Crowley","Alexander Presley","Void-Searcher .","Mikkel Christoffer Kraesing Neergaard","Blake ","Tinwen ","Michael Rydel","Josh white","Desmond Finney","Nemo-Iratus ","Jack Jamieson","yospeakr","Tarcc ","Lily Dawn","Zangi ","Richard Whitcher","ErDragon","Duchairn ","DarkyCrusad","aleante ","pebbles ","Keira Nguyen","Omoi T Wilkes","Ryan Lines","Tyler","TJ Gulledge","lvence","Zargothrax ","DANG NGUYEN MINH LUAN","PyriteP ","Oleg Kuzen","doofy goof","uwuwuwu ","Davos Sunshine","Aidan Myers","James Sampson","P-tron ","DefectiveGamer ","Ghostty","Ron Volpe","Coleman Stephan Johnson","Daniel Voronin","J","Oskar Hjorth","Brandon Livingston","NooBie ","shawn plumridge","sera","Micah Watkins","Jonathan Sane","ArsonisticMadCat ","Normal Accidents","TheApatheticAsshat","Drayton ","SmolFish ","Richard ","yoon sung ju","D B","proninja22nd .","Cyril Remo Reyes","Alakdar ","Oleg Moloh","Harutenrai","Nikolas Ambross","Alkhiro Saber","Terrell Simms","Rory Baker","t s","Eli Shmidt","Nick ","Benjamin Delgren","Sans ","Jacob Saganek","Alice Hiess","Iamus The Fox","dias","Sven Kalus","Ryan Krieger","Kilborn ","Halcy Grand","Mahin Ahmed","Classyjarl","昀之 贾","Karma","A.K.A wut","Nathan ","Loxica","Andres ","owen moore","Eduardo ","Madison Hickman","Bobby White","Shane Daley","Vienna Prudenciano","Souleater","Colin Owler","Selunea","MyHobos ","Bo Botkin","Jack ","Kurious ","Israfel ","Hatz","Robert England","Cody Powers","Ben Jones" ];
+setup.creditsPassionTemplePreacher = [ "Ryuko ","Barada Azana","aattss ","Samurai_Jack141 ","Name2146 ","Snakes! ","Irasur","Alex ","Nathaniel Grams","Cory Elliott","SenoirKain ","Andreas","Gura ","ThatsAllFolks ","Joshua Boguth","Ross Fountain","Thomas ","Emily S.","Hunter Glad","Devin White","Anon ","hiorka","dark_dragon ","Hairdevill","A giant crab","Kai Scheele","pyrite","Georgii Brisuela","Stephen","Stephen Pieper","Weathnarh ","Zergling ","Rodimus Darnath","kirito shiba","Unsung ","NoWorries623 ","Aplysina Cyanobacterium","Terminal_ERROR","Grant Manthey","Matt Miller","Dan Schrader","Slywolf357 ","Vysirez ","Benjamin Grieder","Michael Avellino","Satile ","Kestrel","Paladin_Wiggles_II ","CancerMage ","NightStrike01 ","ZVReaper16","Mcquaqua ","billyboy","Eric Wood","Elisia Seda","Sebastian Baran","Jabbtoth ","Snaked ","MaxTan ","Cyril guillas","Bartolomeo ","Pikarukawa","This Guy","Nemesison ","Sunny Reehal","Joshua Todd Shaffer","TheLastBang ","c0nevs ","Rj Sawyer","Максим Конорев","Jacob Wrightsman","Desseus ","Lexi Knight","CriticalExistenceFailure ","floccinaucinihilipilification ","Friendly Neighbor","이재승 ","NovaDragn ","Chris Douglas","Bob Fruman","StrayWolf ","Skyrim mod lvr","William K Bennett","Spencer Bradford","Phenix995 ","Foolwatchout ","Lunaraia ","Guardx","Curtis1122","Kyle ","Kuma III","Weegee","Wirglays ","DeathbyKimchi ","Yi ","Reddy Allen","Bohrne","Honey Crab","12inpen","Be","k0lt ","Jim S","Joe Barrass","This guy","LunarGuardsman ","CorprealFale","Willayfiddle ","Renpon ","warshotcv ","Something ","Jens Bertrams","Hartmanns Youkai","Aeonian Argos","Joe X","FalconNrOne ","'---- ","Randall H","Anomally","SlamJammer ","acpmage","Christian Adalbert","Dr_Russian ","Aspios ","Grumpy ","Gabriel Grey","Chris ","CrysHistory ","Jean Otus","SetsunaYuki","muckenmaker ","Rockstad ","Nathan Taylor","noah ","Konomori ","Rex J Jensen","Red Duke","Shirogitsune","Wazzugazzu","Wesley A. Collins","Hillfillk","Parzival","Tharm","Perseus_paradox ","Austin Anderson","BruceM ","Peter Managarm","Inquisitor Gaia","Elowin ","matthew nemec","Ultrasexy ","YJs ","MajorCoincoin ","Myles ","Mayu The Kitsune","Cotton59 ","Bunne","magenta_bang ","Shadowed Song","Isan-San ","NRFB ","Sam Williams","der","richardTrickle ","Rune ","Hendrijk Watson","Zanaam","Niklas ","Mikhail Petrovic","Qwazpoi","Pink Wolf","AxiosMIles ","Jacob Perry","BlackDickens ","L","swaginator ","Izanagi15 ","OmcMcAlp ","Layne Landis","DivingRocket","Beebo","Robin ","Kevin Ball","John","Windarian ","Mithrandir ","Silcerius","Rene Bien","segev hype","Lucy Ventura","Bryan Shepherd","Tom Hoffs","lolwutt","Anders Bergström","David Townsend","Gandohar ","TreeSquared ","Cheezzyninja ","MJN ","David S Abraham","urdnot123 ","Pedro Garza","brandon stenlake","Dr_Fizzle ","Martin Santiago","drew hal","Maudika ","Crette ","Thunderstruck025","John Doe","jacques ","MechaMarshmallow ","Grekken ","Mike13858","Joseph Padgett","Ronald Kim","Ian","John Denny","Steinhammer","Auntie Grieves","PassingbyPosts","Girmout Lokison","Rachel Gern","Aureate_Folly","Lunanar","rowgran","Anthony Zeppieri","Seraph ","Dan ","Gavin Lane","Hjaalfar Skjoldrsson","lamonte robinson","Hunter Cottrell","TheDarkSoul11","8 bit","Lordaron ","Cameron Spangler","MrPotatoAim6349","Jeff Mcbiscuits","Jackoshack","Haidrin","DeathCoyote","Azra","Whyohwhy 12","Houya","Maseca","kyle hoopes","Disparrow ","Logan Berek","Toa Disk","Brian Niceley","Etak ","josh","Matt ","William Padilla","Stefan Karfusehr","James Edison","Slacker ","Moonswitch3399 ","Colette Lelette","Heptu","Vrocket","Grippa ","Andrew Henniges","Vapantraath","bunker buster","Earl Martin","02010 ","Dean Laird","TheVelourFog ","....... ","Mastergamer ","Ophis ","Narsauce ","Panda","Noir Usagi","Endy Cubed","IzumoKai","Jakob Cagle","Darklordiablo ","Suzaku ","Orvas","K DA","Grocon A","Mr. J.","Robert gray","Slacker","BruceM","DemonQueen Sera","Mal","MonsterAD","Aria","Jen-Hsun Huang","Alice Reich","UserPig ","Anon the 13th","megahellreaper ","Bobby D Floyd","asfdAD ","\<SK\> ","0Kanata0","snakbar ","philip","SquigglyJim","Shearly ","Elijah McGovern","Jan Klauser","Lizzon ","Mark Hagan","Parad0x ","Arentios ","CptFalric ","Phenix995","Mars88","Maerwin" ];
+setup.creditsPassionTempleClergy = [ "Alygness ","Joshua Smith","Longwave","Carlos Sierra","Elmeri Kunnas","Arkaykami" ];
 setup.creditsTier1 = "";
 setup.creditsTier2 = "";
 setup.creditsTier3 = "";

@@ -11,9 +11,9 @@ window.Pathfinder = function(mapKey,charGroup,startingRoomKey,isNodeValidTarget)
 	
 	this.debugInfo = "";
 	
-	for ( var room in getMap(this.mapKey).rooms ) { // Create an object ("nodesList") that contains a node for each room present in the map	//
-		var tRoom = getMap(this.mapKey).rooms[room];
-		if ( tRoom instanceof Room ) {
+	for ( var room in getMapInfo(this.mapKey) ) { // Create an object ("nodesList") that contains a node for each room present in the map	//
+		var tRoom = getMapInfo(this.mapKey)[room];
+		if ( tRoom instanceof RoomInfo ) {
 			this.nodesList[tRoom.key] = new pfNode(tRoom.key);
 		}
 	}												//																						//
@@ -34,7 +34,7 @@ window.Pathfinder = function(mapKey,charGroup,startingRoomKey,isNodeValidTarget)
 	// Adjacent nodes
 	this.getNodesAdjacentToNode = function(nodeKey) {
 		var adjacentNodes = [];
-		for ( var con of getRoomInMap(this.mapKey,nodeKey).getConnections(this.charGroup) ) {
+		for ( var con of getRoomInfoInMap(this.mapKey,nodeKey).getConnections(this.charGroup) ) {
 			adjacentNodes.push(con.loc);
 		}
 		return adjacentNodes;
@@ -50,7 +50,7 @@ window.Pathfinder = function(mapKey,charGroup,startingRoomKey,isNodeValidTarget)
 	// Distances and routes between nodes
 	this.getDistanceBetweenNodes = function(nodeA,nodeB) {
 		var distance = -1;
-		for ( var connection of getRoomInMap(this.mapKey,nodeA).getConnections(this.charGroup) ) {
+		for ( var connection of getRoomInfoInMap(this.mapKey,nodeA).getConnections(this.charGroup) ) {
 			if ( connection.loc == nodeB ) { // Target room key equal node key
 				distance = connection.distance;
 			}

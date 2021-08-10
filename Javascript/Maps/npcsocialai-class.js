@@ -9,13 +9,15 @@ window.NpcSocialAi = function(charKey) {
 	this.covetTs = [];
 	this.conquestTs = [];
 	this.rivalTs = [];
-	
-	this.stablishRelationshipGoal = function(target) {
+};
+
+	// Methods
+NpcSocialAi.prototype.stablishRelationshipGoal = function(target) {
 		this[target] = new relationshipGoal(this.charKey,target);
 	}
 	
 	// Choose social interaction in SIS
-	this.chooseSISinteraction = function(target,interactionsList) {
+NpcSocialAi.prototype.chooseSISinteraction = function(target,interactionsList) {
 		var wInteractionslist = listIntoWeightedList(interactionsList);
 		for ( var wItem in wInteractionslist ) {
 			
@@ -28,8 +30,7 @@ window.NpcSocialAi = function(charKey) {
 		return chosenInteraction;
 	}
 
-	
-	this.assignWeightToInteraction = function(target,interactionKey) {
+NpcSocialAi.prototype.assignWeightToInteraction = function(target,interactionKey) {
 		var value = 100;
 		var strategy = "friendly";
 		var interaction = getSiByKey(interactionKey);
@@ -67,31 +68,32 @@ window.NpcSocialAi = function(charKey) {
 		return value;
 	}
 
-	this.getInterRoundBehavior = function(sis) {
+NpcSocialAi.prototype.getInterRoundBehavior = function(sis) {
 		var choice = "none";
 		var target = "";
 		
 		// Characters following someone shouldn't be able to propose sex or leave SIS on their own
 		if ( gC(this.charKey).followingTo == "" ) {
 			// Check to propose sex
-			
+		
 			// Get alliance
 			if ( gC(this.charKey).mission == "getAlliance" ) {
 				var validTarget = "";
 				for ( var chKey of sis.charList ) {
 					if ( gC(this.charKey).socialAi.allyTs.includes(chKey) ) {
-						if ( State.variables.sistDB[7].isSuccessful(this.charKey,chKey)[0] ) {
+						if ( setup.sistDB[setup.sistType.companionship].isSuccessful(this.charKey,chKey)[0] ) {
 							validTarget = chKey;
 						}
 					}
 				}
 				if ( validTarget != "" ) {
 					target = validTarget;
-					choice = "companionshipRelation";
+					choice = setup.sistType.companionship;
 				}
+		
 			}
 			// Check if demanding sex from sub is possible
-			else if ( gC(this.charKey).subChars.length > 0 && gC(this.charKey).sexScenesToday < 1 && gC(this.charKey).mission == "haveSex" || gC(this.charKey).mission == "haveDomSex" ) {
+			else if ( gC(this.charKey).subChars.length > 0 && gC(this.charKey).sexScenesToday < 1 && (gC(this.charKey).mission == "haveSex" || gC(this.charKey).mission == "haveDomSex") ) {
 				var potentialSubs = [];
 				for ( var chKey of sis.charList ) {
 					if ( gC(this.charKey).subChars.includes(chKey) ) {
@@ -101,7 +103,7 @@ window.NpcSocialAi = function(charKey) {
 					}
 				}
 				if ( potentialSubs.length > 0 ) {
-					choice = "dominantSex";
+					choice = setup.sistType.dominantSex;
 					target = randomFromList(potentialSubs);
 				}
 			}
@@ -117,7 +119,12 @@ window.NpcSocialAi = function(charKey) {
 				if ( gC(this.charKey).mission == "getAlliance" ) {
 					sexWantScore -= 3;
 				}
-				if ( ( gC(this.charKey).mood.flirty + gC(this.charKey).mood.aroused - gC(this.charKey).mood.angry + ((1 - getBarPercentage(this.charKey,"lust")) * 100) ) >= 50 && ( limitedRandomInt(10 + gC(this.charKey).daysWithoutSex + sexWantScore) > ( 6 + gC(this.charKey).sexScenesToday ) ) ) {
+		
+				if ( 
+						( gC(this.charKey).mood.flirty + gC(this.charKey).mood.aroused - gC(this.charKey).mood.angry + ((1 - getBarPercentage(this.charKey,"lust")) * 100) ) >= 50
+						&& ( limitedRandomInt(10 + gC(this.charKey).daysWithoutSex + sexWantScore) > ( 6 + gC(this.charKey).sexScenesToday ) )
+						&& ( gC(this.charKey).socialdrive.current >= 10 )
+					) {
 					var highestPriority = -1;
 					var priorizedChar = "";
 					// Get character with highest priority
@@ -127,29 +134,37 @@ window.NpcSocialAi = function(charKey) {
 							priorizedChar = character;
 						}
 					}
-					var domSexAllowed = true;
-					var egaSexAllowed = true;
-					var subSexAllowed = false;
-					if ( gC(this.charKey).mission == "raiseFriendship" || gC(this.charKey).mission == "flirt" || gC(this.charKey).mission == "getAlliance" ) {
-						domSexAllowed = false;
+		
+					var allowedSex = true;
+					if ( gC(this.charKey).subChars.includes(priorizedChar) ) {
+						if ( limitedRandomInt(16) > 4 ) { allowedSex == false; }
 					}
-					if ( gC(this.charKey).mission == "haveDomSex" || gC(this.charKey).mission == "seduce" || ( (gC(this.charKey).socialAi.covetTs.includes(priorizedChar) || gC(this.charKey).socialAi.conquestTs.includes(priorizedChar)) && gC(this.charKey).socialAi.allyTs.includes(priorizedChar) == false ) ) {
-						egaSexAllowed = false;
-					}
-					if ( (gC(this.charKey).socialAi.covetTs.includes(priorizedChar) == false && gC(this.charKey).socialAi.conquestTs.includes(priorizedChar) == false) && (getCharsDrivePercent(this.charKey,"dPleasure")*2 > getCharsDrivePercent(this.charKey,"dDomination") + getCharsDrivePercent(this.charKey,"dAmbition")) && (gC(this.charKey).socialAi.loveTs.includes(priorizedChar) || gC(this.charKey).mission == "haveSex") ) {
-						subSexAllowed = true;
-					}
-					// Check for dominant sex
-					if ( (State.variables.sistDB[2].isSuccessful(this.charKey,priorizedChar)[0] && domSexAllowed) ) {
-						choice = "dominantSex";
-						target = priorizedChar;
-					} // Check for egalitarian sex
-					else if ( (State.variables.sistDB[0].isSuccessful(this.charKey,priorizedChar)[0] && egaSexAllowed) ) {
-						choice = "egalitarianSex";
-						target = priorizedChar;
-					} else if ( State.variables.sistDB[1].isSuccessful(this.charKey,priorizedChar)[0] && subSexAllowed ) {
-						choice = "submissiveSex";
-						target = priorizedChar;
+					if ( allowedSex ) {
+						var domSexAllowed = true;
+						var egaSexAllowed = true;
+						var subSexAllowed = false;
+						if ( gC(this.charKey).mission == "raiseFriendship" || gC(this.charKey).mission == "flirt" || gC(this.charKey).mission == "getAlliance" ) {
+							domSexAllowed = false;
+						}
+						if ( gC(this.charKey).mission == "haveDomSex" || gC(this.charKey).mission == "seduce" || ( (gC(this.charKey).socialAi.covetTs.includes(priorizedChar) || gC(this.charKey).socialAi.conquestTs.includes(priorizedChar)) && gC(this.charKey).socialAi.allyTs.includes(priorizedChar) == false ) ) {
+							egaSexAllowed = false;
+						}
+						if ( (gC(this.charKey).socialAi.covetTs.includes(priorizedChar) == false && gC(this.charKey).socialAi.conquestTs.includes(priorizedChar) == false) && (getCharsDrivePercent(this.charKey,"dPleasure")*2 > getCharsDrivePercent(this.charKey,"dDomination") + getCharsDrivePercent(this.charKey,"dAmbition")) && (gC(this.charKey).socialAi.loveTs.includes(priorizedChar) || gC(this.charKey).mission == "haveSex") && gC(priorizedChar).domChar != this.charKey ) {
+							subSexAllowed = true;
+						}
+		
+						// Check for dominant sex
+						if ( (setup.sistDB[setup.sistType.dominantSex].isSuccessful(this.charKey,priorizedChar)[0] && domSexAllowed) ) {
+							choice = setup.sistType.dominantSex;
+							target = priorizedChar;
+						} // Check for egalitarian sex
+						else if ( (setup.sistDB[setup.sistType.egalitarianSex].isSuccessful(this.charKey,priorizedChar)[0] && egaSexAllowed) ) {
+							choice = setup.sistType.egalitarianSex;
+							target = priorizedChar;
+						} else if ( setup.sistDB[setup.sistType.submissiveSex].isSuccessful(this.charKey,priorizedChar)[0] && subSexAllowed ) {
+							choice = setup.sistType.submissiveSex;
+							target = priorizedChar;
+						}
 					}
 				}
 			}
@@ -165,15 +180,24 @@ window.NpcSocialAi = function(charKey) {
 						choice = "leave";
 					}
 				}
-				if ( gC(this.charKey).socialdrive.current < 1 ) {
-					choice = "leave";
-				}
 			}
 		} 
 		
+		if ( gC(this.charKey).socialdrive.current < 1 ) {
+			choice = "leave";
+		}
+		
+		// Check require unlocked genitals
+		if ( choice == setup.sistType.egalitarianSex || choice == setup.sistType.submissiveSex || choice == setup.sistType.dominantSex ) {
+			if ( returnCharsUnlockedGenitals(this.charKey).length == 0 ) {
+				if ( getActorsGenitalsLockedByTarget(this.charKey,target).length > 0 ) {
+					choice = setup.sistType.unlockActorsGenitals;
+				}
+			}
+		}
+		
 		return [choice,target];
 	}
-};
 
 	// SIS
 window.chooseActorsSISinteractionTarget = function(actor,sis,interactionsList) {
@@ -330,46 +354,6 @@ window.setSocialAiCandidateGoals = function(socialAi) {
 	var currentCandidateScore = 0;
 	var i = 0;
 	
-	/*
-	// Find best target for romance
-	for ( var candidate of getCandidatesKeysArray() ) {
-		if ( candidate != socialAi.charKey ) {
-			currentCandidateScore = ((rLvlAbt(candidate,actor,"friendship") * 1) + (rLvlAbt(candidate,actor,"sexualTension") * 3)
-								  + (rLvlAbt(candidate,actor,"romance") * 3) + (rLvlAbt(candidate,actor,"domination") * 3)
-								  + (rLvlAbt(candidate,actor,"submission") * 1) + (rLvlAbt(candidate,actor,"rivalry") * -3)
-								  + (rLvlAbt(candidate,actor,"enmity") * -10)) * getCharacterStatScore(candidate);
-			if ( gC(socialAi.charKey).subChars.includes(candidate) ) {
-				currentCandidateScore += 5;
-			}
-			if ( currentCandidateScore > currentTargetScore ) {
-				romanceTargetId = i;
-				currentTargetScore = currentCandidateScore;
-			}
-		}
-		i++;
-	}
-	var romanceTargetKey = getCandidatesKeysArray()[romanceTargetId];
-	if ( currentTargetScore == 0 ) {
-		romanceTargetKey = randomFromList(arrayMinusA(getCandidatesKeysArray(),socialAi.charKey));
-	}
-	
-	
-	// Set "friendly" , "rivalry" or "romance" strategy
-	for ( var candidate of arrayMinusA(getCandidatesKeysArray(),actor) ) {
-		var friendlyScore = (rLvlAbt(candidate,actor,"friendship") * 1) + (rLvlAbt(candidate,actor,"sexualTension") * 1)
-								  + (rLvlAbt(candidate,actor,"romance") * 1);
-		var enemyScore = (rLvlAbt(candidate,actor,"rivalry") * 2) + (rLvlAbt(candidate,actor,"enmity") * 2);
-		if ( friendlyScore > enemyScore ) {
-			socialAi[candidate].strategy = "friendly";
-		} else {
-			socialAi[candidate].strategy = "rivalry";
-			socialAi[candidate].weight = 2;
-		}
-	}
-	socialAi[romanceTargetKey].strategy = "romance";
-	socialAi[romanceTargetKey].weight = 20;
-	*/
-	
 	// Updating to targets lists
 	// Amount of required targets for each list
 	
@@ -378,6 +362,11 @@ window.setSocialAiCandidateGoals = function(socialAi) {
 	var covetTN = getCovetTN(actor);
 	var conquestTN = getConquestTN(actor);
 	var rivalTN = getRivalTN(actor);
+
+	var oldTs = [];
+	for ( var ts of ["allyTs","loveTs","covetTs","conquestTs","rivalTs"] ) {
+		oldTs[ts] = socialAi[ts];
+	}
 	
 	socialAi.allyTs = getTs(actor,allyTN,scorePotentialAlly);
 	socialAi.loveTs = getTs(actor,loveTN,scorePotentialLove);
@@ -390,6 +379,17 @@ window.setSocialAiCandidateGoals = function(socialAi) {
 		if ( potentialRivals.length > 0 ) {
 			if ( potentialRivals[0][1] >= 10 ) { // First potential rival's score passes threshold
 				socialAi.rivalTs = [potentialRivals[0]];
+			}
+		}
+	}
+	
+	// Old Ts have a chance of being passed over to the next day
+	for ( var ts of ["allyTs","loveTs","covetTs","conquestTs","rivalTs"] ) {
+		for ( var t of oldTs[ts] ) {
+			if ( socialAi[ts].includes(t) == false ) {
+				if ( limitedRandomInt(64) > 32 ) {
+					socialAi[ts].push(t);
+				}
 			}
 		}
 	}

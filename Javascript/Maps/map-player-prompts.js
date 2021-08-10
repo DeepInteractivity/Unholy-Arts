@@ -49,7 +49,6 @@ window.getButtonAcceptChallenge = function(challengingCharacter,stakes) {
 	// Initiate challenge battle, assign infamy
 	var bText = "<<l" + "ink [[Accept challenge|Scene]]>><<s" + "cript>>\n";
 	bText	 += "initiateNpcToPlayerAcceptedChallenge('" + challengingCharacter + "'," + stakes + ");\n";
-	bText	 += "State.variables." + challengingCharacter + ".changeInfamy(1);\n";
 	bText	 += "State.variables.compass.pushAllTimeToAdvance();\n";
 	bText	 += "State.variables.compass.finishPlayerPrompt();\n";
 	bText	 += "<</s" + "cript>><</l" + "ink>>"

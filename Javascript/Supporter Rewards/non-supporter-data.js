@@ -2,19 +2,14 @@
 // Creates pseudo-links to access supporter tools, except that they're locked
 // In the supporter version file, these are real links
 
+setup.quickstartLinkText = '<span style="color:firebrick">Locked: Get the Supporter Version on Patreon to access the Quickstart Menu.</span>';
+setup.cheatMenuLinkText = '<span style="color:firebrick">Locked: Get the Supporter Version on Patreon to access the Cheat Menu.</span>';
+
 window.SupToolsData = function() {
-	this.quickstartLinkText = '<span style="color:firebrick">Locked: You can access the Quickstart Menu on the supporter version.</span>';
-	this.cheatMenuLinkText = '<span style="color:firebrick">Locked: You can access the Cheat Menu on the supporter version.</span>';
 	
 	this.quickstartRoomPassage = "";
-	this.formatQuickstartRoom = function() {
-		this.quickstartRoomPassage = "How did you get here lmao";
-	}
 	
 	this.cheatMenuRoomPassage = "";
-	this.formatCheatMenuRoom = function() {
-		this.cheatMenuRoomPassage = "How did you get here lmao";
-	}
 }
 
 State.variables.supToolsData = new SupToolsData();

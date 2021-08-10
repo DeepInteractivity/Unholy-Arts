@@ -19,10 +19,14 @@ window.PersonalRoom = function() {
 	
 	this.autosavePossible = true;
 	
-	this.formatRoomText = function() {
+};
+
+// Methods
+PersonalRoom.prototype.formatRoomText = function() {
 		switch(this.roomState) {
 			case "main":
-				this.roomText = this.prMessages;
+				this.roomText = '<div style="text-align: center;">' + State.variables.daycycle.returnMonthDay() + "</div>\n"
+				this.roomText += this.prMessages;
 				if ( this.prMessages != "" ) { this.roomText += "\n"; }
 				this.roomText += '<<s' + 'cript>>attemptAutosave();<</s' + 'cript>> \ ';
 				this.roomText += "__Personal room__\nThe water flows quietly.\n";				// Description
@@ -33,13 +37,14 @@ window.PersonalRoom = function() {
 				this.roomText += this.getButtonsCharInfo() + "\n";
 				this.roomText += getButtonMerchants();
 				this.roomText += this.getButtonEquipment() + "\n";
-				this.roomText += this.getButtonCustomizeMood() + "\n";
+				this.roomText += this.getButtonActions() + "\n";
+				this.roomText += this.getButtonSetSexPreferences() + this.getButtonCustomizeMood() + "\n";
 				this.roomText += this.getButtonComparisonChart() + "\n"
 				if ( State.variables.chPlayerCharacter.studiedScrolls.length > 0 ) {
 					this.roomText += this.getButtonReadScrolls() + "\n";
 				}
 				this.roomText += "\n" + this.getButtonSettings() + '\n\n'; // Link to settings
-				this.roomText += '$supToolsData.cheatMenuLinkText'; // Cheats
+				this.roomText += setup.cheatMenuLinkText; // Cheats
 				this.roomText += getHotfixButton();
 				break;
 			case "charInfo": 																	// Char info screen
@@ -51,6 +56,9 @@ window.PersonalRoom = function() {
 				break;
 			case "equipment":
 				this.roomText = getEquipmentWindow();
+				break;
+			case "actions":
+				this.roomText = getActionsWindow();
 				break;
 			case "customizeMood":
 				this.roomText = getCustomizeMoodWindow();
@@ -66,10 +74,11 @@ window.PersonalRoom = function() {
 				this.roomText = this.getCandidatesComparisonPassage();
 				break;
 			case "endDayScreen":
+				this.roomText = '<div style="text-align: center;">' + State.variables.daycycle.returnMonthDay() + "</div>\n"
 				if ( this.newDayInfo == "" ) {
 					this.roomText = "Nothing relevant is happening.\n\n";
 				} else {
-					this.roomText = this.newDayInfo + "\n";
+					this.roomText += this.newDayInfo + "\n";
 					this.newDayInfo = "";
 				}
 				this.roomText += this.getButtonNewDay();
@@ -80,16 +89,15 @@ window.PersonalRoom = function() {
 	
 	// Buttons
 	
-	this.getButtonBackToMain = function() {
+PersonalRoom.prototype.getButtonBackToMain = function() {
 		var bText = "<<l" + "ink [[Go back|Personal Room]]>><<s" + "cript>>";;
 		bText 	 += "State.variables.personalRoom.roomState = 'main';\n";
 		bText	 += "<</s" + "cript>><</l" + "ink>>";
 		return bText;
 	}
-	this.getButtonsCharInfo = function() {
+PersonalRoom.prototype.getButtonsCharInfo = function() {
 		var bText = "";
-		for ( var character of this.availableCharsInfo ) {
-			
+		for ( var character of getActiveSimulationCharactersArray() ) {
 			bText += "<<l" + "ink [[" + gC(character).name + "|Personal Room]]>><<s" + "cript>>";
 			bText += "State.variables.personalRoom.roomState = 'charInfo';\n";
 			bText += "State.variables.personalRoom.checkedCharacter = '" + character + "';";
@@ -98,12 +106,15 @@ window.PersonalRoom = function() {
 			if ( gRelTypeAb(character,"chPlayerCharacter") ) {
 				bText += " (" + getRelTypeAbr(character,"chPlayerCharacter") + ")";
 			}
+			if ( getCandidatesKeysArray().includes(character) == false ) {
+				bText += " " + colorText("Guest","limegreen");
+			}
 			bText += "\n";
 		}
 		return bText;
 	}
 	
-	this.getButtonEquipment = function() {
+PersonalRoom.prototype.getButtonEquipment = function() {
 		var bText = "<<l" + "ink [[Equipment|Personal Room]]>><<s" + "cript>>";
 			bText += "State.variables.personalRoom.roomState = 'equipment';\n";
 			bText += "State.variables.selectedEquip = '';\n";
@@ -113,21 +124,39 @@ window.PersonalRoom = function() {
 		return bText;
 	}
 	
-	this.getButtonCustomizeMood = function() {
+PersonalRoom.prototype.getButtonActions = function() {
+		var bText = "<<l" + "ink [[Actions|Personal Room]]>><<s" + "cript>>";
+			bText += "State.variables.personalRoom.roomState = 'actions';\n";
+			bText += "State.variables.roomMessage = '';\n";
+			bText += "<</s" + "cript>><</l" + "ink>>";
+		return bText;
+	}
+	
+PersonalRoom.prototype.getButtonCustomizeMood = function() {
 		var bText = "<<l" + "ink [[Customize Player Mood|Personal Room]]>><<s" + "cript>>";
 			bText += "State.variables.personalRoom.roomState = 'customizeMood';\n";
 			bText += "<</s" + "cript>><</l" + "ink>>";
 		return bText;
 	}
 	
-	this.getButtonReadScrolls = function() {
+PersonalRoom.prototype.getButtonSetSexPreferences = function() {
+	var bText = ""
+	if ( State.variables.StVarsList.includes("chTts") == false ) {
+		bText = "''\!\!\!'' <<l" + "ink [[Set your character's sex preferences|Player Sex Preferences Customization Menu]]>><<s" + "cript>>";
+		bText += "setUpSexPreferencesMenu();\n";
+		bText += "<</s" + "cript>><</l" + "ink>>\n";
+	}
+	return bText;
+}
+	
+PersonalRoom.prototype.getButtonReadScrolls = function() {
 		var bText = "<<l" + "ink [[Check studied scrolls|Personal Room]]>><<s" + "cript>>";
 			bText += "State.variables.personalRoom.roomState = 'scrolls';\n";
 			bText += "State.variables.personalRoom.selectedScroll = 'none';\n";
 			bText += "<</s" + "cript>><</l" + "ink>>";
 		return bText;
 	}
-	this.getButtonReadScroll = function(scrollKey) {
+PersonalRoom.prototype.getButtonReadScroll = function(scrollKey) {
 		var bText = "<<l" + "ink [[" + setup.scrollsList[scrollKey].title + "|Personal Room]]>><<s" + "cript>>";
 			bText += "State.variables.personalRoom.roomState = 'scrolls';\n";
 			bText += "State.variables.personalRoom.selectedScroll = '" + scrollKey + "';\n";
@@ -135,40 +164,35 @@ window.PersonalRoom = function() {
 		return bText;
 	}
 	
-	this.getButtonComparisonChart = function() {
+PersonalRoom.prototype.getButtonComparisonChart = function() {
 		var bText = "<<l" + "ink [[Candidates Comparison|Personal Room]]>><<s" + "cript>>";
 			bText += "State.variables.personalRoom.roomState = 'candidatesComparison';\n";
 			bText += "<</s" + "cript>><</l" + "ink>>";
 		return bText;
 	}
 	
-	this.getButtonFinishDay = function() {
+PersonalRoom.prototype.getButtonFinishDay = function() {
 		var bText = "<<l" + "ink [[Rest and initiate a new day|Personal Room]]>><<s" + "cript>>";
 			bText += "State.variables.personalRoom.roomState = 'endDayScreen';\n";
 			bText += "State.variables.personalRoom.endDayEffects();\n";
 			bText += "<</s" + "cript>><</l" + "ink>>";
 		return bText;
 	}
+
 	
-	this.getButtonNewDay = function() {
+PersonalRoom.prototype.getButtonNewDay = function() {
 		return State.variables.eventsCalendar.getEndDayButton();
-		/* OLD
-		var bText = "<<l" + "ink [[Rest and initiate a new day|Map]]>><<s" + "cript>>\n";
-		bText	 += "State.variables.personalRoom.initializeNewDay();\n";
-		bText	 += "<</s" + "cript>><</l" + "ink>>";
-		return bText;
-		*/
 	}
 	
-	this.getButtonSettings = function() {
+PersonalRoom.prototype.getButtonSettings = function() {
 		var bText = '<<link [[Settings|Settings]]>' + '><<s' + 'cript>>State.variables.settings.setExitPassage("Personal Room");'
 				  + 'State.variables.settings.formatAllChoices();<</s' + 'cript>><</l' + 'ink>>';
 		return bText;
 	}
-	
+
 	// Character info
 	
-	this.getCharacterInfo = function(character) {
+PersonalRoom.prototype.getCharacterInfo = function(character) {
 		// <p><img src="img/logo.png" alt="alt text" style="float: right">Text here</p>
 		var iText = "<div><p>";
 		
@@ -314,6 +338,22 @@ window.PersonalRoom = function() {
 			}
 		}
 		
+		// Sexual preferences
+		if ( character == "chPlayerCharacter" || gC(character).domChar == "chPlayerCharacter" || gC(character).subChars.includes("chPlayerCharacter") || gC(character).egaChars.includes("chPlayerCharacter") ) {
+			var prefsDesc = "\n<div class='standardBox'>__" + gC(character).name + "'s sex preferences__:\n";
+			prefsDesc += textCharactersTastes(character) + "</div>";
+			iText += prefsDesc;
+		}
+		
+		// Virginities
+		if ( character == "chPlayerCharacter" || gC(character).domChar == "chPlayerCharacter" || gC(character).subChars.includes("chPlayerCharacter") || gC(character).egaChars.includes("chPlayerCharacter") ) {
+			var virginitiesText = getCharsVirginityChart(character);
+			if ( virginitiesText != "" ) {
+				iText += "\n<div class='standardBox'>__Virginities__:\n";
+				iText += virginitiesText + "</div>";
+			}
+		}
+		
 		iText += "</p></div>";
 		
 		
@@ -322,7 +362,7 @@ window.PersonalRoom = function() {
 	
 	// Scrolls
 	
-	this.getReReadScrollsPassage = function() {
+PersonalRoom.prototype.getReReadScrollsPassage = function() {
 		var passageText = "__Studied scrolls__:\n";
 		for ( var scr of gC("chPlayerCharacter").studiedScrolls ) {
 			passageText += "- " + this.getButtonReadScroll(scr) + "\n";
@@ -330,7 +370,7 @@ window.PersonalRoom = function() {
 		passageText += "\n" + this.getButtonBackToMain();
 		return passageText;
 	}
-	this.getReReadScrollPassage = function(scrollKey) {
+PersonalRoom.prototype.getReReadScrollPassage = function(scrollKey) {
 		var passageText = "__" + setup.scrollsList[scrollKey].title + "__:\n\n"
 						+ setup.scrollsList[scrollKey].getContent() + "\n\n"
 						+ this.getButtonReadScrolls() + "\n"
@@ -340,11 +380,19 @@ window.PersonalRoom = function() {
 
 	// Candidates Comparison|Personal
 	
-	this.getCandidatesComparisonPassage = function() {
+PersonalRoom.prototype.getCandidatesComparisonPassage = function() {
 		var passageText = "__Candidates Comparison__:\n";
 		passageText += '<table><tr><td>__Candidate__</td><td>__Merit__</td><td>__Infmy__</td><td>__Ph__</td><td>__Ag__</td><td>__Re__</td><td>__Wi__</td><td>__In__</td><td>__Pe__</td><td>__Ch__</td><td>__Em__</td><td>__Lu__</td></tr>';
 		for ( var charKey of getCandidatesKeysArray() ) {
 			passageText += '<tr><td>' + gC(charKey).getFormattedName() + '</td><td>' + gC(charKey).merit + '</td><td>' + gC(charKey).infamy + '</td><td>' + gC(charKey).physique.value + '</td><td>' + gC(charKey).agility.value + '</td><td>' + gC(charKey).resilience.value + '</td><td>' + gC(charKey).will.value + '</td><td>' + gC(charKey).intelligence.value + '</td><td>' + gC(charKey).perception.value + '</td><td>' + gC(charKey).charisma.value + '</td><td>' + gC(charKey).empathy.value + '</td><td>' + gC(charKey).luck.value + '</td></tr>';
+		}
+		if ( State.variables.activeSimulationCharacters.length > 6 ) {
+			passageText += '<tr><td>' + "Guests" + '</td><td>' + '</td><td>' + '</td><td>' + '</td><td>' + '</td><td>' + '</td><td>' + '</td><td>' + '</td><td>' + '</td><td>' + '</td><td>' + '</td><td>' + '</td></tr>';
+			for ( var charKey of getActiveSimulationCharactersArray() ) {
+				if ( getCandidatesKeysArray().includes(charKey) == false ) {
+					passageText += '<tr><td>' + gC(charKey).getFormattedName() + '</td><td>' + gC(charKey).merit + '</td><td>' + gC(charKey).infamy + '</td><td>' + gC(charKey).physique.value + '</td><td>' + gC(charKey).agility.value + '</td><td>' + gC(charKey).resilience.value + '</td><td>' + gC(charKey).will.value + '</td><td>' + gC(charKey).intelligence.value + '</td><td>' + gC(charKey).perception.value + '</td><td>' + gC(charKey).charisma.value + '</td><td>' + gC(charKey).empathy.value + '</td><td>' + gC(charKey).luck.value + '</td></tr>';
+				}
+			}
 		}
 		passageText += '</table>\n';
 		passageText += this.getButtonBackToMain();
@@ -353,7 +401,7 @@ window.PersonalRoom = function() {
 
 	// Logic
 	
-	this.initPersonalRoom = function() {
+PersonalRoom.prototype.initPersonalRoom = function() {
 		State.variables.compass.currentMap = "none";
 		State.variables.eventsCalendar.stablishTomorrowsEvent();
 		State.variables.personalRoom.autosavePossible = true;
@@ -361,9 +409,21 @@ window.PersonalRoom = function() {
 		spawnMerchants();
 		npcsBuyItems();
 		npcsEquipBondage();
+		
+		State.variables.sc.cleanScene();
+		refreshUIbars();
+		removeLeftOverData();
 	}
 	
-	this.endDayEffects = function() {
+window.removeLeftOverData = function() {
+	if ( State.variables.selectStatListBoxes != undefined ) {
+		delete State.variables.selectStatListBoxes;
+	}
+}
+	
+PersonalRoom.prototype.endDayEffects = function() {
+		State.variables.logL1 = [];
+		State.variables.eventsCalendar.stablishTomorrowsEvent();
 		
 		State.variables.personalRoom.autosavePossible = false;
 		
@@ -374,6 +434,8 @@ window.PersonalRoom = function() {
 			gC(character).mood.resetMood(); // Moods
 			
 			gC(character).studiedScrollToday = false;
+			
+			gC(character).cbl = [];
 		}
 		
 		// Set time
@@ -404,10 +466,11 @@ window.PersonalRoom = function() {
 				gC(character).daysWithoutSex += 1;
 				gC(character).sexScenesToday = 0;
 			}
+			delete gC(character).dayTags;
 		}
 
 		// Infamy
-		for ( var charKey of getCandidatesKeysArray() ) {
+		for ( var charKey of getActiveSimulationCharactersArray() ) {
 			var infamyChange = ((gC(charKey).infamy - (gC(charKey).infamy % 10)) / 10 ) + 1;
 			gC(charKey).changeInfamy(-infamyChange);
 			if ( gC(charKey).globalAi.hasOwnProperty("attackedToday") ) {
@@ -415,15 +478,6 @@ window.PersonalRoom = function() {
 			}
 		}
 
-		// Equipment
-		for ( var equip of State.variables.equipmentList ) {
-			if ( equip.days > 1 ) {
-				equip.days--;
-			} else if ( equip.days == 1 ) {
-				unequipObject(equip.id);
-			}
-		}
-		
 		// Altered States
 		for ( var charKey of getActiveSimulationCharactersArray() ) {
 			for ( var as of gC(charKey).alteredStates ) {
@@ -436,16 +490,27 @@ window.PersonalRoom = function() {
 			}
 			gC(charKey).cleanStates();
 		}
-		
+
+		// Equipment
+		for ( var equip of State.variables.equipmentList ) {
+			if ( equip.days > 1 ) {
+				equip.days--;
+			} else if ( equip.days == 1 ) {
+				unequipObject(equip.id);
+			}
+		}
+				
 		// Fix stats
 		for ( var character of getActiveSimulationCharactersArray() ) {
 			fixCharacterStatModifiers(character);
 		}
 		
+		checkCharListForSexTastesRebalance(getActiveSimulationCharactersArray());
+		
 		// Despawn merchants
 		State.variables.currentMerchants = [];
 	}
-	this.endDayRelationMoodEffects = function() {
+PersonalRoom.prototype.endDayRelationMoodEffects = function() {
 		var relTypesToFinish = [];
 		var i = 0;
 		for ( var mood of ["friendly","intimate","flirty","aroused","dominant","submissive","bored","angry"] ) {
@@ -494,13 +559,13 @@ window.PersonalRoom = function() {
 		}
 	}
 	
-	this.initializeNewDay = function() {
+PersonalRoom.prototype.initializeNewDay = function() {
 		
 		// Temple period
 		initTrainingPeriodPassionTemple();
 		
 		// AI social and training priorities
-		for ( var character of arrayMinusA(getCandidatesKeysArray(),"chPlayerCharacter") ) {
+		for ( var character of arrayMinusA(getActiveSimulationCharactersArray(),"chPlayerCharacter") ) {
 			setSocialAiCandidateGoals(gC(character).socialAi);
 			setTrainingGoals(character);
 		}
@@ -508,19 +573,90 @@ window.PersonalRoom = function() {
 		// Clean compass
 		State.variables.compass.debugInfo = "";
 	}
-};
+	
 
-// Customize mood functions
+// Sex preferences
+
+window.checkCharListForSexTastesRebalance = function(charList) {
+	for ( var charKey of charList ) {
+		if ( limitedRandomInt(16) < 4 ) {
+			rebalanceCharsSexTastes(charKey);
+		}
+	}
+}
+window.rebalanceCharsSexTastes = function(charKey) {
+	var totalPoints = 0;
+	var pointsThreshold = 3600;
+	// Is rebalance required?
+	for ( var t in gC(charKey).tastes ) {
+		if ( gC(charKey).tastes[t] instanceof weightedElement ) {
+			totalPoints += gC(charKey).tastes[t].w
+		}
+	}
+	// Execute rebalance
+	if ( totalPoints > pointsThreshold ) {
+		var chosenTastes = [randomFromWeightedList(gC(charKey).tastes),randomFromWeightedList(gC(charKey).tastes),randomFromWeightedList(gC(charKey).tastes),randomFromWeightedList(gC(charKey).tastes),randomFromWeightedList(gC(charKey).tastes)];
+		for ( var taste of chosenTastes ) {
+			if ( gC(charKey).tastes[taste].w > 30 ) {
+				gC(charKey).tastes[taste].w -= 5;
+			}
+		}
+	}
+	rankSexPreferences(gC(charKey).tastes);
+}
+
+window.setUpSexPreferencesMenu = function() {
+	State.variables.chosenRankTwoTastes = ["","","",""];
+	State.variables.chosenRankOneTastes = ["","","","","","","",""];
+}
+window.processSexPreferencesMenu = function() {
+	var rankTwoTastes = [];
+	var rankOneTastes = [];
+	for ( var t of State.variables.chosenRankTwoTastes ) {
+		if ( rankTwoTastes.includes(t) == false ) {
+			rankTwoTastes.push(t);
+		}
+	}
+	for ( var t of State.variables.chosenRankOneTastes ) {
+		if ( rankTwoTastes.includes(t) == false && rankOneTastes.includes(t) == false ) {
+			rankOneTastes.push(t);
+		}
+	}
+	for ( var t of rankTwoTastes ) {
+		gC("chPlayerCharacter").tastes[t].w += 40;
+	}
+	for ( var t of rankOneTastes ) {
+		gC("chPlayerCharacter").tastes[t].w += 20;
+	}
+	delete State.variables.chosenRankTwoTastes;
+	delete State.variables.chosenRankOneTastes;
+	rebalanceCharsSexTastes("chPlayerCharacter");
+	State.variables.StVarsList.push("chTts");
+}
+
+// Windows
 window.getEquipmentWindow = function() {
+	var shownItems = [];
+	var displayedChars = ["chPlayerCharacter"];
+	if ( gC("chPlayerCharacter").domChar != null ) { displayedChars.push(gC("chPlayerCharacter").domChar); }
+	if ( gC("chPlayerCharacter").egaChars.length > 0 ) { displayedChars = displayedChars.concat(gC("chPlayerCharacter").egaChars); }
+	if ( gC("chPlayerCharacter").subChars.length > 0 ) { displayedChars = displayedChars.concat(gC("chPlayerCharacter").subChars); }
 	var wText = '<<removeclass "#right-ui-bar" "stowed">> \ ' + "__Equipment Menu__\n\n";
 	if ( State.variables.roomMessage != "" ) {
 		wText += State.variables.roomMessage + "\n\n";
 	}
 			// Owned items equipped on someone
 	wText += "__Equipped items__:\n";
+	
+	for ( var cK of displayedChars ) {
+		var cKtext = getTextEquippedItemsOnChar(cK);
+		if ( cKtext != "" ) { wText += cKtext + "\n"; }
+		shownItems = shownItems.concat(getItemIDsEquippedOnChar(cK));
+	}
 	for ( var equip of State.variables.equipmentList ) {
-		if ( equip.owner == "chPlayerCharacter" ) {
+		if ( equip.owner == "chPlayerCharacter" && shownItems.includes(equip.id) == false ) {
 			if ( equip.equippedOn != null ) {
+				shownItems.push(equip.id);
 				var equipData = getEquipDataById(equip.id);
 				wText += equipData.name + getItemDescriptionById(equip.id) + " - Equipped on " + gC(equip.equippedOn).getFormattedName() + ". Days: " + equip.days
 						// Button to unequip item
@@ -538,6 +674,8 @@ window.getEquipmentWindow = function() {
 			wText += '<<radiobutton "$selectedEquip" "' + equip.id + '" autocheck>> ' + equipData.name + getItemDescriptionById(equip.id) + '\n';
 		}
 	}
+
+
 			// Equippable characters
 	wText += "\n__Characters__:\n";
 	wText += '<<radiobutton "$selectedChar" "chPlayerCharacter" autocheck>> ' + gC("chPlayerCharacter").getFormattedName() + "\n";
@@ -557,6 +695,140 @@ window.getEquipmentWindow = function() {
 			+ "<</s" + "cript>><</l" + "ink>>\n";
 	return wText;
 }
+window.getTextEquippedItemsOnChar = function(charKey) {
+	var wText = "";
+	for ( var bpi in gC(charKey).body ) {
+		if ( gC(charKey).body[bpi] instanceof Bodypart ) {
+			var bp = gC(charKey).body[bpi];
+			if ( bp.bondage != -1 ) {
+				var equip = State.variables.equipmentList[bp.bondage];
+				var equipData = getEquipDataById(bp.bondage);
+				wText += equipData.name + getItemDescriptionById(equip.id) + " - Equipped on " + gC(equip.equippedOn).getFormattedName() + " by " + gC(equip.owner).getFormattedName() + ". Days: " + equip.days;
+				if ( equip.owner == "chPlayerCharacter" ) {
+					// Button to unequip item
+					wText += " <<l" + "ink [[Unequip|Personal Room]]>><<s" + "cript>>"
+						   + "unequipObject(" + equip.id + ");\n"
+						   + "<</s" + "cript>><</l" + "ink>>\n";
+				} else {
+					wText += "\n";
+				}					
+			}
+		}
+	}
+	return wText;
+}
+window.getItemIDsEquippedOnChar = function(charKey) {
+	var bondageList = [];
+	for ( var bpi in gC(charKey).body ) {
+		if ( gC(charKey).body[bpi] instanceof Bodypart ) {
+			var bp = gC(charKey).body[bpi];
+			if ( bp.bondage != -1 ) {
+				bondageList.push(parseInt(bp.bondage));
+			}
+		}
+	}
+	return bondageList;
+}
+
+window.getActionsWindow = function() {
+	var wText = '<<removeclass "#right-ui-bar" "stowed">> \ ' + "__Actions Menu__\n"
+			  + "This window will display information about all actions known by you or the other Candidates.\n\n";
+	// Collect actions
+	var actionsList = [];
+	for ( var cK of getActiveSimulationCharactersArray() ) {
+		for ( var act of gC(cK).saList ) {
+			if ( actionsList.includes(act) == false ) {
+				actionsList.push(act);
+			}
+		}
+	}
+	// Order actions
+	actionsList = orderActionsList(actionsList);
+	// Display actions list
+	for ( var act of actionsList ) {
+		var actDesc = setup.saList[act].description;
+		wText += "\- <span title=" + '"' + actDesc + '">' + setup.saList[act].name + "</span>^^(?)^^" ;
+		// Sex/Battle scene icons
+		if ( setup.saList[act].tags.includes("ss") ) {
+			wText += colorText(" Sex","lightpink");
+		}
+		if ( setup.saList[act].tags.includes("bs") ) {
+			wText += colorText(" Btl","coral");
+		}
+		// Learned icon
+		if ( gC("chPlayerCharacter").saList.includes(act) ) {
+			wText += colorText(" Learned","yellowgreen");
+		}
+		if ( setup.saList[act].tags.includes("ss") ) {
+			if ( setup.saList[act].flavorTags.includes("position") ) {
+				// Positions
+				wText += colorText(" Pos","burlywood");
+			} else if ( setup.saList[act].flavorTags.includes("continuedAction") ) {
+				// Continued actions
+				wText += colorText(" Con","burlywood");
+			} else {
+				// Basic actions
+				wText += colorText(" Bas","burlywood");
+			}
+		} else {
+			if ( setup.saList[act].affinities.includes("pounce") ) {
+				// Pounce
+				wText += colorText(" Pnc","goldenrod");
+			} else {
+				// Everything else
+				wText += colorText(" Bas","goldenrod");
+			}
+		}
+		wText += "\n";
+	}
+	// Exit menu button
+	wText += "\n<<l" + "ink [[Exit equipment menu|Personal Room]]>><<s" + "cript>>"
+			+ "State.variables.personalRoom.roomState = 'main';\n"
+			+ "<</s" + "cript>><</l" + "ink>>\n";
+	return wText;
+}
+window.orderActionsList = function(actList) {
+	var nActList = [];
+	var startingActions = [];
+	var sSingleActions = [];
+	var sContinuedActions = [];
+	var sPositionActions = [];
+	var bNormalActions = [];
+	var bPounceActions = [];
+	
+	for ( var act of actList ) {
+		if ( act == "doNothing" || act == "struggle" ) {
+			startingActions.push(act);
+		} else {
+			if ( setup.saList[act].tags.includes("ss") ) {
+				// Sex actions
+				if ( setup.saList[act].flavorTags.includes("position") ) {
+					// Positions
+					sPositionActions.push(act);
+				} else if ( setup.saList[act].flavorTags.includes("continuedAction") ) {
+					// Continued actions
+					sContinuedActions.push(act);
+				} else {
+					// Basic actions
+					sSingleActions.push(act);
+				}
+			} else {
+				// Battle actions
+				if ( setup.saList[act].affinities.includes("pounce") ) {
+					// Pounce
+					bPounceActions.push(act);
+				} else {
+					// Everything else
+					bNormalActions.push(act);
+				}
+			}
+		}
+	}
+	
+	nActList = startingActions.concat(sSingleActions).concat(sContinuedActions).concat(sPositionActions).concat(bNormalActions).concat(bPounceActions);
+	return nActList;
+}
+
 window.attemptEquipSelectedItem = function() {
 	var resultMessage = "";
 	if ( State.variables.selectedEquip != "" && State.variables.selectedChar != "" ) {
@@ -613,6 +885,32 @@ window.updatePlayerCustomMoods = function() {
 		}
 		i++;
 	}
+}
+
+// Virginities
+window.getCharsVirginityChart = function(charKey) {
+	var cText = "";
+	for ( var it in gC(charKey).virginities ) {
+		if ( gC(charKey).virginities[it] instanceof Virginity ) {
+			var virginity = gC(charKey).virginities[it];
+			if ( virginity.taken && virginity.enabled && gC(charKey).body.hasOwnProperty(virginity.type) ) {
+				if ( cText != "" ) { cText += "\n"; }
+				cText += `${virginity.name}: `;
+				switch(virginity.ctxt) {
+					case "bs":
+						cText += `Taken by ${virginity.takerName} during battle.`;
+						break;
+					case "forced":
+						cText += `Taken by ${virginity.takerName}.`
+						break;
+					case "given":
+						cText += `Given to ${virginity.takerName}.`
+						break;
+				}
+			}
+		}
+	}
+	return cText;
 }
 
 // Merchants
@@ -795,36 +1093,16 @@ window.npcsEquipBondage = function() {
 				}
 				activeSubChars = newActiveSubChars;
 			}
-			/*
-			for ( var subChar of activeSubChars ) {
-				var days = gRelTypeAb(character,subChar).days;
-				var validItemsOnTarget = getItemListEquippableOnChar(subChar,usableBondage);
-				var moreBondage = true;
-				for ( var item of validItemsOnTarget ) {
-					if ( mayEquipmentBePut(item,subChar) ) {
-						equipObjectOnWearer(item,subChar,days);
-						if ( subChar == "chPlayerCharacter" ) {
-							State.variables.personalRoom.prMessages += gC(character).getFormattedName() + " has locked " + getEquipDataById(item).name + " on " + gC("chPlayerCharacter").getFormattedName() + ".\n";
-						}
-					}
-				}
-				usableBondage = getCharsUnusedBondage(character);
-			}
-			*/
 		}
 	}
 }
-/*
-window.checkSubNeedsMoreBondage = function(actor,target) {
-	
-}
-*/
 
 // Engine
 
 State.variables.personalRoom = new PersonalRoom();
 
 window.attemptAutosave = function() {
+	State.variables.compass.cleanLeftoverData();
 	State.variables.personalRoom.prMessages = "";
 	if ( gSettings().autosaving == "enable" && State.variables.personalRoom.autosavePossible ) {
 		if ( State.variables.personalRoom.lastAutosaveDay != State.variables.daycycle.day ) {

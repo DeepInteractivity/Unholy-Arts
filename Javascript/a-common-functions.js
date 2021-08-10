@@ -79,7 +79,7 @@ window.dickWord = function() {
 	return randomFromList(["dick","dick","dick","dick","dick","cock","cock","cock","prick","shaft","member","penis"]);
 }
 window.pussyWord = function() {
-	return randomFromList(["pussy","pussy","pussy","pussy","pussy","cherry","cherry","cunt","cunt","snatch","clam","kitty"]);
+	return randomFromList(["pussy","pussy","pussy","pussy","pussy","cherry","cherry","snatch","clam","kitty"]);
 }
 window.boobsWord = function() {
 	return randomFromList(["breasts","breasts","breasts","breasts","chest","chest","bosom","bust"]);
@@ -92,7 +92,7 @@ window.colorText = function(text,color) {
 	var newText = '<span style="color:' + color + '">';
 	newText += text;
 	newText += '</' + 'span>';
-	// <span style="color:lightcoral">Lust:</span>
+	// <span style="color:lightcoral">Lust:</span>, khaki, purple, darkred, lightcoral
 	return newText;
 }
 window.textLustDamage = function(damage) {
@@ -105,7 +105,7 @@ window.textEnergyDamage = function(damage) {
 	return colorText((damage.toFixed(2) + " energy damage"),"limegreen");
 }
 window.textSocialdriveDamage = function(damage) {
-	return colorText((damage.toFixed(2) + " energy damage"),"khaki");
+	return colorText((damage.toFixed(2) + " social drive damage"),"khaki");
 }
 
 window.textWillpowerPoints = function(damage) {
@@ -115,7 +115,7 @@ window.textEnergyPoints = function(damage) {
 	return colorText((damage.toFixed(2) + " energy points"),"limegreen");
 }
 window.textSocialdrivePoints = function(damage) {
-	return colorText((damage.toFixed(2) + " energy points"),"khaki");
+	return colorText((damage.toFixed(2) + " social drive points"),"khaki");
 }
 
 window.getBarName = function(barType) {
@@ -130,10 +130,10 @@ window.getBarName = function(barType) {
 
 State.variables.customRoomIntro = "";
 window.setRoomIntro = function(mapName,roomName) {
-	var room = State.variables[mapName].rooms[roomName];
-	var intro = "<div class='standardBox'>__" + room.title + "__";
-	if ( room.getDescription() != "" ) {
-		intro += "\n" + room.getDescription();
+	//var room = State.variables[mapName].rooms[roomName];
+	var intro = "<div class='standardBox'>__" + setup[mapName][roomName].title + "__";
+	if ( setup[mapName][roomName].getDescription() != "" ) {
+		intro += "\n" + setup[mapName][roomName].getDescription();
 	}
 	intro += '</div>';
 	State.variables.customRoomIntro = intro;
@@ -168,6 +168,9 @@ window.getCharNames = function(charKeysList) {
 		if ( charKeysList.length == i ) {
 			//text += ".";
 		}
+		else if ( i == charKeysList.length - 1 ) {
+			text += " and ";
+		}
 		else if ( i < charKeysList.length ) {
 			text += ", ";
 		}
@@ -197,6 +200,12 @@ window.stringArrayToTextMinusAnd = function(stringArray) {
 	return text;
 }
 
+window.addToStVarsList = function(v) {
+	if ( State.variables.StVarsList.includes(v) == false ) {
+		State.variables.StVarsList.push(v);
+	}
+}
+
 config.saves.isAllowed = function () {
 	if (tags().contains("saveAllowed")) {
 		return true;
@@ -210,7 +219,15 @@ config.saves.isAllowed = function () {
 	// These characters will get their stats, bars and relations updated at the end of each day, for instance
 State.variables.activeSimulationCharacters = ["chPlayerCharacter","chVal","chNash","chClaw","chAte","chMir"];
 window.getActiveSimulationCharactersArray = function() {
-	return State.variables.activeSimulationCharacters;
+	var actSimChars = [];
+	for ( var ch of State.variables.activeSimulationCharacters ) {
+		actSimChars.push(ch);
+	}
+	return actSimChars;
+}
+window.getRandomizedActiveSimulationCharactersArray = function() {
+	var actSimChars = getActiveSimulationCharactersArray();
+	return shuffleArray(actSimChars);
 }
 window.getCandidatesKeysArray = function() {
 	return ["chPlayerCharacter","chVal","chNash","chClaw","chAte","chMir"];
@@ -296,6 +313,31 @@ window.weightedElement = function(content,weight) {
 	this.content = content;
 	this.w = weight;
 };
+class weightedRankedElement extends weightedElement {
+	constructor(content,weight) {
+		super(content,weight);
+		this.r = 0;
+	}
+}
+class weightedDefinedRankedElement extends weightedElement {
+	constructor(content,weight,rank) {
+		super(content,weight);
+		this.r = rank;
+	}
+}
+window.weightedListLength = function(wL) {
+	var l = 0;
+	for ( var el in wL ) {
+		if ( wL[el] instanceof weightedElement ) {
+			l++;
+		} /*else if ( wL[el] instanceof weightedRankedElement ) { 
+			l++;
+		} else if ( wL[el] instanceof weightedDefinedRankedElement ) {
+			l++;
+		}*/
+	}
+	return l;
+}
 
 window.getWeightedListTotalValue = function(wList) {
 	var fullWeight = 0;
@@ -345,9 +387,12 @@ window.randomFromWeightedListPercentThreshold = function(wList,threshold) {
 		if ( item.w > highest ) { highest = item.w; }
 	}
 	// Remove unvalid options
+		var i = 0;
 	for ( var item of wList ) {
 		if ( item.w >= (highest * threshold) ) {
-			newWlist.push(item);
+			//newWlist.push(item);
+			newWlist[i] = item;
+			i++;
 		}
 	}
 	// Get random option
@@ -363,44 +408,130 @@ window.listIntoWeightedList = function(list) {
 
 window.createPreferencesWeightedList = function() {
 	var wl = new weightedList();
-	wl.foreplay = new weightedElement("foreplay",100);
-	wl.oral = new weightedElement("oral",100);
-	wl.fullsex = new weightedElement("fullsex",300);
-	wl.talk = new weightedElement("talk",100);
-	wl.useDick = new weightedElement("useDick",100);
-	wl.usePussy = new weightedElement("usePussy",100);
-	wl.useAnus = new weightedElement("useAnus",90);
-	wl.useBreasts = new weightedElement("useBreasts",100);
-	wl.useMouth = new weightedElement("useMouth",100);
-	wl.useEyes = new weightedElement("useEyes",100);
-	wl.useHands = new weightedElement("useHands",100);
-	wl.useLegs = new weightedElement("useLegs",100);
-	wl.useTail = new weightedElement("useTail",100);
-	wl.targetDick = new weightedElement("targetDick",100);
-	wl.targetPussy = new weightedElement("targetPussy",100);
-	wl.targetAnus = new weightedElement("targetAnus",90);
-	wl.targetBreasts = new weightedElement("targetBreasts",100);
-	wl.targetMouth = new weightedElement("targetMouth",100);
-	wl.targetEyes = new weightedElement("targetEyes",100);
-	wl.targetHands = new weightedElement("targetHands",100);
-	wl.targetLegs = new weightedElement("targetLegs",100);
-	wl.targetTail = new weightedElement("targetTail",100);
-	wl.top = new weightedElement("top",100);
-	wl.bottom = new weightedElement("bottom",100);
-	wl.domination = new weightedElement("domination",100);
-	wl.submission = new weightedElement("submission",100);
-	wl.bondage = new weightedElement("bondage",100);
-	wl.teasing = new weightedElement("teasing",100);
-	wl.hypnosis = new weightedElement("hypnosis",100);
-	wl.charm = new weightedElement("charm",100);
-	wl.romantic = new weightedElement("romantic",100);
-	wl.usePain = new weightedElement("usePain",40);
-	wl.receivePain = new weightedElement("receivePain",40);
-	wl.denial = new weightedElement("denial",40);
-	wl.position = new weightedElement("position",100);
-	wl.continuedAction = new weightedElement("continuedAction",100);
+	wl.foreplay = new weightedRankedElement("foreplay",100);
+	wl.oral = new weightedRankedElement("oral",100);
+	wl.fullsex = new weightedRankedElement("fullsex",100);
+	wl.talk = new weightedRankedElement("talk",100);
+	wl.useDick = new weightedRankedElement("useDick",100);
+	wl.usePussy = new weightedRankedElement("usePussy",100);
+	wl.useAnus = new weightedRankedElement("useAnus",100);
+	wl.useBreasts = new weightedRankedElement("useBreasts",100);
+	wl.useMouth = new weightedRankedElement("useMouth",100);
+	wl.useEyes = new weightedRankedElement("useEyes",100);
+	wl.useHands = new weightedRankedElement("useHands",100);
+	wl.useLegs = new weightedRankedElement("useLegs",100);
+	wl.useTail = new weightedRankedElement("useTail",100);
+	wl.targetDick = new weightedRankedElement("targetDick",100);
+	wl.targetPussy = new weightedRankedElement("targetPussy",100);
+	wl.targetAnus = new weightedRankedElement("targetAnus",100);
+	wl.targetBreasts = new weightedRankedElement("targetBreasts",100);
+	wl.targetMouth = new weightedRankedElement("targetMouth",100);
+	wl.targetEyes = new weightedRankedElement("targetEyes",100);
+	wl.targetHands = new weightedRankedElement("targetHands",100);
+	wl.targetLegs = new weightedRankedElement("targetLegs",100);
+	wl.targetTail = new weightedRankedElement("targetTail",100);
+	wl.top = new weightedRankedElement("top",100);
+	wl.bottom = new weightedRankedElement("bottom",100);
+	wl.domination = new weightedRankedElement("domination",100);
+	wl.submission = new weightedRankedElement("submission",100);
+	wl.bondage = new weightedRankedElement("bondage",100);
+	wl.teasing = new weightedRankedElement("teasing",100);
+	wl.hypnosis = new weightedRankedElement("hypnosis",100);
+	wl.draining = new weightedRankedElement("draining",100);
+	wl.charm = new weightedRankedElement("charm",100);
+	wl.romantic = new weightedRankedElement("romantic",100);
+	wl.usePain = new weightedRankedElement("usePain",100);
+	wl.receivePain = new weightedRankedElement("receivePain",100);
+	wl.denial = new weightedRankedElement("denial",100);
+	wl.position = new weightedRankedElement("position",100);
+	wl.continuedAction = new weightedRankedElement("continuedAction",100);
 	
 	return wl;
+}
+window.orderWeightedList = function(wL) {
+	var orderedList = [];
+	var chw = -10000; // Current highest weight
+	var che = ""; // Current highest element
+	while ( orderedList.length < (weightedListLength(wL) - 2) ) {
+		for ( var we in wL ) {
+			if ( orderedList.includes(wL[we].content) == false ) {
+				if ( wL[we].w > chw && wL[we].content != "position" && wL[we].content != "continuedAction" ) {
+					chw = wL[we].w;
+					che = wL[we].content;
+				}
+			}
+		}
+		
+		orderedList.push(che);
+		chw = -10000;
+		che = "";
+	}
+	orderedList.push("position");
+	orderedList.push("continuedAction");
+	return orderedList;
+}
+window.rankSexPreferences = function(wL) {
+	var orderedList = orderWeightedList(wL);
+	var rank2l = 4;
+	var rank1l = 8;
+	var i = 0;
+	
+	while ( i < rank2l ) {
+		wL[orderedList[i]].r = 2;
+		i++;
+	}
+	while ( i < (rank2l+rank1l) ) {
+		wL[orderedList[i]].r = 1;
+		i++;
+	}
+	while ( i < orderedList.length ) {
+		wL[orderedList[i]].r = 0;
+		i++;
+	}
+}
+
+setup.basePreferencesMultipliers = [];
+setup.basePreferencesMultipliers.foreplay = 1;
+setup.basePreferencesMultipliers.oral = 1;
+setup.basePreferencesMultipliers.fullsex = 3;
+setup.basePreferencesMultipliers.talk = 1;
+setup.basePreferencesMultipliers.useDick = 1.2;
+setup.basePreferencesMultipliers.usePussy = 1.2;
+setup.basePreferencesMultipliers.useAnus = 1;
+setup.basePreferencesMultipliers.useBreasts = 1;
+setup.basePreferencesMultipliers.useMouth = 1;
+setup.basePreferencesMultipliers.useEyes = 1;
+setup.basePreferencesMultipliers.useHands = 1;
+setup.basePreferencesMultipliers.useLegs = 1;
+setup.basePreferencesMultipliers.useTail = 1;
+setup.basePreferencesMultipliers.targetDick = 1.2;
+setup.basePreferencesMultipliers.targetPussy = 1.2;
+setup.basePreferencesMultipliers.targetAnus = 1;
+setup.basePreferencesMultipliers.targetBreasts = 1;
+setup.basePreferencesMultipliers.targetMouth = 1;
+setup.basePreferencesMultipliers.targetEyes = 1;
+setup.basePreferencesMultipliers.targetHands = 1;
+setup.basePreferencesMultipliers.targetLegs = 1;
+setup.basePreferencesMultipliers.targetTail = 1;
+setup.basePreferencesMultipliers.top = 1;
+setup.basePreferencesMultipliers.bottom = 1;
+setup.basePreferencesMultipliers.domination = 1;
+setup.basePreferencesMultipliers.submission = 1;
+setup.basePreferencesMultipliers.bondage = 1;
+setup.basePreferencesMultipliers.teasing = 1;
+setup.basePreferencesMultipliers.hypnosis = 1;
+setup.basePreferencesMultipliers.draining = 1;
+setup.basePreferencesMultipliers.charm = 1;
+setup.basePreferencesMultipliers.romantic = 1;
+setup.basePreferencesMultipliers.usePain = 0.7;
+setup.basePreferencesMultipliers.receivePain = 0.7;
+setup.basePreferencesMultipliers.denial = 0.7;
+setup.basePreferencesMultipliers.position = 1;
+setup.basePreferencesMultipliers.continuedAction = 1;
+
+window.getFinalPreferenceWeight = function(charKey,pref) {
+	var w = gC(charKey).tastes[pref].w * setup.basePreferencesMultipliers[pref];
+	return w;
 }
 
 window.getFirstElementFromWeightedList = function(wList) {
@@ -492,7 +623,12 @@ window.getHotfixButton = function() {
 	// This button will be used to apply hotfixes to saved games, when required. It may be found at the personal room screen.
 	var bText = "\n\n<<l" + "ink [[Apply Hotfix|Personal Room]]>><<s" + "cript>>\n";
 		bText 	 += "applyHotfix();\n";
-		bText	 += "<</s" + "cript>><</l" + "ink>> BEWARE: This hotfix unequips all items and finishes all special relationships. It should only be used ONCE if any character has equipped any blindfold or used flaunt, which, if you have played past day 11, has most likely happened.";
+		bText	 += "<</s" + "cript>><</l" + "ink>> Apply this hotfix at least once if you started this playthrough before version 0.2.10e.\n";
+		bText	 += "<<l" + "ink [[Reset items and bodyparts|Personal Room]]>><<s" + "cript>>\n";
+		bText 	 += "finishAllAlteredStates(getActiveSimulationCharactersArray());\n";
+		bText 	 += "fixEquipmentAndParts();\n";
+		bText 	 += "unlockAllBodyparts(getActiveSimulationCharactersArray());\n";
+		bText	 += "<</s" + "cript>><</l" + "ink>> This option unequips all items and resets the state of all bodyparts to 'free'. Use it only if any character's bodypart was bugged in an incorrect state.\n"
 	//var	bText	  = "\n\n<<l" + "ink [[Apply lag fix|Personal Room]]>><<s" + "cript>>\n";
 	//	bText 	 += "applyLagFix();\n";
 	//	bText	 += "<</s" + "cript>><</l" + "ink>>\n\n";
@@ -501,10 +637,97 @@ window.getHotfixButton = function() {
 }
 
 window.applyHotfix = function() {
-	takeOffAllItems();
-	finishAllRelationships();
-	resetStatModifiers();
-	resetRelationshipModifiers();
+	gC("chMir").socialAi = new NpcSocialAi("chMir");
+	gC("chNash").socialAi = new NpcSocialAi("chNash");
+	gC("chClaw").socialAi = new NpcSocialAi("chClaw");
+	gC("chVal").socialAi = new NpcSocialAi("chVal");
+	gC("chAte").socialAi = new NpcSocialAi("chAte");
+	
+	State.variables.personalRoom.endDayEffects = function() {
+		
+		State.variables.personalRoom.autosavePossible = false;
+		
+		// New day
+		State.variables.daycycle.addDays(1);
+		for ( var character of getActiveSimulationCharactersArray() ) {
+			gC(character).restoreBars(); // Energy bars
+			gC(character).mood.resetMood(); // Moods
+			
+			gC(character).studiedScrollToday = false;
+			
+			gC(character).cbl = [];
+		}
+		
+		// Set time
+		State.variables.daycycle.hours = State.variables.simCycPar.templeNewDayTime;
+		State.variables.daycycle.minutes = 0;
+		
+		// Level up stats
+		for ( var character of getActiveSimulationCharactersArray() ) {
+			//			for ( var stat of State.variables.baseStats ) {
+			for ( var stat of setup.baseStats ) {
+				if ( gC(character)[stat].tryLevelUp() ) {
+					// Notify level up
+					if ( character == "chPlayerCharacter" ) {
+						this.newDayInfo += "Your " + stat + " has increased to " + gC(character)[stat].value + ".\n";
+					}
+				}
+			}
+			recalculateMaxBars(character);
+			// State.variables[character].recalculateMaxBars();
+		}
+		
+		// Relations and mood
+		this.endDayRelationMoodEffects();
+
+		// Daily sex checks
+		for ( var character of getActiveSimulationCharactersArray() ) {
+			if ( gC(character).hasOwnProperty("daysWithoutSex") ) {
+				gC(character).daysWithoutSex += 1;
+				gC(character).sexScenesToday = 0;
+			}
+			delete gC(character).dayTags;
+		}
+
+		// Infamy
+		for ( var charKey of getActiveSimulationCharactersArray() ) {
+			var infamyChange = ((gC(charKey).infamy - (gC(charKey).infamy % 10)) / 10 ) + 1;
+			gC(charKey).changeInfamy(-infamyChange);
+			if ( gC(charKey).globalAi.hasOwnProperty("attackedToday") ) {
+				gC(charKey).globalAi.attackedToday = false;
+			}
+		}
+
+		// Altered States
+		for ( var charKey of getActiveSimulationCharactersArray() ) {
+			for ( var as of gC(charKey).alteredStates ) {
+				if ( as.scope == "days" ) {
+					as.remainingDays--;
+					if ( as.remainingDays <= 0 ) {
+						as.flagRemove = true;
+					}
+				}
+			}
+			gC(charKey).cleanStates();
+		}
+
+		// Equipment
+		for ( var equip of State.variables.equipmentList ) {
+			if ( equip.days > 1 ) {
+				equip.days--;
+			} else if ( equip.days == 1 ) {
+				unequipObject(equip.id);
+			}
+		}
+				
+		// Fix stats
+		for ( var character of getActiveSimulationCharactersArray() ) {
+			fixCharacterStatModifiers(character);
+		}
+		
+		// Despawn merchants
+		State.variables.currentMerchants = [];
+	}
 }
 
 window.applyLagFix = function() {
@@ -516,14 +739,18 @@ window.applyLagFix = function() {
 	State.variables.compass.debugInfo = "";
 }
 
+window.fixEquipmentAndParts = function() {
+	takeOffAllItems();
+}
+
 window.takeOffAllItems = function() {
 	for ( var item of State.variables.equipmentList ) {
 		unequipObject(item.id);
 	}
 }
 window.finishAllRelationships = function() {
-	for ( var char1 of getCandidatesKeysArray() ) {
-		for ( var char2 of getCandidatesKeysArray() ) {
+	for ( var char1 of getActiveSimulationCharactersArray() ) {
+		for ( var char2 of getActiveSimulationCharactersArray() ) {
 			if ( char1 != char2 ) {
 				finishRelType(char1,char2);
 			}
@@ -531,7 +758,7 @@ window.finishAllRelationships = function() {
 	}
 }
 window.resetStatModifiers = function() {
-	for ( var charKey of getCandidatesKeysArray() ) {
+	for ( var charKey of getActiveSimulationCharactersArray() ) {
 		for ( var stat of getStatNamesArray() ) {
 			gC(charKey)[stat].sumModifier = 0;
 			gC(charKey)[stat].multModifier = 1;
@@ -539,8 +766,8 @@ window.resetStatModifiers = function() {
 	}
 }
 window.resetRelationshipModifiers = function() {
-	for ( var char1 of getCandidatesKeysArray() ) {
-		for ( var char2 of getCandidatesKeysArray() ) {
+	for ( var char1 of getActiveSimulationCharactersArray() ) {
+		for ( var char2 of getActiveSimulationCharactersArray() ) {
 			if ( char1 != char2 ) {
 				for ( var stat of getRelationshipStatsNamesArray() ) {
 					getRelation(char1,char2)[stat].levelMod = 0;
@@ -549,4 +776,19 @@ window.resetRelationshipModifiers = function() {
 		}
 	}
 }
+window.finishAllAlteredStates = function(charList) {
+	for ( var cK of charList ) {
+		removeCharsStates(cK);
+	}
+}
+window.unlockAllBodyparts = function(charList) {
+	for ( var cK of charList ) {
+		for ( var part in gC(cK).body ) {
+			if ( gC(cK).body[part] instanceof Bodypart ) {
+				gC(cK).body[part].state = "free";
+			}
+		}
+	}
+}
+
 

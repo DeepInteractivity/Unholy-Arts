@@ -35,16 +35,97 @@ window.tutorshipExtraExp = function(minutes,characters,stat,rate) {
 	for ( var charKey of characters ) {
 		if ( gC(charKey).domChar == characters[0] ) {
 			if ( gRelTypeAb(charKey,characters[0]).type == "tutorship" ) {
+				var dice = limitedRandomInt(100);
 				if ( gC(charKey)[stat].value < gC(characters[0])[stat].value ) {
 					var rxm = rate * trainingResultsVar() * minutes * 0.1;
+					if ( dice < 21 ) { rxm *= 2; }
 					gC(charKey)[stat].addExperience(rxm);
 					resultsText += "\nAs " + gC(charKey).getFormattedName() + "'s tutor, " + gC(characters[0]).getFormattedName() + " helped " + gC(charKey).getFormattedName() + " gain " + (rxm * gC(charKey)[stat].affinity).toFixed(2) + " additional experience points.";
+					if ( dice < 21 ) {
+						resultsText += " A most dedicated attention by part of " + gC(charKey).posPr + " tutor doubled this amount, in exchange for increased submission.";
+						var dom = gC(charKey).domChar;
+						getRelation(charKey,dom).submission.stv += 40;
+						getRelation(dom,charKey).domination.stv += 40;
+					}
 				}
 			}
 		}
 	}
-	if ( resultsText != "" ) { resultsText += "\n\n"; } 
+	if ( resultsText != "" ) { resultsText = "\n\n" + resultsText; } 
 	return resultsText;
+}
+window.sharedTrainingRelationshipEvents = function(characters) {
+	var message = "";
+	if ( characters.length > 1 ) {
+		var it1 = 0;
+		while ( it1 < characters.length - 1 ) {
+			var it2 = it1 + 1;
+			while ( it2 < characters.length ) {
+				var char1 = characters[it1];
+				var char2 = characters[it2];
+				if ( getRelation(char1,char2) != undefined ) {
+					message += sharedTrainingRelationshipEvent(char1,char2);
+				}
+				it2++;
+			}
+			it1++;
+		}
+	}
+	if ( message != "" ) { message += "\n\n"; }
+	return message;
+}
+window.sharedTrainingRelationshipEvent = function(charA,charB) {
+	var dice = limitedRandomInt(100);
+	var msg = "";
+	var rivalryFlag = false;
+	// Events: Raised friendship, raised rivalry, raised domination
+	if ( gC(charA).domChar == charB ) { 				// B doms A
+		if ( dice < (12 + gC(charB).dDomination.level) ) { // Domination
+			getRelation(charA,charB).submission.stv += 40;
+			getRelation(charB,charA).domination.stv += 40;
+			msg += randomFromList( [
+							(ktn(charB) + " amends " + ktn(charA) + "'s posture."),
+							(ktn(charA) + " feels the confident gaze of " + ktn(charB) + " upon " + gC(charA).comPr + "."),
+							(ktn(charB) + " orders " + ktn(charA) + " to assist " + gC(charB).comPr + " in " + gC(charB).posPr + " own training.")
+					] ) + " " + colorText((gC(charA).getName() + "'s submission towards " + gC(charB).getName() + " has increased."),"purple");
+		}
+	} else if ( gC(charB).domChar == charA ) { 			// A doms B
+		if ( dice < (12 + gC(charA).dDomination.level) ) { // Friendship
+			getRelation(charA,charB).domination.stv += 40;
+			getRelation(charB,charA).submission.stv += 40;
+			msg += randomFromList( [
+							(ktn(charA) + " amends " + ktn(charB) + "'s posture."),
+							(ktn(charB) + " feels the confident gaze of " + ktn(charA) + " upon " + gC(charB).comPr + "."),
+							(ktn(charA) + " orders " + ktn(charB) + " to assist " + gC(charA).comPr + " in " + gC(charA).posPr + " own training.")
+					] ) + " " + colorText((gC(charB).getName() + "'s submission towards " + gC(charA).getName() + " has increased."),"purple");
+		}
+	} else if ( gC(charA).egaChars.includes(charB) ) {  // Egalitarian relationship
+	} else { 											// Else
+		if ( dice < (5 + (gC(charA).dAmbition.level + gC(charA).dImprovement.level + gC(charB).dAmbition.level + gC(charB).dImprovement.level) * 0.3) ) { // Rivalry
+			rivalryFlag = true;
+			getRelation(charA,charB).rivalry.stv += 40;
+			getRelation(charB,charA).rivalry.stv += 40;
+			msg += randomFromList( [
+							(ktn(charA) + " cannot help but try to outdo " + ktn(charB) + " during the training. This endeavor doesn't go unnoticed."),
+							(ktn(charA) + " notices " + ktn(charB) + " trying to finish everything one step ahead of " + gC(charA).comPr + "."),
+							("A tense air forms between " + ktn(charA) + " and " + ktn(charB) + " during the training, perhaps due to their competitiveness.")
+						] ) + " " + colorText((gC(charB).getName() + "'s and " + gC(charA).getName() + "'s rivalry has increased."),"darkred");
+		}
+	}
+	
+	dice = limitedRandomInt(100);
+	if ( (dice < (25 + gC(charA).dCooperation.level + gC(charB).dCooperation.level)) && rivalryFlag == false ) { // Friendship
+		getRelation(charA,charB).friendship.stv += 40;
+		getRelation(charB,charA).friendship.stv += 40;
+		msg += randomFromList( [
+						(ktn(charA) + " and " + ktn(charB) + " are enjoying each other's company."),
+						("The training session gets enlivened by " + ktn(charA) + " and " + ktn(charB) + " jokes."),
+						(ktn(charB) + " and " + ktn(charA) + " get to know each other a little better during this time.")
+					] ) + " " + colorText((gC(charB).getName() + "'s and " + gC(charA).getName() + "'s friendship has increased."),"khaki");
+	}
+	
+	if ( msg != "" ) { msg = "\n" + msg; }
+	return msg;
 }
 
 window.createCharGotExpMessage = function(character,stat,exp) {
@@ -86,6 +167,7 @@ window.createSystemEventStandardRest = function(minutes,characters) {
 			return eventMsg;
 		}
 	);
+	sEvent.priority = 1;
 	return sEvent;
 }
 window.createRestingActionStandard = function() {
@@ -115,9 +197,11 @@ window.createSystemEventDramaReading = function(minutes,characters) {
 				eventMsg += createCharSpentBarMessage(character,barType,barConsumption) + "\n";
 			}
 			eventMsg += tutorshipExtraExp(minutes,characters,"empathy",expRate);
+			eventMsg += sharedTrainingRelationshipEvents(characters);
 			return eventMsg;
 		}
 	);
+	sEvent.priority = 3;
 	return sEvent;
 }
 window.createTrainingActionDramaReading = function() {
@@ -149,9 +233,11 @@ window.createSystemEventDramaActing = function(minutes,characters) {
 				//eventMsg += 
 			}
 			eventMsg += tutorshipExtraExp(minutes,characters,"charisma",expRate);
+			eventMsg += sharedTrainingRelationshipEvents(characters);
 			return eventMsg;
 		}
 	);
+	sEvent.priority = 3;
 	return sEvent;
 }
 window.createTrainingActionDramaActing = function() {
@@ -181,9 +267,11 @@ window.createSystemEventWaterfallMeditation = function(minutes,characters) {
 				eventMsg += createCharSpentBarMessage(character,barType,barConsumption) + "\n";
 			}
 			eventMsg += tutorshipExtraExp(minutes,characters,"luck",expRate);
+			eventMsg += sharedTrainingRelationshipEvents(characters);
 			return eventMsg;
 		}
 	);
+	sEvent.priority = 3;
 	return sEvent;
 }
 window.createTrainingActionWaterfallMeditation = function() {
@@ -213,9 +301,11 @@ window.createSystemEventSwimming = function(minutes,characters) {
 				eventMsg += createCharSpentBarMessage(character,barType,barConsumption) + "\n";
 			}
 			eventMsg += tutorshipExtraExp(minutes,characters,"resilience",expRate);
+			eventMsg += sharedTrainingRelationshipEvents(characters);
 			return eventMsg;
 		}
 	);
+	sEvent.priority = 3;
 	return sEvent;
 }
 window.createTrainingActionSwimming = function() {
@@ -245,9 +335,11 @@ window.createSystemEventAerobics = function(minutes,characters) {
 				eventMsg += createCharSpentBarMessage(character,barType,barConsumption) + "\n";
 			}
 			eventMsg += tutorshipExtraExp(minutes,characters,"agility",expRate);
+			eventMsg += sharedTrainingRelationshipEvents(characters);
 			return eventMsg;
 		}
 	);
+	sEvent.priority = 3;
 	return sEvent;
 }
 window.createTrainingActionAerobics = function() {
@@ -277,9 +369,11 @@ window.createSystemEventAnaerobics = function(minutes,characters) {
 				eventMsg += createCharSpentBarMessage(character,barType,barConsumption) + "\n";
 			}
 			eventMsg += tutorshipExtraExp(minutes,characters,"physique",expRate);
+			eventMsg += sharedTrainingRelationshipEvents(characters);
 			return eventMsg;
 		}
 	);
+	sEvent.priority = 3;
 	return sEvent;
 }
 window.createTrainingActionAnaerobics = function() {
@@ -309,9 +403,11 @@ window.createSystemEventMeditation = function(minutes,characters) {
 				eventMsg += createCharSpentBarMessage(character,barType,barConsumption) + "\n";
 			}
 			eventMsg += tutorshipExtraExp(minutes,characters,"will",expRate);
+			eventMsg += sharedTrainingRelationshipEvents(characters);
 			return eventMsg;
 		}
 	);
+	sEvent.priority = 3;
 	return sEvent;
 }
 window.createTrainingActionMeditation = function() {
@@ -341,9 +437,11 @@ window.createSystemEventSpellcasting = function(minutes,characters) {
 				eventMsg += createCharSpentBarMessage(character,barType,barConsumption) + "\n";
 			}
 			eventMsg += tutorshipExtraExp(minutes,characters,"intelligence",expRate);
+			eventMsg += sharedTrainingRelationshipEvents(characters);
 			return eventMsg;
 		}
 	);
+	sEvent.priority = 3;
 	return sEvent;
 }
 window.createTrainingActionSpellcasting = function() {
@@ -373,9 +471,11 @@ window.createSystemEventEnergyReading = function(minutes,characters) {
 				eventMsg += createCharSpentBarMessage(character,barType,barConsumption) + "\n";
 			}
 			eventMsg += tutorshipExtraExp(minutes,characters,"perception",expRate);
+			eventMsg += sharedTrainingRelationshipEvents(characters);
 			return eventMsg;
 		}
 	);
+	sEvent.priority = 3;
 	return sEvent;
 }
 window.createTrainingActionEnergyReading = function() {

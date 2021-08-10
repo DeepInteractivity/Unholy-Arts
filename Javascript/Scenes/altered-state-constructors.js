@@ -8,6 +8,18 @@ window.fixIntensity = function(inIntensity) {
 	return intensity;
 }
 
+window.createSensitizedTag = function(intensity,tag,name,abr,turns,description) {
+	var provokeEffect = function(charKey) {
+	}
+	var cancelEffect  = function(charKey) {
+	}
+	var as = new alteredState(name,abr,"scene",turns,provokeEffect,cancelEffect,description);
+	as.tag = tag;
+	as.intensity = intensity;
+	return as;	
+}
+// List: Pus+ ; Bre+ ; Dic+ ; Ass+ ; DicT ; PusT
+
 window.createASfrozenFeet = function(intensity) {
 	// Extra energy cost, control recovery reduction, agility loss (sum, mult) // Turns
 	var eec = 5 + intensity * 1; // 5 ~ 15
@@ -53,7 +65,7 @@ window.createASsensitizedGenitals = function(intensity) {
 
 window.createAScoldGuts = function(intensity) {
 	// Stats gain (phy,res,will) , increased lust resistance
-	var sgs = 4 + intensity * 0.4; // 4 ~ 8
+	var sgs = 3 + intensity * 0.5; // 3 ~ 8
 	var sgm = 0.1 + intensity * 0.08; // 0.1 ~ 0.18
 	var isr = 10 + intensity * 1; // 10 ~ 20
 	var turns = 5 + limitedRandomInt(7); // 5 ~ 7
@@ -310,7 +322,7 @@ window.createASscratched = function(intensity) {
 
 window.createAScatAspect = function(intensity) {
 	// Increased agility, perception, control recovery
-	var sgs = 6 + intensity * 0.6; // 6 ~ 12
+	var sgs = 4 + intensity * 0.8; // 4 ~ 12
 	var sgm = 0.12 + intensity * 0.012; // 0.12 ~ 0.24
 	var icr = 0.1 + intensity * 0.01; // 0.1 ~ 0.2
 	var ipa = 3 + intensity * 0.7; // 3 ~ 10
@@ -460,6 +472,39 @@ window.createASrelaxingScent = function(intensity) {
 
 
 		// Bondage
+
+// Freed bodypart - Temporary customizable state. A bodypart gets unlocked for the duration of the scene
+window.createUnlockedBodypartForScene = function(bodypart) {
+	var provokeEffect = function(charKey) {
+		this.endState = gC(charKey).body[this.bodypart].state;
+		gC(charKey).body[this.bodypart].state = "free";
+	}
+	var cancelEffect = function(charKey) {
+		gC(charKey).body[this.bodypart].state = this.endState;
+	}
+	var description = `The ${bodypart} of this character has been freed for this scene.`;
+	var as = new alteredState(`Unlocked ${bodypart}`,"UnBp","scene",-1,provokeEffect,cancelEffect,description);
+	as.bodypart = bodypart;
+	as.endState = "free";
+	as.type = "other";
+	return as;
+}
+
+window.createUnlockedBodypartForTheDay = function(bodypart) {
+	var provokeEffect = function(charKey) {
+		this.endState = gC(charKey).body[this.bodypart].state;
+		gC(charKey).body[this.bodypart].state = "free";
+	}
+	var cancelEffect = function(charKey) {
+		gC(charKey).body[this.bodypart].state = this.endState;
+	}
+	var description = `The ${bodypart} of this character has been freed for this day.`;
+	var as = new alteredState(`Unlocked ${bodypart}`,"UnBp","days",1,provokeEffect,cancelEffect,description);
+	as.bodypart = bodypart;
+	as.endState = "free";
+	as.type = "other";
+	return as;
+}
 		
 // Nipplesuckers
 window.createASnipplesuckers = function() {
@@ -499,3 +544,50 @@ window.createASbuttplug = function() {
 	return as;
 }
 
+
+
+
+// Events and story
+window.createFrozenPussy = function() {
+	var provokeEffect = function(charKey) {
+		gC(charKey).energy.tainted += 10;
+		gC(charKey).controlRecovery -= 0.08;
+		gC(charKey).agility.sumModifier -= 5;
+		gC(charKey).agility.multModifier -= 0.1;
+		gC(charKey).body.pussy.state = "locked";
+	}
+	var cancelEffect = function(charKey) {
+		gC(charKey).energy.tainted -= 10;
+		gC(charKey).controlRecovery += 0.08;
+		gC(charKey).agility.sumModifier += 5;
+		gC(charKey).agility.multModifier += 0.1;
+		gC(charKey).body.pussy.state = "free";
+	}
+	var description = "A terrible cold has provoked the pussy of this character to turn rigid and frozen.";
+	var as = new alteredState("Frozen pussy","FrPu","days",1,provokeEffect,cancelEffect,description);
+	as.type = "other";
+	return as;
+}
+
+window.createInjury = function() {
+	var provokeEffect = function(charKey) {
+		gC(charKey).energy.tainted += 20;
+		gC(charKey).controlRecovery -= 0.1;
+		gC(charKey).agility.sumModifier -= 3;
+		gC(charKey).agility.multModifier -= 0.2;
+		gC(charKey).physique.sumModifier -= 2;
+		gC(charKey).physique.multModifier -= 0.1;
+	}
+	var cancelEffect = function(charKey) {
+		gC(charKey).energy.tainted -= 20;
+		gC(charKey).controlRecovery += 0.1;
+		gC(charKey).agility.sumModifier += 3;
+		gC(charKey).agility.multModifier += 0.2;
+		gC(charKey).physique.sumModifier += 2;
+		gC(charKey).physique.multModifier += 0.1;
+	}
+	var description = "Physical damage has injured the body of this character, and it needs some time to get recovered.";
+	var as = new alteredState("Injury","Injr","days",1,provokeEffect,cancelEffect,description);
+	as.type = "other";
+	return as;
+}

@@ -77,6 +77,20 @@ window.applyPcStatBonusesWeaknesses = function() {
 	// State.variables.chPlayerCharacter.recalculateMaxBars();
 }
 
+// Re-assignation
+window.reassignPlayerStats = function() {
+	var tempStat = gC("chPlayerCharacter")[State.variables.StVars.check1];
+	gC("chPlayerCharacter")[State.variables.StVars.check1] = gC("chPlayerCharacter")[State.variables.StVars.check4];
+	gC("chPlayerCharacter")[State.variables.StVars.check4] = tempStat;
+	tempStat = gC("chPlayerCharacter")[State.variables.StVars.check2];
+	gC("chPlayerCharacter")[State.variables.StVars.check2] = gC("chPlayerCharacter")[State.variables.StVars.check5];
+	gC("chPlayerCharacter")[State.variables.StVars.check5] = tempStat;
+	tempStat = gC("chPlayerCharacter")[State.variables.StVars.check3];
+	gC("chPlayerCharacter")[State.variables.StVars.check3] = gC("chPlayerCharacter")[State.variables.StVars.check6];
+	gC("chPlayerCharacter")[State.variables.StVars.check6] = tempStat;
+	State.variables.StVarsList = arrayMinusA(State.variables.StVarsList,"go0");
+}
+
 // Old customize stats
 window.returnAssignTalentsScript = function() {
 	var script = returnAssignTalentScript("physique");
@@ -310,7 +324,7 @@ window.configureBattleTestsRoomScene = function() {
 window.setUpTestScenesRoom = function() {
 	charactersLearnSceneActions(getCandidatesKeysArray(),["strokePussy","strokeBreasts","kissLips","frottage","frenchKiss","kneel","makeKneel","lickGroin",
 	"legHoldHead","mountFromBehind","penetratePussy","thrust","piston","finalPush","mountFaceToFace","getBlowjob","suckDick","lickPussy","interlockLegs",
-	"scissor","strokeAss","penetrateAss","analThrust","holdArms","vinesHoldArms","dickFootjob","pussyFootjob","lickLegs","rideDick","pushDickBack"]);
+	"scissor","strokeAss","penetrateAss","analThrust","holdArms","vinesHoldArms","dickFootjob","pussyFootjob","lickLegs","rideDick","pushDickBack","extraMountFromBehind","analMountDick","analRideDick","analPushDickBack"]);
 	
 	charactersLearnSceneActions(["chPlayerCharacter"],[
 									"kick","coldGuts",
@@ -340,7 +354,7 @@ window.setUpBattleTestsRoom = function() {
 	charactersLearnSceneActions(getCandidatesKeysArray(),[
 									"baKissLips","baStrokeDick","baStrokePussy",
 									"pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D",
-									"baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack"
+									"baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","baTeaseLockedDick","baTeaseLockedPussy","pounceFrontal"
 		]);
 	charactersLearnSceneActions(["chPlayerCharacter"],[
 									"kick","coldGuts",
@@ -402,6 +416,8 @@ window.setUpMultiBattleTest = function() {
 		gC(character).restoreBars();
 	}
 	
+	gC("chVal").body.pussy.state = "locked";
+	
 	// Start scene
 	State.variables.sc.startScene("bs", "none",
 		["chPlayerCharacter","chAte"], ["chNash","chVal"],
@@ -413,6 +429,56 @@ window.setUpMultiBattleTest = function() {
 	
 	//State.variables.chNash.lust.current = 1;
 	//State.variables.chVal.lust.current = 25;
+}
+
+window.setUpMultiSexTest = function() {
+	gC("chPlayerCharacter").addBodypart("dick","dick");
+	gC("chVal").addBodypart("dick","dick");
+	gC("chMir").addBodypart("dick","dick");
+	charactersLearnSceneActions(getCandidatesKeysArray(),["strokePussy","strokeBreasts","kissLips","frottage","frenchKiss","kneel","makeKneel","lickGroin",
+	"legHoldHead","mountFromBehind","penetratePussy","thrust","piston","finalPush","mountFaceToFace","getBlowjob","suckDick","lickPussy","interlockLegs",
+	"scissor","strokeAss","penetrateAss","analThrust","holdArms","vinesHoldArms","dickFootjob","pussyFootjob","lickLegs","rideDick","pushDickBack","extraMountFromBehind"]);
+	
+	//addSceneTagToChar("noLead","chMir");
+	
+	State.variables.sc.startScene("ss", "dynamic",
+		["chPlayerCharacter"], ["chMir","chVal"],
+		"wow such testz",endConditionTurns,100,
+		"Testing Scenes Room");
+		
+	State.variables["chMir"].aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables["chVal"].aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables["chMir"].aiAlgorythm.setRoleEqualFooting();
+	State.variables["chVal"].aiAlgorythm.setRoleEqualFooting();
+	
+	createPosMountFaceToFace("chVal",["chMir"]);
+	gC("chPlayerCharacter").hasLead = true;
+	gC("chVal").lead = 0;
+	gC("chVal").hasLead = false;
+}
+window.setUpMultiSexTestAlt = function() {
+	gC("chPlayerCharacter").addBodypart("dick","dick");
+	gC("chVal").addBodypart("dick","dick");
+	gC("chMir").addBodypart("dick","dick");
+	charactersLearnSceneActions(getCandidatesKeysArray(),["strokePussy","strokeBreasts","kissLips","frottage","frenchKiss","kneel","makeKneel","lickGroin",
+	"legHoldHead","mountFromBehind","penetratePussy","thrust","piston","finalPush","mountFaceToFace","getBlowjob","suckDick","lickPussy","interlockLegs",
+	"scissor","strokeAss","penetrateAss","analThrust","holdArms","vinesHoldArms","dickFootjob","pussyFootjob","lickLegs","rideDick","pushDickBack","extraMountFromBehind","extraKneel","extraMakeKneel","extraLegHoldHead","giveCunnilingus","giveBlowjob"]);
+	
+	addSceneTagToChar("noLead","chMir");
+	addSceneTagToChar("noLead","chVal");
+	
+	State.variables.sc.startScene("ss", "dynamic",
+		["chPlayerCharacter"], ["chMir","chVal"],
+		"wow such testz",endConditionTurns,100,
+		"Testing Scenes Room");
+		
+	createPosKneel("chPlayerCharacter",["chMir"]);
+	//createComPosDoubleKneeling("chVal","chPlayerCharacter");
+		
+	State.variables["chMir"].aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables["chVal"].aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables["chMir"].aiAlgorythm.setRoleEqualFooting();
+	State.variables["chVal"].aiAlgorythm.setRoleEqualFooting();
 }
 
 // Training

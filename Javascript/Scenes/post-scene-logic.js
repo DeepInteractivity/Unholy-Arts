@@ -12,6 +12,7 @@ window.processGenericSexSceneEffects = function() {
 	
 	// Relations & Drives changes
 	for ( var charKey of allChars ) {
+		gC(charKey).orgasmSceneCounter += gC(charKey).mindblowingOrgasmSC * 2;
 		allChars[charKey] = [];
 		allCharsMsgs[charKey] = [];
 		if ( gC(charKey).hasOwnProperty("daysWithoutSex") ) {
@@ -163,7 +164,7 @@ window.processGenericSexSceneEffects = function() {
 					if ( allChars.length == 2 ) {
 						gainedRomance = 25 + gC(charKey).orgasmSceneCounter * 5;
 						gainedSexualTension = 35 + gC(charKey).orgasmSceneCounter * 10;
-						gainedEnmity = -5 - gC(charKey).orgasmSceneCounter * 5;
+						gainedEnmity = -2 - gC(charKey).orgasmSceneCounter * 5;
 						gainedLoveDrive = 8 + gC(charKey).orgasmSceneCounter * 2;
 						gainedPleasureDrive = 8 + gC(charKey).orgasmSceneCounter * 2;
 						gainedCooperationDrive = 4 + gC(charKey).orgasmSceneCounter;
@@ -171,7 +172,7 @@ window.processGenericSexSceneEffects = function() {
 					} else { // More than two characters in scene
 						gainedRomance = 10 + gC(charKey).orgasmSceneCounter * 3;
 						gainedSexualTension = 20 + gC(charKey).orgasmSceneCounter * 5;
-						gainedEnmity = -3 - gC(charKey).orgasmSceneCounter * 2;
+						gainedEnmity = -1 - gC(charKey).orgasmSceneCounter * 2;
 						gainedLoveDrive = 4 + gC(charKey).orgasmSceneCounter;
 						gainedPleasureDrive = 8 + gC(charKey).orgasmSceneCounter * 2;
 						gainedCooperationDrive = 4 + gC(charKey).orgasmSceneCounter;
@@ -239,6 +240,7 @@ window.processGenericSexSceneEffects = function() {
 				}
 			}
 		}
+		gC(charKey).orgasmSceneCounter -= gC(charKey).mindblowingOrgasmSC * 2;
 	}		
 	
 	// Mood changes
@@ -395,9 +397,7 @@ window.processGenericMapBattleEffects = function() {
 			var battleDemandData = selectBattleDemandFromList(potentialBattleDemands);
 			var extra1 = battleDemandData[2];
 			var extra2 = battleDemandData[3];
-			// Temporary: NPC does nothing
 			selectedBattleDemand = battleDemandData[1];
-			//selectedBattleDemand = getNpcDemandOnWinningBattle(winner,loser,stakes,infamyMult);
 			selectedBattleDemand.provokeEffect(winner,loser,stakes,infamyMult,extra1,extra2);
 			if ( driveChangesMessage != "" ) { resultsMessage += driveChangesMessage + "\n"; }
 			resultsMessage += selectedBattleDemand.resultMessage(winner,loser,stakes,infamyMult,extra1,extra2);

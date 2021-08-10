@@ -656,12 +656,19 @@ window.getGossipAbout = function(charKey,name) {
 		var i = 0;
 		for ( var relPar in gC(this.target).relations[this.topic] ) {
 			if ( gC(this.target).relations[this.topic][relPar] instanceof RelPar ) {
-				desc += rpNames[i] + " - Lvl: " + gC(this.target).relations[this.topic][relPar].level + ">("
-					   + formulaRelParTotalLevel(gC(this.target).relations[this.topic][relPar]) + ")"
-					   + " | ST: " + gC(this.target).relations[this.topic][relPar].stv.toFixed(1)
-					   + " (" + colorText((gC(this.target).relations[this.topic][relPar].stv * 0.05).toFixed(1),"red") + ")"
-					   + " | LT: " + gC(this.target).relations[this.topic][relPar].ltv.toFixed(1)
-					   + " (" + colorText((gC(this.target).relations[this.topic][relPar].stv * 0.01).toFixed(1),"green") + ")";
+				desc += rpNames[i] + " - Lvl: " + gC(this.target).relations[this.topic][relPar].level;
+				var levelMod = gC(this.target).relations[this.topic][relPar].levelMod;
+				if ( levelMod > 0 ) {
+					desc += "+" + levelMod;
+				} else if ( levelMod < 0 ) {
+					desc += "-" + -levelMod;
+				}
+				desc += ">("
+				      + formulaRelParTotalLevel(gC(this.target).relations[this.topic][relPar]) + ")"
+				      + " | ST: " + gC(this.target).relations[this.topic][relPar].stv.toFixed(1)
+				      + " (" + colorText((gC(this.target).relations[this.topic][relPar].stv * 0.05).toFixed(1),"red") + ")"
+				      + " | LT: " + gC(this.target).relations[this.topic][relPar].ltv.toFixed(1)
+				      + " (" + colorText((gC(this.target).relations[this.topic][relPar].stv * 0.01).toFixed(1),"green") + ")";
 				if ( i < 6 ) { desc += "\n"; }
 				i++;
 			}
@@ -1309,6 +1316,20 @@ window.getPatronizeSocInt = function() {
 	socInt.getRelationVectorObservers = function() {
 		var rVector = new RelationVector(0,0,0,0,0,0,0);
 		return rVector;
+	}
+	
+	// Extra effect
+	socInt.calculateExtraEffect = function() {
+		var chance = 5;
+		if ( limitedRandomInt(100) <= chance ) {
+			// Description
+			// Effect
+			this.furtherEffects = function(sis) {
+				actorGetsCbAgainstTarget(this.target,this.actor);
+				var eText = "\n" + gC(this.target).formattedName + " took great offense, and may decide to take " + gC(this.target).posPr + " revenge later.";
+				sis.extraEffects += eText; 
+			}
+		}
 	}
 	
 	return socInt;
@@ -1984,6 +2005,20 @@ window.getInsultSocInt = function(type) {
 			break;
 	}
 	
+	// Extra effect
+	socInt.calculateExtraEffect = function() {
+		var chance = 25;
+		if ( limitedRandomInt(100) <= chance ) {
+			// Description
+			// Effect
+			this.furtherEffects = function(sis) {
+				actorGetsCbAgainstTarget(this.target,this.actor);
+				var eText = "\n" + gC(this.target).formattedName + " took great offense, and may decide to take " + gC(this.target).posPr + " revenge later.";
+				sis.extraEffects += eText; 
+			}
+		}
+	}
+	
 	return socInt;
 }
 
@@ -2416,7 +2451,7 @@ window.getStrokeButtSocInt = function() {
 	
 	socInt.getDescription = function() {
 		var desc = randomFromList( [ 
-								(ktn(this.actor) + " discreetly rested " + gC(this.actor).posPr + " hand on " + ktn(this.target) + "'s ass, acting like it's a most natural gesture."),
+								(ktn(this.actor) + " discreetly rested " + gC(this.actor).posPr + " hand on " + ktn(this.target) + "'s ass, acting like it was a most natural gesture."),
 								(ktn(this.actor) + " took a handful of " + ktn(this.target) + "'s buttocks and massaged it."),
 								(ktn(this.actor) + "'s hand grabbed " + ktn(this.target) + "'s butt and played with it like it was its toy.") ] );
 								
@@ -2881,6 +2916,7 @@ window.getHypnoticGlanceSocInt = function(type) {
 		return damage;
 	}
 	socInt.furtherEffects = function(sis) {
+		if ( this.actor == "chPlayerCharacter" ) { addToStVarsList("monActUs"); }
 		var eText = "\n" + gC(this.target).formattedName + " received " + textWillpowerDamage(-gC(this.target).willpower.attackInConversation(-this.getWillpowerDamage(this.actor,this.target))) + ".";
 		sis.extraEffects += eText; 
 	}
@@ -3118,24 +3154,24 @@ window.siExtraDatabase = function() {
 	this.relaxingScent = getRelaxingScent();
 }
 
-State.variables.siList = new siDatabase();
-State.variables.siListExtra = new siExtraDatabase();
+setup.siList = new siDatabase();
+setup.siListExtra = new siExtraDatabase();
 
 window.getSiByKey = function(key) {
-	if ( State.variables.siList.hasOwnProperty(key) ) {
-		return State.variables.siList[key];
+	if ( setup.siList.hasOwnProperty(key) ) {
+		return setup.siList[key];
 	} else {
-		return State.variables.siListExtra[key];
+		return setup.siListExtra[key];
 	}
 }
 
 window.getAllSocialInteractions = function() {
 	var siList = []; // Social Interaction Keys
 	
-	for ( var si in State.variables.siList ) {
-		if ( State.variables.siList[si].hasOwnProperty("title") ) {
-//		if ( State.variables.siList[si] instanceof SocInt ) {
-			siList.push(State.variables.siList[si].key);
+	for ( var si in setup.siList ) {
+		if ( setup.siList[si].hasOwnProperty("title") ) {
+//		if ( setup.siList[si] instanceof SocInt ) {
+			siList.push(setup.siList[si].key);
 		}
 	}
 	
@@ -3145,8 +3181,8 @@ window.getAllCharExtraSocialInteractions = function(charKey) {
 	var extraSiList = []; // Social Interactions Keys
 	
 	for ( var si of gC(charKey).extraSocIntList ) {
-		if ( State.variables.siListExtra[si].hasOwnProperty("title") ) {
-			extraSiList.push(State.variables.siListExtra[si].key);
+		if ( setup.siListExtra[si].hasOwnProperty("title") ) {
+			extraSiList.push(setup.siListExtra[si].key);
 		}
 	}
 	

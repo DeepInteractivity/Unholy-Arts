@@ -59,7 +59,7 @@ window.mayEquipmentBePut = function(id,wearer) {
 		if ( gC(wearer).body.hasOwnProperty(data.slot) == false ) {
 			flagEquippable = false;
 		} else {
-			if ( gC(wearer).body[data.slot].state != "free" ) {
+			if ( gC(wearer).body[data.slot].state != "free" || gC(wearer).body[data.slot].bondage != -1 ) {
 				flagEquippable = false;
 			}
 		}
@@ -88,6 +88,16 @@ window.equipObjectOnWearer = function(id,wearer,days) {
 		}
 		data.putOnEffect(equipment.owner,wearer); // Main effects
 		charactersLearnSceneActions([wearer],data.learntActions);
+		
+		// Bondage taste chance
+		if ( equipment.owner != wearer ) {
+			if ( limitedRandomInt(100) > 50 ) {
+				gC(equipment.owner).tastes.bondage.w += limitedRandomInt(4);
+			}
+			if ( limitedRandomInt(100) > 50 ) {
+				gC(wearer).tastes.bondage.w += limitedRandomInt(4);
+			}
+		}
 	}
 }
 window.unequipObject = function(id) {
@@ -121,6 +131,40 @@ window.itemIsLost = function(id) {
 	var owner = getEquipById(id).owner;
 	gC(owner).ownedEquipment = arrayMinusA(gC(owner).ownedEquipment,id);
 	getEquipById(id).owner = null;
+}
+window.removeItem = function(id) {
+	unequipObject(id);
+	itemIsLost(id);
+	for ( var eId in State.variables.equipmentList ) {
+		var intId = State.variables.equipmentList[parseInt(eId)].id;
+		if ( intId >= id ) {
+			lowerItemIdByOne(intId);
+		}
+	}
+	removeLostItems();
+}
+window.lowerItemIdByOne = function(id) {
+	var item = getEquipById(id);
+	var itemData = getEquipDataById(id);
+	item.id--;
+	if ( item.equippedOn ) {
+		if ( itemData.slotType == "bodypart" ) {
+			gC(item.equippedOn).body[itemData.slot].bondage--;
+		} else if ( itemData.slotType == "tool" ) {
+			if ( itemData.slot == "weapon" ) {
+				gC(item.equippedOn).weaponID--;
+			}
+		}
+	}
+}
+window.removeLostItems = function() {
+	var newItemsList = [];
+	for ( var item of State.variables.equipmentList ) {
+		if ( item.owner != null ) {
+			newItemsList.push(item);
+		}
+	}
+	State.variables.equipmentList = newItemsList;
 }
 
 // Constructors, serializers, etc.
@@ -375,8 +419,15 @@ setup.equipDataList[equipmentType.CHASTITYBELT] = new equipmentData("Chastity be
 		gC(wearer).will.multModifier -= 0.2;
 		gC(wearer).lust.weakness += 15;
 		gC(wearer).willpower.weakness += 10;
+		if ( limitedRandomInt(100) > 30 ) {
+			gC(owner).tastes.denial.w += limitedRandomInt(5);
+		}
+		if ( limitedRandomInt(100) > 40 ) {
+			gC(wearer).tastes.denial.w += limitedRandomInt(4);
+		}
 	},
 	function(owner,wearer) { // Put out
+		removeAlteredStateByAcrAndExtra(wearer,"UnBp","bodypart","pussy");
 		if ( getRelation(wearer,owner) != undefined ) {
 			getRelation(wearer,owner).submission.levelMod -= 4;
 			getRelation(wearer,owner).sexualTension.levelMod -= 4;
@@ -406,8 +457,15 @@ setup.equipDataList[equipmentType.CHASTITYCAGE] = new equipmentData("Chastity ca
 		gC(wearer).will.multModifier -= 0.2;
 		gC(wearer).lust.weakness += 15;
 		gC(wearer).willpower.weakness += 10;
+		if ( limitedRandomInt(100) > 30 ) {
+			gC(owner).tastes.denial.w += limitedRandomInt(5);
+		}
+		if ( limitedRandomInt(100) > 40 ) {
+			gC(wearer).tastes.denial.w += limitedRandomInt(4);
+		}
 	},
 	function(owner,wearer) { // Put out
+		removeAlteredStateByAcrAndExtra(wearer,"UnBp","bodypart","dick");
 		if ( getRelation(wearer,owner) != undefined ) {
 			getRelation(wearer,owner).submission.levelMod -= 4;
 			getRelation(wearer,owner).sexualTension.levelMod -= 4;
@@ -584,6 +642,17 @@ window.getItemListEquippableOnChar = function(charKey,itemList) {
 	}
 	return newItemList;
 }
+window.purgeChastityItemsFromItemList = function(itemList) {
+	var newItemList = [];
+	for ( var item of itemList ) {
+		var type = getEquipById(item).type;
+		if ( type == equipmentType.CHASTITYBELT || type == equipmentType.CHASTITYCAGE ) {
+		} else {
+			newItemList.push(item);
+		}
+	}
+	return newItemList;
+}
 window.getActorsEquippableBondageOnTarget = function(actor,target) {
 	var bondageList = [];
 	
@@ -622,7 +691,8 @@ window.chooseBestBondageForTargetByActor = function(bondageIDsList,target,actor)
 		
 		// Preferences score
 		if ( tags.includes("chastity") ) {
-			score += ( gC(actor).tastes.denial.w - 40 ) * 3;
+			score += ( gC(actor).tastes.denial.r * 20 );
+			score *= ( 1 + gC(actor).tastes.denial.r * 0.1 );
 		}
 		
 		bondageScores.push(score);
@@ -664,6 +734,7 @@ window.isSubOverDomsPowerThreshold = function(subChar,domChar) {
 	var totalRelation = rLvlAbt(domChar,subChar,"friendship") + rLvlAbt(domChar,subChar,"romance") + rLvlAbt(domChar,subChar,"sexualTension") + rLvlAbt(domChar,subChar,"domination") + rLvlAbt(domChar,subChar,"submission") + rLvlAbt(domChar,subChar,"enmity") + rLvlAbt(domChar,subChar,"rivalry");
 	var relationModifier = ( rLvlAbt(domChar,subChar,"friendship") + rLvlAbt(domChar,subChar,"romance") - rLvlAbt(domChar,subChar,"sexualTension") - rLvlAbt(domChar,subChar,"rivalry") - rLvlAbt(domChar,subChar,"enmity") * 2 - rLvlAbt(domChar,subChar,"submission") + rLvlAbt(domChar,subChar,"domination") ) / ( totalRelation + 5 ) * 0.3;
 	var totalPercentage = domTs + relationModifier; // Max ~= 0.9 , Min ~= 0.1
+	totalPercentage -= (0.1 * gC(domChar).tastes.bondage.r);
 	// Relationship type
 	if ( gRelTypeAb(subChar,domChar).type == "tutorship" ) {
 		totalPercentage += 0.2;
@@ -675,5 +746,36 @@ window.isSubOverDomsPowerThreshold = function(subChar,domChar) {
 	}
 	
 	return flag;
+}
+
+// Auxiliar
+
+window.getActorsGenitalsLockedByTarget = function(actor,target) {
+	var lockedGenitals = [];
+	for ( var genital of ["pussy","dick"] ) {
+		if ( gC(actor).body.hasOwnProperty(genital) ) {
+			if ( gC(actor).body[genital].state == "locked" ) {
+				if ( gC(actor).body[genital].bondage != -1 ) {
+					if ( getEquipById(gC(actor).body[genital].bondage).owner == target ) {
+						lockedGenitals.push(genital);
+					}
+				}
+			}
+		}
+	}
+	return lockedGenitals;
+}
+window.getActorsKeyholders = function(actor) {
+	var keyholders = [];
+	for ( var genital of ["pussy","dick"] ) {
+		if ( gC(actor).body.hasOwnProperty(genital) ) {
+			if ( gC(actor).body[genital].state == "locked" ) {
+				if ( gC(actor).body[genital].bondage != -1 ) {
+					keyholders.push(getEquipById(gC(actor).body[genital].bondage).owner);
+				}
+			}
+		}
+	}
+	return keyholders;
 }
 

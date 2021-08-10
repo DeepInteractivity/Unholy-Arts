@@ -1,4 +1,4 @@
-////////// PRE-BUILT CHARACTERS //////////
+ ////////// PRE-BUILT CHARACTERS //////////
 // This file provides functions that create each specific character with the appropiate attributes.
 // This should make the StoryInit Passage more readable
 
@@ -139,15 +139,24 @@ window.createNashillbyir = function() {
 		// Tastes
 	character.tastes.foreplay.w = 95;
 	character.tastes.oral.w = 90;
-	//character.tastes.fullsex.w = 115;
 	character.tastes.talk.w = 105;
-	character.tastes.useBreasts.w = 95;
-	character.tastes.useHands.w = 105;
+	character.tastes.fullsex.w = 110;
+	character.tastes.useDick.w = 120;
+	character.tastes.targetDick.w = 115;
+	character.tastes.targetPussy.w = 110;
+	character.tastes.targetAnus.w = 105;
+	character.tastes.useHands.w = 110;
+	character.tastes.bondage.w = 115;
 	character.tastes.useLegs.w = 105;
-	character.tastes.targetMouth.w = 105;
-	character.tastes.domination.w = 95;
-	character.tastes.submission.w = 95;
-	character.tastes.usePain.w = 70;
+	character.tastes.usePain.w = 110;
+	character.tastes.top.w = 110;
+	character.tastes.bottom.w = 105;
+	character.tastes.receivePain.w = 110;
+	character.tastes.useBreasts.w = 90;
+	character.tastes.targetBreasts.w = 95;
+	character.tastes.charm.w = 105;
+	character.tastes.teasing.w = 105;
+	rankSexPreferences(character.tastes);
 		
 	// Drives
 	setDriveValues(character.dImprovement,1800,4);
@@ -219,23 +228,32 @@ window.createPadmiri = function() {
 	
 	// Personality
 		// Tastes
-	character.tastes.foreplay.w = 105;
-	//character.tastes.fullsex.w = 105;
-	character.tastes.useDick.w = 95;
-	character.tastes.usePussy.w = 105;
-	character.tastes.useEyes.w = 110;
-	character.tastes.useLegs.w = 105;
+	character.tastes.foreplay.w = 110;
+	character.tastes.talk.w = 105;
+	character.tastes.oral.w = 115;
+	character.tastes.usePussy.w = 115;
 	character.tastes.targetPussy.w = 105;
-	character.tastes.targetAnus.w = 90;
+	character.tastes.targetDick.w = 105;
+	character.tastes.useAnus.w = 85;
+	character.tastes.useMouth.w = 115;
+	character.tastes.targetMouth.w = 120;
+	character.tastes.targetAnus.w = 85;
+	character.tastes.useBreasts.w = 110;
+	character.tastes.targetBreasts.w = 105;
+	character.tastes.useEyes.w = 110;
 	character.tastes.targetEyes.w = 110;
-	character.tastes.top.w = 105;
-	character.tastes.bottom.w = 105;
-	character.tastes.domination.w = 95;
-	character.tastes.submission.w = 95;
-	character.tastes.hypnosis.w = 105;
-	character.tastes.receivePain.w = 50;
-	character.tastes.usePain.w = 30;
-	character.tastes.denial.w = 30;
+	character.tastes.top.w = 115;
+	character.tastes.bottom.w = 115;
+	character.tastes.domination.w = 85;
+	character.tastes.submission.w = 90;
+	character.tastes.bondage.w = 65;
+	character.tastes.charm.w = 110;
+	character.tastes.draining.w = 110;
+	character.tastes.romantic.w = 115;
+	character.tastes.usePain.w = 70;
+	character.tastes.receivePain.w = 80;
+	character.tastes.denial.w = 80;
+	rankSexPreferences(character.tastes);
 	
 	// Base mood
 	character.baseMood.friendly = 0;	
@@ -262,13 +280,15 @@ window.createCarine = function() {
 	character.type = "candidate";
 	character.race = "beastkin";
 	
+	character.addBodypart("tail","tail");
+	
 	character.setColors("gold","gold");
 	// Moves
 	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","biteNeck","mountDick");
 	/* ["embers","freezeFeet","sparkingRubbing"]
 	character.saList.push("baKissLips","baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","coldGuts","taunt","baTease");
 	*/
-	character.saList.push("pounceFrontalD2P","pounceFrontalP2P","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","taunt","catAspect","baScratch"); // 
+	character.saList.push("baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","taunt","catAspect","baScratch"); // 
 	
 	// Body
 	character.addFemaleParts();
@@ -310,26 +330,29 @@ window.createCarine = function() {
 	// Personality
 		// Tastes
 	character.tastes.foreplay.w = 95;
-	character.tastes.oral.w = 95;
+	character.tastes.oral.w = 105;
+	character.tastes.fullsex.w = 115;
 	character.tastes.talk.w = 85;
-	//character.tastes.fullsex.w = 120;
-	character.tastes.useDick.w = 110;
-	character.tastes.useBreasts.w = 90;
+	character.tastes.useDick.w = 115;
+	character.tastes.targetDick.w = 90;
+	character.tastes.targetPussy.w = 110;
+	character.tastes.usePussy.w = 110;
+	character.tastes.targetAnus.w = 105;
+	character.tastes.useBreasts.w = 95;
 	character.tastes.useMouth.w = 90;
-	character.tastes.useEyes.w = 90;
-	character.tastes.useTail.w = 105;
-	character.tastes.targetDick.w = 95;
-	character.tastes.targetPussy.w = 105;
-	character.tastes.targetBreasts.w = 95;
+	character.tastes.targetMouth.w = 110;
+	character.tastes.useLegs.w = 105;
+	character.tastes.useTail.w = 95;
 	character.tastes.top.w = 110;
-	character.tastes.bottom.w = 60;
+	character.tastes.bottom.w = 90;
 	character.tastes.domination.w = 120;
-	character.tastes.submission.w = 90;
-	character.tastes.teasing.w = 95;
+	character.tastes.submission.w = 75;
+	character.tastes.teasing.w = 90;
 	character.tastes.romantic.w = 80;
-	character.tastes.receivePain.w = 30;
-	character.tastes.usePain.w = 100;
-	character.tastes.denial.w = 50;
+	character.tastes.bondage.w = 110;
+	character.tastes.usePain.w = 120;
+	character.tastes.denial.w = 110;
+	rankSexPreferences(character.tastes);
 	
 	// Base mood
 	character.baseMood.angry = 50;
@@ -401,22 +424,32 @@ window.createValtan = function() {
 	
 	// Personality
 		// Tastes
-	character.tastes.foreplay.w = 105;
-	character.tastes.oral.w = 90;
-	character.tastes.talk.w = 105;
-	//character.tastes.fullsex.w = 110;
+	character.tastes.foreplay.w = 100;
+	character.tastes.oral.w = 110;
+	character.tastes.talk.w = 120;
+	character.tastes.fullsex.w = 110;
 	character.tastes.usePussy.w = 115;
-	character.tastes.useAnus.w = 105;
-	character.tastes.useEyes.w = 105;
-	character.tastes.useLegs.w = 105;
+	character.tastes.useDick.w = 110;
 	character.tastes.targetDick.w = 105;
-	character.tastes.targetPussy.w = 105;
-	character.tastes.top.w = 110;
-	character.tastes.teasing.w = 105;
+	character.tastes.useMouth.w = 110;
+	character.tastes.targetMouth.w = 115;
+	character.tastes.useEyes.w = 115;
+	character.tastes.targetEyes.w = 115;
+	character.tastes.useLegs.w = 110;
+	character.tastes.targetAnus.w = 115;
+	character.tastes.teasing.w = 115;
 	character.tastes.charm.w = 110;
-	character.tastes.receivePain.w = 60;
-	character.tastes.usePain.w = 60;
-	character.tastes.denial.w = 60;
+	character.tastes.top.w = 95;
+	character.tastes.bottom.w = 95;
+	character.tastes.domination.w = 110;
+	character.tastes.submission.w = 110;
+	character.tastes.teasing.w = 120;
+	character.tastes.bondage.w = 70;
+	character.tastes.denial.w = 120;
+	character.tastes.romantic.w = 105;
+	character.tastes.draining.w = 110;
+	character.tastes.receivePain.w = 110;
+	rankSexPreferences(character.tastes);
 	
 	// Drives
 	setDriveValues(character.dImprovement,850,2);
@@ -487,18 +520,29 @@ window.createMaaterasu = function() {
 	
 	// Personality
 		// Tastes
-	character.tastes.foreplay.w = 95;
-	character.tastes.oral.w = 95;
-	character.tastes.talk.w = 105;
-	//character.tastes.fullsex.w = 110;
-	character.tastes.usePussy.w = 105;
-	character.tastes.useDick.w = 105;
-	character.tastes.targetDick.w = 105;
-	character.tastes.targetPussy.w = 105;
+	character.tastes.foreplay.w = 105;
+	character.tastes.oral.w = 105;
+	character.tastes.talk.w = 95;
+	character.tastes.fullsex.w = 110;
+	character.tastes.useDick.w = 110;
+	character.tastes.targetDick.w = 110;
+	character.tastes.usePussy.w = 110;
+	character.tastes.targetPussy.w = 110;
+	character.tastes.useLegs.w = 105;
+	character.tastes.targetLegs.w = 105;
+	character.tastes.useMouth.w = 105;
+	character.tastes.useEyes.w = 85;
+	character.tastes.targetEyes.w = 85;
+	character.tastes.top.w = 105;
+	character.tastes.bottom.w = 105;
 	character.tastes.domination.w = 110;
 	character.tastes.submission.w = 110;
-	character.tastes.romantic.w = 110;
-	character.tastes.hypnosis.w = 105;
+	character.tastes.hypnosis.w = 110;
+	character.tastes.charm.w = 95;
+	character.tastes.romantic.w = 105;
+	character.tastes.usePain.w = 95;
+	character.tastes.receivePain.w = 85;
+	rankSexPreferences(character.tastes);
 	
 	// Base mood
 	character.baseMood.bored = 50;
@@ -520,11 +564,289 @@ window.createMaaterasu = function() {
 	return character;
 }
 
+// Artume
+window.createArtume = function() {
+	var character = new Character("Artume", "chArt");
+	character.type = "candidate";
+	
+	character.setColors("mediumseagreen","mediumseagreen");
+	
+	// Moves
+	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","mountDick");
+	
+	character.saList.push("baKissLips","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","taunt","sparkingRubbing","freezeFeet");
+	
+	
+	// Body
+	character.addFemaleParts();
+	// Others
+	character.names.push("Artume");
+	character.names.push("the Gaanidan huntress");
+	character.names.push("the nimble ranger");
+	character.assignFemeninePronouns();
+	
+	character.likedTopics.push("fauna");
+	
+	// Images
+	character.fullPortrait = function() {
+		return "[img[img/portraits/artume-full.png]]";
+	}
+	character.avatar = function() {
+		return "[img[img/portraits/artume-avatar.png]]";
+	}
+	character.icon = function() {
+		return "[img[img/charIcons/npcIcon.png]]";
+	}
+	
+	character.fullPortraitL = "img/portraits/artume-full.png";
+	character.avatarL = "img/portraits/artume-avatar.png";
+	character.iconL = "img/charIcons/npcIcon.png";
+	
+	// AI
+	character.globalAi = createCandidateGlobalAi("chArt");
+	
+	// Affinities
+	character.combatAffinities.physical.resistance += 10;
+	character.combatAffinities.weapon.strength += 5;
+	character.combatAffinities.pounce.strength += 5;
+	character.combatAffinities.pounce.resistance += 10;
+	character.combatAffinities.sex.weakness += 5;
+	character.combatAffinities.spore.resistance += 10;
+	
+	// Personality
+		// Tastes
+	character.tastes.foreplay.w = 105;
+	character.tastes.fullsex.w = 110;
+	character.tastes.usePussy.w = 115;
+	character.tastes.useAnus.w = 105;
+	character.tastes.useBreasts.w = 105;
+	character.tastes.useMouth.w = 110;
+	character.tastes.targetTail.w = 110;
+	character.tastes.bondage.w = 120;
+	character.tastes.useLegs.w = 105;
+	character.tastes.usePain.w = 110;
+	character.tastes.bottom.w = 110;
+	character.tastes.submission.w = 120;
+	character.tastes.receivePain.w = 110;
+	character.tastes.draining.w = 110;
+	character.tastes.hypnosis.w = 105;
+	character.tastes.talk.w = 85;
+	character.tastes.charm.w = 95;
+	character.tastes.romantic.w = 95;
+	rankSexPreferences(character.tastes);
+		
+	// Drives
+	setDriveValues(character.dImprovement,1000,4);
+	setDriveValues(character.dPleasure,1350,5);
+	setDriveValues(character.dLove,600,2);
+	setDriveValues(character.dCooperation,350,1);
+	setDriveValues(character.dDomination,350,1);
+	setDriveValues(character.dAmbition,350,1);
+	
+	// Attributes
+	character.setBaseAttributes(10,12,12,9,11,13,10,11,11);
+	character.setAffinities(0.9,1.1,1.1,0.8,1,1.2,0.9,1,1);
+	
+	character.refugeRooms = [["mapTrainingGrounds","storage"]];
+	
+	return character;
+}
+
+// Warmest Hope
+window.createWarmestHope = function() {
+	var character  = new Character("Hope","chHope");
+	character.type = "candidate";
+	character.race = "beastkin";
+	
+	character.addBodypart("tail","tail");
+	
+	character.setColors("darkorange","darkorange");
+	// Moves
+	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","mountDick","biteNeck");
+	/* ["embers","freezeFeet","sparkingRubbing"]
+	character.saList.push("baKissLips","baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","coldGuts","taunt","baTease");
+	*/
+	character.saList.push("baKissLips","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","embers","freezeFeet","sparkingRubbing","coldGuts","taunt","baTease","kick");
+	// Body
+	character.addFemaleParts();
+	// Others
+	character.names.push("Warmest Hope");
+	character.names.push("Hope");
+	character.names.push("the daring fox-girl");
+	character.names.push("the outspoken Beastkin");
+	character.names.push("Ruri");
+	character.assignFemeninePronouns();
+	
+	character.likedTopics.push("flora","music");
+	
+	// Images
+	character.fullPortrait = function() {
+		return "[img[img/portraits/hope-full.png]]";
+	}
+	character.avatar = function() {
+		return "[img[img/portraits/hope-avatar.png]]";
+	}
+	
+	character.icon = function() {
+		return "[img[img/charIcons/npcIcon.png]]";
+	}
+	
+	character.fullPortraitL = "img/portraits/hope-full.png";
+	character.avatarL = "img/portraits/hope-avatar.png";
+	character.iconL = "img/charIcons/npcIcon.png";
+	
+	// AI
+	character.globalAi = createCandidateGlobalAi("chHope");
+	
+	// Affinities
+	character.combatAffinities.magic.strength += 5;
+	character.combatAffinities.fire.strength += 5;
+	character.combatAffinities.ice.weakness += 5;
+	character.combatAffinities.social.strength += 10;
+	character.combatAffinities.social.weakness += 10;
+	character.combatAffinities.pain.resistance += 10;
+	character.combatAffinities.pounce.strength += 5;
+	character.combatAffinities.pounce.resistance += 5;
+	
+	// Personality
+		// Tastes
+	character.tastes.talk.w = 110;
+	character.tastes.fullsex.w = 105;
+	character.tastes.oral.w = 105;
+	character.tastes.usePussy.w = 110;
+	character.tastes.targetPussy.w = 105;
+	character.tastes.targetDick.w = 105;
+	character.tastes.targetMouth.w = 115;
+	character.tastes.useMouth.w = 90;
+	character.tastes.useEyes.w = 110;
+	character.tastes.targetEyes.w = 105;
+	character.tastes.useLegs.w = 110;
+	character.tastes.top.w = 110;
+	character.tastes.bottom.w = 90;
+	character.tastes.domination.w = 95;
+	character.tastes.submission.w = 85;
+	character.tastes.charm.w = 105;
+	character.tastes.teasing.w = 110;
+	rankSexPreferences(character.tastes);
+	
+	// Base mood
+	character.baseMood.dominant = 5;
+	
+	// Drives
+	setDriveValues(character.dImprovement,1100,4);
+	setDriveValues(character.dPleasure,600,2);
+	setDriveValues(character.dLove,700,3);
+	setDriveValues(character.dCooperation,1750,6);
+	setDriveValues(character.dDomination,1100,4);
+	setDriveValues(character.dAmbition,1500,5);
+	
+	// Attributes
+	character.setBaseAttributes(12,12,10,16,14,8,10,14,12);
+	character.setAffinities(1,1,0.9,1.2,1.1,0.8,0.9,1.1,1);
+	
+	character.refugeRooms = [["mapTrainingGrounds","publicBaths"]];
+	
+	return character;
+}
+
+// Sturdiest Rock
+window.createSturdiestRock = function() {
+	var character  = new Character("Rock","chRock");
+	character.type = "candidate";
+	character.race = "beastkin";
+	
+	character.addBodypart("tail","tail");
+	
+	character.setColors("cadetblue","cadetblue");
+	// Moves
+	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","biteNeck","mountDick");
+	
+	character.saList.push("baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","taunt","baScratch","freezeFeet"); // 
+	
+	// Body
+	character.addMaleParts();
+	// Others
+	character.names.push("Rock");
+	character.names.push("Sturdiest Rock");
+	character.names.push("the kind Beastkin");
+	character.names.push("the wolf-boy");
+	character.names.push("Nou");
+	character.assignMasculinePronouns();
+	//character.mapAi.type = "protagonist";
+	
+	character.likedTopics.push("fauna");
+	
+	// Images
+	character.fullPortrait = function() {
+		return "[img[img/portraits/rock-full.png]]";
+	}
+	character.avatar = function() {
+		return "[img[img/portraits/rock-avatar.png]]";
+	}
+	character.icon = function() {
+		return "[img[img/charIcons/npcIcon.png]]";
+	}
+	
+	character.fullPortraitL = "img/portraits/rock-full.png";
+	character.avatarL = "img/portraits/rock-avatar.png";
+	character.iconL = "img/charIcons/rockIcon.png";
+	
+	// AI
+	character.globalAi = createCandidateGlobalAi("chRock");
+	
+	// Affinities
+	character.combatAffinities.pounce.strength += 5;
+	character.combatAffinities.pounce.resistance += 5;
+	character.combatAffinities.fire.weakness += 10;
+	character.combatAffinities.magic.frailty += 10;
+	character.combatAffinities.social.weakness += 5;
+	character.combatAffinities.pain.resistance += 10;
+	character.combatAffinities.physical.resistance += 10;
+	
+	// Personality
+		// Tastes
+	character.tastes.foreplay.w = 105;
+	character.tastes.oral.w = 105;
+	character.tastes.useDick.w = 110;
+	character.tastes.useMouth.w = 115;
+	character.tastes.targetPussy.w = 110;
+	character.tastes.targetMouth.w = 90;
+	character.tastes.targetEyes.w = 105;
+	character.tastes.targetBreasts.w = 105;
+	character.tastes.top.w = 90;
+	character.tastes.bottom.w = 110;
+	character.tastes.domination.w = 80;
+	character.tastes.submission.w = 95;
+	character.tastes.charm.w = 105;
+	character.tastes.romantic.w = 110;
+	character.tastes.usePain.w = 105;
+	rankSexPreferences(character.tastes);
+	
+	// Base mood
+	character.baseMood.friendly = 5;
+	
+	// Drives
+	setDriveValues(character.dImprovement,750,3);
+	setDriveValues(character.dPleasure,650,2);
+	setDriveValues(character.dLove,1000,4);
+	setDriveValues(character.dCooperation,1500,5);
+	setDriveValues(character.dDomination,300,1);
+	setDriveValues(character.dAmbition,600,2);
+	
+	// Attributes
+	character.setBaseAttributes(16,14,10,14,12,10,8,12,12);
+	character.setAffinities(1.1,1,1.2,0.9,0.9,1,1.1,0.8,1);
+	
+	character.refugeRooms = [["mapTrainingGrounds","storage"]];
+	
+	return character;
+}
+
 // Support functions
 
 window.teachBasicMovesToCharacters = function(charKey) {
-	var movesList = ["kneel","makeKneel","lickGroin","legHoldHead","mountFromBehind","penetratePussy","thrust","piston","finalPush","getBlowjob","suckDick",
-				"strokeDick","lickPussy","interlockLegs","scissor","pushHipsBack","spanking","fuckFace","rideFace"];
+	var movesList = ["kneel","makeKneel","lickGroin","legHoldHead","mountFromBehind","penetratePussy","thrust","getBlowjob","suckDick",
+				"strokeDick","lickPussy","interlockLegs","scissor","pushHipsBack","fuckFace","rideFace"];
 	for ( var move of movesList ) {
 		if ( State.variables[charKey].saList.includes(move) == false ) {
 			State.variables[charKey].saList.push(move);

@@ -1,4 +1,3 @@
-
 ////////// SCROLL CLASS //////////
 
 window.Scroll = function(key,title,type) {
@@ -38,7 +37,7 @@ window.createScrollOnAether = function() {
 		var expPoints = 50;
 		for ( var character of characters ) {
 			gC(character).intelligence.addExperience(expPoints);
-			textResults += gC(character).getFormattedName() + " gained " + expPoints * gC(character).intelligence.affinity + " intelligence experience points.\n";
+			textResults += gC(character).getFormattedName() + " gained " + (expPoints * gC(character).intelligence.affinity).toFixed(1) + " intelligence experience points.\n";
 		}
 		return textResults;
 	}
@@ -62,7 +61,7 @@ window.createScrollOnFamily = function() {
 		var expPoints = 50;
 		for ( var character of characters ) {
 			gC(character).empathy.addExperience(expPoints);
-			textResults += gC(character).getFormattedName() + " gained " + expPoints * gC(character).empathy.affinity + " empathy experience points.\n";
+			textResults += gC(character).getFormattedName() + " gained " + (expPoints * gC(character).empathy.affinity).toFixed(1) + " empathy experience points.\n";
 		}
 		return textResults;
 	}
@@ -83,11 +82,71 @@ window.createScrollTheWilds = function() {
 		var expPoints = 50;
 		for ( var character of characters ) {
 			gC(character).perception.addExperience(expPoints);
-			textResults += gC(character).getFormattedName() + " gained " + expPoints * gC(character).perception.affinity + " perception experience points.\n";
+			textResults += gC(character).getFormattedName() + " gained " + (expPoints * gC(character).perception.affinity).toFixed(1) + " perception experience points.\n";
 		}
 		return textResults;
 	}
 	scr.getContent = getScrollTheWildsContent;
+	return scr;
+}
+
+// Gleaming Caverns
+window.getScrollGleamingCavernsContent = function() {
+	var content = "The Shapeshifter tribe finds their home at the south of the Confined Valley, in a system of caves known as the Gleaming Caverns. The Caverns are hardly a hospitable environment for most forms of life, as food is scarce, its tunnels labyrinthine, and floods a most common issue - all of them conditions that the Shapeshifters aptly managed to adapt to.\n\n" +
+	"The Caverns owe their name to the gleaming crystals, a rare material that's difficult to find at any place other than this area. Their most peculiar traits are that they disrupt the flow of aether within living beings they're in touch with, but whenever the aether is infused in them from a distance, they temporarily turn gelatinous, which allows to shape them into any desired form. As their name suggests, the crystals emit light, but they will stop doing so after a long time until they're exposed to the Sun. It is through the laborious effort of Shapeshifters that gleaming crystals are periodically charged and placed through some of the Caverns' corridors, effectively making them Gleaming.\n\n" +
+	"The forests surrounding the Caverns are rich in ponds, marshes and rivers that find the end of their lives, carrying water that gets permeated into the ground, only to later fall down to its subterranean tunnels. Through most of them, the flow of the water is irregular and fairly unpredictable, sometimes even causing whole routes to flood. A few of them have exceptionally consistent precipitations, which made Shapeshifters decide to settle in them.\n\n" +
+	"The tribe's construction efforts were focused in three areas: the building of their own village, paving selected tunnels to prevent travellers from getting lost in them, and the development of infrastructure to control the flow of water. Some of the most relevant places of their town are their assembly, often used as a theater, the Harmony Temple, under indirect control of the High Priestess, and their workshops, which contain furnaces and other tools to craft different types of ceramics.";
+	return content;
+}
+window.createScrollGleamingCaverns = function() {
+	var scr = new Scroll("gleamingCaverns","Gleaming Caverns","lore");
+	scr.firstTimeEffect = function(characters) {
+		var textResults = "";
+		var expPoints = 75;
+		for ( var character of characters ) {
+			gC(character).perception.addExperience(expPoints);
+			textResults += gC(character).getFormattedName() + " gained " + (expPoints * gC(character).perception.affinity).toFixed(1) + " perception experience points.\n";
+		}
+		return textResults;
+	}
+	scr.getContent = getScrollGleamingCavernsContent;
+	scr.mayBeFound = function(characters) {
+		var flag = false;
+		if ( State.variables.daycycle.day > 12 || State.variables.daycycle.month > 1 ) {
+			flag = true;
+		}
+		return flag;
+	}
+	return scr;
+}
+
+// Shapeshifter Customs
+window.getScrollShapeshifterCustomsContent = function() {
+	var content = "The most characteristic trait of the Shapeshifters is, naturally, their ability to change their forms, which is in turn the central stone of their social customs. Those members of the tribe who supplant someone else's identity must only do it for limited periods of time, and the consequent deception, if it exists, must be repaired shortly. Those who decide to take different forms for long periods of time must not hide their identity. Those who break these rules will be shunned by the community, those who break them with the intent of perverting the consent or decisions of others will be severely punished - those who target the whole tribe will be subjected to exile.\n\n" +
+	"These severe rules are relaxed during the Twisted Festival, a yearly festivity where everyone is allowed to use anyone's form to prank others - and everyone is expected to avoid taking anything seriously. The main activity of this festival is a theater play which has a central theme and a few script guidelines, but the performers are allowed to improvise, change roles, and significantly alter the story. When a new generation of Candidates to High Priestess is being trained, they're expected to participate as performers.\n\n" +
+	"Their economic activities may be summed up in these four activities: the collecting of minerals, crystals and dyes through the Gleaming Caverns and its surrounding zones, the crafting of ceramics and tools, the construction and repairing of buildings and paths, and the recharging of gleaming crystals. It is first attempted to distribute these tasks among all the Shapeshifters that want them.\n\n" +
+	"Whenever there are small disputes or important events that require action by the whole tribe, a resolution will be settled by a council of judges, which are randomly selected among all adult Shapeshifters every three years, or, in the case of matters of extraordinary gravity, by the whole tribe in assembly.";
+	return content;
+}
+window.createScrollShapeshifterCustoms = function() {
+	var scr = new Scroll("shapeshifterCustoms","Shapeshifter Customs","lore");
+	scr.firstTimeEffect = function(characters) {
+		var textResults = "";
+		var expPoints = 75;
+		for ( var character of characters ) {
+			gC(character).empathy.addExperience(expPoints);
+			textResults += gC(character).getFormattedName() + " gained " + (expPoints * gC(character).perception.affinity).toFixed(1) + " empathy experience points.\n";
+		}
+		return textResults;
+	}
+	scr.getContent = getScrollShapeshifterCustomsContent;
+	scr.mayBeFound = function(characters) {
+		var flag = false;
+		if ( State.variables.daycycle.day > 12 || State.variables.daycycle.month > 1 ) {
+			flag = true;
+		}
+		return flag;
+	}
 	return scr;
 }
 
@@ -114,7 +173,7 @@ window.getScrollTheBasicsOfSexContent = function() {
 window.createScrollTheBasicsOfSex = function() {
 	var scr = new Scroll("theBasicsOfSex","The Basics of Sex","shortStory");
 	scr.firstTimeEffect = function(characters) {
-		var textResults = charactersLearnSceneActions(characters,["pushHipsBack","scissor","thrust","mountFromBehind","rideDick","pushDickBack"]);
+		var textResults = charactersLearnSceneActions(characters,["pushHipsBack","pushAssBack","scissor","thrust","mountFromBehind","rideDick","pushDickBack"]);
 		return textResults;
 	}
 	scr.getContent = getScrollTheBasicsOfSexContent;
@@ -148,7 +207,7 @@ window.createScrollTheTasteOfPleasure = function() {
 	var scr = new Scroll("theTasteOfPleasure","The Taste Of Pleasure","shortStory");
 	scr.firstTimeEffect = function(characters) {
 		var textResults = charactersLearnSceneActions(characters,["kneel","makeKneel","legHoldHead","getBlowjob","fuckFace","suckDick","lickPussy",
-						  "rideFace"]);
+						  "rideFace","giveCunnilingus","giveBlowjob"]);
 		return textResults;
 	}
 	scr.getContent = getScrollTheTasteOfPleasure;
@@ -180,7 +239,7 @@ window.getScrollSurprisedInTheRearContent = function() {
 window.createScrollSurprisedInTheRear = function() {
 	var scr = new Scroll("surprisedInTheRear","Surprised in the Rear","shortStory");
 	scr.firstTimeEffect = function(characters) {
-		var textResults = charactersLearnSceneActions(characters,['strokeAss','penetrateAss','analThrust','doublePenetration','doubleThrust']);
+		var textResults = charactersLearnSceneActions(characters,['strokeAss','penetrateAss','analThrust','doublePenetration','doubleThrust','analMountDick','analRideDick','analPushDickBack']);
 		return textResults;
 	}
 	scr.getContent = getScrollSurprisedInTheRearContent;
@@ -289,7 +348,7 @@ window.getScrollPunishingTheTraitorsContent = function() {
 window.createScrollPunishingTheTraitors = function() {
 	var scr = new Scroll("punishingTheTraitors","Punishing The Traitors","shortStory");
 	scr.firstTimeEffect = function(characters) {
-		var textResults = charactersLearnSceneActions(characters,['denyOrgasm','teaseLockedPussy','teaseLockedDick']);
+		var textResults = charactersLearnSceneActions(characters,['denyOrgasm','teaseLockedPussy','teaseLockedDick','baTeaseLockedDick','baTeaseLockedPussy']);
 		return textResults;
 	}
 	
@@ -297,6 +356,69 @@ window.createScrollPunishingTheTraitors = function() {
 	scr.mayBeFound = function(characters) {
 		var flag = false;
 		if ( State.variables.daycycle.day > 10 || State.variables.daycycle.month > 1 ) {
+			flag = true;
+		}
+		return flag;
+	}
+	return scr;
+}
+
+// Tribute for the Goddess
+window.getScrollTributeForTheGoddess = function() {
+	var content = 'Characters: Aspenn (Leirien male), Indomitable Will (Beastkin lion male), Wind (Beastkin bat male), Innocence (Beastkin bunny female), Wisdom (Beastkin fox female), Fury (Beastkin leopard male)\n\n' +
+		'Tags: Orgy, Female x Male, Female x Female, Male x Male, Exhibitionism, Hypnosis, Vaginal, Oral, Anal, Facesitting\n\n' +
+		'Note: While this text is based on the historical record, specific facts have most likely been altered for narrative purposes.\n\n' +
+		'"Are your whelps ready?" Aspenn asked to the Beastkin leader.\n\n' +
+		'Will looked around filled with distrust. The figure these peoples worshipped as their Goddess was at a platform at the top of the stairs, hidden behind an opaque veil. As it appeared, not even at this time would she bother to let him hear her voice. Will turned his eyes down, at the base of the hill. His people braced each other, not completely certain about their fate.\n\n' +
+		'"As ready as they will ever be." He replied plainly.\n\n' +
+		'"...But they could use some help, couldn\'t they?" The Leirien High Priest looked at his subordinates, and gestured them to proceed. The other priests went down the hill and took yellow and orange flowers out of leather bags, placing them around the Beastkin peoples. A small minority of them checked the flowers with curiosity, and they were the first ones to fall.\n\n' + 
+		'"Wind, are you ok? You\'re making a strange face..."\n\n' +
+		'Wind\'s face had gone from displaying excitement to dizziness, his bat face taking an unusual reddish colour. He was soon intensely gazing at his bunnygirl friend.\n\n' +
+		'"W-Wind? You\'re scaring me. Please tell me you\'re ok..."\n\n' +
+		'"Inno... Innocence, come here."\n\n' +
+		'"Ah!?" His mouth assaulted hers, his hands explored her body with impatience. Was this really her friend Wind?\n\n' +
+		'"What have you done?" asked Indomitable Will, half a hundred meters away, "What are you doing to my people!?"\n\n' +
+		'"Relax. They\'re perfectly fine, and they will continue to be." Aspenn declared, with contrasting quietness. "We have just freed them from their natural inhibitions. For a while. That will help you fulfill your part of the deal."\n\n' +
+		'"You..."\n\n' +
+		'Down the hill, the events advanced with heated speed. Wind was rubbing his dick against Innocence\'s crotch, and he would enter her soon.\n\n' +'"Wind, you... Ah~" Innocence\'s protests were about to dissipate, when a new actor joined the play.\n\n' +
+		'"Innocence, I\'ve always wanted to do this." And the young woman\'s lips met those of another friend of hers.\n\n' +
+		'"Wisdom! You... Your husband!" Wisdom\'s husband, a leopard man named Fury, was caressing Wind from behind.\n\n' +
+		'"It\'s fine. He wants this as much as I." Innocence\'s body was now being groped by both Wind and Wisdom, and her mind was starting to succumb to the flower\'s scent, even though she wasn\'t able to pay attention to the smell.\n\n' +
+		'Wind laid the bunnygirl on the ground and kneeled before her, and Wisdom took position to sit on her face. Just as her friend\'s pussy hugged her nose and mouth, Wind\'s cock took Innocence\'s virginity. Behind him, Fury was about to be the first to enter Wind\'s ass.\n\n' +
+		'"You\'re crossing a line here! Some of these men and women had promised to be loyal to each other, and now..."\n\n' +
+		'"Will." Aspenn replied, his tone unwavering.\n\n' +
+		'"Now they\'ve turned into this! This wasn\'t part of the deal!"\n\n' + 
+		'"Will." it wasn\'t just Aspenn\'s voice this time.\n\n' +
+		'"You are going to regret..."\n\n' +
+		'"Behind you, Will." And Will felt it, the presence behind him that was now calling his name.\n\n' +
+		'"Uh!? Who... Who are..."\n\n' +
+		'"I\'m her who you have sworn your allegiance to."\n\n' +
+		'"The veil..."\n\n' +
+		'"Drop to your knees." She didn\'t need to repeat her words. As it turned out, his will wasn\'t so indomitable, after all. "Good. You know what you must do with your mouth, right?"\n\n'
+		'"...Yes..."\n\n' +
+		'"Who could have imagined it? Innocence\'s so enthusiastic about this!" Wisdom shouted as she rode the bunnygirl\'s face. "How is the bat, honey?"\n\n' +
+		'"Much tighter than I expected." Fury replied heavily. "It\'s quite amazing. We should talk more often to these two." Neither Innocence nor Wind could reply: the former had enough with being able to breathe between Wisdom\'s aggressive movements, and the latter was too immersed in the pleasure that engulfed both his dick and his ass.\n\n' +
+		'He wasn\'t the only one. Everyone around them was obeying their most primal impulses, exploring the bodies of their fellow tribespeoples in ways they had never ever imagined.\n\n' + 
+		'"Stop sucking for a moment. Tell me why you\'re doing this."\n\n' +
+		'"I\'m protecting my tribe. You... Demanded a tribute from us in order to be allowed to settle in the Valley, and..." Will was cut off.\n\n' +
+		'"No. Tell me why you\'re really doing this."\n\n' +
+		'"..." Will\'s mouth was open, but words had to fight their way out. "...Because you willed so, and your will is law."\n\n' +
+		'"Honesty is a good trait. Yes... You may have your place here in the Valley, after all."\n\n' +
+		'From that day onwards, the Beastkin became the fourth tribe that worshipped the Goddess, privileged proteges freed from the dangers of the outer world.';
+	return content;
+}
+window.createScrollTributeForTheGoddess = function() {
+	var scr = new Scroll("tributeForTheGoddess","Tribute for the Goddess","shortStory");
+	scr.firstTimeEffect = function(characters) {
+		// TO DO: Learn new positional actions
+		var textResults = charactersLearnSceneActions(characters,['extraMountFromBehind','extraKneel','extraMakeKneel','extraLegHoldHead']);
+		return textResults;
+	}
+	
+	scr.getContent = getScrollTributeForTheGoddess;
+	scr.mayBeFound = function(characters) {
+		var flag = false;
+		if ( State.variables.daycycle.day > 11 || State.variables.daycycle.month > 1 ) {
 			flag = true;
 		}
 		return flag;
@@ -320,10 +442,176 @@ window.getScrollTheBasicsOfCombat = function() {
 window.createScrollTheBasicsOfCombat = function() {
 	var scr = new Scroll("theBasicsOfCombat","The Basics of Combat","gameplayTips");
 	scr.firstTimeEffect = function(characters) {
-		var textResults = charactersLearnSceneActions(characters,['coldGuts']);
+		var textResults = charactersLearnSceneActions(characters,['coldGuts','pounceFrontal']);
 		return textResults;
 	}
 	scr.getContent = getScrollTheBasicsOfCombat;
+	return scr;
+}
+
+	// TUTORIALS
+// A Proper Candidate
+window.getScrollAProperCandidate = function() {
+	var content = "I have found myself in the rare position of having to tutor not one, but two generations of Candidates. This particular position has given me such insight that it would be nothing but wasteful to not to share it as much as possible, not only with those I've had the pleasure of sharing my life with, but with the future generations as well.\n\n"
+				+ "Today's text will discuss one of the fundamental concepts a Candidate should have in mind when pondering about how to make the best out of her training. It's clear to anyone who bothers to use their eyes that not everyone shares the same strengths: some people are fitter, smarter, or more charming, and these traits tend to change over time. Traditionally, the Passion Temple has categorized them in the following way:\n\n"
+				+ "- __Physique__: The capacity of a character to exert physical strength. Used for many physical activities and taxing sexual actions. Raises lust and energy.\n"
+				+ "- __Agility__: The ability of a character to execute tasks that require precision. Used for many sexual actions, and often used to evade physical attacks. Raises lust and energy.\n"
+				+ "- __Resilience__: The capacity of a character to resist exhausting physical work and hits. Most commonly used to resist physical attacks and intense sexual pleasure. Raises lust and energy.\n"
+				+ "- __Will__: Indicates the mental resilience of a character. Often used to resist temptations and evade magical attacks, sometimes useful to cast magic. Raises lust and willpower.\n"
+				+ "- __Intelligence__: Refers to the strength of the mind. Most commonly used to cast complex, precise magic. Raises lust and willpower.\n"
+				+ "- __Perception__: The capacity of a character to detect movements and sounds that would otherwise be ignored. Often useful to evade attacks. Raises lust and willpower.\n"
+				+ "- __Empathy__: Indicates the ability of a character to understand the feelings and motivations of others. Most useful during socialization, also serves to resist social attacks. Raises lust and social drive.\n"
+				+ "- __Charisma__: Refers to the ability of a character to get the most out of their expressions. Most useful during socialization, and it also powers social attacks. Raises lust and social drive.\n"
+				+ "- __Luck__: In a world where everything is connected by aether, luck refers to the harmony of a character with all elements of the world. Improves in very small amounts your dealt sexual pleasure, damage, chances to land or evade attacks, and success during socialization.\n\n"
+				+ "You must have noticed that the Training Grounds have the means to allow the Candidates to better themselves in all of them, but how much effort should each of them receive? The consensus tends to be that both putting all your effort into a single trait or distributing your efforts equally are misguided strategies in the long run. A more sensible approach is analyzing which ones are more important in your daily life and challenges, and approach them with proportional attention: if you rely in your peers for protection, it'd be most appropriate to polish your charms to keep them in your good sides; if you rely on magic to fulfill your goals, pay extra attention to your intelligence and will. Sometimes it's a good decision to dedicate a moderate amount of training to traits you don't directly use, but allow you to resist your daily life's challenges. Don't be afraid to commit excessive mistakes on your early days: you will have opportunities to get back on your feet.\n\n"
+				+ "It should also be mentioned that people usually have more or less affinity towards some of these traits, which may be noticed by witnessing how much they improve with the same amount of effort. Naturally, it would be wise to rely on skills that your own body and mind are properly tuned with. While it's extremely rare, you may come across situations that could allow you to steer these affinities in more productive directions, should you decide it's worth it.";
+	return content;
+}
+window.createScrollAProperCandidate = function() {
+	var scr = new Scroll("aProperCandidate","A Proper Candidate","tutorial");
+	scr.firstTimeEffect = function(characters) {
+		var textResults = "";
+		var expPoints = 50;
+		for ( var character of characters ) {
+			gC(character).resilience.addExperience(expPoints);
+			textResults += gC(character).getFormattedName() + " gained " + (expPoints * gC(character).resilience.affinity).toFixed(1) + " resilience experience points.\n";
+		}
+		return textResults;
+	}
+	
+	scr.getContent = getScrollAProperCandidate;
+	scr.mayBeFound = function(characters) {
+		var flag = false;
+		if ( State.variables.daycycle.day > 2 || State.variables.daycycle.month > 1 ) {
+			flag = true;
+		}
+		return flag;
+	}
+	return scr;
+}
+
+// The Arts of Socializing
+window.getScrollTheArtsOfSocializing = function() {
+	var content = "Talking to others is a task full of intricacies, even if we -or most of us- are intrinsecally equipped to have some sort of understanding. While some people move through social environments like they're fish in the water, some may lack some nuances, or may even be completely unaware that others measure their own moves with very specific goals in mind.\n\n"
+				+ "While it may look like we have absolute free will over our own actions, the reality is that what we can say or think is limited by our own emotions and our understanding of ourselves, to the point that you may desire, in the depths of your heart, to grow closer with someone, but your heart will have trouble to allow you to take the first step. If you grow for long enough on some of your traits -fundamentally your empathy, but also your charisma and luck to some degree-, you will eventually find it easier for your guts to allow you to steer the conversation in a wider variety of directions.\n\n"
+				+ "You must also be aware that your own emotions and mood will severely affect what your mind is willing to do: someone angry is more likely to scale a confrontation, while someone sinking in lust is prone to flirting - and everything that happens in a social environment will affect everyone's mood. Therefore, you must take into account several considerations: you should try to reach a state of mind favorable to your goals, you should try to make your peers reach a state of mind favorable to your goals, and some of your peers will try to get the others, including you, into a state of mind favorable to their goals. Your goals and those of your peers may allign, allign partially, be indifferent to each other or be completely incompatible. Make sure you notice what your peers are trying to achieve to react as fast as possible, if so you'd need. Everyone's mood has a resting point they will naturally move towards, so getting intimate, flirty or dominant enough with someone may be out of your reach today - keep training and it will become possible in the future.\n\n"
+				+ "A common misconception is that charisma is the one and only trait a Candidate who wants to improve their socializing should be focusing on. While charisma is fundamental, especially to steer the initial course of a conversation, other traits also play a role, most commonly when the conversation takes a more physical turn. Will, agility, empathy, physique and luck are also occasionally useful.\n\n"
+				+ "A final point that should be mentioned here are invitations and offers, which are accepted and rejected for all kinds of reasons, the most important ones usually being the person's mood, their relationship with the offering person, their desires, their goals and their values. The desire is a specially important one: when an offer in put on the table, the receiver may have a natural desire to accept it, even if their reason tells them otherwise. If this desire is strong enough, they may have to fight their willpower to reject the offer - and they may not be strong-willed enough to do so. In this case, they will accept the offer, but may hold some resentment towards the other person anyway.";
+	return content;
+}
+window.createScrollTheArtsOfSocializing = function() {
+	var scr = new Scroll("artsSocializing","The Arts Of Socializing","tutorial");
+	scr.firstTimeEffect = function(characters) {
+		var textResults = "";
+		var expPoints = 50;
+		for ( var character of characters ) {
+			gC(character).empathy.addExperience(expPoints);
+			textResults += gC(character).getFormattedName() + " gained " + (expPoints * gC(character).empathy.affinity).toFixed(1) + " empathy experience points.\n";
+		}
+		return textResults;
+	}
+	
+	scr.getContent = getScrollTheArtsOfSocializing;
+	scr.mayBeFound = function(characters) {
+		var flag = false;
+		if ( State.variables.daycycle.day > 2 || State.variables.daycycle.month > 1 ) {
+			flag = true;
+		}
+		return flag;
+	}
+	return scr;
+}
+
+// The Arts of Bed
+window.getScrollTheArtsOfBed = function() {
+	var content = "The sexual arts should be a core skill for all Priestesses and Priests of the Goddess, for sex is not only a tool to keep the tribes united and harmonious, but also an instrument to gather aether.\n\n"
+				+ "Some core concepts are desires and tastes for specific activities and actions - providing attention to your partners' preferences and desires is a great help to make your relations more satisfying. Desires are usually volatile, fleeting and easy to notice, and you can often evoke them with your own actions. Preferences tend to stay the same over time, but sometimes change due to each person's experiences, especially if they usually orgasm doing specific acts. If you get really close to someone, you should get some good insight of what their preferences currently are. Prior to that, you may infer some of their preferences by how much they like which acts.\n\n"
+				+ "Once someone's excitement reaches its limit, they will orgasm, releasing some aether in the process. Reaching orgasm with your partners usually changes your predisposition towards them, especially regarding the context, such as how much people are sharing that intimate experience, who has the lead, and how long has it been since the last time the partners had sex. Unexperienced Candidates may not know that not all orgasms are equal, and some may be ruined or mindblowing. Ruined orgasms happen when the climax is interrupted or isn't allowed to properly conclude - they erode the victim's willpower and it's generally considered rude or outright hostile to ruin someone's orgasms. Mindblowing orgasms may take place depending on how much enjoyment the pleasured person has already had during the encounter, and how much their excitement is pushed far beyond its limits during climax. It is generally hard for new Candidates to get their partners to reach mindblowing orgasms. Regarding the changes in sexual preferences, both ruined and mindblowing orgasms have far greater effects in changing someone's tastes.\n\n"
+				+ "Finally, I should make some mention of the lead during sex. Unless it has been previously decided that some people will or will not have the lead, each participant during sex will slowly get the chance to take the initiative. Keep in mind, however, that those with depleted willpower will have further trouble taking such initiative, which may render someone virtually submissive during an encounter which would have otherwise been on equal terms.";
+	return content;
+}
+window.createScrollTheArtsOfBed = function() {
+	var scr = new Scroll("artsBed","The Arts of Bed","tutorial");
+	scr.firstTimeEffect = function(characters) {
+		var textResults = "";
+		var expPoints = 50;
+		for ( var character of characters ) {
+			gC(character).agility.addExperience(expPoints);
+			textResults += gC(character).getFormattedName() + " gained " + (expPoints * gC(character).agility.affinity).toFixed(1) + " agility experience points.\n";
+		}
+		return textResults;
+	}
+	
+	scr.getContent = getScrollTheArtsOfBed;
+	scr.mayBeFound = function(characters) {
+		var flag = false;
+		if ( State.variables.daycycle.day > 2 || State.variables.daycycle.month > 1 ) {
+			flag = true;
+		}
+		return flag;
+	}
+	return scr;
+}
+
+// The Arts of Combat
+window.getScrollTheArtsOfCombat = function() {
+	var content = "All Candidates should be well versed in the arts of battle, for being able to take up arms may be the difference between defending peace in the Valley and a painful descent into chaos. The generally accepted goal of combat is to bring your opponents into bursting aether out, which will incapacitate them for a while. This may be done through physical or magical means, but if your opponent is a person, and not a monster, sexual and social approaches may also work.\n\n"
+				+ "A very important aspect of combat is control, or your capacity to stay on your feet and maintain your balance. While control is usually recovered on its own, once it's depleted, the combatant will remain extremely vulnerable to all kind of attacks, the most dangerous of which will lock them into an even more precarious position. If this happens, the only way to recover control is to deplete the control of your aggressor. Struggling is often a fairly direct and efficient method to achieve this goal, but it won't be as useful if you're missing willpower or energy, or if by some reason you're unable to move your arms or legs.\n\n"
+				+ "Most actions you may use in combat have a chance to fail. By taking a moment to analyze the action, you may soon realize which traits are most effective for you or for your opponent to have when attempting to land them, or to evade them. It is fairly well known that pouncing on a target who has lost all their control will always be successful - it's not as well known that some types of actions are more or less likely to hit if you and your target are struggling hand to hand: projectiles will be less precise, hits will be less so, and contact actions will always be successful.\n\n"
+				+ "Through my whole life, I've also noticed that some people have specific affinities with certain types of actions: some may be weaker to social attacks, or more effective when tempting their enemies with sex. When it comes to specific tribes, it looks like Leirien tend to be weak to fire attacks. The Aiishen usually have stronger magical attacks, weak defenses against magic, higher resistance against physical attacks, and weaker physical attacks. While it isn't intrinsic to them, quite a few Ashwalkers are particularly skillful at using weapons, which shouldn't surprise anyone who knows well their traditions.";
+	return content;
+}
+window.createScrollTheArtsOfCombat = function() {
+	var scr = new Scroll("artsCombat","The Arts of Combat","tutorial");
+	scr.firstTimeEffect = function(characters) {
+		var textResults = "";
+		var expPoints = 50;
+		for ( var character of characters ) {
+			gC(character).will.addExperience(expPoints);
+			textResults += gC(character).getFormattedName() + " gained " + (expPoints * gC(character).will.affinity).toFixed(1) + " will experience points.\n";
+		}
+		return textResults;
+	}
+	
+	scr.getContent = getScrollTheArtsOfCombat;
+	scr.mayBeFound = function(characters) {
+		var flag = false;
+		if ( State.variables.daycycle.day > 10 || State.variables.daycycle.month > 1 ) {
+			flag = true;
+		}
+		return flag;
+	}
+	return scr;
+}
+
+// Deeper Relationships
+window.getScrollDeeperRelationships = function() {
+	var content = "It is sensible for a Candidate to plan ahead on which kind of relationships they wish to have with their peers, since weaving a stronger web of alliances than anyone else is a valid strategy to gaining the High Priestesshood - or at least to make sure that the winner is as favorable to you and your interests as possible.\n\n"
+				+ "You are probably aware that relationships are complex dynamics that aren't easy to categorize. Love and desire, rivalry and enmity do not always go hand, and the complexities of the relationships you develop with your peers will be shaped by both your goals, theirs, and the life events that you have to go through. Remember that relationships that aren't constantly nurtured decay to become shadow of what they once were, but the past memories of your past love, passion and hate are hard to remove.\n\n"
+				+ "Some generations of Candidates compete with specific rules involving special relationships. These are rules that temporarily shackle each person into a set of rules regarding how they must behave with each other. These special relationships may be egalitarian or hierarchical. Anyone may have as many egalitarian and dominant relationships as they wish, but only one submissive relationship at a time. If you have a submissive relationship, you will also be locked out of having any dominant relationships. These relationships usually change how each of their members view each other, but this is merely a temporary effect. Keep in mind that the duration of these special relationships may change as your training advances.\n\n"
+				+ "Each person has their own values and goals in life, and this is usually even more important for Candidates, as one of them will hold considerable power over the Valley. These values and goals may be well defined, but they are never set in stone, and may change as the events change their holders. Your relationships with your peers and how you relate to each other will contribute to this - and in extreme cases, the combined efforts of several Candidates will create a dynamic where certain values will reign supreme. If everyone around you is obsessed about controlling others and not being controlled, power and domination will become universal values. Pay effort to build the Temple and Valley that you'd like to live in.";
+	return content;
+}
+window.createScrollDeeperRelationships = function() {
+	var scr = new Scroll("deeperRelationships","Deeper Relationships","tutorial");
+	scr.firstTimeEffect = function(characters) {
+		var textResults = "";
+		var expPoints = 50;
+		for ( var character of characters ) {
+			gC(character).charisma.addExperience(expPoints);
+			textResults += gC(character).getFormattedName() + " gained " + (expPoints * gC(character).charisma.affinity).toFixed(1) + " charisma experience points.\n";
+		}
+		return textResults;
+	}
+	
+	scr.getContent = getScrollDeeperRelationships;
+	scr.mayBeFound = function(characters) {
+		var flag = false;
+		if ( State.variables.daycycle.day > 10 || State.variables.daycycle.month > 1 ) {
+			flag = true;
+		}
+		return flag;
+	}
 	return scr;
 }
 
@@ -331,6 +619,8 @@ setup.scrollsList = [];
 setup.scrollsList.onAether = createScrollOnAether();
 setup.scrollsList.onFamily = createScrollOnFamily();
 setup.scrollsList.theWilds = createScrollTheWilds();
+setup.scrollsList.gleamingCaverns = createScrollGleamingCaverns();
+setup.scrollsList.shapeshifterCustoms = createScrollShapeshifterCustoms();
 setup.scrollsList.theBasicsOfSex = createScrollTheBasicsOfSex();
 setup.scrollsList.theTasteOfPleasure = createScrollTheTasteOfPleasure();
 setup.scrollsList.surprisedInTheRear = createScrollSurprisedInTheRear();
@@ -338,6 +628,12 @@ setup.scrollsList.paybackForTheThief = createScrollPaybackForTheThief();
 setup.scrollsList.pillowFeetFight = createScrollPillowFeetFight();
 setup.scrollsList.punishingTheTraitors = createScrollPunishingTheTraitors();
 setup.scrollsList.theBasicsOfCombat = createScrollTheBasicsOfCombat();
+setup.scrollsList.tributeForTheGoddess = createScrollTributeForTheGoddess();
+setup.scrollsList.aProperCandidate = createScrollAProperCandidate();
+setup.scrollsList.artsSocializing = createScrollTheArtsOfSocializing();
+setup.scrollsList.artsBed = createScrollTheArtsOfBed();
+setup.scrollsList.artsCombat = createScrollTheArtsOfCombat();
+setup.scrollsList.deeperRelationships = createScrollDeeperRelationships();
 
 window.getScrollsStringList = function() {
 	var scrollsList = [];
@@ -371,6 +667,8 @@ window.getScrollTypeText = function(scr) {
 		case "gameplayTips":
 			txt = "Gameplay tips";
 			break;
+		case "tutorial":
+			txt = "Tutorial";
 	}
 	return txt;
 }

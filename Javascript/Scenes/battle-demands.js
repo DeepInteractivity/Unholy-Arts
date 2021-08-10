@@ -139,6 +139,13 @@ window.createBdemandHumillitation = function() {
 		// Rivalry
 		getRelation(actor,target).rivalry.stv += rivalryApplied;
 		getRelation(target,actor).rivalry.stv += rivalryApplied;
+		// Sex preferences
+		if ( limitedRandomInt(100) > 75 ) {
+			gC(actor).tastes.domination.w += limitedRandomInt(6);
+		}
+		if ( limitedRandomInt(100) > 75 ) {
+			gC(actor).tastes.submission.w += limitedRandomInt(8);
+		}
 		return 1;
 	}
 	bDemand.resultMessage = function(actor,target,battleWeight,infamyMultiplier,extra1,extra2) {
@@ -183,7 +190,7 @@ window.createBdemandForceSex = function() {
 
 	bDemand.isPossible = function(actor,target,battleWeight) {
 		var isPossible = false;
-		if ( battleWeight >= 2 && gSettings().battleDefeatSex == "enable" ) {
+		if ( isLewdingPossible(actor,target) && battleWeight >= 2 && gSettings().battleDefeatSex == "enable" ) {
 			isPossible = true;
 		}
 		return isPossible;
@@ -205,6 +212,13 @@ window.createBdemandForceSex = function() {
 		getRelation(target,actor).sexualTension.stv += 10;
 		// Rivalry
 		getRelation(target,actor).rivalry.stv += 10;
+		// Sex preferences
+		if ( limitedRandomInt(100) > 75 ) {
+			gC(actor).tastes.domination.w += limitedRandomInt(3);
+		}
+		if ( limitedRandomInt(100) > 75 ) {
+			gC(actor).tastes.submission.w += limitedRandomInt(5);
+		}
 		// Dominant sex event - Dismantle groups , event, scene, sceneConsequences, chPlayerCharacter check
 		for ( var charParticipant of [actor,target] ) {
 			for ( var charFollower of gC(charParticipant).followedBy ) {
@@ -266,7 +280,7 @@ window.createBdemandForceServitude = function() {
 	bDemand.isPossible = function(actor,target,battleWeight) {
 		var isPossible = false;
 		if ( gC(actor).type == "candidate" && gC(target).type == "candidate" && battleWeight >= 3 && gSettings().servitudeRelationships == "enable" ) {
-			if ( gC(actor).domChar == null && gC(target).domChar == null && gC(target).subChars.length < 1 ) {
+			if ( gC(actor).domChar == null && gC(target).domChar == null && gC(target).subChars.length < 1 && gC(actor).egaChars.includes(target) == false ) {
 				isPossible = true;
 			}
 		}
@@ -290,8 +304,15 @@ window.createBdemandForceServitude = function() {
 		// Enmity
 		getRelation(target,actor).enmity.stv += 20;
 		// Special relationship
-		createRelTypeServitudeDom(actor,target,3);
-		createRelTypeServitudeSub(target,actor,3);
+		createRelTypeServitudeDom(actor,target,gSettings().relationshipsDuration);
+		createRelTypeServitudeSub(target,actor,gSettings().relationshipsDuration);
+		// Sex preferences
+		if ( limitedRandomInt(100) > 75 ) {
+			gC(actor).tastes.domination.w += limitedRandomInt(4);
+		}
+		if ( limitedRandomInt(100) > 75 ) {
+			gC(actor).tastes.submission.w += limitedRandomInt(6);
+		}
 		return 1;
 	}
 	bDemand.resultMessage = function(actor,target,battleWeight,infamyMultiplier,extra1,extra2) {
@@ -322,6 +343,7 @@ window.createBdemandForceServitude = function() {
 		if ( gC(actor).mission == "gainSubmissive" ) { value = (value + 10) * 2; }
 		if ( gC(actor).socialAi.covetTs.includes(target) ) { value *= 1.6; }
 		if ( gC(actor).socialAi.conquestTs.includes(target) ) { value *= 2; }
+		value *= (1 + gC(actor).tastes.domination.r * 0.2);
 		return [getBattleDemandChoiceValueNpc(value,this,extra1,extra2)];
 	}
 	
@@ -360,10 +382,12 @@ window.createBdemandForceLiberation = function() {
 		gC(actor).changeInfamy(this.calculateInfamy(actor,target,battleWeight,infamyMultiplier));
 		// Rivalry
 		getRelation(target,actor).rivalry.stv += 25;
-		// Friendship
-		getRelation(extra1,actor).friendship.stv += 100;
-		// Romance
-		getRelation(extra1,actor).friendship.stv += 100;
+		if ( extra1 != actor ) {
+			// Friendship
+			getRelation(extra1,actor).friendship.stv += 100;
+			// Romance
+			getRelation(extra1,actor).friendship.stv += 100;
+		}
 		// Terminate special relationship
 		finishRelType(target,extra1);		
 		return 1;
@@ -459,8 +483,8 @@ window.createBdemandStealServant = function() {
 		// Terminate special relationship
 		finishRelType(target,extra1);		
 		// Create new servitude relationship
-		createRelTypeServitudeDom(actor,extra1,3);
-		createRelTypeServitudeSub(extra1,actor,3);
+		createRelTypeServitudeDom(actor,extra1,gSettings().relationshipsDuration);
+		createRelTypeServitudeSub(extra1,actor,gSettings().relationshipsDuration);
 		return 1;
 	}
 	bDemand.resultMessage = function(actor,target,battleWeight,infamyMultiplier,extra1,extra2) {
@@ -674,6 +698,7 @@ window.createBdemandForceBondage = function() {
 		if ( gC(actor).mission == "gainDomination" ) { value = (value + 3) * 1.3; }
 		if ( gC(actor).socialAi.conquestTs.includes(target) ) { value *= 1.5; }
 		if ( gC(actor).socialAi.rivalTs.includes(target) ) { value *= 1.8; }
+		value *= (1 + gC(actor).tastes.bondage.r * 0.2 );
 		return [getBattleDemandChoiceValueNpc(value,this,extra1,extra2)];
 	}	
 	

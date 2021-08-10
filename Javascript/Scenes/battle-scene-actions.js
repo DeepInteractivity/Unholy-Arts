@@ -93,10 +93,10 @@ window.getWeaknessToAttackText = function(attackFlavors,target) {
 		weaknessMessage = colorText("Frail attack. ","lightcyan");
 	} else if ( finalWeakness <= 0.9 ) {
 		weaknessMessage = colorText("Resisted attack. ","deepskyblue");
-	} else if ( finalWeakness >= 1.1 ) {
-		weaknessMessage = colorText("It was effective! ","darkorange");
 	} else if ( finalWeakness >= 1.5 ) {
 		weaknessMessage = colorText("Devastating! ","orangered");
+	} else if ( finalWeakness >= 1.1 ) {
+		weaknessMessage = colorText("It was effective! ","darkorange");
 	}
 	
 	return weaknessMessage;
@@ -116,7 +116,7 @@ window.createSaStruggle = function() {
 	
 	sa.strategyTags.push("struggle");
 	
-	sa.description = "The character trashes against their target to get off the ground.\n"
+	sa.description = "The character thrashes against their target to get off the ground.\n"
 				   + "This attack damages the target's control. If it reaches zero, the character will be freed.\n"
 				   + "\n\nStruggle."
 				   + "\n\n__Influences__:\nControl damage: Proportion between actor's and target's physique, agility, resilience and will."
@@ -374,8 +374,248 @@ window.createSaBaStrokePussy = function() {
 	return sa;
 }
 
-	// Pounces and derived sexual
+		// Denial
+
+window.createSaBaTeaseLockedDick = function() {
+	var sa = new sceneAction();
+	sa.name = "Tease locked dick";
+	sa.key = "baTeaseLockedDick";
+	sa.actionType = "contact";
+	sa.targetType = "single";
 	
+	sa.tags.push("bs");
+	sa.tags.push("sUse");
+	sa.reqTags.push("diffTarget");
+	
+	sa.actorBpReqs.push("arms");
+	sa.targetLockedBpReqs.push("dick");
+	
+	sa.strategyTags.push("damage","sex","useArms","targetDick");
+	sa.affinities.push("sex","useArms","targetDick");
+	
+	sa.getIsAllowedBySettings = function() {
+		var isAllowed = true;
+		
+		if ( State.variables.settings.chastity == "disable" ) {
+			isAllowed = false;
+		}
+		
+		return isAllowed;
+	}
+	
+	sa.description = "The character taunts their target, reminding them of their locked dick.\n"
+				   + "This attack damages the target. Extra damage if the target is close to orgasm.\n\nSingle target action."
+				   + "\n\nSexual contact attack."
+				   + "\n\n__Influences__:\nDamage: Actor's agility."
+				   + "\nEvasion: Actor's agility x5, actor's perception x5, actor's control.\nTarget's agility x7, target's perception x7, target's control.";
+				   
+	sa.doesHitLand = function(actor,target) {
+		var evasionPlus = gCstat(actor,"agility") * 0.25 + gCstat(actor,"perception") * 0.25 + gC(actor).control * 4;
+		var evasionMinus = gCstat(target,"agility") * 0.35 + gCstat(target,"perception") * 0.35 + gC(target).control * 4 + 20;
+		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+	}		   			
+				   
+	sa.execute = function(actor,targetActors) {
+		applySaCosts(this,actor);
+		
+		var results = new saResults;
+		var target = targetActors[0];
+		
+		// Evasion
+		var evResults = this.doesHitLand(actor,target);
+		
+		if ( evResults.hit ) { // Hit lands
+			// Damage
+			var inDamValue = gCstat(actor,"agility") * 0.5 + gCstat(actor,"empathy") * 0.5;
+			inDamValue = addLuckFactor(inDamValue,0.1,gCstat(actor,"luck"));
+			var damage = calculateAttackEffects("lust",actor,target,this.affinities,inDamValue);
+			var dmgEffMsg = getWeaknessToAttackText(this.affinities,target);
+			// Apply
+			gC(target).lust.attack(-damage);
+			results.value = damage;
+			var lustPc = getBarPercentage(target,"lust");
+			// Description && limit KO
+			results.description += randomFromList( [
+										(ktn(actor) + " teased " + ktn(target) + "'s locked " + dickWord() + ", much to " + gC(target).posPr + " frustration."),
+										(ktn(actor) + " massaged " + ktn(target) + "'s locked " + dickWord() + " causing " + gC(target).comPr + " some agony."),
+										(ktn(actor) + " maliciously rubbed " + ktn(target) + "'s locked " + dickWord() + ".")
+									] );
+			var extraDamage = 0;
+			if ( lustPc <= 0.1 ) {
+				extraDamage = gC(target).lust.max;
+				gC(target).lust.attack(-extraDamage);
+				results.description += " " + randomFromList( [
+										(ktn(target) + " gave in to the humilliation."),
+										(ktn(target) + " couldn't hold the shame.")
+									] );
+			}
+			results.description += " " + dmgEffMsg + ktn(target) + " received " + textLustDamage(damage + extraDamage) + ".\n" + evResults.explanation;
+		} else { // Hit fails
+			results.value = 0;
+			results.description = ktn(actor) + " tried to tease " + ktn(target) + ", but failed!\n" + evResults.explanation;
+		}
+		
+		return results;
+	}
+	return sa;
+}
+
+window.createSaBaTeaseLockedPussy = function() {
+	var sa = new sceneAction();
+	sa.name = "Tease locked pussy";
+	sa.key = "baTeaseLockedPussy";
+	sa.actionType = "contact";
+	sa.targetType = "single";
+	
+	sa.tags.push("bs");
+	sa.tags.push("sUse");
+	sa.reqTags.push("diffTarget");
+	
+	sa.actorBpReqs.push("arms");
+	sa.targetLockedBpReqs.push("pussy");
+	
+	sa.strategyTags.push("damage","sex","useArms","targetPussy");
+	sa.affinities.push("sex","useArms","targetPussy");
+	
+	sa.getIsAllowedBySettings = function() {
+		var isAllowed = true;
+		
+		if ( State.variables.settings.chastity == "disable" ) {
+			isAllowed = false;
+		}
+		
+		return isAllowed;
+	}
+	
+	sa.description = "The character taunts their target, reminding them of their locked pussy.\n"
+				   + "This attack damages the target. Extra damage if the target is close to orgasm.\n\nSingle target action."
+				   + "\n\nSexual contact attack."
+				   + "\n\n__Influences__:\nDamage: Actor's agility."
+				   + "\nEvasion: Actor's agility x5, actor's perception x5, actor's control.\nTarget's agility x7, target's perception x7, target's control.";
+				   
+	sa.doesHitLand = function(actor,target) {
+		var evasionPlus = gCstat(actor,"agility") * 0.25 + gCstat(actor,"perception") * 0.25 + gC(actor).control * 4;
+		var evasionMinus = gCstat(target,"agility") * 0.35 + gCstat(target,"perception") * 0.35 + gC(target).control * 4 + 20;
+		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+	}		   			
+				   
+	sa.execute = function(actor,targetActors) {
+		applySaCosts(this,actor);
+		
+		var results = new saResults;
+		var target = targetActors[0];
+		
+		// Evasion
+		var evResults = this.doesHitLand(actor,target);
+		
+		if ( evResults.hit ) { // Hit lands
+			// Damage
+			var inDamValue = gCstat(actor,"agility") * 0.5 + gCstat(actor,"empathy") * 0.5;
+			inDamValue = addLuckFactor(inDamValue,0.1,gCstat(actor,"luck"));
+			var damage = calculateAttackEffects("lust",actor,target,this.affinities,inDamValue);
+			var dmgEffMsg = getWeaknessToAttackText(this.affinities,target);
+			// Apply
+			gC(target).lust.attack(-damage);
+			results.value = damage;
+			var lustPc = getBarPercentage(target,"lust");
+			// Description && limit KO
+			results.description += randomFromList( [
+										(ktn(actor) + " teased " + ktn(target) + "'s locked " + pussyWord() + ", much to " + gC(target).posPr + " frustration."),
+										(ktn(actor) + " massaged " + ktn(target) + "'s locked " + pussyWord() + " causing " + gC(target).comPr + " some agony."),
+										(ktn(actor) + " maliciously rubbed " + ktn(target) + "'s locked " + pussyWord() + ".")
+									] );
+			var extraDamage = 0;
+			if ( lustPc <= 0.1 ) {
+				extraDamage = gC(target).lust.max;
+				gC(target).lust.attack(-extraDamage);
+				results.description += " " + randomFromList( [
+										(ktn(target) + " gave in to the humilliation."),
+										(ktn(target) + " couldn't hold the shame.")
+									] );
+			}
+			results.description += " " + dmgEffMsg + ktn(target) + " received " + textLustDamage(damage + extraDamage) + ".\n" + evResults.explanation;
+		} else { // Hit fails
+			results.value = 0;
+			results.description = ktn(actor) + " tried to tease " + ktn(target) + ", but failed!\n" + evResults.explanation;
+		}
+		
+		return results;
+	}
+	return sa;
+}
+
+	// Pounces and derived sexual
+
+window.createSaNeutralFrontalPounce = function() {
+	var sa = new sceneAction();
+	sa.name = "Frontal Pounce";
+	sa.key = "pounceFrontal";
+	
+	sa.actionType = "pounce";
+	sa.targetType = "single";
+	sa.energyCost = 5;
+	
+	sa.tags.push("bs","bPos");
+	sa.reqTags.push("diffTarget","control");
+	sa.actorBpReqs.push("legs");
+	
+	sa.strategyTags.push("pounce","bPos","frontal","subpar");
+	sa.affinities.push("pounce","useDick","targetPussy");
+	
+	sa.description = "The character pushes their target to the ground, taking the initiative.\n"
+				   + "Costs 5 energy.\n\nSingle target action."
+				   + "\nActor requires control and free legs."
+				   + "\n\nPounce attack."
+				   + "\n\n__Influences__:\nDamage: Actor's physique x3, actor's agility x1."
+				   + "\nEvasion: Actor's agility x5, actor's physique x5, actor's control.\nTarget's agility x7, target's physique x7, target's control.";
+				   
+	sa.doesHitLand = function(actor,target) {
+		var evasionPlus = gCstat(actor,"physique") * 0.25 + gCstat(actor,"agility") * 0.25 + gC(actor).control * 5;
+		var evasionMinus = gCstat(target,"physique") * 0.35 + gCstat(target,"agility") * 0.35 + gC(target).control * 15;
+		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+	}
+	sa.execute = function(actor,targetActors) {
+		applySaCosts(this,actor);
+		
+		var results = new saResults;
+		var target = targetActors[0];
+		
+		// Evasion
+		var evResults = this.doesHitLand(actor,target);
+		
+		if ( evResults.hit ) { // Hit lands
+			// Initial damage
+			var inDamValue = gCstat(actor,"physique") * 0.3 + gCstat(actor,"agility") * 0.1;
+			inDamValue = addLuckFactor(inDamValue,0.1,gCstat(actor,"luck"));
+			var damage = calculateAttackEffects("lust",actor,target,this.affinities,inDamValue);
+			var dmgEffMsg = getWeaknessToAttackText(this.affinities,target);
+			// Apply
+			gC(target).lust.attack(-damage);
+			depleteControl(target);
+			results.value = damage;
+			
+			// Position
+			createBposFrontalPounce(actor,[target]);
+				
+			// Description
+			results.description += randomFromList( [
+										(ktn(actor) + " pushed " + ktn(target) + " to the ground and started holding " + gC(target).comPr + " in place."),
+										(ktn(actor) + " pounced on " + ktn(target) + " and mounted " + gC(target).comPr + "."),
+										(ktn(actor) + " jumped on " + ktn(target) + " and trapped " + gC(target).comPr + " " + gC(target).refPr + ".")
+									] );
+			results.description += " " + dmgEffMsg + ktn(target) + " received " + textLustDamage(damage) + ". " + generateSaCostsText(this,actor)
+								 + ".\n" + evResults.explanation;
+		} else { // Hit fails
+			results.value = 0;
+			results.description = ktn(actor) + " tried to pounce on " + ktn(target) + ", but failed! " + generateSaCostsText(this,actor)
+								+ ".\n" + evResults.explanation;
+		}
+		
+		return results;
+	}
+	return sa;
+}
+
 window.createSaD2PfrontalPounce = function() {
 	var sa = new sceneAction();
 	sa.name = "Frontal Pounce D2P";
@@ -430,12 +670,12 @@ window.createSaD2PfrontalPounce = function() {
 				
 			// Try virginities
 			if ( gC(target).virginities.pussy.taken == false ) {
-				var vd2 = gC(actor).name + " has taken " + gC(target).name + "'s vaginal virginity!";
+				var vd2 = colorText((gC(actor).name + " has taken " + gC(target).name + "'s vaginal virginity! "),"red") + provokeVirginityBonusRelationship(actor,target);
 				gC(target).virginities.pussy.tryTakeVirginity(actor,"pounceFrontalD2P",vd2);
 			}
 			if ( gC(actor).virginities.dick.taken == false ) {
-				var vd1 = gC(target).name + " has taken " + gC(actor).name + "'s penile virginity!";
-				gC(actor).virginities.dick.tryTakeVirginity(actor,"pounceFrontalD2P",vd1);
+				var vd1 = colorText((gC(target).name + " has taken " + gC(actor).name + "'s penile virginity! "),"red") + provokeVirginityBonusRelationship(target,actor);
+				gC(actor).virginities.dick.tryTakeVirginity(target,"pounceFrontalD2P",vd1);
 			}			
 				
 			// Description
@@ -855,12 +1095,12 @@ window.createSaP2DfrontalPounce = function() {
 				
 			// Try virginities
 			if ( gC(target).virginities.dick.taken == false ) {
-				var vd2 = gC(actor).name + " has taken " + gC(target).name + "'s penile virginity!";
+				var vd2 = colorText((gC(actor).name + " has taken " + gC(target).name + "'s penile virginity! "),"red") + provokeVirginityBonusRelationship(actor,target);
 				gC(target).virginities.dick.tryTakeVirginity(actor,"pounceFrontalP2D",vd2);
 			}
 			if ( gC(actor).virginities.pussy.taken == false ) {
-				var vd1 = gC(target).name + " has taken " + gC(actor).name + "'s vaginal virginity!";
-				gC(actor).virginities.pussy.tryTakeVirginity(actor,"pounceFrontalP2D",vd1);
+				var vd1 = colorText((gC(target).name + " has taken " + gC(actor).name + "'s vaginal virginity! "),"red") + provokeVirginityBonusRelationship(target,actor);
+				gC(actor).virginities.pussy.tryTakeVirginity(target,"pounceFrontalP2D",vd1);
 			}			
 				
 			// Description
@@ -1053,6 +1293,7 @@ window.createSaBaEnergyDrainingKiss = function() {
 	}		   			
 				   
 	sa.execute = function(actor,targetActors) {
+		if ( actor == "chPlayerCharacter" ) { addToStVarsList("monActUs"); }
 		applySaCosts(this,actor);
 		
 		var results = new saResults;
@@ -1127,6 +1368,7 @@ window.createSaBaDrainingKiss = function() {
 	}		   			
 				   
 	sa.execute = function(actor,targetActors) {
+		if ( actor == "chPlayerCharacter" ) { addToStVarsList("monActUs"); }
 		applySaCosts(this,actor);
 		
 		var results = new saResults;
@@ -1462,7 +1704,7 @@ window.createSaEmbers = function() {
 	sa.affinities.push("magic","fire");
 	
 	sa.description = "The character casts ignited dust and throws it against their target.\n"
-				   + "This attack damages the target.\nCosts 2 willpower.\n\nSingle target action."
+				   + "This attack damages the target.\nCosts 1 willpower.\n\nSingle target action."
 				   + "\n\nMagical fire projectile attack."
 				   + "\n\n__Influences__:\nDamage: Actor's intelligence x2, actor's will x1, target's will x-1, target's resilience x-1.\nEvasion: Actor's intelligence x1, actor's perception x1, target's perception x-1, target's will x-1, actor's and target's control."; 
 				   
@@ -1556,8 +1798,8 @@ window.createSaFreezeFeet = function() {
 			inEnDamValue = addLuckFactor(inEnDamValue,0.1,gCstat(actor,"luck"));
 			var energyDamage = calculateAttackEffects("energy",actor,target,this.affinities,inEnDamValue);
 			// Control damage
-			var controlDamage = 0.9; // 0.9 ~ 1.6
-			controlDamage += ((luckedDiceThrow(gCstat(actor,"luck")) * 0.2) + (gCstat(actor,"intelligence") * 0.005));
+			var controlDamage = 1; // 1 ~ 1.7
+			controlDamage += ((luckedDiceThrow(gCstat(actor,"luck")) * 0.3) + (gCstat(actor,"intelligence") * 0.004));
 			// Altered State
 			var asIntensity = addLuckFactor((gCstat(actor,"intelligence") * 0.2),0.1,gCstat(actor,"luck"));
 			var asIntensity = fixIntensity(asIntensity);
@@ -1764,6 +2006,7 @@ window.createSaBaEtherealChains = function() {
 	}		   			
 				   
 	sa.execute = function(actor,targetActors) {
+		if ( actor == "chPlayerCharacter" ) { addToStVarsList("monActUs"); }
 		applySaCosts(this,actor);
 		
 		var results = new saResults;
@@ -2161,6 +2404,7 @@ window.createSaBaHypnoticGlance = function() {
 	}		   			
 		
 	sa.execute = function(actor,targetActors) {
+		if ( actor == "chPlayerCharacter" ) { addToStVarsList("monActUs"); }
 		applySaCosts(this,actor);
 		
 		var results = new saResults;
@@ -2484,7 +2728,7 @@ window.createSaChannelAether = function() {
 		var evResults = this.doesHitLand(actor,target);
 		
 		if ( evResults.hit ) { // Hit lands
-			var recoveredWillpower = gC(actor).willpower.max * ( 0.6 + (luckedDiceThrow(gCstat(actor,"luck"))) * 0.04 + gCstat(actor,"will") * 0.007 + gCstat(actor,"intelligence") * 0.003 );
+			var recoveredWillpower = gC(actor).willpower.max * ( (luckedDiceThrow(gCstat(actor,"luck"))) * 0.004 + gCstat(actor,"will") * 0.007 + gCstat(actor,"intelligence") * 0.003 );
 			gC(actor).willpower.changeValue(recoveredWillpower);
 			results.value = recoveredWillpower;
 			// Description

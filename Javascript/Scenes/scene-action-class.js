@@ -30,7 +30,7 @@ window.isUsableResults = function() {
 	this.explanation = "";
 };
 
-window.isActionUsable = function(actionKey,actorKey,targetsKeys) {
+window.isActionUsable = function(actionKey,actorKey,targetsKeys,skipLinkedCheck) {
 	var iAU = new isUsableResults;
 	
 	var action = setup.saList[actionKey];
@@ -52,6 +52,16 @@ window.isActionUsable = function(actionKey,actorKey,targetsKeys) {
 		if ( gC(targetsKeys[0]).koed && actionKey != "doNothing" ) {
 			iAU.isUsable = false;
 			if ( State.variables.settings.debugFunctions ) {  iAU.explanation += "The target is KO.\n"; }
+		}
+	}
+	
+	// Is lewding allowed
+	if ( State.variables.sc.sceneType == "bs" ) {
+		if ( isLewdingPossible(actorKey,targetsKeys[0]) == false ) {
+			if ( action.affinities.includes("sex") ) {
+			iAU.isUsable = false;
+			if ( State.variables.settings.debugFunctions ) { iAU.explanation += "Lewding involving male characters is disallowed by user-selected settings.\n"; }
+			}
 		}
 	}
 	
@@ -80,10 +90,15 @@ window.isActionUsable = function(actionKey,actorKey,targetsKeys) {
 				}
 				break;
 			case "struggle":
+				if ( State.variables.sc.sceneType != "bs" ) {
+					iAU.isUsable = false;
+					if ( State.variables.settings.debugFunctions ) { iAU.explanation += "This action is only usable in battle scenes.\n"; }
+				}
 				if ( gC(actorKey).position.type != "passive" ) {
 					iAU.isUsable = false;
 					if ( State.variables.settings.debugFunctions ) { iAU.explanation += "This action is only usable if the actor is being held down.\n"; }
 				}
+				break;
 		}
 	}
 	
@@ -215,7 +230,7 @@ window.isActionUsable = function(actionKey,actorKey,targetsKeys) {
 			}
 		}
 	}
-	if ( action.linkedPositions == true ) {
+	if ( action.linkedPositions == true && skipLinkedCheck == false ) {
 		for ( var target of targetsList ) {
 			if ( areCharactersLinked(actorKey,target.varName) == false ) {
 				iAU.isUsable = false;
@@ -236,16 +251,42 @@ window.isActionUsable = function(actionKey,actorKey,targetsKeys) {
 	}
 	
 	// Position
-	if ( action.tags.includes("pos") || action.actionType == "pounce" ) {
+	if ( ( action.tags.includes("pos") || action.actionType == "pounce" ) && skipLinkedCheck == false ) {
 		if ( gC(actorKey).position.key != "free" || gC(targetsKeys[0]).position.key != "free" ) {
 			iAU.isUsable = false;
 			if ( State.variables.settings.debugFunctions ) { iAU.explanation += "The actor and a target should be free to initiate a positional action.\n"; }
 		}
 	}
+	if ( action.tags.includes("cpos") ) {
+		if ( action.getRequiredPositioning(actorKey,targetsKeys[0]) == false  ) {
+			iAU.isUsable = false;
+			if ( State.variables.settings.debugFunctions ) { iAU.explanation += "The target doesn't have a valid position.\n"; }
+		}
+		if ( gC(actorKey).position.key != "free" && gC(targetsKeys[0]).position.key != "free" ) {
+			iAU.isUsable = false;
+			if ( State.variables.settings.debugFunctions ) { iAU.explanation += "At least one character must be free.\n"; }			
+		}
+	}
+	
+	// Continued actions
+	if ( action.requiredActorContinuedActions.length > 0 ) {
+		var caFound = false;
+		for ( var ca of State.variables.sc.continuedActions ) {
+			if ( action.requiredActorContinuedActions.includes(ca.key) ) {
+				if ( ca.initiator == actorKey || ca.targetsList.includes(actorKey) ) {
+					caFound = true;
+				}
+			}
+		}
+		if ( caFound == false ) {
+				iAU.isUsable = false;
+				if ( State.variables.settings.debugFunctions ) { iAU.explanation += "The actor requires to be involved in a specific continued action.\n"; }
+		}
+	}
 	
 	// Lead
 	if ( State.variables.sc.enabledLead != "none" ) {
-		if ( action.tags.includes("cAct") || action.tags.includes("pos") ) {
+		if ( action.tags.includes("cAct") || action.tags.includes("pos") || action.tags.includes("cpos") ) {
 			if ( actor.hasLead == false ) {
 				iAU.isUsable = false;
 				if ( State.variables.settings.debugFunctions ) { iAU.explanation += "Positional and continued actions require the actor to have the lead in this scene.\n"; }
@@ -336,6 +377,34 @@ window.isActionUsable = function(actionKey,actorKey,targetsKeys) {
 	
 	return iAU;
 };
+window.isActionUsableOnPos = function(actionKey,actorKey,targetKeys,actorPos,targetsPos) {
+	var iAU = new isUsableResults;
+	// Remember positions
+	var originalActorPos = gC(actorKey).position.key;
+	var originalTargetPos = [];
+	for ( var cK of targetKeys ) {
+		originalTargetPos.push(gC(cK).position.key);
+	}
+	// Stablish hypothetical positions
+	gC(actorKey).position.key = actorPos;
+	var i = 0;
+	for ( var cK of targetKeys ) {
+		gC(cK).position.key = targetsPos[i];
+		i++;
+	}
+	// Check results
+	iAU = isActionUsable(actionKey,actorKey,targetKeys,true);
+	// Re-stablish old positions
+	gC(actorKey).position.key = originalActorPos;
+	i = 0;
+	for ( var cK of targetKeys ) {
+		gC(cK).position.key = originalTargetPos[i];
+		i++;
+	}
+	// Return results
+	return iAU;
+}
+
 window.areCharactersLinked = function(charA,charB) {
 	var flagLinked = false;
 	
@@ -369,7 +438,7 @@ window.tryExecuteAction = function(actionKey,actorKey,targetKeys) {
 	var iAU = new isUsableResults;
 	var results = new saResults;
 	
-	iAU = isActionUsable(actionKey,actorKey,targetKeys);
+	iAU = isActionUsable(actionKey,actorKey,targetKeys,false);
 	if ( iAU.isUsable ) { // Action may be used, execute:
 		results = setup.saList[actionKey].execute(actorKey,targetKeys);
 	}
@@ -441,6 +510,8 @@ window.sceneAction = function() {
 	this.requiredPositions = []; // If the list contains anything, the actor requires one of these positions
 	this.targetRequiredPositions = []; // If the list contains anything, the targets require one of these positions
 	this.linkedPositions = false; // If true, the actor and its targets require to be referenced as initiator or target in their respective positions
+	
+	this.requiredActorContinuedActions = []; // If any, the actor requires to be involved in any of these continued actions
 	
 	this.requiresFree = false; // If true, action will only be usable if actor has no position
 	// this.unvalidPositions = []; // Is the actor's current position is in this list, the action isn't usable // Not implemented
@@ -586,9 +657,12 @@ window.saList = function() {
 	this.doubleThrust = createSaDoubleThrust();
 	this.piston = createSaPiston();
 	this.pushHipsBack = createSaPushHipsBack();
+	this.pushAssBack = createSaPushAssBack();
 	this.finalPush = createSaFinalPush();
 	this.rideDick = createSaRideDick();
 	this.pushDickBack = createSaPushDickBack();
+	this.analRideDick = createSaAnalRideDick();
+	this.analPushDickBack = createSaAnalPushDickBack();
 	
 	this.scissor = createSaScissor();
 	
@@ -620,21 +694,31 @@ window.saList = function() {
 	
 	this.frenchKiss = createSaFrenchKiss();
 	this.legHoldHead = createLegHoldHead();
-	
+	this.extraLegHoldHead = createExtraLegHoldHead();
+	this.giveCunnilingus = createGiveCunnilingus();
 	this.getBlowjob = createSaGetBlowjob();
+	this.giveBlowjob = createSaGiveBlowjob();
 	
 	this.penetratePussy = createSaPenetratePussy();
 	this.penetrateAss = createSaPenetrateAss();
 	this.interlockLegs = createSaInterlockLegs();
 	this.mountDick = createSaMountDick();
+	this.analMountDick = createSaAnalMountDick();
 	
 	this.doublePenetration = createSaDoublePenetration();
 	
+		// Positions
 	this.mountFromBehind = createSaMountFromBehind();
 	this.mountFaceToFace = createSaMountFaceToFace();
 	this.kneel = createSaKneel();
 	this.makeKneel = createSaMakeKneel();
 	
+		// Composite positions
+	this.extraMountFromBehind = createSaExtraMountFromBehind();
+	this.extraKneel = createSaExtraKneel();
+	this.extraMakeKneel = createSaExtraMakeKneel();
+	
+	// Others //
 	this.holdArms = createSaHoldArms();
 	
 	this.vinesHoldArms = createSaVinesHoldArms();
@@ -653,6 +737,11 @@ window.saList = function() {
 	this.baKissLips = createSaBaKissLips();
 	this.baStrokeDick = createSaBaStrokeDick();
 	this.baStrokePussy = createSaBaStrokePussy();
+	
+	this.baTeaseLockedDick = createSaBaTeaseLockedDick();
+	this.baTeaseLockedPussy = createSaBaTeaseLockedPussy();
+	
+	this.pounceFrontal = createSaNeutralFrontalPounce();
 	
 	this.pounceFrontalD2P = createSaD2PfrontalPounce();
 	this.baThrust = createSaBaThrust();
@@ -739,4 +828,30 @@ saList.prototype.toJSON = function() {
 	}, this);
 	return JSON.reviveWrapper('(new saList())._init($ReviveData$)', ownData);
 };
+
+// Auxiliars
+
+window.doesAnyActionContainTag = function(actionsList,tag) {
+	var flag = false;
+	for ( var action of actionsList ) {
+		if ( setup.saList[action].flavorTags.includes(tag) ) {
+			flag = true;
+		}
+	}
+	return flag;
+}
+window.doesAnyActionContainTags = function(actionsList,tagsList) {
+	var flag = false;
+	for ( var action of actionsList ) {
+		var itFlag = true;
+		for ( var tag of tagsList ) {
+			if ( setup.saList[action].flavorTags.includes(tag) == false ) {
+				itFlag = false;
+			}
+		}
+		if ( itFlag == true ) { flag = true; }
+	}
+	return flag;
+}
+
 

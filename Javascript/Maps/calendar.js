@@ -9,30 +9,35 @@ window.EventsCalendar = function() {
 	// This must be considered on general-functions' refreshUIbars()
 	this.activeEvent = false;
 	
-	this.getEndDayButton = function() {
+	// New day standards
+	this.newDayLinkMessage = "Continue";
+	this.newDayPassage = "Map";
+	this.finishEventButton = "";
+	
+	this.playedStoryEvents = [];
+}
+	
+	EventsCalendar.prototype.getEndDayButton = function() {
 		// This gets called at the end of the day in resting rooms.
 		// This function should be edited by stablishTomorrowsEvent() regularly
 		return this.getStandardNewDayButton();
 	}
-	this.customEventScript = function() {
+	EventsCalendar.prototype.customEventScript = function() {
 		// This function should be edited by stablishTomorrowsEvent() regularly
 		return 0;
 	}
 	
-	// New day standards
-	this.newDayLinkMessage = "Continue";
-	this.newDayPassage = "Map";
-	this.newDayScript = function() { 
+	EventsCalendar.prototype.newDayScript = function() { 
 		State.variables.personalRoom.initializeNewDay();
 	}
 	
-	this.getStandardNewDayButton = function() {
+	EventsCalendar.prototype.getStandardNewDayButton = function() {
 		var bText = "<<l" + "ink [[" + this.newDayLinkMessage + "|" + this.newDayPassage + "]]>><<s" + "cript>>\n"
 				  + "State.variables.eventsCalendar.newDayScript();\n"
 				  + "<</s" + "cript>><</l" + "ink>>";
 		return bText;
 	}	
-	this.getNewDayButtonCustomMessage = function(message) {
+	EventsCalendar.prototype.getNewDayButtonCustomMessage = function(message) {
 		var bText = "<<l" + "ink [[" + message + "|" + this.newDayPassage + "]]>><<s" + "cript>>\n"
 				  + "State.variables.eventsCalendar.getStandardNewDayButton();\n"
 				  + "<</s" + "cript>><</l" + "ink>>";
@@ -40,15 +45,14 @@ window.EventsCalendar = function() {
 	}
 	
 	// Events
-	this.stablishTomorrowsEvent = function() {
+							// STABLISH TOMORROW'S EVENT
+	EventsCalendar.prototype.stablishTomorrowsEvent = function() {
 		
 		// Standard new day functions: if they aren't edited later in this function, they retain their usual behavior
 		this.getEndDayButton = function() {
 			return this.getStandardNewDayButton();
 		}
-		this.customEventScript = function() {
-			return 0;
-		}
+		this.customEventScript = blankFunction;
 		
 		// Main switch
 		// ECtag
@@ -127,36 +131,40 @@ window.EventsCalendar = function() {
 							return this.getButtonToEvent("SE BKIF Outcome Start");
 						}
 						break;
-					case 13:
-						this.customEventScript = initializeSeAspiringTreeClimber;
+					case 18:
+						this.customEventScript = initializeGleamingCavernsOverview;
 						this.getEndDayButton = function() {
-							return this.getButtonToEvent("SE Aspiring TC Start");
+							return this.getButtonToEvent("SE Gleaming Caverns Overview Start");
 						}
 						break;
-					case 14:
-						this.customEventScript = initializeSeLuringMasquerade;
+					case 30:
+						this.customEventScript = initializePostAdventurePlaceholder;
 						this.getEndDayButton = function() {
-							return this.getButtonToEvent("Luring Masquerade Start");
-						}
-						break;
-					case 15:
-						this.customEventScript = initializeSeGiftsForNature;
-						this.getEndDayButton = function() {
-							return this.getButtonToEvent("SE Gifts For Nature Start");
-						}
-						break;
-					case 16:
-						this.customEventScript = initializeSeDiscoveringTheOthers;
-						this.getEndDayButton = function() {
-							return this.getButtonToEvent("SE Discovering The Others Start");
+							return this.getButtonToEvent("SE Post Adventure Placeholder");
 						}
 						break;
 				}
 				break;
 		}
+		
+		if ( this.customEventScript == blankFunction ) {
+			// Attempt to initiate random event
+			var selectedEvent = chooseRandomStoryEvent();
+			
+			if ( selectedEvent != "errorWList" ) {
+				this.getEndDayButton = function() {
+					return this.getButtonToEvent(setup.eventsMetaInfo[selectedEvent].initialPassage);
+				}
+				this.customEventScript = setup.eventsMetaInfo[selectedEvent].initializeFunction;
+				State.variables.eventsCalendar.playedStoryEvents.push(selectedEvent);
+			}
+		}
+	}
+	window.blankFunction = function() {
+		return 0;
 	}
 	
-	this.getButtonToEvent = function(firstEventPassageName) {
+	EventsCalendar.prototype.getButtonToEvent = function(firstEventPassageName) {
 		var bText = "<<l" + "ink [[" + this.newDayLinkMessage + "|" + firstEventPassageName + "]]>><<s" + "cript>>\n"
 				  + "State.variables.eventsCalendar.activeEvent = true;\n"
 				  + "State.variables.eventsCalendar.newDayScript();\n"
@@ -165,21 +173,19 @@ window.EventsCalendar = function() {
 		return bText;
 	}
 	
-	this.finishEventButton = "";
-	this.setFinishEventButton = function(message,script) {
+	EventsCalendar.prototype.setFinishEventButton = function(message,script) {
 		this.finishEventButton = this.getNewDayButtonCustomMessageCustomScript(message,script);
 	}
-	this.getNewDayButtonCustomMessageCustomScript = function(message,script) {
+	EventsCalendar.prototype.getNewDayButtonCustomMessageCustomScript = function(message,script) {
 		var bText = "<<l" + "ink [[" + message + "|" + this.newDayPassage + "]]>><<s" + "cript>>\n"
 				  + "State.variables.eventsCalendar.activeEvent = false;\n"
 				  + script
 				  + "<</s" + "cript>><</l" + "ink>>";
 		return bText;
 	}
-	this.cleanUIscriptText = function() {
+	EventsCalendar.prototype.cleanUIscriptText = function() {
 		var sText = 'setNoPasChars();\n'
 	}
-}
 
 State.variables.eventsCalendar = new EventsCalendar();
 State.variables.eventsCalendar.setFinishEventButton("Continue","setNoPasChars()");
@@ -202,4 +208,192 @@ EventsCalendar.prototype.toJSON = function() {
 	}, this);
 	return JSON.reviveWrapper('(new EventsCalendar())._init($ReviveData$)', ownData);
 };
+
+
+//////// STORY EVENT META INFO ////////
+// These objects contain relevant information for story events, to be used by events calendar to dynamically select events
+
+window.eventMetaInfo = function(name,key,initializeFunction,initialPassage,checkRequirements,getWeight) {
+	this.name = name;
+	this.key = key;
+	this.initializeFunction = initializeFunction;
+	this.initialPassage = initialPassage;
+	this.checkRequirements = checkRequirements;
+	this.getWeight = getWeight;
+}
+
+setup.eventsMetaInfo = [];
+setup.eventsMetaInfo["atc0"] = new eventMetaInfo(
+	"Aspiring Tree Climber",
+	"atc0",
+	initializeSeAspiringTreeClimber, // initFunc
+	"SE Aspiring TC Start",
+	function() { // Reqs
+		var allowed = true;
+		if ( gC("chPlayerCharacter").body.hasOwnProperty("arms") && gC("chPlayerCharacter").body.hasOwnProperty("legs") ) {
+			if ( gC("chPlayerCharacter").body.arms.state != "free" || gC("chPlayerCharacter").body.legs.state != "free" ) {
+				allowed = false;
+			}
+		} else {
+			allowed = false;
+		}
+		if ( gC("chClaw").body.hasOwnProperty("arms") && gC("chClaw").body.hasOwnProperty("legs") ) {
+			if ( gC("chClaw").body.arms.state != "free" || gC("chClaw").body.legs.state != "free" ) {
+				allowed = false;
+			}
+		} else {
+			allowed = false;
+		}
+		return allowed;
+	},
+	function() { // Weight
+		var weight = 120;
+		return weight;
+	}
+);
+setup.eventsMetaInfo["lm0"] = new eventMetaInfo(
+	"Luring Masquerade",
+	"lm0",
+	initializeSeLuringMasquerade, // initFunc
+	"Luring Masquerade Start",
+	function() { // Reqs
+		var allowed = true;
+		if ( gC("chVal").body.hasOwnProperty("legs") && gC("chPlayerCharacter").body.hasOwnProperty("legs") ) {
+			if ( gC("chVal").body.legs.state != "free" || gC("chPlayerCharacter").body.legs.state != "free" ) {
+				allowed = false;
+			}
+		} else {
+			allowed = false;
+		}
+		if ( allowed ) {
+			if ( gC("chPlayerCharacter").subChars.includes("chVal") || gC("chPlayerCharacter").subChars.includes("chMir") ) {
+				allowed = false;
+			} else if ( gC("chVal").subChars.includes("chPlayerCharacter") || gC("chVal").subChars.includes("chMir") ) {
+				allowed = false;
+			} else if ( gC("chMir").subChars.includes("chVal") || gC("chMir").subChars.includes("chPlayerCharacter") ) {
+				allowed = false;
+			} 
+		}
+		if ( allowed ) {
+			if ( gC("chVal").egaChars.includes("chPlayerCharacter") || gC("chVal").egaChars.includes("chMir") ) {
+				allowed = false;
+			}
+		}
+		return allowed;
+	},
+	function() { // Weight
+		var weight = 70;
+		weight += rLvlAbt("chVal","chPlayerCharacter","sexualTension") * 3 + rLvlAbt("chVal","chPlayerCharacter","rivalry") * 3 + rLvlAbt("chVal","chMir","sexualTension") * 3 + rLvlAbt("chVal","chMir","rivalry") * 3;
+		return weight;
+	}
+);
+setup.eventsMetaInfo["gfn0"] = new eventMetaInfo(
+	"Gifts For Nature",
+	"gfn0",
+	initializeSeGiftsForNature, // initFunc
+	"SE Gifts For Nature Start",
+	function() { // Reqs
+		var allowed = true;
+		
+		return allowed;
+	},
+	function() { // Weight
+		var weight = 100;
+		return weight;
+	}
+);
+setup.eventsMetaInfo["dto0"] = new eventMetaInfo(
+	"Discovering The Others",
+	"dto0",
+	initializeSeDiscoveringTheOthers, // initFunc
+	"SE Discovering The Others Start",
+	function() { // Reqs
+		var allowed = true;
+		
+		return allowed;
+	},
+	function() { // Weight
+		var weight = 70;
+		weight += rLvlAbt("chAte","chPlayerCharacter","friendship") * 5 + rLvlAbt("chAte","chPlayerCharacter","romance") * 5 - rLvlAbt("chAte","chPlayerCharacter","rivalry") * 2 - rLvlAbt("chAte","chPlayerCharacter","enmity") * 5;
+		return weight;
+	}
+);
+setup.eventsMetaInfo["gol0"] = new eventMetaInfo(
+	"The Grapes of Lust",
+	"gol0",
+	initializeSeTGoL, // initFunc
+	"SE TGoL Start",
+	function() { // Reqs
+		var allowed = true;
+		
+		if ( gC("chVal").domChar == "chPlayerCharacter" || gC("chVal").domChar == "chAte" || gC("chPlayerCharacter").domChar == "chVal" || gC("chAte").domChar == "chVal" || gC("chAte").domChar == "chPlayerCharacter" || (gC("chVal").hasFreeBodypart("pussy") == false) || (gC("chPlayerCharacter").hasFreeBodypart("mouth") == false) || (gC("chAte").hasFreeBodypart("mouth") == false) ) {
+			allowed = false;
+		}
+		
+		return allowed;
+	},
+	function() { // Weight
+		var weight = 65;
+		weight += gC("chAte").dImprovement.level * 5;
+		return weight;
+	}
+);
+setup.eventsMetaInfo["mt1"] = new eventMetaInfo(
+	"Martial Tutorship I",
+	"mt1",
+	initializeMartialTutorshipI, // initFunc
+	"SE MartialTutorshipI Start",
+	function() { // Reqs
+		var allowed = false;
+		
+		if ( gC("chPlayerCharacter").domChar == "chNash" ) {
+			if ( gRelTypeAb("chPlayerCharacter","chNash") == "tutorship" ) {
+				if ( gC("chPlayerCharacter").hasFreeBodypart("arms") && gC("chPlayerCharacter").hasFreeBodypart("legs") && gC("chNash").hasFreeBodypart("arms") && gC("chNash").hasFreeBodypart("legs") ) {
+					allowed = true;
+				}
+			}
+		}
+		
+		return allowed;
+	},
+	function() { // Weight
+		var weight = 300;
+		return weight;
+	}
+);
+
+
+window.chooseRandomStoryEvent = function() {
+	var result = "errorWList"; // Default error string returned by bugged weighted lists. If this is the end result, no event will be initialized
+	var validEvents = []; // Event tags
+	for ( var se in setup.eventsMetaInfo ) {
+		if ( setup.eventsMetaInfo[se] instanceof eventMetaInfo ) { // Is an event
+			if ( State.variables.eventsCalendar.playedStoryEvents.includes(setup.eventsMetaInfo[se].key) == false ) { // Event hasn't been played
+				if ( setup.eventsMetaInfo[se].checkRequirements() ) { // Requirements are passed
+					validEvents.push(setup.eventsMetaInfo[se].key);
+				}
+			}
+		}
+	}
+	
+	if ( validEvents.length > 0 ) {
+		var wL = new weightedList();
+		var i = 0;
+		for ( var se of validEvents ) {
+			wL[i] = new weightedElement(se,setup.eventsMetaInfo[se].getWeight());
+			i++;
+		}
+		
+		result = randomFromWeightedList(wL);
+	}
+	
+	return result;
+}
+
+
+
+
+
+
+
 

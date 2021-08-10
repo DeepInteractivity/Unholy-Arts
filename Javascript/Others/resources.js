@@ -20,6 +20,14 @@ window.imgList = function() {
 window.img = function(imageKey) {
 	return State.variables.imgList[imageKey];
 };
+setup.sillanFull = "[img[img/portraits/sillan-full.png]]"
+setup.sillanAvatar = "[img[img/portraits/sillan-avatar.png]]";
+
+window.getProvisionalSillanPortrait = function() {
+	var porText = '<span style="color:aqua">???</span>\n';
+				+ setup.sillanAvatar;
+	return porText;
+}
 
 // Constructors, serializers, etc.
 imgList.prototype._init = function (obj) {

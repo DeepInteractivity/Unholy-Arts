@@ -1,5 +1,47 @@
 ///// BATTLE POSITIONS /////
 
+window.createBcaNeutralPounce = function(initiator,targetsList) {
+	var ca = new continuedAction();
+	ca.key = "mounting";
+	ca.name = "Mounting";
+	ca.initiator = initiator;
+	ca.targetsList = targetsList;
+	ca.affinities = [];
+	
+	ca.execute = function() {
+		var results = new saResults;
+		var actor = this.initiator;
+		var target = this.targetsList[0];
+		
+		results.value = 0;
+				
+		results.description += randomFromList( [
+								(ktn(initiator) + " is holding " + ktn(target) + " in place."),
+								(ktn(initiator) + " has mounted " + ktn(target) + " and won't let " + gC(target).comPr + " go."),
+								(ktn(initiator) + " has trapped " + ktn(target) + " under " + gC(initiator).posPr + " weight.")
+									] );
+		
+		return results;
+	}	
+	return ca;
+}
+
+window.createBposFrontalPounce = function(initiator, targetsList) {
+	var target = targetsList[0];
+	
+	gC(initiator).position.makeActive(targetsList);
+	gC(initiator).position.key = "frontalPounce";
+	gC(initiator).position.name = "Mounting face to face";
+	gC(initiator).position.description = ktn(initiator) + " is holding " + ktn(target) + randomFromList([" from above."," face to face."]);
+	
+	gC(initiator).position.cAction = createBcaNeutralPounce(initiator,targetsList);
+	
+	gC(target).position.makePassive(initiator);
+	gC(target).position.key = "frontalPouncedD2P";
+	gC(target).position.name = "Being mounted face to face";
+	gC(target).position.description = ktn(initiator) + " is holding " + ktn(target) + randomFromList([" from above."," face to face."]);
+}
+
 window.createBcaD2Ppounce = function(initiator,targetsList) {
 	var ca = new continuedAction();
 	ca.key = "baPenetratePussy";

@@ -1,4 +1,4 @@
-////////// AI ALGORYTHMS RESULTS CLASS //////////
+////////// AI ALGORITHMS RESULTS CLASS //////////
 /* These objects return the action Key and the target varNames referring to the action the acting character is going to use. */
 
 window.aiResults = function() {
@@ -19,19 +19,20 @@ aiResults.prototype.clone = function () {
 	return (new aiResults())._init(this);
 };
 
-////////// AI ALGORYTHMS CLASS //////////
-/* AI Algorythms are objects assigned to a character at the beginning of a scene.
+////////// AI ALGORITHMS CLASS //////////
+/* AI Algorithms are objects assigned to a character at the beginning of a scene.
    They hold all the required functions and information to determine the behavior of a given character during the scene. */
 
-window.aiAlgorythm = function() {
+window.aiAlgorithm = function() {
 	this.key;
 	this.callAction = null;
+	this.disablePositions = false;
 	
 	this.role = "none";
 	// this.rolePreferences = weightedList
 		// rolePreferences refers to a weighted list linked to the role assigned to the character for the scene
 		// role and rolePreferences must be set using a custom function.
-		// If role isn't set to "none", algorythms that use weighted lists will take rolePreferences into account
+		// If role isn't set to "none", algorithms that use weighted lists will take rolePreferences into account
 	// this.updateRolePreferences = function() // Must be set along with role
 		
 	this.setRoleEqualFooting = function() {
@@ -249,11 +250,11 @@ window.aiAlgorythm = function() {
 	}
 };
 
-// Early AI algorythms - Sex Scenes
+// Early AI algorithms - Sex Scenes
 window.createAiFixedAction = function() {
-		// This algorythm requires to be manually altered to set the fixed action and the fixed target.
+		// This algorithm requires to be manually altered to set the fixed action and the fixed target.
 		// It ignores the standard method's variables.
-	var ai = new aiAlgorythm();
+	var ai = new aiAlgorithm();
 	ai.key = "fixedAction";
 	ai.fixedAction = "doNothing";
 	ai.fixedTarget = "chPlayerCharacter";
@@ -266,9 +267,9 @@ window.createAiFixedAction = function() {
 	return ai;
 }
 window.createAiActionSequence = function() {
-		// This algorythm requires a fixed target and a list of custom actions to be manually set.
+		// This algorithm requires a fixed target and a list of custom actions to be manually set.
 		// It commands the user to sequentially use every listed action.
-	var ai = new aiAlgorythm();
+	var ai = new aiAlgorithm();
 	ai.key = "actionSequence";
 	ai.actionSequence = ["doNothing"];
 	ai.fixedTarget = "chPlayerCharacter";
@@ -284,7 +285,7 @@ window.createAiActionSequence = function() {
 	return ai;
 }
 window.createAiRandomAction = function() {
-	var ai = new aiAlgorythm();
+	var ai = new aiAlgorithm();
 	ai.key = "randomAction";
 	ai.fixedTarget = "chPlayerCharacter";
 	ai.callAction = function(character,allyCharacters,enemyCharacters,currentTurn) {
@@ -305,9 +306,9 @@ window.createAiRandomAction = function() {
 	return ai;
 }
 
-// Early AI algorythms - Battle Scenes
+// Early AI algorithms - Battle Scenes
 window.createAiRandomActionRandomOpponent = function() {
-	var ai = new aiAlgorythm();
+	var ai = new aiAlgorithm();
 	ai.key = "randomAction";
 	ai.callAction = function(character,allyCharacters,enemyCharacters,currentTurn) {
 		var results = new aiResults();
@@ -339,8 +340,8 @@ window.createAiRandomActionRandomOpponent = function() {
 	}
 	return ai;
 }
-window.createAiEarlyStrategic = function() { // November 2020
-	var ai = new aiAlgorythm();
+window.createAiEarlyStrategic = function() { // November 2020 - Last checked April 2021
+	var ai = new aiAlgorithm();
 	ai.key = "earlyStrategy";
 	ai. callAction = function(character,allyCharacters,enemyCharacters,currentTurn) {
 		var results = new aiResults();
@@ -440,7 +441,7 @@ window.createAiEarlyStrategic = function() { // November 2020
 				if ( countCharactersBuffs(character) < 2 && limitedRandomInt(10) >= 5 ) {
 					validActionsList = State.variables.sc.listUsableActionsOnTarget(character,character);
 					buffActions = purgeActionsWithoutStrategyTag(validActionsList,"buff");
-					if ( buffActions.length > 0 ) {
+					if ( buffActions.length > 0 && limitedRandomInt(100) > 49 ) {
 						results.actionKey = randomFromList(buffActions);
 						results.targetsIDs = [ character ];
 					}
@@ -461,9 +462,11 @@ window.createAiEarlyStrategic = function() { // November 2020
 				directEnemy = randomFromList(downingEnemies);
 				validActionsList = State.variables.sc.listUsableActionsOnTarget(character,directEnemy);
 				damageActions = purgeActionsWithoutStrategyTag(validActionsList,"pounce");
+				var betterActions = purgeActionsWithStrategyTag(damageActions,"subpar");
+				if ( damageActions.length > betterActions.length ) { damageActions = betterActions; }
 				if ( damageActions.length > 0 ) {
 					var randomPounce = randomFromList(damageActions);
-					if ( setup.saList[randomPounce].doesHitLand.hit ) {
+					if ( setup.saList[randomPounce].doesHitLand(character,directEnemy).hit && setup.saList[randomPounce].doesHitLand(character,directEnemy).hit ) {
 						results.actionKey = randomPounce;
 						results.targetsIDs = [ directEnemy ];
 					}
@@ -487,6 +490,8 @@ window.createAiEarlyStrategic = function() { // November 2020
 				directEnemy = randomFromList(downedEnemies);
 				validActionsList = State.variables.sc.listUsableActionsOnTarget(character,directEnemy);
 				damageActions = purgeActionsWithoutStrategyTag(validActionsList,"pounce");
+				var betterActions = purgeActionsWithoutStrategyTag(damageActions,"subpar");
+				if ( damageActions.length > betterActions.length ) { damageActions = betterActions; }
 				if ( damageActions.length > 0 ) {
 					results.actionKey = randomFromList(damageActions);
 					results.targetsIDs = [ directEnemy ];
@@ -553,11 +558,11 @@ window.createAiEarlyStrategic = function() { // November 2020
 	return ai;
 }
 
-// AI Algorythm useful in some scripted sex scenes
+// AI Algorithm useful in some scripted sex scenes
 window.createAiRandomChoice = function(choicesList) {
 	// Choices list must be a list of two elements list, first element contains target, second element contains action key
 	// Example: "[ ["chVal","strokePussy"] , ["chVal","strokeBreasts"] , ["chMir","spanking"] ]"
-	var ai = new aiAlgorythm();
+	var ai = new aiAlgorithm();
 	ai.key = "randomChoice";
 	ai.choicesList = choicesList;
 	ai.callAction = function(character,allyCharacters,enemyCharacters,currentTurn) {
@@ -572,9 +577,9 @@ window.createAiRandomChoice = function(choicesList) {
 	return ai;
 }
 
-// OLD GENERIC AI ALGORYTHM - SEX SCENES
+// OLD GENERIC AI ALGORITHM - SEX SCENES
 window.createAiWeightedActionByTaste = function() {
-	var ai = new aiAlgorythm();
+	var ai = new aiAlgorithm();
 	ai.key = "weightedByTaste";
 	ai.fixedTarget = "chPlayerCharacter";
 	ai.callAction = function(character,allyCharacters,enemyCharacters,currentTurn) {
@@ -614,13 +619,14 @@ window.createAiWeightedActionByTaste = function() {
 	return ai;
 }
 
-// CURRENT GENERIC AI ALGORYTHM - SEX SCENES - 07-2020 - Last updated: 12-2020
-window.createAiWeightedMissionsByTaste = function() {
-	var ai = new aiAlgorythm();
+// OLD GENERIC AI ALGORITHM - SEX SCENES - 07-2020 - Last updated: 04-2021
+window.createAiWeightedMissionsByTasteOld = function() {
+	var ai = new aiAlgorithm();
 	ai.key = "weightedMissions";
 	ai.mission = "none";
 	ai.missionCommands = [];
 	ai.callAction = function(character,allyCharacters,enemyCharacters,currentTurn) {
+		
 		var results = new aiResults();
 		results.targetsIDs = ([chooseTargetDynamically(character,allyCharacters,enemyCharacters)]);
 		var dice = 0;
@@ -646,7 +652,7 @@ window.createAiWeightedMissionsByTaste = function() {
 				if ( this.missionCommands.length < 1 ) {
 					dice = 0;
 				} else {
-					if ( isActionUsable(this.missionCommands[0],character,results.targetsIDs).isUsable ) {
+					if ( isActionUsable(this.missionCommands[0],character,results.targetsIDs,false).isUsable ) {
 						results.actionKey = this.missionCommands[0];
 					} else {
 						dice = 0;
@@ -656,10 +662,6 @@ window.createAiWeightedMissionsByTaste = function() {
 			}
 		}
 		if ( gC(character).hasLead == false || dice == 0 ) { // Typical behavior from weightedActionByTaste
-			if ( limitedRandomInt(3) < 1 ) {
-				results.targetsIDs[0] = character;
-			}
-		
 			var validActionsList = State.variables.sc.listUsableActionsOnTarget(character,results.targetsIDs[0]);
 			// Purge denial if target isn't close to orgasm
 			if ( getBarPercentage(results.targetsIDs[0],"lust") > 0.1 || character == results.targetsIDs[0] ) {
@@ -700,10 +702,77 @@ window.createAiWeightedMissionsByTaste = function() {
 	return ai;
 }
 
-// BASIC BATTLE AI ALGORYTHM - SEX BATTLE SCENES - 08-2020
+// NEW GENERIC AI ALGORITHM - SEX SCENES - 06-2021
+window.createAiWeightedMissionsByTaste = function() {
+	var ai = new aiAlgorithm();
+	ai.key = "weightedMissions";
+	ai.mission = "none";
+	ai.missionCommands = []; // List of 2-sized arrays: {1st position is action, 2nd position is target}
+	ai.callAction = function(character,allyCharacters,enemyCharacters,currentTurn) {
+		var results = new aiResults();
+		
+		if ( gC(character).hasLead && State.variables.sc.sceneConditions.includes("cantChangePositions") == false && State.variables.sc.sceneConditions.includes("cantCancelPositions") == false ) {
+			if ( this.missionCommands.length > 0 ) {
+				// At this point "cancel" and "stay" commands shouldn't remain
+				results.actionKey = this.missionCommands[0][0];
+				results.targetsIDs = [this.missionCommands[0][1]];
+				this.missionCommands.shift();
+			} else {
+				// Check canceleable continued actions
+				if ( limitedRandomInt(100) < 5 ) {
+					cancelAllCharActionsAndPositions(character);
+				} else {
+					charEvaluatesContinuedActionsToCancel(character);
+				}
+				if ( isCharInPrimaryContinuedAction(character) ) {
+					results = chooseValidBasicAction(character,allyCharacters,enemyCharacters);
+				} else {
+					if ( true ) {
+						var mission = chooseCaMission(character,allyCharacters,enemyCharacters);
+						if ( mission != "errorWList" ) {
+							if ( mission != undefined && mission[0] != "" ) {
+								if ( mission[2] == "stay" ) {
+									// Skip position action
+									this.missionCommands = [[mission[0],mission[1]]];
+									results.actionKey = this.missionCommands[0][0];
+									results.targetsIDs = [this.missionCommands[0][1]];
+									this.missionCommands.shift();
+								} else if ( mission[2] == "cancel" ) {
+									// Cancel position and skip position action
+									State.variables.sc.cancelPosition(character);
+									this.missionCommands = [[mission[0],mission[1]]];
+									results.actionKey = this.missionCommands[0][0];
+									results.targetsIDs = [this.missionCommands[0][1]];
+									this.missionCommands.shift();
+								} else {
+									this.missionCommands = [[mission[2],mission[1]],[mission[0],mission[1]]];
+									results.actionKey = this.missionCommands[0][0];
+									results.targetsIDs = [this.missionCommands[0][1]];
+									this.missionCommands.shift();
+								}
+							}
+						} else {
+							results = chooseValidBasicAction(character,allyCharacters,enemyCharacters);
+						}
+					} else {
+						results = chooseValidBasicAction(character,allyCharacters,enemyCharacters);
+					}
+				}
+			}
+		} else {
+			this.missionCommands = [];
+			results = chooseValidBasicAction(character,allyCharacters,enemyCharacters);
+		}
+		
+		return results;
+	}
+	return ai;
+}
+
+// BASIC BATTLE AI ALGORITHM - SEX BATTLE SCENES - 08-2020
 /*
 window.createAiRandomActions = function() {
-	var ai = new aiAlgorythm();
+	var ai = new aiAlgorithm();
 	ai.key = "randomActions";
 	ai.callAction = function(character,allyCharacters,enemyCharacters,currentTurn) {
 		var results = new aiResults();
@@ -716,33 +785,403 @@ window.createAiRandomActions = function() {
 } */
 // createAiRandomAction <-
 
-// Auxiliar functions	
-	// Choose target
-window.chooseTargetDynamically = function(character,allyCharacters,enemyCharacters) { // Updated 12-2020
-	// Cheap version, this function must be upgraded
-	var mainTarget = [];
+// Auxiliar functions
+window.chooseValidBasicAction = function(actor,allyCharacters,enemyCharacters) {
+	var results = new aiResults();
+	results.targetsIDs = [actor];
+	results.actionKey = "doNothing";
 	
-	/*
-	if ( enemyCharacters.length < 1 ) {
-		mainTarget = randomFromList(allyCharacters);
-	}
-	else {
-		if ( limitedRandomInt(100) > 24 ) {
-			mainTarget = randomFromList(enemyCharacters);
-		} else {
-			mainTarget = randomFromList(allyCharacters);
-		}
-	}*/
+	var allOtherCharacters = arrayMinusA(allyCharacters.concat(enemyCharacters),actor);
 	
-	var allOtherCharacters = arrayMinusA(allyCharacters.concat(enemyCharacters),character);
-	if ( (limitedRandomInt(100) + gC(character).dLove.level * 5) > (24 + gC(character).dPleasure.level * 5) ) {
-		mainTarget = randomFromList(allOtherCharacters);
+	// Actions on self
+	var actionsOnSelf = listValidBasicActionsOnTarget(actor,actor); // Simple list of actions
+	// Actions on others
+	var nwActionsOnOthers = listTargetedWeightedActionListOnCharacters(actor,allOtherCharacters); // List of [target/action/weight=0]
+	
+	// Are actions on self possible? Are actions on others possible?
+	if ( actionsOnSelf.length == 0 && nwActionsOnOthers.length == 0 ) {
+		// No actions possible
+	} else if ( actionsOnSelf.length == 0 ) {
+		// Only actions on others possible
+		var wL = assignWeightsToTargetedWeightedActionList(actor,nwActionsOnOthers);
+		var wE = randomFromWeightedList(wL);
+		results.targetsIDs = [wE[0]];
+		results.actionKey = wE[1];
+	} else if ( nwActionsOnOthers.length == 0 ) {
+		// Only actions on self possible
+		var wL = assignWeightsToSelfTargetedActionList(actor,actionsOnSelf);
+		var wE = randomFromWeightedList(wL);
+		results.targetsIDs = [actor];
+		results.actionKey = wE;
 	} else {
-		mainTarget = character;
+		// Both actions on self and others possible
+		if ( actorChoosesWhetherToActOnSelf(actor) ) {
+			// Acts on self
+			var wL = assignWeightsToSelfTargetedActionList(actor,actionsOnSelf);
+			var wE = randomFromWeightedList(wL);
+			results.targetsIDs = [actor];
+			results.actionKey = wE;
+		} else {
+			// Acts on others
+			var wL = assignWeightsToTargetedWeightedActionList(actor,nwActionsOnOthers);
+			var wE = randomFromWeightedList(wL);
+			results.targetsIDs = [wE[0]];
+			results.actionKey = wE[1];
+		}
+	}
+	
+	
+	return results;
+}
+
+	// Basic actions
+window.listValidBasicActionsOnTarget = function(actor,target) {
+	var aList = State.variables.sc.listUsableActionsOnTarget(actor,target);
+	aList = purgeActionsWithPreferenceTag(aList,"position");
+	aList = arrayMinusA(aList,"doNothing");
+	return aList;
+}
+window.listTargetedWeightedActionListOnCharacters = function(actor,targets) {
+	var totalList = [];
+	for ( var cK of targets ) {
+		var vba = listValidBasicActionsOnTarget(actor,cK);
+		totalList = totalList.concat(actionListIntoTargetedWeightedActionlist(vba,cK));
+	}
+	return totalList;
+}
+window.actionListIntoTargetedWeightedActionlist = function(actionList,target) {
+	var aList = [];
+	for ( var a of actionList ) {
+		aList.push([target,a,0]);
+	}
+	return aList;
+}
+
+window.assignWeightsToSelfTargetedActionList = function(actor,actionlist) {
+	// RETURNS WEIGHTED LIST
+	// To evalute: character tastes (weights and ranks, character desires)
+	var pActions = State.variables.sc.listUsableActionsOnTarget(actor,actor);
+	var desires = getActorsCurrentDesires(actor);
+	var wL = new weightedList();
+	for ( var a of pActions ) {
+		wL[a] = new weightedRankedElement(a,assignWeightToActionFromActorToTargetWithDesires(a,actor,actor,desires,1));
+	}
+	// Content: actionKey
+	return wL;
+}
+window.assignWeightsToTargetedWeightedActionList = function(actor,twaList) {
+	// RETURNS WEIGHTED LIST
+	// To evaluate: character tastes (weights and ranks), character desires, - NOT target's preference -
+	var desires = getActorsCurrentDesires(actor);
+	var targetsMultipliers = [];
+	var wL = new weightedList();
+	var i = 0;
+	for ( var twa of twaList ) {
+		var mult = 1;
+		if ( targetsMultipliers.hasOwnProperty(twa[0]) ) {
+			mult = targetsMultipliers[twa[0]];
+		} else {
+			targetsMultipliers[twa[0]] = 1;
+			if ( gC(twa[0]).orgasmSceneCounter == 0 ) {
+				targetsMultipliers[twa[0]] = 2;
+			}
+			mult = targetsMultipliers[twa[0]];
+		}
+		wL[i] = new weightedElement([twa[0],twa[1]],assignWeightToActionFromActorToTargetWithDesires(twa[1],actor,twa[0],desires,mult));
+		i++;
+	}
+	// Content: [targetKey,actionKey]
+	return wL;
+}
+
+window.assignWeightToActionFromActorToTargetWithDesires = function(action,actor,target,desires,mult) {
+	var weight = 10 + limitedRandomInt(10);
+	var newMult = 1;
+	var desiresMultiplier = 1;
+	var targetDesires = getActorsCurrentDesires(target);
+	
+	for ( var taste of setup.saList[action].flavorTags ) {
+		// Base preference
+		weight *= setup.basePreferencesMultipliers[taste];
+		var extraM = 1;
+		if ( taste == "foreplay" || taste == "talk" || taste == "oral" || taste == "fullsex" ) {
+			extraM = 0.5;
+		}
+		// Weights and ranks
+		if ( taste != "position" && taste != "continuedAction" ) {
+			newMult += gC(actor).tastes[taste].w * 0.01;
+			newMult += (1 + gC(actor).tastes[taste].r * 0.5);
+			newMult *= extraM;
+		}
+		// Desires
+		if ( desires.includes(taste) ) {
+			desiresMultiplier += (0.5 * extraM);
+		}
+		if ( targetDesires.includes(getOppositeTag(taste)) ) {
+			desiresMultiplier += (0.25 * extraM);
+		}		
+	}
+	weight *= (newMult + desiresMultiplier + mult);
+	
+	return weight;
+}
+
+	// Choose target
+window.chooseTargetDynamically = function(character,allyCharacters,enemyCharacters) { // Updated 04-2021
+	var mainTarget = "";
+	
+	var validActionsOnSelf = State.variables.sc.listUsableActionsOnTarget(character,character);
+	var allOtherCharacters = arrayMinusA(allyCharacters.concat(enemyCharacters),character);
+	// mainTarget = randomFromList(allOtherCharacters);
+	
+	if ( validActionsOnSelf.length > 1 ) {
+		var threshold = 15;
+		var loveMinusPleasure = getCharsDrivePercent(character,"dLove") - getCharsDrivePercent(character,"dPleasure");
+		if ( loveMinusPleasure >= 0.1 ) {
+			threshold = 10;
+		} else if ( loveMinusPleasure <= -0.1 ) {
+			threshold = 20;
+		}
+		
+		if ( limitedRandomInt(100) > threshold ) {
+		} else {
+			mainTarget = character;
+		}
+	}
+	
+	if ( mainTarget == "" ) {
+		for ( var cK of allOtherCharacters ) {
+			if ( State.variables.sc.listUsableActionsOnTarget(character,cK).length < 2 ) {
+				allOtherCharacters = arrayMinusA(allOtherCharacters,cK);
+			}
+		}
+		if ( allOtherCharacters.length > 0 ) {
+			mainTarget = randomFromList(allOtherCharacters);
+		} else {
+			mainTarget = character;
+		}
 	}
 	
 	return mainTarget;
 }
+window.actorChoosesWhetherToActOnSelf = function(character) {
+	var actsOnSelf = false;
+	
+		var threshold = 15;
+		var loveMinusPleasure = getCharsDrivePercent(character,"dLove") - getCharsDrivePercent(character,"dPleasure");
+		if ( loveMinusPleasure >= 0.1 ) {
+			threshold = 10;
+		} else if ( loveMinusPleasure <= -0.1 ) {
+			threshold = 20;
+		}
+		
+		if ( limitedRandomInt(100) > threshold ) {
+		} else {
+			actsOnSelf = true;;
+		}
+		
+	return actsOnSelf;
+}
+
+	// Aux
+window.getActorsCurrentDesires = function(actor) {
+	var tagsList = [];
+	for ( var as of gC(actor).alteredStates ) {
+		if ( as.hasOwnProperty("tag") ) {
+			tagsList.push(as.tag);
+		}
+	}
+	return tagsList;
+}
+
+window.charEvaluatesContinuedActionsToCancel = function(actor) {
+	var casToRemove = [];
+	var flagCancelPosition = false;
+	var i = 0;
+	for ( var ca of State.variables.sc.continuedActions ) {
+		if ( ca.initiator == actor || ca.targetsList.includes(actor) ) {
+			var cancelChance = 0;
+			if ( ca.rank == 2 ) {
+				cancelChance = -140 + ca.continuedTurns * 20;
+			} else {
+				cancelChance = -80 + ca.continuedTurns * 20;
+			}
+			for ( var tag of ca.flavorTags ) {
+				cancelChance -= gC(actor).tastes[tag].r * 5;
+			}
+			if ( cancelChance > limitedRandomInt(100) ) {
+				// Tick to cancel action
+				casToRemove = [i].concat(casToRemove);
+				if ( ca.rank == 2 ) {
+					if ( gC(actor).aiAlgorythm.missionCommands.length == 0 ) {
+						if ( limitedRandomInt(100) > 50 ) {
+							flagCancelPosition = true;
+						}
+					}
+				}
+			}
+		}
+		i++;
+	}
+	// Finish CAs in reverse order
+	for ( var id of casToRemove ) {
+		State.variables.sc.removeContinuedAction(id);
+		State.variables.sc.cancelPosition(actor);
+	}
+	
+}
+window.cancelAllCharActionsAndPositions = function(actor) {
+	var casToRemove = [];
+	var i = 0;
+	for ( var ca of State.variables.sc.continuedActions ) {
+		if ( ca.initiator == actor || ca.targetsList.includes(actor) ) {
+			casToRemove = [i].concat(casToRemove);
+		}
+		i++;
+	}
+	// Finish CAs in reverse order
+	for ( var id of casToRemove ) {
+		State.variables.sc.removeContinuedAction(id);
+	}
+	State.variables.sc.cancelPosition(actor);
+}
+
+	// Continued actions pathfinder
+window.chooseCaMission = function(actor,allyCharacters,enemyCharacters) {
+	var allOtherCharacters = arrayMinusA(allyCharacters.concat(enemyCharacters),actor);
+	var aOCcopy = allOtherCharacters;
+	var primaryCAlist = []; // Each usable CA is a property, containing a list with all valid positionings
+	var caUnweightedList = [];
+	var knownPrimaryCactions = getCharsPrimaryContinuedActions(actor); // Get known primary CAs
+	var potentialPositions = [];
+	for ( var target of aOCcopy ) {
+		// Get all potential positions
+		potentialPositions = potentialPositions.concat(findAllPotentialPositions(actor,target));
+	}	
+	// Generate primaryCAlist
+	for ( var posPair of potentialPositions ) {
+		for ( var ca of knownPrimaryCactions ) {
+			target = posPair[3];
+			if ( isActionUsableOnPos(ca,actor,[posPair[3]],posPair[0],[posPair[1]]).isUsable ) {
+				if ( primaryCAlist.hasOwnProperty(ca) ) {
+					if ( primaryCAlist[ca].hasOwnProperty(target) ) {
+						primaryCAlist[ca][target].push(posPair[2]);
+					} else {
+						primaryCAlist[ca][target] = [posPair[2]];
+					}
+				} else {
+					primaryCAlist.push(ca);
+					primaryCAlist[ca] = [];
+					if ( primaryCAlist[ca].hasOwnProperty(target) ) {
+						primaryCAlist[ca][target].push(posPair[2]);
+					} else {
+						primaryCAlist[ca][target] = [posPair[2]];
+					}
+					//primaryCAlist[ca] = [posPair];
+				}
+			}
+		}
+	}
+	// Example of primaryCAlist:
+	//  "penetratePussy": Array(0) ["chPlayerCharacter": Array(2) ["mountFaceToFace", "mountFromBehind"]],
+	//  "interlockLegs": Array(0) ["chPlayerCharacter": Array(2) ["mountFaceToFace", "mountFromBehind"]]
+	
+	for ( var cae of primaryCAlist ) {
+		var caeData = primaryCAlist[cae];
+		for ( var target of aOCcopy ) {
+			if ( caeData.hasOwnProperty(target) ) {
+				var firstMethod = caeData[target][0];
+				if ( firstMethod == "cancel" || firstMethod == "stay" ) {
+					caUnweightedList.push([cae,target,firstMethod]);
+				} else {
+					caUnweightedList.push([cae,target,randomFromList(caeData[target])]);
+				}
+			}
+		}
+	}
+	// Example of caUnweightedList:
+	// Array(2) [Array(3) ["penetratePussy", "chVal", "mountFromBehind"], Array(3) ["penetratePussy", "chPlayerCharacter", "mountFaceToFace"]]
+	
+	// Generate weighted list
+	var wL = createWeightedListOfCaChoices(actor,caUnweightedList);
+	// Choose mission and translate it into instructions
+	var mission = randomFromWeightedList(wL);
+	
+	return mission;
+}
+
+window.findAllPotentialPositions = function(actor,target) {
+	var positions = [];
+	if ( areCharactersLinked(actor,target) ) {
+		positions.push([gC(actor).position.key,gC(target).position.key,"stay",target]);
+		positions.push(["free","free","cancel",target]);
+	} else if ( gC(actor).position.key == "free" && gC(target).position.key == "free" ) {
+		positions.push(["free","free","stay",target]);
+	}
+	// Get all position actions known by actor
+	var positionActions = purgeActionsWithoutPreferenceTag(gC(actor).saList,"position");
+	// Filter usable position actions
+	var usablePositionActions = [];
+	if ( gC(actor).aiAlgorythm.disablePositions == false ) {
+		for ( var pA of positionActions ) {
+			if ( isActionUsable(pA,actor,[target],false).isUsable ) {
+				usablePositionActions.push(pA);
+			} else if ( areCharactersLinked(actor,target) && isActionUsableOnPos(pA,actor,[target],"free",["free"]).isUsable ) {
+			//	usablePositionActions.push(pA);
+			}
+		}
+	}
+	// Add position results from usable position actions
+	for ( var uPA of usablePositionActions ) {
+		if ( setup.saList[uPA].hasOwnProperty("positionResults") ) {
+			positions.push(setup.saList[uPA].positionResults.concat(uPA,target));
+		}
+	}
+	// Third element: keyword to reach position pair
+	// "stay": do not change positions ; "cancel": cancel current positioning
+	// Fourth element: Target
+	return positions;
+}
+window.getCharsPrimaryContinuedActions = function(charKey) {
+	var pca = [];
+	var caList = purgeActionsWithoutPreferenceTag(gC(charKey).saList,"continuedAction");
+	for ( var ca of caList ) {
+		if ( setup.saList[ca].hasOwnProperty("caRank") ) {
+			if ( setup.saList[ca].caRank == 2 ) {
+				pca.push(ca);
+			}
+		}
+	}
+	return pca;
+}
+
+window.createWeightedListOfCaChoices = function(actor,caPosChoicesList) {
+	// To evaluate: character tastes (weights and ranks), character desires, - NOT target's preference -
+	var desires = getActorsCurrentDesires(actor);
+	var targetsMultipliers = [];
+	var wL = new weightedList();
+	
+	var i = 0;
+	for ( var capCh of caPosChoicesList ) {
+		var mult = 1;
+		var target = capCh[1];
+		if ( targetsMultipliers.hasOwnProperty(target) ) {
+			mult = targetsMultipliers[target];
+		} else {
+			targetsMultipliers[target] = 1;
+			if ( gC(target).orgasmSceneCounter == 0 ) {
+				targetsMultipliers[target] = 2;
+			}
+			mult = targetsMultipliers[target];
+		}
+		wL[i] = new weightedElement(capCh,assignWeightToActionFromActorToTargetWithDesires(capCh[0],actor,target,desires,mult));
+		i++;
+	}
+	
+	return wL;
+}
+
+///// Old or combat
 
 	// Missions
 window.returnValidSexSceneMissions = function(character,target) {
@@ -836,6 +1275,15 @@ window.applyRoleWeightToAction = function(wList,rolePreferences) {
 }
 
 	// Action lists
+window.purgeActionsWithStrategyTag = function(list,tag) {
+	var newList = [];
+	for ( var action of list ) {
+		if ( setup.saList[action].strategyTags.includes(tag) == false ) {
+			newList.push(action);
+		}
+	}
+	return newList;
+}
 window.purgeActionsWithoutStrategyTag = function(list,tag) {
 	var newList = [];
 	for ( var action of list ) {
@@ -849,6 +1297,15 @@ window.purgeActionsWithPreferenceTag = function(list,tag) {
 	var newList = [];
 	for ( var action of list ) {
 		if ( setup.saList[action].flavorTags.includes(tag) == false ) {
+			newList.push(action);
+		}
+	}
+	return newList;
+}
+window.purgeActionsWithoutPreferenceTag = function(list,tag) {
+	var newList = [];
+	for ( var action of list ) {
+		if ( setup.saList[action].flavorTags.includes(tag) == true ) {
 			newList.push(action);
 		}
 	}
@@ -872,7 +1329,7 @@ window.countCharactersDebuffs = function(charKey) {
 }
 
 // Constructors, serializers, etc.
-aiAlgorythm.prototype._init = function (obj) {
+aiAlgorithm.prototype._init = function (obj) {
 	Object.keys(obj).forEach(function (pn) {
 		this[pn] = clone(obj[pn]);
 	}, this);
@@ -880,22 +1337,22 @@ aiAlgorythm.prototype._init = function (obj) {
 	return this;
 };
 
-aiAlgorythm.prototype.clone = function () {
-	return (new aiAlgorythm())._init(this);
+aiAlgorithm.prototype.clone = function () {
+	return (new aiAlgorithm())._init(this);
 };
 
-aiAlgorythm.prototype.toJSON = function() {
+aiAlgorithm.prototype.toJSON = function() {
 	var ownData = {};
 	Object.keys(this).forEach(function (pn) {
 		ownData[pn] = clone(this[pn]);
 	}, this);
-	return JSON.reviveWrapper('(new aiAlgorythm())._init($ReviveData$)', ownData);
+	return JSON.reviveWrapper('(new aiAlgorithm())._init($ReviveData$)', ownData);
 };
 
 
 
-////////// AI ALGORYTHMS LIST CLASS //////////
-// AI algorythms will be objects belonging to this object. This will ease the access to ai functions.
+////////// AI ALGORITHMS LIST CLASS //////////
+// AI algorithms will be objects belonging to this object. This will ease the access to ai functions.
 window.aiList = function() {
 };
 

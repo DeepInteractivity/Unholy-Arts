@@ -377,6 +377,10 @@ window.initializeSeTheMerchants = function() {
 	// Relation changes
 	State.variables.chVal.relations.chMir.submission.stv += 150;
 	State.variables.chMir.relations.chVal.domination.stv += 150;
+	State.variables.StVars.check2 = 0;
+	State.variables.StVars.check3 = 0;
+	State.variables.StVars.check4 = 0;
+	State.variables.StVars.check10 = false;
 	
 	// Checks
 		// Character choice
@@ -398,6 +402,9 @@ window.initializeSeTheMerchants = function() {
 	if ( State.variables.StVars.check3 <= 10 ) { State.variables.StVars.check3 = 10; }
 	State.variables.StVars.check4 = (rLvlAbt("chPlayerCharacter","chVal","submission") - rLvlAbt("chPlayerCharacter","chVal","domination")) * 20 + rLvlAbt("chPlayerCharacter","chVal","sexualTension") * 10;
 	if ( State.variables.StVars.check4 <= 10 ) { State.variables.StVars.check4 = 10; }
+	if ( State.variables.StVars.check2 > State.variables.chPlayerCharacter.willpower.current || State.variables.StVars.check3 > State.variables.chPlayerCharacter.willpower.current || State.variables.StVars.check4 > State.variables.chPlayerCharacter.willpower.current ) {
+		State.variables.StVars.check10 = true;
+	}
 	
 		// Nash, Mir, Val, Ate, Claw checks
 	State.variables.StVars.check5 = false;
@@ -432,9 +439,67 @@ window.cleanPrologueStoryVars = function() {
 	}
 }
 
+// Version 0.3
 
+window.initializeGleamingCavernsOverview = function() {
+	setPasChars([getPresentCharByKey("chMir"),getPresentCharByKey("chAte"),getPresentCharByKey("chClaw"),getPresentCharByKey("chNash"),getPresentCharByKey("chVal")]);
+	setRoomIntro("mapTrainingGrounds","diningHall");
+	for ( var cK of getCandidatesKeysArray() ) {
+		for ( var at of setup.baseStats ) {
+			gC(cK)[at].affinity -= 0.1;
+		}
+		gC(cK).charisma.affinity += 0.50;
+		gC(cK).empathy.affinity += 0.40;
+	}
+}
 
+window.initializePostAdventurePlaceholder = function() {
+	for ( var cK of getCandidatesKeysArray() ) {
+		for ( var at of setup.baseStats ) {
+			gC(cK)[at].affinity += 0.1;
+		}
+		gC(cK).charisma.affinity -= 0.50;
+		gC(cK).empathy.affinity -= 0.40;
+	}
+}
 
+window.initializeSeTGoL = function() {
+	// Checks
+	State.variables.StVars.check1 = false; // Appeal to Ate's pride
+	if ( (gCstat("chPlayerCharacter","charisma") * 1.2 + gCstat("chPlayerCharacter","empathy")) >= 25 ) {
+		State.variables.StVars.check1 = true;
+	}
+	
+	setPasChars([getPresentCharByKey("chVal"),getPresentCharByKey("chClaw")]);
+	setRoomIntro("mapTrainingGrounds","eastBridge");
+}
+
+window.initializeMartialTutorshipI = function() {
+	setPasChars([getPresentCharByKey("chNash")]);
+	setRoomIntro("mapTrainingGrounds","dummies");
+	
+	// Check player weapon
+	var pWeapon = "none";
+	//var wType = getEquipById(gC("chPlayerCharacter").weaponID).type;
+	if ( gC("chPlayerCharacter").weaponID == -1 ) {
+	} else if ( getEquipById(gC("chPlayerCharacter").weaponID).type == equipmentType.STAFFOFBATTLE ) {
+		pWeapon = "staff";
+	} else {
+		pWeapon = "other";
+	}
+	State.variables.StVars.check1 = pWeapon;
+	// Placeholder variables
+	State.variables.StVars.check2 = "";
+	State.variables.StVars.check3 = "";
+	// Checks
+	State.variables.StVars.check4 = gCstat("chPlayerCharacter","resilience") * 1.3 + gCstat("chPlayerCharacter","physique");
+	State.variables.StVars.check5 = gCstat("chPlayerCharacter","physique") * 1 + gCstat("chPlayerCharacter","agility") * 1.3 + gCstat("chPlayerCharacter","perception") * 1.3;
+	State.variables.StVars.check6 = gCstat("chPlayerCharacter","agility") * 1.1 + gCstat("chPlayerCharacter","perception");
+	State.variables.StVars.check7 = gCstat("chPlayerCharacter","agility") * 1 + gCstat("chPlayerCharacter","physique") * 1.1;
+	
+	State.variables.chNash.energy.current -= 10;
+	State.variables.chNash.combatAffinities.weapon.strength += 5;
+}
 
 
 

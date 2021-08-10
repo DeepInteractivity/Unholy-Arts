@@ -507,7 +507,7 @@ window.btifFirstBattleInit = function() {
 		}
 	}*/
 	State.variables.sc.customScript = ccsBtifFirstBattleScript;
-	State.variables.sc.outHeadingDescription = '<span style="color:mediumvioletred">//"Your goal in battles is to disrupt your opponent\'s aether. Or, in other words, to knock them out. The most direct way to do this is by harming them until they run out of strength."//</span> ';
+	State.variables.sc.outHeadingDescription = '<span style="color:mediumvioletred">//"Your goal in battles is to disrupt your opponent\'s aether. Or, in other words, to knock them out. The most direct way to do this is by harming them until they run out of strength."//</span>\n\n';
 	State.variables.sc.formatScenePassage();
 }
 
@@ -582,7 +582,7 @@ window.ccsBtifPlayerVsClawBattleInit = function() {
 			break;
 	}
 	State.variables.sc.startScene(
-	"bs","fixed",["chPlayerCharacter"],["chClaw"],"__Field__\nThis is the clearest area in the training grounds. You're guaranteed to find a spot in which you can unleash hellflames without destroying anything.",createEndConditionStoryBattle("SE BKIF Player Victory",clawGoal),6,
+	"bs","fixed",["chPlayerCharacter"],["chClaw"],"__Field__\nThis is the clearest area in the training grounds. You're guaranteed to find a spot in which you can unleash hellflames without destroying anything.",createEndConditionStoryBattleWithDraw("SE BKIF Player Victory",clawGoal,"SE BKIF Player Victory"),6,
 	"SE BKIF Player Victory");
 	for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
 		if ( charKey != "chPlayerCharacter" ) {
@@ -604,7 +604,7 @@ window.ccsBtifPlayerVsClawBattleInit = function() {
 }
 window.ccsBtifTeamfightBattleInit = function() {
 	State.variables.sc.startScene(
-	"bs","fixed",["chPlayerCharacter","chNash"],["chClaw","chVal"],"__Field__\nThis is the clearest area in the training grounds. You're guaranteed to find a spot in which you can unleash hellflames without destroying anything.",createEndConditionStoryBattle("SE BKIF Player Team Victory","SE BKIF Player Team Defeat"),6,
+	"bs","fixed",["chPlayerCharacter","chNash"],["chClaw","chVal"],"__Field__\nThis is the clearest area in the training grounds. You're guaranteed to find a spot in which you can unleash hellflames without destroying anything.",createEndConditionStoryBattleWithDraw("SE BKIF Player Team Victory","SE BKIF Player Team Defeat","SE BKIF Player Team Victory"),6,
 	"SE BKIF Player Victory");
 	for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
 		if ( charKey != "chPlayerCharacter" ) {
@@ -628,7 +628,7 @@ window.ccsBtifTeamfightBattleInit = function() {
 // Aspiring Tree Climber
 window.aspiringTCdommingClaw = function() {
 	State.variables.sc.startScene(
-	"ss","fixed",["chPlayerCharacter"],["chClaw"],"The wind is caressing the forest.",endConditionTurns,30,
+	"ss","fixed",["chPlayerCharacter"],["chClaw"],"The wind is caressing the forest.",endConditionTurns,gSettings().stdSxScDur,
 	"SE Aspiring TC Post Domming Claw");
 	State.variables.sc.sceneConditions.push("cantCancelPositions");
 	State.variables.sc.sceneConditions.push("cantChangePositions");
@@ -644,7 +644,7 @@ window.aspiringTCdommingClaw = function() {
 }
 window.aspiringTCdommedByClaw = function() {
 	State.variables.sc.startScene(
-	"ss","fixed",["chPlayerCharacter"],["chClaw"],"The trees' branches move along with the wind.",endConditionTurns,30,
+	"ss","fixed",["chPlayerCharacter"],["chClaw"],"The trees' branches move along with the wind.",endConditionTurns,gSettings().stdSxScDur,
 	"SE Aspiring TC Post Subbing Claw");
 	State.variables.sc.sceneConditions.push("cantCancelPositions");
 	State.variables.sc.sceneConditions.push("cantChangePositions");
@@ -716,6 +716,7 @@ window.giftsForNatureInPadmirisCare = function() {
 	//
 	State.variables.StVars.check3 = false;
 	State.variables.StVars.check4 = false;
+	State.variables.StVars.check5 = false;
 	
 	State.variables.sc.customScript = function() {
 		if ( State.variables.StVars.check4 == false ) {
@@ -728,19 +729,164 @@ window.giftsForNatureInPadmirisCare = function() {
 				State.variables.sc.headingDescription = '<span @style=$chMir.colorStyleKey>//"That should be enough. ...But I hope you don\'t mind if I help myself..."//<'
 											  + '/span>' + '\n\nYour mind is still foggy. Your body moves as Padmiri commands.';
 			}
+		} 
+		if ( State.variables.sc.currentTurn >= 5 ) {
+			var damage = 1 + 0.2 * State.variables.sc.currentTurn;
+			damage = damage - ( damage % 1 );
+			State.variables.sc.importantMessages += "The parasalfis flower's scent gets your blood pumping.\n"
+									+ gC("chPlayerCharacter").getFormattedName() + " has received " + textLustDamage(damage) + ".\n"
+									+ gC("chMir").getFormattedName() + " has received " + textLustDamage(damage) + ".\n"
+			applyBarDamage("chPlayerCharacter","lust",-damage);
+			applyBarDamage("chMir","lust",-damage);
+			State.variables.sc.checkForOrgasms();
 		}
 	}
 	
 	State.variables.sc.formatScenePassage();
 }
 
-/*
-window.ghScissorEndCondition = function(none) {
-	var flagEndScene = false;
-	
-	if ( State.variables.chGoddessHerald.orgasmSceneCounter > 0 && State.variables.chPlayerCharacter.orgasmSceneCounter > 0 ) {
-		flagEndScene = true;
-	}
-	
-	return flagEndScene;	
+// The Grapes of Lust
+window.finishGrapesData = function() {
+	delete State.variables.sc.remainingGrapes;
 }
+window.tryGettingGrape = function() {
+	var gotGrape = "none";
+	var checkedAction = "doNothing";
+	if ( State.variables.sc.remainingGrapes != undefined ) {
+		if ( State.variables.sc.remainingGrapes > 0 ) {
+			State.variables.logL1.push(State.variables.sc.teamBchosenActions[0],State.variables.sc.teamAchosenActions[0]);
+			checkedAction = setup.saList[State.variables.sc.teamBchosenActions[0]];
+			State.variables.logL1.push(checkedAction);
+			if ( checkedAction.flavorTags.includes("usePussy") && checkedAction.flavorTags.includes("targetMouth") ) {
+				if ( limitedRandomInt(100) > 78 ) {
+					gotGrape = State.variables.sc.teamBchosenTargets[0];
+					State.variables.sc.remainingGrapes--;
+				}
+			}
+			var i = 0;
+			for ( var act of State.variables.sc.teamAchosenActions ) {
+				checkedAction = setup.saList[State.variables.sc.teamAchosenActions[i]];
+				if ( gotGrape == "none" ) {
+					if ( checkedAction.flavorTags.includes("useMouth") && checkedAction.flavorTags.includes("targetPussy") ) {
+						if ( limitedRandomInt(100) > 78 ) {
+							gotGrape = State.variables.sc.teamAcharKeys[i];
+							State.variables.sc.remainingGrapes--;
+						}
+					}
+				}
+				i++;
+			}
+		}
+	}
+	if ( gotGrape == "chAte" ) {
+		var msg = randomFromList( [
+			(ktn("chAte") + " managed to dig deep inside " + ktn("chVal") + "'s " + pussyWord() + " and caught a grape, which she promptly swallowed."),
+			("It almost looks like it's going to slip away, but " + ktn("chAte") + "'s tongue managed to grab a grape and drag it to her own mouth."),
+			("After slurping some slime, " + ktn("chAte") + " sucks yet another berry from " + ktn("chVal") + "'s " + pussyWord() + "."),
+			("The grape slips for a moment, but Valtan decides to have some mercy and pushes it out of herself right into " + ktn("chAte") + "'s mouth."),
+			(ktn("chVal") + " gets distracted by the pleasure for a moment, and she loses strength in her abdomen. A grape falls in the process straight into the mouth of " + ktn("chAte") + ".") ] );
+		State.variables.sc.importantMessages += msg;
+	} else if ( gotGrape == "chPlayerCharacter" ) {
+		var msg = randomFromList( [
+			(ktn("chPlayerCharacter") + "'s tongue explores deep in " + ktn("chVal") + "'s " + pussyWord() + " and digs a grape out, which " + gC("chPlayerCharacter").perPr + " shares with " + ktn("chAte") + "."),
+			("After snatching a grape, " + ktn("chPlayerCharacter") + " kisses " + ktn("chAte") + ", pushing the berry inside her mouth. She swallows cutely."),
+			("A grape falls from " + ktn("chVal") + "'s depths down to " + ktn("chPlayerCharacter") + "'s lips, and " + gC("chPlayerCharacter").perPr + " grabs it and puts it in " + ktn("chAte") + "'s."),
+			(ktn("chPlayerCharacter") + " gets a berry, and gets distracted by the strange flavour it gets when it gets mixed with slime - but " + gC("chPlayerCharacter").perPr + " promptly shares the fruit with " + ktn("chAte") + "."),
+			(ktn("chAte") + " looks at " + ktn("chPlayerCharacter") + " expectantly when she notices " + gC("chPlayerCharacter").comPr + " getting a grape. " + ktn("chPlayerCharacter") + " complies and gives it to her.") ] );
+		State.variables.sc.importantMessages += msg;
+	}
+	return gotGrape;
+}
+window.endConditionGrapes = function(turns) {
+	var sceneFinished = false;
+	if ( State.variables.sc.remainingGrapes == undefined ) {
+		sceneFinished = true;
+	} else {
+		if ( State.variables.sc.remainingGrapes <= 0 ) {
+			sceneFinished = true;
+			finishGrapesData();
+		}
+	}
+	return sceneFinished;
+}
+window.cssTgolValxAte = function() {
+	State.variables.sc.remainingGrapes = 8;
+	charactersLearnSceneActions(["chVal"],["legHoldHead","extraLegHoldHead","makeKneel","extraMakeKneel","rideFace","getBlowjob","fuckFace"]);
+	charactersLearnSceneActions(["chAte"],["kneel","extraKneel","giveCunnilingus","lickPussy","giveBlowjob","suckDick"]);
+	State.variables.sc.startScene(
+	"ss","fixed",["chAte"],["chVal"],"It smells like wet grass.",endConditionGrapes,gSettings().stdSxScDur,
+	"SE TGoL Player Protests End");
+	State.variables.sc.sceneConditions.push("cantCancelPositions");
+	State.variables.chVal.hasLead = true;
+	State.variables.chAte.hasLead = false;
+	State.variables.sc.customScript = tryGettingGrape;
+	createPosKneel("chVal",["chAte"]);
+	// Choices and AI
+	State.variables.chVal.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chVal.aiAlgorythm.setRoleDomination();
+	State.variables.chVal.aiAlgorythm.disablePositions = true;
+	/*
+	State.variables.chVal.aiAlgorythm.rolePreferences.useDick.w = 0;
+	State.variables.chVal.aiAlgorythm.rolePreferences.position.w = 0;
+	State.variables.chVal.aiAlgorythm.rolePreferences.usePussy.w = 800;
+	State.variables.chVal.aiAlgorythm.rolePreferences.oral.w = 400;
+	State.variables.chVal.aiAlgorythm.rolePreferences.targetMouth.w = 800;
+	*/
+	State.variables.chAte.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chAte.aiAlgorythm.setRoleSubmission();
+	/*
+	State.variables.chAte.aiAlgorythm.rolePreferences.useMouth.w = 800;
+	State.variables.chAte.aiAlgorythm.rolePreferences.oral.w = 400;
+	State.variables.chAte.aiAlgorythm.rolePreferences.targetPussy.w = 800;
+	*/
+	//
+	State.variables.sc.formatScenePassage();
+}
+window.cssTgolValxAtePlayer = function() {
+	State.variables.sc.remainingGrapes = 8;
+	charactersLearnSceneActions(["chVal"],["legHoldHead","extraLegHoldHead","makeKneel","extraMakeKneel","rideFace","getBlowjob","fuckFace"]);
+	charactersLearnSceneActions(["chAte","chPlayerCharacter"],["kneel","extraKneel","giveCunnilingus","lickPussy","giveBlowjob","suckDick"]);
+	State.variables.sc.startScene(
+	"ss","fixed",["chPlayerCharacter","chAte"],["chVal"],"It smells like wet grass.",endConditionGrapes,gSettings().stdSxScDur,
+	"SE TGoL Join Ate End");
+	State.variables.sc.sceneConditions.push("cantCancelPositions");
+	State.variables.chVal.hasLead = true;
+	State.variables.chAte.hasLead = false;
+	State.variables.chPlayerCharacter.hasLead = false;
+	State.variables.sc.customScript = tryGettingGrape;
+	createPosKneel("chVal",["chAte"]);
+	createComPosDoubleKneeling("chVal","chPlayerCharacter");
+	// Choices and AI
+	State.variables.chVal.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chVal.aiAlgorythm.setRoleDomination();
+	State.variables.chVal.aiAlgorythm.disablePositions = true;
+	State.variables.chAte.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chAte.aiAlgorythm.setRoleSubmission();
+	//
+	State.variables.sc.formatScenePassage();
+}
+window.cssTgolValVsPlayer = function() {
+	var clawGoal = "";
+	switch ( State.variables.StVars.BkifStakes ) {
+		case "servitude":
+			clawGoal = "SE BKIF Claw Victory Servitude";
+			break;
+		case "sex":
+			clawGoal = "SE BKIF Claw Victory Sex";
+			break;
+		case "humilliation":
+			clawGoal = "SE BKIF Claw Victory Humilliation";
+			break;
+	}
+	State.variables.sc.startScene(
+	"bs","fixed",["chPlayerCharacter"],["chVal"],"__Lake__\nIt smells like wet grass.",createEndConditionStoryBattle("SE TGoL Defy Valtan Player Victory","SE TGoL Defy Valtan Player Defeat"),6,
+	"SE TGoL Defy Valtan Player Victory");
+	for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
+		if ( charKey != "chPlayerCharacter" ) {
+			gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+		}
+	}
+	State.variables.sc.formatScenePassage();
+}
+
+

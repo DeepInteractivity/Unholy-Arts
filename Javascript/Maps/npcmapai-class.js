@@ -15,7 +15,7 @@ window.NpcMapAi = function(charKey) {
 			if ( this.goalsList[0] != undefined ) {
 				this.previousGoals.push(this.goalsList[0].type);
 			}
-			if ( this.goalsList[0].isValid() ) {
+			if ( this.goalsList[0].isValid() ) {	
 				this.goalsList[0].createEvent();
 				this.previousGoals.push("Was valid");
 				this.goalsList.splice(0,1);
@@ -56,7 +56,7 @@ window.NpcMapAi = function(charKey) {
 				if ( State.variables.compass.flagEndedScenario == false ) {
 					gC(this.charKey).globalAi.generalEvaluations();
 				}
-				if ( this.state == "idle" ) { // General evaluations may make the character join an ongoing event
+				if ( this.state == "idle" && gC(this.charKey).followingTo == "" ) { // General evaluations may make the character join an ongoing event
 					if ( this.tryNewGoal() ) { // Try new mission
 					}
 					else { // New mission couldn't be executed
@@ -68,6 +68,18 @@ window.NpcMapAi = function(charKey) {
 								this.tryNewGoal();
 							}
 							// this.createNewMission(getCurrentMap().key,[charKey])); // Provisional name? Generates a new list of goals
+						}
+					}
+				}
+			} else if ( gC(this.charKey).followingTo != "" && State.variables.compass.findFirstEventInvolvingCharacter(this.charKey) == null ) {
+				var fT = gC(this.charKey).followingTo;
+				var rT = gRelTypeAb(this.charKey,fT);
+				if ( rT != null ) {
+					if ( isLiberationChallengePossible(this.charKey,fT) ) {
+						if ( limitedRandomInt(100) > 94 ) {
+							if ( proportionQuantifiedCharactersStrength(this.charKey,fT) > 0.9 ) {
+								initiateLiberationChallenge(this.charKey,fT);
+							}
 						}
 					}
 				}
@@ -124,7 +136,7 @@ window.createMapAiGoalMoveTo = function(charKey,goalRoom) {
 		var connection = null;
 		var charsGroup = State.variables.compass.getCharactersGroup(this.charKey);
 		
-		for ( var con of getRoomA(gC(this.charKey).currentRoom).getConnections(charsGroup) ) {
+		for ( var con of getRoomInfoA(gC(this.charKey).currentRoom).getConnections(charsGroup) ) {
 			if ( con.loc == this.goalRoom ) {
 				connection = con;
 			}
@@ -147,7 +159,7 @@ window.createMapAiGoalAction = function(charKey,goalRoom,goalAction,minutes) {
 	goal.createEvent = function() { // Adds an event to the events pile
 		 var mapAction = null;
 		 var charsGroup = State.variables.compass.getCharactersGroup(this.charKey);
-		 for ( var mapA of getRoomA(this.goalRoom).getActions(charsGroup) ) {
+		 for ( var mapA of getRoomInfoA(this.goalRoom).getActions(charsGroup) ) {
 			 if ( this.goalAction == mapA.key ) {
 				 mapAction = mapA;
 			 }
@@ -174,8 +186,11 @@ window.createMapAiGoalTalkTo = function(charKey,targetCharKey) {
 		var flagTargetIsInSis = State.variables.compass.isCharacterInSis(this.targetChar);
 		
 		if ( flagTargetIsInSis ) {				   // Joining already stablished conversation
-			State.variables.compass.sisList[State.variables.compass.getCharacterSisId(this.targetChar)].charJoinsSis(this.charKey);
-			State.variables.compass.sisList[State.variables.compass.getCharacterSisId(this.targetChar)].importantMessages +=
+			var convId = State.variables.compass.getCharacterSisId(this.targetChar);
+			for ( var charKey of getCharGroup(this.charKey) ) {
+				State.variables.compass.sisList[convId].charJoinsSis(charKey);
+			}
+			State.variables.compass.sisList[convId].importantMessages +=
 				getCharNames(getCharGroup(this.charKey)) + " joined the conversation.\n";
 		}
 		else {
@@ -197,7 +212,8 @@ window.createMapAiGoalTalkTo = function(charKey,targetCharKey) {
 					if ( gC("chPlayerCharacter").domChar == this.charKey ) {
 						flagPlayerIsSub = true;
 					}
-					var p = gC(this.charKey).getFormattedName() + " wants to talk to you.\n\n";
+					var genericDialogue = chooseDialogFromList(setup.dialogDB.csDialogs,this.charKey,"chPlayerCharacter","","");
+					var p = genericDialogue + "\n" + gC(this.charKey).getFormattedName() + " wants to talk to you.\n\n";
 					if ( playerEvent == null ) {
 						p += getButtonAcceptConversation(this.charKey) + "\n";
 						if ( flagPlayerIsSub ) {
@@ -267,7 +283,11 @@ window.createMapAiGoalPursueAndTalkTo = function(charKey,targetCharKey) {
 					var goal = createMapAiGoalPursueAndTalkTo(this.charKey,this.targetChar);
 					goal.initialDistance = this.initialDistance;
 					goal.walkedDistance = this.walkedDistance;
-					gC(this.charKey).mapAi.goalsList.push(goal);
+					if ( gC(this.charKey).mapAi.goalsList == undefined ) {
+						gC(this.charKey).mapAi.goalsList = [goal];
+					} else {
+						gC(this.charKey).mapAi.goalsList.push(goal);
+					}
 				}
 			}
 		}
@@ -295,7 +315,8 @@ window.createMapAiGoalAssault = function(charKey,targetCharKey) {
 			if ( State.variables.compass.flagPlayerIsPrompted == false ) {
 				var playerEvent = State.variables.compass.findFirstEventInvolvingPlayer();
 				initiateNpcAssault(charKey,targetCharKey);
-				var p = gC(charKey).getFormattedName() + " is assaulting you!\n\n";
+				var gD = chooseDialogFromList(setup.dialogDB.icDialogs,charKey,targetCharKey,"","");
+				var p = gD + "\n" + gC(charKey).getFormattedName() + " is assaulting you!\n\n";
 				p += getButtonBeingAssaulted(charKey);
 				if ( playerEvent == null ) {
 					State.variables.compass.setPlayerPrompt(p,this.charKey,true);
@@ -328,6 +349,7 @@ window.createMapAiGoalChallenge = function(charKey,targetCharKey) {
 			if ( State.variables.compass.flagPlayerIsPrompted == false ) {
 				var playerEvent = State.variables.compass.findFirstEventInvolvingPlayer();
 				var stakesMsg = "";
+				var gD = chooseDialogFromList(setup.dialogDB.icDialogs,charKey,targetCharKey,"","");
 				switch ( stakes ) {
 					case 1:
 						stakesMsg = "low stakes";
@@ -339,7 +361,7 @@ window.createMapAiGoalChallenge = function(charKey,targetCharKey) {
 						stakesMsg = "high stakes";
 						break;
 				}
-				var p = gC(charKey).getFormattedName() + " is challenging you for " + stakesMsg + "!\nRefusing the challenge will make you lose merit.\n\n";
+				var p = gD + "\n" + gC(charKey).getFormattedName() + " is challenging you for " + stakesMsg + "!\nRefusing the challenge will make you lose merit.\n\n";
 				p += getButtonAcceptChallenge(charKey,stakes) + "\n" + getButtonRejectChallenge(charKey,stakes);
 				if ( playerEvent == null ) {
 					State.variables.compass.setPlayerPrompt(p,this.charKey,true);
@@ -409,7 +431,11 @@ window.createMapAiGoalPursueAndAssault = function(charKey,targetCharKey) {
 					var goal = createMapAiGoalPursueAndAssault(this.charKey,this.targetChar);
 					goal.initialDistance = this.initialDistance;
 					goal.walkedDistance = this.walkedDistance;
-					gC(this.charKey).mapAi.goalsList.push(goal);
+					if ( gC(this.charKey).mapAi.goalsList == undefined ) {
+						gC(this.charKey).mapAi.goalsList = [goal];
+					} else {
+						gC(this.charKey).mapAi.goalsList.push(goal);
+					}
 				}
 			}
 		}
@@ -452,7 +478,6 @@ window.createMapAiGoalPursueAndChallenge = function(charKey,targetCharKey,stakes
 				this.initialDistance = initialRoute.length;
 			}
 			if ( this.walkedDistance < this.initialDistance * 2 ) {
-				
 				// Create route towards NPC
 				var currentRoute = getRouteToCharacter(getCurrentMap().key,getCharGroup(this.charKey),this.targetChar);
 				if ( currentRoute.length > 0 ) {
@@ -463,7 +488,11 @@ window.createMapAiGoalPursueAndChallenge = function(charKey,targetCharKey,stakes
 					var goal = createMapAiGoalPursueAndChallenge(this.charKey,this.targetChar);
 					goal.initialDistance = this.initialDistance;
 					goal.walkedDistance = this.walkedDistance;
-					gC(this.charKey).mapAi.goalsList.push(goal);
+					if ( gC(this.charKey).mapAi.goalsList == undefined ) {
+						gC(this.charKey).mapAi.goalsList = [goal];
+					} else {
+						gC(this.charKey).mapAi.goalsList.push(goal);
+					}
 				}
 			}
 		}
@@ -498,7 +527,7 @@ MapAiGoal.prototype.toJSON = function() {
 ////////// GOAL CHECKERS //////////
 
 window.checkMoveTo = function(charGroup,currentRoomKey,goalRoomKey) {
-	var cons = getCurrentMap().rooms[currentRoomKey].getConnections(charGroup);
+	var cons = getRoomInfoA(currentRoomKey).getConnections(charGroup);
 	var validCon = false;
 	for ( var con of cons ) {
 		if ( goalRoomKey == con.loc ) {
@@ -510,7 +539,7 @@ window.checkMoveTo = function(charGroup,currentRoomKey,goalRoomKey) {
 
 window.checkMapAction = function(charGroup,roomKey,mapActionKey) {
 	var flagAllowed = false;
-	for ( var mapAction of getRoomA(roomKey).getActions(charGroup) ) {
+	for ( var mapAction of getRoomInfoA(roomKey).getActions(charGroup) ) {
 		if ( mapActionKey == mapAction.key ) {
 			flagAllowed = true; // Current room allows to initiate goal action
 		}
@@ -580,7 +609,7 @@ window.getAllActionsOnMap = function(chart,charsGroup) {
 	var rooms = chart.getAllRooms();
 	
 	for ( var room of rooms ) {
-		roomActions =  room.getActions(charsGroup);
+		roomActions =  getRoomInfoA(room.key).getActions(charsGroup);
 		if ( roomActions.length > 0 ) {
 			for ( var action of roomActions ) {
 				actions.push(action);
@@ -625,9 +654,9 @@ window.getRouteToClosestTaggedActivity = function(mapKey,charsGroup,tag) {
 	// Assumes the position of first character in charsGroup
 	
 	var isValid = function(roomKey) {
-		var room = getRoomInMap(mapKey,roomKey);
+		//var room = getRoomInMap(mapKey,roomKey);
 		var flagValid = false;
-		for ( var action of room.getActions(charsGroup) ) {
+		for ( var action of getRoomInfoA(roomKey).getActions(charsGroup) ) {
 			if ( action.tags.includes(tag) ) { flagValid = true; }
 		}
 		return flagValid;
@@ -642,9 +671,9 @@ window.getRouteToClosestAltTaggedActivity = function(mapKey,charsGroup,tagsList)
 	// Assumes the position of first character in charsGroup
 	
 	var isValid = function(roomKey) {
-		var room = getRoomInMap(mapKey,roomKey);
+		//var room = getRoomInMap(mapKey,roomKey);
 		var flagValid = false;
-		for ( var action of room.getActions(charsGroup) ) {
+		for ( var action of getRoomInfoA(roomKey).getActions(charsGroup) ) {
 			for ( var tag of tagsList ) {
 				if ( action.tags.includes(tag) ) { flagValid = true; }
 			}
@@ -703,7 +732,7 @@ window.createRouteMovementCommands = function(roomsList,charsGroup) {
 window.getLastActionInRoomIf = function(mapKey,roomKey,charsGroup,isValid) {
 	var targetAction = null;
 	
-	var actions = getRoomInMap(mapKey,roomKey).getActions(charsGroup);
+	var actions = getRoomInfoA(roomKey).getActions(charsGroup);
 	
 	for ( var action of actions ) {
 		if ( isValid(action) ) {
@@ -746,7 +775,7 @@ window.getLastEitherTaggedActionInRoom = function(mapKey,roomKey,charsGroup,tags
 window.cMissionRandomMovement = function(mapKey,charsGroup) {
 	var commandsList = [];
 	
-	var connections = getRoomInMap(mapKey,gC(charsGroup[0]).currentRoom).getConnections();
+	var connections = getRoomInfoA(gC(charsGroup[0].currentRoom)).getConnections();
 	
 	if ( connections.length > 0 ) {  // Create command to move to random adjacent location
 		commandsList.push(createMapAiGoalMoveTo(charsGroup[0],randomFromList(connections).loc));
@@ -853,19 +882,22 @@ window.npcProposalFollowMe = function(actor,target) {
 					}
 				}
 				if ( flagForcedToFollow ) {
-					var p = gC(actor).getFormattedName() + " wants you to follow " + gC(actor).comPr + ". You relationship compels you to accept.\n\n";
+					var gD = chooseDialogFromList(setup.dialogDB.folMeDialogs,actor,"chPlayerCharacter",true,"");
+					var p = gD + "\n" + gC(actor).getFormattedName() + " wants you to follow " + gC(actor).comPr + ". You relationship compels you to accept.\n\n";
 					p += getButtonNpcAsksToFollowThemAccept(actor);
 					State.variables.compass.setPlayerPrompt(p,actor,true);
 				}
 				else if ( rFavor("chPlayerCharacter",actor) > 0 ) {
-					var p = gC(actor).getFormattedName() + " wants you to follow " + gC(actor).comPr + ". You're indebted to " + gC(actor).getFormattedName()
+					var gD = chooseDialogFromList(setup.dialogDB.folMeDialogs,actor,"chPlayerCharacter",false,"");
+					var p = gD + "\n" + gC(actor).getFormattedName() + " wants you to follow " + gC(actor).comPr + ". You're indebted to " + gC(actor).getFormattedName()
 						  + " and refusing this request would be seen as an insult.\n\n";
 					p += getButtonNpcAsksToFollowThemAccept(actor) + "\n";
 					p += getButtonNpcAsksToFollowThemReject(actor);
 					State.variables.compass.setPlayerPrompt(p,actor,true);
 				}
 				else {
-					var p = gC(actor).getFormattedName() + " wants you to follow " + gC(actor).comPr + ". This would put " +
+					var gD = chooseDialogFromList(setup.dialogDB.folMeDialogs,actor,"chPlayerCharacter",false,"");
+					var p = gD + "\n" + gC(actor).getFormattedName() + " wants you to follow " + gC(actor).comPr + ". This would put " +
 							gC(actor).comPr + " in your debt.\n\n";
 					p += getButtonNpcAsksToFollowThemAccept(actor) + "\n";
 					p += getButtonNpcAsksToFollowThemReject(actor);
@@ -881,7 +913,8 @@ window.npcProposalFollowYou = function(actor,target) {
 	if ( gC(actor).currentRoom == gC(target).currentRoom ) {
 		if ( target == "chPlayerCharacter" ) { // Target is player
 			if ( State.variables.compass.flagPlayerIsPrompted == false ) {
-				var p = gC(actor).getFormattedName() + " wants to follow you.\n\n";
+				var gD = chooseDialogFromList(setup.dialogDB.folPlDialogs,actor,"chPlayerCharacter",false,"");
+				var p = gD + "\n" + gC(actor).getFormattedName() + " wants to follow you.\n\n";
 				p += getButtonNpcAsksToFollowPlayerAccept(actor) + "\n";
 				p += getButtonNpcAsksToFollowPlayerReject(actor);
 				State.variables.compass.setPlayerPrompt(p,actor,true);
@@ -895,7 +928,8 @@ window.npcProposalUnfollowMe = function(actor,target) {
 	if ( gC(actor).currentRoom == gC(target).currentRoom ) {
 		if ( target == "chPlayerCharacter" ) { // Target is player
 			if ( State.variables.compass.flagPlayerIsPrompted == false ) {
-				var p = gC(actor).getFormattedName() + " wants you to stop following " + gC(actor).comPr + ".\n\n";
+				var gD = chooseDialogFromList(setup.dialogDB.unfolMeDialogs,actor,"chPlayerCharacter",false,"");
+				var p = gD + "\n" + gC(actor).getFormattedName() + " wants you to stop following " + gC(actor).comPr + ".\n\n";
 				p += getButtonNpcAsksToUnfollowThemAccept(actor) + "\n";
 				p += getButtonNpcAsksToUnfollowThemReject(actor);
 				State.variables.compass.setPlayerPrompt(p,actor,true);
@@ -909,7 +943,8 @@ window.npcProposalUnfollowYou = function(actor,target) {
 	if ( gC(actor).currentRoom == gC(target).currentRoom ) {
 		if ( target == "chPlayerCharacter" ) { // Target is player
 			if ( State.variables.compass.flagPlayerIsPrompted == false ) {
-				var p = gC(actor).getFormattedName() + " wants to stop following you.\n\n";
+				var gD = chooseDialogFromList(setup.dialogDB.unfolPlDialogs,actor,"chPlayerCharacter",false,"");
+				var p = gD + "\n" + gC(actor).getFormattedName() + " wants to stop following you.\n\n";
 				p += getButtonNpcAsksToUnfollowPlayerAccept(actor) + "\n";
 				p += getButtonNpcAsksToUnfollowPlayerReject(actor);
 				State.variables.compass.setPlayerPrompt(p,actor,true);
@@ -959,7 +994,10 @@ window.doesTargetAcceptConversation = function(actor,target) {
 		
 		var finalValue = semifinalValue + luckFactor;
 		if ( finalValue >= 0 || State.variables.debugAlwaysAcceptSis ) { result = true; }
-		if ( result ) { stringResult = "Success!"; }
+		if ( result ) {
+			stringResult = "Success!"; 
+			gC(target).mission = "";
+		}
 		else 		  { stringResult = "Failure."; }
 		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2)
 					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + " - Result: " + finalValue.toFixed(2);
@@ -1057,6 +1095,7 @@ window.aAsksBtoFollowA = function(charA,charB) {
 	}
 	// Create following relationship
 	if ( flagAccepted ) {
+		charLosesFollowers(charB);
 		charFollowsChar(charB,charA,willPayDebt);
 	}
 	
