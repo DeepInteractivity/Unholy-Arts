@@ -85,6 +85,7 @@ PersonalRoom.prototype.formatRoomText = function() {
 				this.roomText += "\n<<" + "script>>State.variables.personalRoom.roomState = 'main';<</" + "script>> \ ";
 				break;
 		}
+		this.roomText += "\n<<" + "script>>State.variables.eventsCalendar.activeEvent = false;<</" + "script>> \ ";
 	}
 	
 	// Buttons
@@ -98,18 +99,20 @@ PersonalRoom.prototype.getButtonBackToMain = function() {
 PersonalRoom.prototype.getButtonsCharInfo = function() {
 		var bText = "";
 		for ( var character of getActiveSimulationCharactersArray() ) {
-			bText += "<<l" + "ink [[" + gC(character).name + "|Personal Room]]>><<s" + "cript>>";
-			bText += "State.variables.personalRoom.roomState = 'charInfo';\n";
-			bText += "State.variables.personalRoom.checkedCharacter = '" + character + "';";
-			//bText += "$rightUiBar.stow()";
-			bText += "<</s" + "cript>><</l" + "ink>> " + gC(character).icon();
-			if ( gRelTypeAb(character,"chPlayerCharacter") ) {
-				bText += " (" + getRelTypeAbr(character,"chPlayerCharacter") + ")";
+			if ( isCurrentStoryStateInMainLoop() || getCandidatesKeysArray().includes(character) ) {
+				bText += "<<l" + "ink [[" + gC(character).name + "|Personal Room]]>><<s" + "cript>>";
+				bText += "State.variables.personalRoom.roomState = 'charInfo';\n";
+				bText += "State.variables.personalRoom.checkedCharacter = '" + character + "';";
+				//bText += "$rightUiBar.stow()";
+				bText += "<</s" + "cript>><</l" + "ink>> " + gC(character).icon();
+				if ( gRelTypeAb(character,"chPlayerCharacter") ) {
+					bText += " (" + getRelTypeAbr(character,"chPlayerCharacter") + ")";
+				}
+				if ( getCandidatesKeysArray().includes(character) == false ) {
+					bText += " " + colorText("Guest","limegreen");
+				}
+				bText += "\n";
 			}
-			if ( getCandidatesKeysArray().includes(character) == false ) {
-				bText += " " + colorText("Guest","limegreen");
-			}
-			bText += "\n";
 		}
 		return bText;
 	}
@@ -386,7 +389,7 @@ PersonalRoom.prototype.getCandidatesComparisonPassage = function() {
 		for ( var charKey of getCandidatesKeysArray() ) {
 			passageText += '<tr><td>' + gC(charKey).getFormattedName() + '</td><td>' + gC(charKey).merit + '</td><td>' + gC(charKey).infamy + '</td><td>' + gC(charKey).physique.value + '</td><td>' + gC(charKey).agility.value + '</td><td>' + gC(charKey).resilience.value + '</td><td>' + gC(charKey).will.value + '</td><td>' + gC(charKey).intelligence.value + '</td><td>' + gC(charKey).perception.value + '</td><td>' + gC(charKey).charisma.value + '</td><td>' + gC(charKey).empathy.value + '</td><td>' + gC(charKey).luck.value + '</td></tr>';
 		}
-		if ( State.variables.activeSimulationCharacters.length > 6 ) {
+		if ( State.variables.activeSimulationCharacters.length > 6 && isCurrentStoryStateInMainLoop() ) {
 			passageText += '<tr><td>' + "Guests" + '</td><td>' + '</td><td>' + '</td><td>' + '</td><td>' + '</td><td>' + '</td><td>' + '</td><td>' + '</td><td>' + '</td><td>' + '</td><td>' + '</td><td>' + '</td></tr>';
 			for ( var charKey of getActiveSimulationCharactersArray() ) {
 				if ( getCandidatesKeysArray().includes(charKey) == false ) {
@@ -403,7 +406,6 @@ PersonalRoom.prototype.getCandidatesComparisonPassage = function() {
 	
 PersonalRoom.prototype.initPersonalRoom = function() {
 		State.variables.compass.currentMap = "none";
-		State.variables.eventsCalendar.stablishTomorrowsEvent();
 		State.variables.personalRoom.autosavePossible = true;
 		applyPunishmentsToCandidates();
 		spawnMerchants();
@@ -422,7 +424,7 @@ window.removeLeftOverData = function() {
 }
 	
 PersonalRoom.prototype.endDayEffects = function() {
-		State.variables.logL1 = [];
+		//State.variables.logL1 = [];
 		State.variables.eventsCalendar.stablishTomorrowsEvent();
 		
 		State.variables.personalRoom.autosavePossible = false;
@@ -451,6 +453,7 @@ PersonalRoom.prototype.endDayEffects = function() {
 					if ( character == "chPlayerCharacter" ) {
 						this.newDayInfo += "Your " + stat + " has increased to " + gC(character)[stat].value + ".\n";
 					}
+					addPointsToDrive(gC(character).dImprovement,(gC(character)[stat].value / 5));
 				}
 			}
 			recalculateMaxBars(character);
@@ -560,14 +563,18 @@ PersonalRoom.prototype.endDayRelationMoodEffects = function() {
 	}
 	
 PersonalRoom.prototype.initializeNewDay = function() {
-		
-		// Temple period
-		initTrainingPeriodPassionTemple();
-		
-		// AI social and training priorities
-		for ( var character of arrayMinusA(getActiveSimulationCharactersArray(),"chPlayerCharacter") ) {
-			setSocialAiCandidateGoals(gC(character).socialAi);
-			setTrainingGoals(character);
+		if ( isCurrentStoryStateInMainLoop() ) {
+			// Temple period
+			initTrainingPeriodPassionTemple();
+			
+			// AI social and training priorities
+			for ( var character of arrayMinusA(getActiveSimulationCharactersArray(),"chPlayerCharacter") ) {
+				setSocialAiCandidateGoals(gC(character).socialAi);
+				setTrainingGoals(character);
+			}
+		} else if ( State.variables.storyState == storyState.firstAdventure ) {
+			// Gleaming Caverns Period
+			initAdventurePeriodGleamingCaverns();
 		}
 		
 		// Clean compass
@@ -782,7 +789,7 @@ window.getActionsWindow = function() {
 		wText += "\n";
 	}
 	// Exit menu button
-	wText += "\n<<l" + "ink [[Exit equipment menu|Personal Room]]>><<s" + "cript>>"
+	wText += "\n<<l" + "ink [[Exit actions menu|Personal Room]]>><<s" + "cript>>"
 			+ "State.variables.personalRoom.roomState = 'main';\n"
 			+ "<</s" + "cript>><</l" + "ink>>\n";
 	return wText;
@@ -1075,8 +1082,22 @@ window.npcsEquipBondage = function() {
 			while ( activeSubChars.length > 0 && usableBondage.length > 0 ) {
 				var newActiveSubChars = [];
 				for ( var subChar of activeSubChars ) {
+					var flagTryingToDominate = true;
+					if ( gRelTypeAb(character,subChar) == "tutorship" ) {
+						// Relationship is tutorship, does tutor want to dominate?
+						if ( (getCharsDrivePercent(character,"dDomination") * 2 + getCharsDrivePercent(character,"dAmbition") + getCharsDrivePercent(character,"dPleasure")) < 0.8 ) {
+							flagTryingToDominate = false;
+							if ( (getCharsDrivePercent(character,"dDomination") * 2 + getCharsDrivePercent(character,"dAmbition") + getCharsDrivePercent(character,"dPleasure")) > 0.5 && getItemListEquippableOnChar(subChar,usableBondage).length > 0 ) {
+								// Soft domination
+								var softBondage = findValidSoftBondageOnTargetFromActor(getItemListEquippableOnChar(subChar,usableBondage),subChar,character);
+								if ( softBondage != -1 ) {
+									equipObjectOnWearer(chosenBondageId,subChar,gRelTypeAb(character,subChar).days);
+								}
+							}
+						}
+					}
 					// Check if there are no valid items for current char
-					if ( getItemListEquippableOnChar(subChar,usableBondage).length > 0 ) {
+					if ( flagTryingToDominate && getItemListEquippableOnChar(subChar,usableBondage).length > 0 ) {
 						// Check if char is within power threshold
 						if ( isSubOverDomsPowerThreshold(subChar,character) == false ) { // Check if true
 							// Removed from new active sub chars

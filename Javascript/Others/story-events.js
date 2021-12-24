@@ -501,13 +501,128 @@ window.initializeMartialTutorshipI = function() {
 	State.variables.chNash.combatAffinities.weapon.strength += 5;
 }
 
+window.initializeShunnedByHerOwn = function() {
+	setPasChars([getPresentCharByKey("chNash"),getPresentCharByKey("chMir")]);
+	setRoomIntro("mapTrainingGrounds","amphitheater");
+	
+	// Affinities towards player, Nash's Player vs Mir, Mir's Player vs Nash
+	State.variables.StVars.check1 = rLvlAbt("chNash","chPlayerCharacter","romance") * 2 + rLvlAbt("chNash","chPlayerCharacter","friendship") + rLvlAbt("chNash","chPlayerCharacter","sexualTension") - rLvlAbt("chNash","chPlayerCharacter","enmity") * 2 - rLvlAbt("chNash","chMir","romance") * 2 - rLvlAbt("chNash","chMir","friendship") - rLvlAbt("chNash","chMir","sexualTension") + rLvlAbt("chNash","chMir","enmity");
+	State.variables.StVars.check2 = rLvlAbt("chMir","chPlayerCharacter","romance") * 2 + rLvlAbt("chMir","chPlayerCharacter","friendship") + rLvlAbt("chMir","chPlayerCharacter","sexualTension") - rLvlAbt("chMir","chPlayerCharacter","enmity") * 2 - rLvlAbt("chMir","chNash","romance") * 2 - rLvlAbt("chMir","chNash","friendship") - rLvlAbt("chMir","chNash","sexualTension") + rLvlAbt("chMir","chNash","enmity");
+	
+	// Affinities towards Valtan
+	State.variables.StVars.check3 = rLvlAbt("chNash","chVal","friendship") * 2 + rLvlAbt("chNash","chVal","romance") - rLvlAbt("chNash","chVal","enmity") * 2 + getCharsDrive("chNash","dLove") - getCharsDrive("chNash","dDomination"); // Positive: Nash supports Valtan's love
+	State.variables.StVars.check4 = rLvlAbt("chClaw","chVal","friendship") * 1 + rLvlAbt("chClaw","chVal","romance") - rLvlAbt("chClaw","chVal","rivalry") - rLvlAbt("chClaw","chVal","enmity") * 2 - getCharsDrive("chClaw","dDomination") + getCharsDrive("chClaw","dCooperation") - getCharsDrive("chClaw","dAmbition") + getCharsDrive("chClaw","dLove"); // Negative: Claw supports Valtan getting excluded
+	State.variables.StVars.check5 = 2 + rLvlAbt("chMir","chVal","friendship") - rLvlAbt("chMir","chVal","enmity") + getCharsDrive("chVal","dLove") - getCharsDrive("chVal","dPleasure"); // Trusts Valtan's love to be sincere
+	
+	State.variables.StVars.check6 = (gCstat("chPlayerCharacter","charisma") + gCstat("chPlayerCharacter","empathy") + gCstat("chPlayerCharacter","luck") * 0.5) * 0.1 // Player's conversation influence
+	
+	for ( var cK of ["chNash","chMir","chClaw","chAte"] ) {
+		gC(cK).supsValLove = 0;
+		gC(cK).supsValPardon = 0;
+	}
+	gC("chNash").supsValLove += rLvlAbt("chNash","chVal","friendship") * 2 + rLvlAbt("chNash","chVal","romance") - rLvlAbt("chNash","chVal","enmity") * 2 + getCharsDrive("chNash","dLove") - getCharsDrive("chNash","dDomination") - getCharsDrive("chVal","dPleasure");
+	gC("chNash").supsValPardon += rLvlAbt("chNash","chVal","friendship") * 2 + rLvlAbt("chNash","chVal","romance") * 2 - rLvlAbt("chNash","chVal","enmity") * 2 + getCharsDrive("chNash","dCooperation") - getCharsDrive("chNash","dDomination") -  getCharsDrive("chNash","dAmbition") - getCharsDrive("chVal","dPleasure");
+	gC("chClaw").supsValPardon += rLvlAbt("chClaw","chVal","friendship") * 1 + rLvlAbt("chClaw","chVal","romance") - rLvlAbt("chClaw","chVal","rivalry") - rLvlAbt("chClaw","chVal","enmity") * 2 - getCharsDrive("chClaw","dDomination") + getCharsDrive("chClaw","dCooperation") - getCharsDrive("chClaw","dAmbition") + getCharsDrive("chClaw","dLove");
+	gC("chClaw").supsValLove += rLvlAbt("chClaw","chVal","friendship") * 2 + rLvlAbt("chClaw","chVal","romance") - rLvlAbt("chClaw","chVal","enmity") * 2 - getCharsDrive("chClaw","dDomination") + getCharsDrive("chClaw","dCooperation") + getCharsDrive("chClaw","dLove") - 3;
+	gC("chMir").supsValLove += rLvlAbt("chMir","chVal","friendship") - rLvlAbt("chMir","chVal","enmity") + getCharsDrive("chVal","dLove") - getCharsDrive("chVal","dPleasure") + getCharsDrive("chMir","dLove") - getCharsDrive("chVal","dPleasure");
+	gC("chMir").supsValPardon += rLvlAbt("chMir","chVal","friendship") - rLvlAbt("chMir","chVal","enmity") + getCharsDrive("chVal","dLove") - getCharsDrive("chVal","dPleasure") + getCharsDrive("chMir","dLove") + getCharsDrive("chMir","dCooperation") +  + getCharsDrive("chMir","dAmbition") - getCharsDrive("chVal","dPleasure");
+	gC("chAte").supsValLove += rLvlAbt("chAte","chVal","friendship") + rLvlAbt("chAte","chVal","romance") - rLvlAbt("chAte","chVal","enmity") + getCharsDrive("chAte","dLove") + getCharsDrive("chAte","dCooperation") + (- getCharsDrive("chAte","dImprovement") - getCharsDrive("chAte","dAmbition")) * 0.5 - getCharsDrive("chVal","dPleasure");
+	gC("chAte").supsValPardon += rLvlAbt("chAte","chVal","friendship") + rLvlAbt("chAte","chVal","romance") - rLvlAbt("chAte","chVal","enmity") + getCharsDrive("chAte","dLove") + getCharsDrive("chAte","dCooperation") + getCharsDrive("chAte","dAmbition") - getCharsDrive("chAte","dDomination") - getCharsDrive("chVal","dPleasure");
+	
+	for ( var cK of ["chPlayerCharacter","chNash","chMir","chClaw"] ) {
+		gC(cK).charisma.experience += 500;
+		gC(cK).empathy.experience += 500;
+	}
+	gC("chAte").charisma.experience += 500;
+	gC("chAte").empathy.experience += 500;
+	gC("chVal").will.experience += 1000;
+}
 
+window.initializeSeFaK = function() {
+	charactersLearnSceneActions(["chClaw","chMir"],["giveBlowjob","giveCunnilingus","getBlowjob","legHoldHead","suckDick","lickPussy","fuckFace","rideFace"]);
+	State.variables.StVars.check1 = [false,false,false,false,false]; // Used harassment options ; show skin, masturbate, eat out, moan, exhibitionism
+	State.variables.StVars.check2 = 0; // Padmiri hot and bothered score
+	State.variables.StVars.check3 = 0; // Padmiri submission score
+	State.variables.StVars.check4 = [false,false,false]; // Player has free collar, chastity belt, chastity cage
+	
+	for ( var eq of State.variables.equipmentList ) {
+		if ( eq.owner == "chPlayerCharacter" && eq.equippedOn == null ) {
+			if ( eq.type == "b0" ) {
+				if ( gC("chMir").hasFreeBodypart("neck") ) {
+					State.variables.StVars.check4[0] = eq.id;
+				}
+			} else if ( eq.type == "b7" ) {
+				if ( gC("chMir").hasFreeBodypart("pussy") ) {
+					State.variables.StVars.check4[1] = eq.id;
+				}
+			} else if ( eq.type == "b8" ) {
+				if ( gC("chMir").hasFreeBodypart("dick") ) {
+					State.variables.StVars.check4[2] = eq.id;
+				}
+			}
+		}
+	}
+	
+	setPasChars([getPresentCharByKey("chClaw"),getPresentCharByKey("chMir")]);
+	setRoomIntro("mapTrainingGrounds","westLibrary");
+}
+window.seFaKpadmiriBotheredScore = function() {
+	State.variables.StVars.check2 = 0;
+	var bars = getBarPercentage("chMir","lust") + getBarPercentage("chMir","willpower");
+	if ( bars <= 1.4 ) {
+		State.variables.StVars.check2 = 3;
+	} else if ( bars <= 1.6 ) {
+		State.variables.StVars.check2 = 2;
+	} else if ( bars <= 1.8 ) {
+		State.variables.StVars.check2 = 1;
+	}
+}
+window.seFaKupdatePadmiriSubmissionScore = function() {
+	State.variables.StVars.check3 = State.variables.StVars.check2 * 3 + rLvlAbt("chMir","chPlayerCharacter","sexualTension") + rLvlAbt("chMir","chPlayerCharacter","submission") + rLvlAbt("chMir","chClaw","sexualTension") - rLvlAbt("chMir","chPlayerCharacter","enmity") + gC("chMir").dPleasure.level;
+}
 
+window.initializeBondageAwakening = function() {
+	//setPasChars([getPresentCharByKey("chMir"),getPresentCharByKey("chClaw"),getPresentCharByKey("chNash")]);
+	setPasChars([]);
+	setRoomIntro("mapTrainingGrounds","lake");
+	State.variables.StVars.check1 = getCharsDrive("chMir","dDomination") * 2 + getCharsDrive("chMir","dAmbition") + getCharsDrive("chMir","dPleasure") - getCharsDrive("chMir","dCooperation") - getCharsDrive("chMir","dLove"); // Padmiri's aggressiveness
+	State.variables.StVars.check2 = false; // Player has chains
+	State.variables.StVars.check3 = gCstat("chPlayerCharacter","intelligence") * 2 + gCstat("chPlayerCharacter","will") * 2 + gCstat("chPlayerCharacter","luck"); // Chains attack check
+	State.variables.StVars.check4 = false; // Player has hypnosis
+	State.variables.StVars.check5 = (gCstat("chPlayerCharacter","charisma") * 2 + gCstat("chPlayerCharacter","will")) * 0.2 + rLvlAbt("chMir","chPlayerCharacter","submission"); // Hypnosis attack check
+	State.variables.StVars.check6 = getCharsDrive("chMir","dPleasure") + rLvlAbt("chMir","chNash","sexualTension") + rLvlAbt("chMir","chClaw","sexualTension");
+	State.variables.StVars.check7 = getCharsDrive("chMir","dPleasure") + rLvlAbt("chMir","chNash","sexualTension") + rLvlAbt("chMir","chClaw","sexualTension") + rLvlAbt("chMir","chPlayerCharacter","sexualTension");
+	State.variables.StVars.check8 = [false,false,false,false]; // Tried actions: Complained to Mir, Asked Mir, Confronted them, Suggest to leave
+	State.variables.StVars.check9 = rLvlAbt("chMir","chPlayerCharacter","submission") * 2 + rLvlAbt("chMir","chPlayerCharacter","friendship") + rLvlAbt("chMir","chPlayerCharacter","friendship") - rLvlAbt("chMir","chPlayerCharacter","enmity") * 2; // Order Padmiri check
+	State.variables.StVars.check10 = rLvlAbt("chMir","chPlayerCharacter","domination") * 2 + rLvlAbt("chMir","chPlayerCharacter","romance") + rLvlAbt("chMir","chPlayerCharacter","romance") - rLvlAbt("chMir","chPlayerCharacter","enmity") * 2; // Beg Padmiri check
+	
+	if ( gC("chPlayerCharacter").saList.includes("baEtherealChains") ) {
+		State.variables.StVars.check2 = true;
+	}
+	if ( gC("chPlayerCharacter").saList.includes("baHypnoticGlance") ) {
+		State.variables.StVars.check4 = true;
+	}
+	
+	gC("chNash").relations.chClaw.enmity.stv += 250;
+	gC("chNash").relations.chClaw.rivalry.stv += 250;
+	gC("chClaw").relations.chNash.enmity.stv += 250;
+	gC("chClaw").relations.chNash.rivalry.stv += 250;
+}
 
+///// Adventures /////
 
+window.initGleamingCavernsSecondDay = function() {
+	setPasChars([]);
+	setRoomIntro("mapGleamingCaverns","templeStorage");
+	
+	gC("chGoddessHerald").name = "Varyonte";
+	gC("chGoddessHerald").formattedName = '<span style="color:'+gC("chGoddessHerald").nameColor+'">'+gC("chGoddessHerald").name+'</span>';
+	gC("chGoddessHerald").names = [ gC("chGoddessHerald").getName() , gC("chGoddessHerald").getName() , gC("chGoddessHerald").getName() ];
+}
 
-
-
+window.initGleamingCavernsDayPlaceholder = function() {
+	
+}
 
 
 

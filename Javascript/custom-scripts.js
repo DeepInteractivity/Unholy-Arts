@@ -487,3 +487,31 @@ window.addExpToChar = function(charKey,baseStat,exp) {
 	State.variables[charKey][baseStat].experience += rExp;
 }
 
+// Altered States
+window.applyAetherialBondageToChars = function(charList,intensity,days) {
+	for ( var cK of charList ) {
+		if ( gC(cK).hasFreeBodypart("arms") ) {
+			applyAlteredState([cK],createASaetChainedArms(intensity,days));
+		}
+		if ( gC(cK).hasFreeBodypart("legs") ) {
+			applyAlteredState([cK],createASaetChainedLegs(intensity,days));
+		}
+		if ( gC(cK).hasFreeBodypart("mouth") ) {
+			applyAlteredState([cK],createASaetChainedMouth(intensity,days));
+		}
+	}
+}
+window.applyVinesBondageToChars = function(charList,intensity,days) {
+	for ( var cK of charList ) {
+		if ( gC(cK).hasFreeBodypart("arms") ) {
+			applyAlteredState([cK],createASvinChainedArms(intensity,days));
+		}
+		if ( gC(cK).hasFreeBodypart("legs") ) {
+			applyAlteredState([cK],createASvinChainedLegs(intensity,days));
+		}
+		if ( gC(cK).hasFreeBodypart("mouth") ) {
+			applyAlteredState([cK],createASvinChainedMouth(intensity,days));
+		}
+	}
+}
+

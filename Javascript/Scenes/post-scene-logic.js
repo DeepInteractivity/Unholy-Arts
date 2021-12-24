@@ -14,6 +14,9 @@ window.processGenericSexSceneEffects = function() {
 	for ( var charKey of allChars ) {
 		gC(charKey).orgasmSceneCounter += gC(charKey).mindblowingOrgasmSC * 2;
 		allChars[charKey] = [];
+		var allOtherChars = arrayMinusA(allChars,charKey);
+		var avrRomance = getAverageRelationStatBetweenCharAndGroup("romance",charKey,allOtherChars);
+		var avrSexualTension = getAverageRelationStatBetweenCharAndGroup("sexualTension",charKey,allOtherChars);
 		allCharsMsgs[charKey] = [];
 		if ( gC(charKey).hasOwnProperty("daysWithoutSex") ) {
 			allCharsMsgs[charKey].msg = "";
@@ -24,18 +27,32 @@ window.processGenericSexSceneEffects = function() {
 					var gainedRomance = 20;
 					var gainedSexualTension = 30;
 					var gainedDomination = 30;
+					var gainedDriveLove = 0;
 					var gainedDrivePleasure = 0;
 					var gainedDriveDomination = 0;
 					if ( gC(charKey).orgasmSceneCounter > 0 ) {
 						gainedSexualTension += 20;
 						gainedDrivePleasure += 10;
-						gainedDriveDomination += 10;
+						gainedDriveDomination += 20;
+						if ( avrRomance > 1 && ( avrRomance * 0.8 >= avrSexualTension ) ) {
+							gainedDriveLove = 10;
+						} else if ( avrRomance > 1 && ( avrRomance * 1.3 >= avrSexualTension ) ) {
+							gainedDriveLove = 5;
+						}
 					}
 					gainedRomance *= effectsMultiplier * (1 + ((gC(charKey).mood.intimate - gC(charKey).mood.angry - gC(charKey).mood.bored) / 100));
 					gainedSexualTension *= effectsMultiplier * (1 + ((gC(charKey).mood.aroused + gC(charKey).mood.flirty - gC(charKey).mood.bored) / 200));
 					gainedDomination *= effectsMultiplier * (1 + ((gC(charKey).mood.dominant - gC(charKey).mood.submissive) / 100));
-					gainedDrivePleasure *= effectsMultiplier * (1 + ((gC(charKey).mood.aroused + gC(charKey).mood.flirty - gC(charKey).mood.bored) / 200));
+					gainedDriveLove *= effectsMultiplier * (1 + ((gC(charKey).mood.intimate * 2 - gC(charKey).mood.bored) / 200)) * (avrRomance/avrSexualTension);
+					if ( allChars.length > 2 && ( (avrRomance / avrSexualTension) < 0.8 ) ) {
+						gainedDriveLove *= ( 1 - allChars.length * 0.1 );
+					}
+					gainedDrivePleasure *= effectsMultiplier * (1 + ((gC(charKey).mood.aroused + gC(charKey).mood.flirty - gC(charKey).mood.bored) / 200)) * (avrSexualTension/avrRomance);
+					if ( allChars.length == 2 && ( (avrRomance / avrSexualTension) > 1.2 ) ) {
+						gainedDrivePleasure *= 0.8;
+					}
 					gainedDriveDomination *= effectsMultiplier * (1 + ((gC(charKey).mood.dominant - gC(charKey).mood.submissive) / 100));
+					
 						// Apply values
 							// Relations
 					for ( var charKey2 of allChars ) {
@@ -52,7 +69,7 @@ window.processGenericSexSceneEffects = function() {
 					allCharsMsgs[charKey].msg += gC(charKey).getFormattedName() + " has gained " + gainedRomance.toFixed(1) + " romance, " + gainedSexualTension.toFixed(1)
 										   + " sexual tension, and " + gainedDomination.toFixed(1) + " domination towards the other characters.\n";
 					if ( gainedDrivePleasure > 0 ) {
-						allCharsMsgs[charKey].msg += gC(charKey).getFormattedName() + " has gained " + gainedDrivePleasure.toFixed(1) + " pleasure drive points and "
+						allCharsMsgs[charKey].msg += gC(charKey).getFormattedName() + " has gained " + gainedDrivePleasure.toFixed(1) + " pleasure drive points, " + gainedDriveLove.toFixed(1) + " love drive points and "
 											   + gainedDriveDomination.toFixed(1) + " domination drive points.";
 					}
 				} else {										  // Char was bottom
@@ -63,6 +80,9 @@ window.processGenericSexSceneEffects = function() {
 					var gainedEnmity = gC(charKey).ruinedOrgasmSceneCounter * 5;
 					var gainedDrivePleasure = 8 + gC(charKey).orgasmSceneCounter * 2 + gC(charKey).ruinedOrgasmSceneCounter * 3;
 					var gainedDriveLove = - gC(charKey).ruinedOrgasmSceneCounter * 2;
+					if ( avrRomance > 1 && ( avrRomance * 1.3 >= avrSexualTension ) ) {
+						gainedDriveLove += 5 + gC(charKey).orgasmSceneCounter * 2;
+					}
 					var gainedExtraSubmission = 25;
 					var energyLostPer = gC(charKey).energy.accumulatedDamage / gC(charKey).energy.max;
 					if ( energyLostPer > 1 ) { energyLostPer = 1; }
@@ -81,15 +101,20 @@ window.processGenericSexSceneEffects = function() {
 						gainedRomance += 0;
 						gainedSubmission += 20;
 						gainedDrivePleasure += 10;
-						
 					}
 					gainedRomance *= effectsMultiplier * (1 + ((gC(charKey).mood.intimate - gC(charKey).mood.angry - gC(charKey).mood.bored) / 100));
 					gainedSexualTension *= effectsMultiplier * (1 + ((gC(charKey).mood.aroused + gC(charKey).mood.flirty - gC(charKey).mood.bored) / 200));
 					gainedSubmission += gainedExtraSubmission;
 					gainedSubmission *= effectsMultiplier * (1 + ((- gC(charKey).mood.dominant + gC(charKey).mood.submissive) / 100));
 					gainedEnmity *= effectsMultiplier * (1 + ((gC(charKey).mood.angry - gC(charKey).mood.submissive) / 100));
-					gainedDriveLove *= effectsMultiplier * (1 + ((gC(charKey).mood.intimate + gC(charKey).mood.friendly - gC(charKey).mood.angry - gC(charKey).mood.bored) / 200));
-					gainedDrivePleasure *= effectsMultiplier * (1 + ((gC(charKey).mood.aroused + gC(charKey).mood.flirty - gC(charKey).mood.bored) / 200));
+					gainedDriveLove *= effectsMultiplier * (1 + ((gC(charKey).mood.intimate + gC(charKey).mood.friendly - gC(charKey).mood.angry - gC(charKey).mood.bored) / 200)) * (avrRomance/avrSexualTension);
+					if ( allChars.length > 2 && ( (avrRomance / avrSexualTension) < 0.8 ) ) {
+						gainedDriveLove *= ( 1 - allChars.length * 0.1 );
+					}
+					gainedDrivePleasure *= effectsMultiplier * (1 + ((gC(charKey).mood.aroused + gC(charKey).mood.flirty - gC(charKey).mood.bored) / 200)) * (avrSexualTension/avrRomance);
+					if ( allChars.length == 2 && ( (avrRomance / avrSexualTension) > 1.2 ) ) {
+						gainedDrivePleasure *= 0.8;
+					}
 						// Apply values
 							// Relations
 					var leadingChar = charKey;
@@ -194,8 +219,14 @@ window.processGenericSexSceneEffects = function() {
 				gainedSubmission *= effectsMultiplier * (1 + ((- gC(charKey).mood.dominant + gC(charKey).mood.submissive) / 100));
 				gainedEnmity *= effectsMultiplier * (1 + ((gC(charKey).mood.angry - gC(charKey).mood.submissive) / 100));
 				gainedLoveDrive *= effectsMultiplier * (1 + ((gC(charKey).mood.intimate * 2 + gC(charKey).mood.friendly - gC(charKey).mood.angry * 2 - gC(charKey).mood.bored) / 300));
-				gainedPleasureDrive *= effectsMultiplier * (1 + ((gC(charKey).mood.aroused + gC(charKey).mood.flirty - gC(charKey).mood.bored) / 200));
-				gainedCooperationDrive *= effectsMultiplier * (1 + ((gC(charKey).mood.intimate + gC(charKey).mood.friendly * 2 - gC(charKey).mood.angry * 2 - gC(charKey).mood.bored) / 300));
+				if ( allChars.length > 2 && ( (avrRomance / avrSexualTension) < 0.8 ) ) {
+					gainedLoveDrive *= ( 1 - allChars.length * 0.1 );
+				}
+				gainedPleasureDrive *= effectsMultiplier * (1 + ((gC(charKey).mood.aroused + gC(charKey).mood.flirty - gC(charKey).mood.bored) / 200)) * (avrSexualTension/avrRomance);
+				if ( allChars.length == 2 && ( (avrRomance / avrSexualTension) > 1.2 ) ) {
+					gainedPleasureDrive *= 0.8;
+				}
+				gainedCooperationDrive *= effectsMultiplier * (1 + ((gC(charKey).mood.intimate + gC(charKey).mood.friendly * 2 - gC(charKey).mood.angry * 2 - gC(charKey).mood.bored) / 300)) * (avrRomance/avrSexualTension);
 				gainedDominationDrive *= effectsMultiplier * (1 + ((gC(charKey).mood.dominant - gC(charKey).mood.submissive) / 100));
 					
 				// Apply changes
@@ -282,7 +313,6 @@ window.processGenericSexSceneEffects = function() {
 	
 	// Finish formatting
 	State.variables.compass.sceneResultsPassage = resultsMessage;
-	
 }
 
 window.processGenericMapBattleEffects = function() {
@@ -326,7 +356,10 @@ window.processGenericMapBattleEffects = function() {
 			}
 			if ( flagWinningTeamIsCooperating ) {
 				for ( var cK of State.variables.sc.teamAcharKeys ) {
-					addPointsToDrive(gC(cK).dCooperation,10);
+					addPointsToDrive(gC(cK).dCooperation,(15+10*(0.1 * getAverageRelationStatBetweenCharAndGroup("friendship",cK,arrayMinusA(State.variables.sc.teamAcharKeys,cK)))));
+				}
+				for ( var cK of State.variables.sc.teamBcharKeys ) {
+					addPointsToDrive(gC(cK).dCooperation,(6+4*(0.1 * getAverageRelationStatBetweenCharAndGroup("friendship",cK,arrayMinusA(State.variables.sc.teamBcharKeys,cK)))));
 				}
 			}
 			break;
@@ -349,7 +382,10 @@ window.processGenericMapBattleEffects = function() {
 			}
 			if ( flagWinningTeamIsCooperating ) {
 				for ( var cK of State.variables.sc.teamBcharKeys ) {
-					addPointsToDrive(gC(cK).dCooperation,10);
+					addPointsToDrive(gC(cK).dCooperation,(15+10*(0.1 * getAverageRelationStatBetweenCharAndGroup("friendship",cK,arrayMinusA(State.variables.sc.teamBcharKeys,cK)))));
+				}
+				for ( var cK of State.variables.sc.teamAcharKeys ) {
+					addPointsToDrive(gC(cK).dCooperation,(6+4*(0.1 * getAverageRelationStatBetweenCharAndGroup("friendship",cK,arrayMinusA(State.variables.sc.teamAcharKeys,cK)))));
 				}
 			}
 			break;
@@ -359,15 +395,15 @@ window.processGenericMapBattleEffects = function() {
 		loser = State.variables.sc.defender;
 		// Drive changes
 		  // Attacker
-		  addPointsToDrive(gC(winner).dDomination,10);
-		  addPointsToDrive(gC(winner).dAmbition,10);
-		  driveChangesMessage += gC(winner).getFormattedName() + " gained 10 domination and ambition drive points.\n";
+		  addPointsToDrive(gC(winner).dDomination,(15+5*(0.1 * (getAverageRelationStatBetweenCharAndGroup("rivalry",winner,getCharsEnemyTeam(winner)) + getAverageRelationStatBetweenCharAndGroup("enmity",winner,getCharsEnemyTeam(winner))))));
+		  addPointsToDrive(gC(winner).dAmbition,(15+10*(0.1 * (getAverageRelationStatBetweenCharAndGroup("enmity",winner,getCharsEnemyTeam(winner))))));
+		  driveChangesMessage += gC(winner).getFormattedName() + " gained domination and ambition drive points.\n";
 		  // Defender
-		  addPointsToDrive(gC(loser).dImprovement,10);
-		  driveChangesMessage += gC(loser).getFormattedName() + " gained 10 self-improvement drive points.\n";
+		  addPointsToDrive(gC(loser).dImprovement,15+5*(0.1 * (getAverageRelationStatBetweenCharAndGroup("rivalry",winner,getCharsEnemyTeam(winner)) + getAverageRelationStatBetweenCharAndGroup("enmity",winner,getCharsEnemyTeam(winner)))));
+		  driveChangesMessage += gC(loser).getFormattedName() + " gained self-improvement drive points.\n";
 		  // Cooperation extra
 		  if ( flagWinningTeamIsCooperating ) {
-			  driveChangesMessage += gC(winner).getFormattedName() + "'s team members also gained 10 cooperation drive points.\n";
+			  driveChangesMessage += gC(winner).getFormattedName() + "'s team members also gained cooperation drive points.\n";
 		  }
 	} else if ( flagStaleMate == false ) { // Defender win
 		winner = State.variables.sc.defender;
@@ -375,17 +411,17 @@ window.processGenericMapBattleEffects = function() {
 		infamyMult = 0.5;
 		// Drive changes
 		  // Attacker
-		  addPointsToDrive(gC(loser).dImprovement,10);
-		  addPointsToDrive(gC(loser).dDomination,-5);
-		  addPointsToDrive(gC(loser).dAmbition,-5);
-		  driveChangesMessage += gC(loser).getFormattedName() + " gained 10 self-improvement drive points and lost 5 domination and ambition drive points.\n";
+		  addPointsToDrive(gC(loser).dImprovement,(15+5*(0.1 * (getAverageRelationStatBetweenCharAndGroup("rivalry",winner,getCharsEnemyTeam(winner)) + getAverageRelationStatBetweenCharAndGroup("enmity",winner,getCharsEnemyTeam(winner))))));
+		  addPointsToDrive(gC(loser).dDomination,-10);
+		  addPointsToDrive(gC(loser).dAmbition,-10);
+		  driveChangesMessage += gC(loser).getFormattedName() + " gained self-improvement drive points and lost domination and ambition drive points.\n";
 		  // Defender
-		  addPointsToDrive(gC(winner).dDomination,5);
-		  addPointsToDrive(gC(winner).dAmbition,5);
-		  driveChangesMessage += gC(winner).getFormattedName() + " gained 5 domination and ambition drive points.\n";
+		  addPointsToDrive(gC(winner).dDomination,(7+1.5*(0.1 * (getAverageRelationStatBetweenCharAndGroup("rivalry",winner,getCharsEnemyTeam(winner)) + getAverageRelationStatBetweenCharAndGroup("enmity",winner,getCharsEnemyTeam(winner))))));
+		  addPointsToDrive(gC(winner).dAmbition,(7+5*(0.1 * (getAverageRelationStatBetweenCharAndGroup("enmity",winner,getCharsEnemyTeam(winner))))));
+		  driveChangesMessage += gC(winner).getFormattedName() + " gained domination and ambition drive points.\n";
 		  // Cooperation extra
 		  if ( flagWinningTeamIsCooperating ) {
-			  driveChangesMessage += gC(winner).getFormattedName() + "'s team members also gained 10 cooperation drive points.\n";
+			  driveChangesMessage += gC(winner).getFormattedName() + "'s team members also gained cooperation drive points.\n";
 		  }
 	}
 	
@@ -466,18 +502,18 @@ window.processLiberationChallengeEffects = function() {
 	if ( flagStaleMate == false ) {
 		if ( gC(winner).domChar == loser ) {
 			// Drive changes
-			addPointsToDrive(gC(loser).dAmbition,-5);
-			addPointsToDrive(gC(loser).dDomination,-5);
-			addPointsToDrive(gC(loser).dImprovement,10);
-			// Relations effects
-			resultsMessage = gC(winner).getFormattedName() + " won the challenge! " + gC(winner).getFormattedName() + " will no longer be submissive to " + gC(loser).getFormattedName() + "." + gC(loser).getFormattedName() + " lost 5 ambition and domination drive points, and gained 10 self-improvement drive points." + "\n\n[[Continue|Map]]";
-			finishRelType(winner,loser);
-		} else {
-			// Drive changes
 			addPointsToDrive(gC(loser).dAmbition,-10);
-			addPointsToDrive(gC(loser).dImprovement,10);
+			addPointsToDrive(gC(loser).dDomination,-10);
+			addPointsToDrive(gC(loser).dImprovement,20);
 			// Relations effects
-			resultsMessage = gC(winner).getFormattedName() + " won the challenge! " + gC(winner).getFormattedName() + " stole 3 merit from " + gC(loser).getFormattedName() + ", gained domination towards " + gC(loser).comPr + " and will extend their relationship for an extra day. " + gC(loser).getFormattedName() + " lost 10 ambition drive points and gained 10 self-improvement drive points." + "\n\n[[Continue|Map]]";
+			resultsMessage = gC(winner).getFormattedName() + " won the challenge! " + gC(winner).getFormattedName() + " will no longer be submissive to " + gC(loser).getFormattedName() + "." + gC(loser).getFormattedName() + " lost 10 ambition and domination drive points, and gained 20 self-improvement drive points." + "\n\n[[Continue|Map]]";
+			finishRelType(winner,loser);
+		} else if ( gC(loser).domChar == winner ) {
+			// Drive changes
+			addPointsToDrive(gC(loser).dAmbition,-20);
+			addPointsToDrive(gC(loser).dImprovement,20);
+			// Relations effects
+			resultsMessage = gC(winner).getFormattedName() + " won the challenge! " + gC(winner).getFormattedName() + " stole 3 merit from " + gC(loser).getFormattedName() + ", gained domination towards " + gC(loser).comPr + " and will extend their relationship for an extra day. " + gC(loser).getFormattedName() + " lost 20 ambition drive points and gained 20 self-improvement drive points." + "\n\n[[Continue|Map]]";
 			gC(winner).relations[loser].domination.stv += 250;
 			gC(winner).changeMerit(3);
 			gC(loser).relations[winner].submission.stv += 250;
@@ -486,7 +522,7 @@ window.processLiberationChallengeEffects = function() {
 			gRelTypeAb(loser,winner).days++;
 		}
 	} else {
-		resultsMessage = "Stalemate!\n\n[[Continue|Map]]";
+		resultsMessage = "The battle was inconclusive!\n\n[[Continue|Map]]";
 	}
 	
 	// Finish formatting

@@ -30,7 +30,7 @@ setup.dialogDB.ssDialogs.push(new dialog( // Kissing 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("useMouth") &&
 			 setup.saList[context.extra1].flavorTags.includes("targetMouth")
 			) { flagValid = true; }
@@ -47,7 +47,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Kissing 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("useMouth") &&
 			 setup.saList[context.extra1].flavorTags.includes("targetMouth")
 			) { flagValid = true; }
@@ -66,7 +66,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Caress 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("foreplay")
 			) { flagValid = true; }
 		return flagValid;
@@ -84,7 +84,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Caress 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("foreplay")
 			) { flagValid = true; }
 		return flagValid;
@@ -107,7 +107,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Caress pussy 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("foreplay") &&
 			 setup.saList[context.extra1].flavorTags.includes("targetPussy")
 			) { flagValid = true; }
@@ -126,7 +126,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Caress pussy 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("foreplay") &&
 			 setup.saList[context.extra1].flavorTags.includes("targetPussy") &&
 			 gC(context.actor).hasFreeBodypart("dick")
@@ -146,7 +146,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Caress pussy 3
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("foreplay") &&
 			 setup.saList[context.extra1].flavorTags.includes("targetPussy") &&
 			 gC(context.target).domChar == context.actor &&
@@ -167,7 +167,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Caress pussy 4
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("foreplay") &&
 			 setup.saList[context.extra1].flavorTags.includes("targetPussy") &&
 			 gC(context.target).domChar == context.actor &&
@@ -188,7 +188,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Caress dick 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("foreplay") &&
 			 setup.saList[context.extra1].flavorTags.includes("targetDick")
 			) { flagValid = true; }
@@ -207,7 +207,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Caress dick 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("foreplay") &&
 			 setup.saList[context.extra1].flavorTags.includes("targetDick") &&
 			 ( gC(context.actor).hasFreeBodypart("pussy") || gC(context.actor).hasFreeBodypart("anus") )
@@ -227,7 +227,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Caress dick 3
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("foreplay") &&
 			 setup.saList[context.extra1].flavorTags.includes("targetDick") &&
 			 gC(context.target).domChar == context.actor &&
@@ -248,7 +248,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Caress dick 4
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("foreplay") &&
 			 setup.saList[context.extra1].flavorTags.includes("targetDick") &&
 			 gC(context.target).domChar == context.actor &&
@@ -269,7 +269,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Caress ass 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("foreplay") &&
 			 setup.saList[context.extra1].flavorTags.includes("targetAss")
 			) { flagValid = true; }
@@ -288,7 +288,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Full sex 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("fullsex")
 			) { flagValid = true; }
 		return flagValid;
@@ -306,7 +306,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Full sex 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("fullsex") &&
 			 getBarPercentage(context.actor,"lust") <= 0.65
 			) { flagValid = true; }
@@ -325,7 +325,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Full sex 3
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("fullsex") &&
 			 getBarPercentage(context.actor,"lust") <= 0.35
 			) { flagValid = true; }
@@ -344,7 +344,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Full sex 4
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("fullsex") &&
 			 getBarPercentage(context.actor,"lust") <= 0.25
 			) { flagValid = true; }
@@ -364,7 +364,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Full sex 5
 	function(context) {
 		var flagValid = false;
 		var romanceScore = rLvlAbt(context.actor,context.target,"romance") - rLvlAbt(context.actor,context.target,"enmity");
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("fullsex") &&
 			 getBarPercentage(context.actor,"lust") <= 0.50 &&
 			 romanceScore >= 7
@@ -385,7 +385,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Full sex 6
 	function(context) {
 		var flagValid = false;
 		var dominationScore = rLvlAbt(context.actor,context.target,"domination") - rLvlAbt(context.actor,context.target,"submission");
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("fullsex") &&
 			 dominationScore >= 7
 			) { flagValid = true; }
@@ -404,7 +404,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Scissoring 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("fullsex") &&
 			 setup.saList[context.extra1].flavorTags.includes("usePussy") &&
 			 setup.saList[context.extra1].flavorTags.includes("targetPussy")
@@ -424,7 +424,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Scissoring 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("fullsex") &&
 			 setup.saList[context.extra1].flavorTags.includes("usePussy") &&
 			 setup.saList[context.extra1].flavorTags.includes("targetPussy") &&
@@ -446,7 +446,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Full sex 7
 	function(context) {
 		var flagValid = false;
 		var romanceScore = rLvlAbt(context.actor,context.target,"romance") - rLvlAbt(context.actor,context.target,"enmity");
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("fullsex") &&
 			 romanceScore >= 6
 			) { flagValid = true; }
@@ -465,7 +465,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Penetrating 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("fullsex") &&
 			 setup.saList[context.extra1].flavorTags.includes("useDick") &&
 			 (setup.saList[context.extra1].flavorTags.includes("targetPussy") || setup.saList[context.extra1].flavorTags.includes("targetAss"))
@@ -485,7 +485,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Penetrating 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("fullsex") &&
 			 setup.saList[context.extra1].flavorTags.includes("useDick") &&
 			 (setup.saList[context.extra1].flavorTags.includes("targetPussy") || setup.saList[context.extra1].flavorTags.includes("targetAss"))
@@ -506,7 +506,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Penetrating 3
 	function(context) {
 		var flagValid = false;
 		var dominationScore = rLvlAbt(context.actor,context.target,"domination") - rLvlAbt(context.actor,context.target,"submission");
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("fullsex") &&
 			 setup.saList[context.extra1].flavorTags.includes("useDick") &&
 			 (setup.saList[context.extra1].flavorTags.includes("targetPussy") || setup.saList[context.extra1].flavorTags.includes("targetAss")) &&
@@ -528,7 +528,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Being penetrated 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("fullsex") &&
 			 setup.saList[context.extra1].flavorTags.includes("targetDick") &&
 			 (setup.saList[context.extra1].flavorTags.includes("usePussy") || setup.saList[context.extra1].flavorTags.includes("useAss"))  &&
@@ -549,7 +549,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Being penetrated 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("fullsex") &&
 			 setup.saList[context.extra1].flavorTags.includes("targetDick") &&
 			 (setup.saList[context.extra1].flavorTags.includes("usePussy") || setup.saList[context.extra1].flavorTags.includes("useAss"))  &&
@@ -570,7 +570,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Being penetrated 3
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("fullsex") &&
 			 setup.saList[context.extra1].flavorTags.includes("targetDick") &&
 			 (setup.saList[context.extra1].flavorTags.includes("usePussy") || setup.saList[context.extra1].flavorTags.includes("useAss"))  &&
@@ -591,7 +591,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Being penetrated 4
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("fullsex") &&
 			 setup.saList[context.extra1].flavorTags.includes("targetDick") &&
 			 (setup.saList[context.extra1].flavorTags.includes("usePussy") || setup.saList[context.extra1].flavorTags.includes("useAss"))  &&
@@ -612,7 +612,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Mounting 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 gC(context.actor).position.type != "free" 
 			) {
 				if ( isPositionMounting(gC(context.actor).position.key) &&
@@ -635,7 +635,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Being mounted 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 gC(context.actor).position.type != "free" 
 			) {
 				if ( isPositionMounted(gC(context.actor).position.key) &&
@@ -659,7 +659,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Kneeling 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 gC(context.actor).position.type != "free" 
 			) {
 				if ( isPositionKneeling(gC(context.actor).position.key) &&
@@ -682,7 +682,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Kneeling 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 gC(context.actor).position.type != "free" 
 			) {
 				if ( isPositionKneeling(gC(context.actor).position.key) &&
@@ -705,7 +705,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Making kneel 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 gC(context.actor).position.type != "free" 
 			) {
 				if ( isPositionMakingKneel(gC(context.actor).position.key) &&
@@ -728,7 +728,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Making kneel 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 gC(context.actor).position.type != "free" 
 			) {
 				if ( isPositionMakingKneel(gC(context.actor).position.key) &&
@@ -751,7 +751,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Being eaten out
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("targetMouth") &&
 			 (setup.saList[context.extra1].flavorTags.includes("usePussy") || setup.saList[context.extra1].flavorTags.includes("useAss") || setup.saList[context.extra1].flavorTags.includes("useDick"))
 			) { flagValid = true; }
@@ -770,7 +770,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Being eaten out
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("targetMouth") &&
 			 (setup.saList[context.extra1].flavorTags.includes("usePussy") || setup.saList[context.extra1].flavorTags.includes("useAss") || setup.saList[context.extra1].flavorTags.includes("useDick"))
 			) { flagValid = true; }
@@ -789,7 +789,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Sadism 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("usePain") 
 			) { flagValid = true; }
 		return flagValid;
@@ -807,7 +807,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Sadism 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("usePain") 
 			) { flagValid = true; }
 		return flagValid;
@@ -825,7 +825,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Sadism 3
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("usePain") 
 			) { flagValid = true; }
 		return flagValid;
@@ -843,7 +843,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Sadism target 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 doesAnyActionContainTag(context.extra2,"usePain")
 			) { flagValid = true; }
 		return flagValid;
@@ -861,7 +861,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Sadism target 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 doesAnyActionContainTag(context.extra2,"usePain")
 			) { flagValid = true; }
 		return flagValid;
@@ -879,7 +879,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Sadism target 3
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 doesAnyActionContainTag(context.extra2,"usePain")
 			) { flagValid = true; }
 		return flagValid;
@@ -897,7 +897,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Sadism target 4
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 doesAnyActionContainTag(context.extra2,"usePain")
 			) { flagValid = true; }
 		return flagValid;
@@ -915,7 +915,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Bondage 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("bondage") 
 			) { flagValid = true; }
 		return flagValid;
@@ -933,7 +933,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Bondage 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("bondage") &&
 			 getCharsDrivePercent(context.actor,"dDomination") >= 0.15
 			) { flagValid = true; }
@@ -952,7 +952,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Bondage 3
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("bondage") &&
 			 getCharsDrivePercent(context.actor,"dDomination") >= 0.15
 			) { flagValid = true; }
@@ -971,7 +971,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Denial 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("denial") 
 			) { flagValid = true; }
 		return flagValid;
@@ -989,7 +989,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Denial 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("denial") &&
 			 getCharsDrivePercent(context.actor,"dDomination") >= 0.10
 			) { flagValid = true; }
@@ -1008,7 +1008,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Denial 3
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("denial") &&
 			 getCharsDrivePercent(context.actor,"dDomination") >= 0.15
 			) { flagValid = true; }
@@ -1027,7 +1027,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Hypnosis 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("hypnosis")
 			) { flagValid = true; }
 		return flagValid;
@@ -1045,7 +1045,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Hypnosis 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("hypnosis")
 			) { flagValid = true; }
 		return flagValid;
@@ -1085,7 +1085,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Virgin pussy caressing target 
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 doesAnyActionContainTags(context.extra2,["foreplay","targetPussy"]) &&
 			 anyOtherActorHasFreeBodypart(context.actor,"dick") &&
 			 checkCharsVirginityExists(context.target,"pussy")
@@ -1104,13 +1104,13 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Virgin dick caressing target 1
 		if ( getCharsDrivePercent(context.actor,"dDomination") + getCharsDrivePercent(context.actor,"dAmbition") > 0.3 ) {
 			dText = "Uhnn. I haven't done much with my " + dickWord() + ", so don't be too rough.";
 		} else {
-			dText = "Aah... I don't have much experience with that, so be gently, ok?";
+			dText = "Aah... I don't have much experience with that, so be gentle, ok?";
 		}
 		return dText;
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 doesAnyActionContainTags(context.extra2,["foreplay","targetDick"]) &&
 			 anyOtherActorHasFreeBodypart(context.actor,"pussy") &&
 			 checkCharsVirginityExists(context.target,"dick")
@@ -1135,7 +1135,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Virgin ass caressing target 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 doesAnyActionContainTags(context.extra2,["foreplay","targetAss"]) &&
 			 anyOtherActorHasFreeBodypart(context.actor,"dick") &&
 			 checkCharsVirginityExists(context.target,"anal")
@@ -1156,7 +1156,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Request pussy target 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 doesCharHaveAlteredState(context.actor,"Pus+") &&
 			 gC(context.actor).hasFreeBodypart("pussy")
 			) { flagValid = true; }
@@ -1175,7 +1175,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Request dick target 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 doesCharHaveAlteredState(context.actor,"Dic+") &&
 			 gC(context.actor).hasFreeBodypart("dick")
 			) { flagValid = true; }
@@ -1194,7 +1194,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Request breasts target 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 doesCharHaveAlteredState(context.actor,"Bre+") &&
 			 gC(context.actor).hasFreeBodypart("breasts")
 			) { flagValid = true; }
@@ -1213,7 +1213,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Request ass target 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 doesCharHaveAlteredState(context.actor,"Ass+") &&
 			 gC(context.actor).hasFreeBodypart("anus")
 			) { flagValid = true; }
@@ -1234,7 +1234,7 @@ setup.dialogDB.csDialogs.push(new dialog( // Generic 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth")
+		if ( true
 			) { flagValid = true; }
 		return flagValid;
 	},
@@ -1249,7 +1249,7 @@ setup.dialogDB.csDialogs.push(new dialog( // Generic 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth")
+		if ( true
 			) { flagValid = true; }
 		return flagValid;
 	},
@@ -1265,7 +1265,7 @@ setup.dialogDB.csDialogs.push(new dialog( // Friendly 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 isMissionOnFriendlyGroup(gC(context.actor).mission)
 			) { flagValid = true; }
 		return flagValid;
@@ -1282,7 +1282,7 @@ setup.dialogDB.csDialogs.push(new dialog( // Friendly 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 isMissionOnFriendlyGroup(gC(context.actor).mission)
 			) { flagValid = true; }
 		return flagValid;
@@ -1299,7 +1299,7 @@ setup.dialogDB.csDialogs.push(new dialog( // Friendly 3
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 isMissionOnFriendlyGroup(gC(context.actor).mission)
 			) { flagValid = true; }
 		return flagValid;
@@ -1316,7 +1316,7 @@ setup.dialogDB.csDialogs.push(new dialog( // Flirty 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 isMissionOnFlirtyGroup(gC(context.actor).mission)
 			) { flagValid = true; }
 		return flagValid;
@@ -1333,7 +1333,7 @@ setup.dialogDB.csDialogs.push(new dialog( // Flirty 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 isMissionOnFlirtyGroup(gC(context.actor).mission)
 			) { flagValid = true; }
 		return flagValid;
@@ -1351,7 +1351,7 @@ setup.dialogDB.csDialogs.push(new dialog( // Flirty 3
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 isMissionOnFlirtyGroup(gC(context.actor).mission)
 			) { flagValid = true; }
 		return flagValid;
@@ -1368,7 +1368,7 @@ setup.dialogDB.csDialogs.push(new dialog( // Flirty 4
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 isMissionOnFlirtyGroup(gC(context.actor).mission)
 			) { flagValid = true; }
 		return flagValid;
@@ -1387,7 +1387,7 @@ setup.dialogDB.folMeDialogs.push(new dialog( // Follow me 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 context.extra1 == false
 			) { flagValid = true; }
 		return flagValid;
@@ -1403,7 +1403,7 @@ setup.dialogDB.folMeDialogs.push(new dialog( // Follow me 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 context.extra1 == false
 			) { flagValid = true; }
 		return flagValid;
@@ -1419,7 +1419,7 @@ setup.dialogDB.folMeDialogs.push(new dialog( // Follow me 3
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 context.extra1 == false
 			) { flagValid = true; }
 		return flagValid;
@@ -1436,7 +1436,7 @@ setup.dialogDB.folMeDialogs.push(new dialog( // Follow me forced 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 context.extra1 == true
 			) { flagValid = true; }
 		return flagValid;
@@ -1452,7 +1452,7 @@ setup.dialogDB.folMeDialogs.push(new dialog( // Follow me forced 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 context.extra1 == true
 			) { flagValid = true; }
 		return flagValid;
@@ -1470,7 +1470,7 @@ setup.dialogDB.folPlDialogs.push(new dialog( // Follow player 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth")
+		if ( true
 			) { flagValid = true; }
 		return flagValid;
 	},
@@ -1485,7 +1485,7 @@ setup.dialogDB.folPlDialogs.push(new dialog( // Follow player 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth")
+		if ( true
 			) { flagValid = true; }
 		return flagValid;
 	},
@@ -1500,7 +1500,7 @@ setup.dialogDB.folPlDialogs.push(new dialog( // Follow player 3
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth")
+		if ( true
 			) { flagValid = true; }
 		return flagValid;
 	},
@@ -1517,7 +1517,7 @@ setup.dialogDB.unfolMeDialogs.push(new dialog( // Unfollow me 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth")
+		if ( true
 			) { flagValid = true; }
 		return flagValid;
 	},
@@ -1532,7 +1532,7 @@ setup.dialogDB.unfolMeDialogs.push(new dialog( // Unfollow me 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth")
+		if ( true
 			) { flagValid = true; }
 		return flagValid;
 	},
@@ -1549,7 +1549,7 @@ setup.dialogDB.unfolPlDialogs.push(new dialog( // Unfollow player 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth")
+		if ( true
 			) { flagValid = true; }
 		return flagValid;
 	},
@@ -1564,7 +1564,7 @@ setup.dialogDB.unfolPlDialogs.push(new dialog( // Unfollow player 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth")
+		if ( true
 			) { flagValid = true; }
 		return flagValid;
 	},
@@ -1582,7 +1582,7 @@ setup.dialogDB.icDialogs.push(new dialog( // Challenge 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 gC(context.actor).mission == "challenge"
 			) { flagValid = true; }
 		return flagValid;
@@ -1598,7 +1598,7 @@ setup.dialogDB.icDialogs.push(new dialog( // Challenge 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 gC(context.actor).mission == "challenge"
 			) { flagValid = true; }
 		return flagValid;
@@ -1614,7 +1614,7 @@ setup.dialogDB.icDialogs.push(new dialog( // Challenge 3
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 gC(context.actor).mission == "challenge"
 			) { flagValid = true; }
 		return flagValid;
@@ -1630,7 +1630,7 @@ setup.dialogDB.icDialogs.push(new dialog( // Humilliate 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 gC(context.actor).mission == "humilliate"
 			) { flagValid = true; }
 		return flagValid;
@@ -1646,7 +1646,7 @@ setup.dialogDB.icDialogs.push(new dialog( // Humilliate 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 gC(context.actor).mission == "humilliate"
 			) { flagValid = true; }
 		return flagValid;
@@ -1662,7 +1662,7 @@ setup.dialogDB.icDialogs.push(new dialog( // Humilliate 3
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 gC(context.actor).mission == "humilliate"
 			) { flagValid = true; }
 		return flagValid;
@@ -1678,7 +1678,7 @@ setup.dialogDB.icDialogs.push(new dialog( // Weaken enemy 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 gC(context.actor).mission == "weakenEnemy"
 			) { flagValid = true; }
 		return flagValid;
@@ -1694,7 +1694,7 @@ setup.dialogDB.icDialogs.push(new dialog( // Weaken enemy 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 gC(context.actor).mission == "weakenEnemy"
 			) { flagValid = true; }
 		return flagValid;
@@ -1710,7 +1710,7 @@ setup.dialogDB.icDialogs.push(new dialog( // Weaken enemy 3
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 gC(context.actor).mission == "weakenEnemy"
 			) { flagValid = true; }
 		return flagValid;
@@ -1726,7 +1726,7 @@ setup.dialogDB.icDialogs.push(new dialog( // Gain domination 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 gC(context.actor).mission == "gainDomination"
 			) { flagValid = true; }
 		return flagValid;
@@ -1742,7 +1742,7 @@ setup.dialogDB.icDialogs.push(new dialog( // Gain domination 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 gC(context.actor).mission == "gainDomination"
 			) { flagValid = true; }
 		return flagValid;
@@ -1758,7 +1758,7 @@ setup.dialogDB.icDialogs.push(new dialog( // Gain domination 3
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 gC(context.actor).mission == "gainDomination"
 			) { flagValid = true; }
 		return flagValid;
@@ -1774,7 +1774,7 @@ setup.dialogDB.icDialogs.push(new dialog( // Force sex 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 gC(context.actor).mission == "forceSex"
 			) { flagValid = true; }
 		return flagValid;
@@ -1790,7 +1790,7 @@ setup.dialogDB.icDialogs.push(new dialog( // Force sex 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 gC(context.actor).mission == "forceSex"
 			) { flagValid = true; }
 		return flagValid;
@@ -1806,7 +1806,7 @@ setup.dialogDB.icDialogs.push(new dialog( // Force sex 3
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 gC(context.actor).mission == "forceSex"
 			) { flagValid = true; }
 		return flagValid;
@@ -1822,7 +1822,7 @@ setup.dialogDB.icDialogs.push(new dialog( // Gain submissive 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 gC(context.actor).mission == "gainSubmissive"
 			) { flagValid = true; }
 		return flagValid;
@@ -1838,7 +1838,7 @@ setup.dialogDB.icDialogs.push(new dialog( // Gain submissive 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 gC(context.actor).mission == "gainSubmissive"
 			) { flagValid = true; }
 		return flagValid;
@@ -1854,7 +1854,7 @@ setup.dialogDB.icDialogs.push(new dialog( // Gain submissive 3
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 gC(context.actor).mission == "gainSubmissive"
 			) { flagValid = true; }
 		return flagValid;
@@ -1870,7 +1870,7 @@ setup.dialogDB.icDialogs.push(new dialog( // Liberate friend 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 gC(context.actor).mission == "liberateFriend"
 			) { flagValid = true; }
 		return flagValid;
@@ -1886,7 +1886,7 @@ setup.dialogDB.icDialogs.push(new dialog( // Liberate friend 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 gC(context.actor).mission == "liberateFriend"
 			) { flagValid = true; }
 		return flagValid;
@@ -1902,7 +1902,7 @@ setup.dialogDB.icDialogs.push(new dialog( // Liberate friend 3
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 gC(context.actor).mission == "liberateFriend"
 			) { flagValid = true; }
 		return flagValid;
@@ -1918,7 +1918,7 @@ setup.dialogDB.icDialogs.push(new dialog( // Casus belli retribution 1
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 gC(context.actor).mission == "cbRetribution"
 			) { flagValid = true; }
 		return flagValid;
@@ -1934,7 +1934,7 @@ setup.dialogDB.icDialogs.push(new dialog( // Casus belli retribution 2
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 gC(context.actor).mission == "cbRetribution" &&
 			 getCharsDrivePercent(context.actor,"dCooperation") > 0.15
 			) { flagValid = true; }
@@ -1951,7 +1951,7 @@ setup.dialogDB.icDialogs.push(new dialog( // Casus belli retribution 3
 	},
 	function(context) {
 		var flagValid = false;
-		if ( gC(context.actor).hasFreeBodypart("mouth") &&
+		if ( 
 			 gC(context.actor).mission == "cbRetribution"
 			) { flagValid = true; }
 		return flagValid;
@@ -1962,7 +1962,6 @@ setup.dialogDB.icDialogs.push(new dialog( // Casus belli retribution 3
 	}));
 
 window.dialogToText = function(dialog,context) {
-
 	var actor = context.actor;
 	var dText = gC(actor).getFormattedName() + ': //' + colorText(('"' + dialog.getDialog(context) + '"'),gC(actor).speechColor) + '//';
 	return dText;
@@ -2028,8 +2027,8 @@ setup.dialogDB.orDialogs.push(new dialog( // Vaginal 1
 	function(context) {
 		var flagValid = false;
 		if ( context.extra1 != "ruined" &&
-			 ( doesAnyActionContainTag(context.extra2,"targetPussy")
-			   || doesActorsContinuedActionsInvolveBodypart(context.actor,"pussy") )
+			 ( (doesAnyActionContainTag(context.extra2,"targetPussy")
+			   || doesActorsContinuedActionsInvolveBodypart(context.actor,"pussy")) && gC(context.actor).body.hasOwnProperty("pussy") )
 			) { flagValid = true; }
 		return flagValid;
 	},
@@ -2046,8 +2045,8 @@ setup.dialogDB.orDialogs.push(new dialog( // Vaginal 2
 	function(context) {
 		var flagValid = false;
 		if ( context.extra1 != "ruined" &&
-			 ( doesAnyActionContainTag(context.extra2,"targetPussy")
-			   || doesActorsContinuedActionsInvolveBodypart(context.actor,"pussy") )
+			 ( (doesAnyActionContainTag(context.extra2,"targetPussy")
+			   || doesActorsContinuedActionsInvolveBodypart(context.actor,"pussy")) && gC(context.actor).body.hasOwnProperty("pussy") )
 			) { flagValid = true; }
 		return flagValid;
 	},
@@ -2064,8 +2063,8 @@ setup.dialogDB.orDialogs.push(new dialog( // Vaginal 3
 	function(context) {
 		var flagValid = false;
 		if ( context.extra1 != "ruined" &&
-			 ( doesAnyActionContainTag(context.extra2,"targetPussy")
-			   || doesActorsContinuedActionsInvolveBodypart(context.actor,"pussy") )
+			 ( (doesAnyActionContainTag(context.extra2,"targetPussy")
+			   || doesActorsContinuedActionsInvolveBodypart(context.actor,"pussy")) && gC(context.actor).body.hasOwnProperty("pussy") )
 			) { flagValid = true; }
 		return flagValid;
 	},
@@ -2184,8 +2183,8 @@ setup.dialogDB.orDialogs.push(new dialog( // Penile 1
 	function(context) {
 		var flagValid = false;
 		if ( context.extra1 != "ruined" &&
-			 ( doesAnyActionContainTag(context.extra2,"targetDick")
-			   || doesActorsContinuedActionsInvolveBodypart(context.actor,"dick") )
+			 ( (doesAnyActionContainTag(context.extra2,"targetDick")
+			   || doesActorsContinuedActionsInvolveBodypart(context.actor,"dick")) && gC(context.actor).body.hasOwnProperty("dick") )
 			) { flagValid = true; }
 		return flagValid;
 	},
@@ -2202,8 +2201,8 @@ setup.dialogDB.orDialogs.push(new dialog( // Penile 2
 	function(context) {
 		var flagValid = false;
 		if ( context.extra1 != "ruined" &&
-			 ( doesAnyActionContainTag(context.extra2,"targetDick")
-			   || doesActorsContinuedActionsInvolveBodypart(context.actor,"dick") )
+			 ( (doesAnyActionContainTag(context.extra2,"targetDick")
+			   || doesActorsContinuedActionsInvolveBodypart(context.actor,"dick")) && gC(context.actor).body.hasOwnProperty("dick") )
 			) { flagValid = true; }
 		return flagValid;
 	},
@@ -2579,3 +2578,169 @@ window.isMissionOnFlirtyGroup = function(missionName) {
 	return flag;
 }
 
+// Custom Dialogues
+	// Blackmailed by Claw
+setup.dialogDB.bbCshutup = [];
+setup.dialogDB.bbCshutup.push(new dialog(					// Subbing 1
+	function(context) {
+		var relName = getRelationalName(context.actor,context.target);
+		var dText = `Ah... Hnnh...`;
+		return dText;
+	},
+	function(context) {
+		var flagValid = false;
+		if ( gC(context.actor).hasLead == false ) {
+			flagValid = true;
+		}
+		return flagValid;
+	},
+	function(context) {
+		var weight = 100;
+		return weight;
+	}
+));
+setup.dialogDB.bbCshutup.push(new dialog(					// Subbing 2
+	function(context) {
+		var relName = getRelationalName(context.actor,context.target);
+		var dText = `Slower... Not so fast.`;
+		return dText;
+	},
+	function(context) {
+		var flagValid = false;
+		if ( gC(context.actor).hasLead == false && getBarPercentage(context.actor,"lust") <= 0.80 ) {
+			flagValid = true;
+		}
+		return flagValid;
+	},
+	function(context) {
+		var weight = 150;
+		return weight;
+	}
+));
+setup.dialogDB.bbCshutup.push(new dialog(					// Subbing 3
+	function(context) {
+		var relName = getRelationalName(context.actor,context.target);
+		var dText = `Ah... Calm down...`;
+		return dText;
+	},
+	function(context) {
+		var flagValid = false;
+		if ( gC(context.actor).hasLead == false && getBarPercentage(context.actor,"lust") <= 0.60 ) {
+			flagValid = true;
+		}
+		return flagValid;
+	},
+	function(context) {
+		var weight = 200;
+		return weight;
+	}
+));
+setup.dialogDB.bbCshutup.push(new dialog(					// Subbing 4
+	function(context) {
+		var relName = getRelationalName(context.actor,context.target);
+		var dText = `No! Hmmpf! Hmmmnn!`;
+		return dText;
+	},
+	function(context) {
+		var flagValid = false;
+		if ( gC(context.actor).hasLead == false && getBarPercentage(context.actor,"lust") <= 0.20 ) {
+			flagValid = true;
+		}
+		return flagValid;
+	},
+	function(context) {
+		var weight = 400;
+		return weight;
+	}
+));
+
+setup.dialogDB.bbCshutup.push(new dialog(					// Domming 1
+	function(context) {
+		var relName = getRelationalName(context.actor,context.target);
+		var dText = `*Cough* *cough*`;
+		return dText;
+	},
+	function(context) {
+		var flagValid = false;
+		if ( gC(context.actor).hasLead == true ) {
+			flagValid = true;
+		}
+		return flagValid;
+	},
+	function(context) {
+		var weight = 100;
+		return weight;
+	}
+));
+setup.dialogDB.bbCshutup.push(new dialog(					// Domming 2
+	function(context) {
+		var relName = getRelationalName(context.actor,context.target);
+		var dText = `Hmm, this is feeling good.`;
+		return dText;
+	},
+	function(context) {
+		var flagValid = false;
+		if ( gC(context.actor).hasLead == true && getBarPercentage(context.actor,"lust") <= 0.65 ) {
+			flagValid = true;
+		}
+		return flagValid;
+	},
+	function(context) {
+		var weight = 200;
+		return weight;
+	}
+));
+setup.dialogDB.bbCshutup.push(new dialog(					// Domming 3
+	function(context) {
+		var relName = getRelationalName(context.actor,context.target);
+		var dText = `Enjoying yourself, ${relName}? You might want to be careful with your voice.`;
+		return dText;
+	},
+	function(context) {
+		var flagValid = false;
+		if ( gC(context.actor).hasLead == true && getBarPercentage(context.target,"lust") <= 0.50 ) {
+			flagValid = true;
+		}
+		return flagValid;
+	},
+	function(context) {
+		var weight = 300;
+		return weight;
+	}
+));
+setup.dialogDB.bbCshutup.push(new dialog(					// Domming 4
+	function(context) {
+		var relName = getRelationalName(context.actor,context.target);
+		var dText = `It would be really bad if you couldn't contain a shout of joy when you reached climax, wouldn't it?`;
+		return dText;
+	},
+	function(context) {
+		var flagValid = false;
+		if ( gC(context.actor).hasLead == true && getBarPercentage(context.target,"lust") <= 0.30 ) {
+			flagValid = true;
+		}
+		return flagValid;
+	},
+	function(context) {
+		var weight = 400;
+		return weight;
+	}
+));
+setup.dialogDB.bbCshutup.push(new dialog(					// Domming 5
+	function(context) {
+		var relName = getRelationalName(context.actor,context.target);
+		var dText = `Aaah... Yes, this is good. Don't you want to let me hear your moaning?`;
+		return dText;
+	},
+	function(context) {
+		var flagValid = false;
+		if ( gC(context.actor).hasLead == true && getBarPercentage(context.target,"lust") <= 0.40 && getBarPercentage(context.target,"lust") <= 0.40 ) {
+			flagValid = true;
+		}
+		return flagValid;
+	},
+	function(context) {
+		var weight = 400;
+		return weight;
+	}
+));

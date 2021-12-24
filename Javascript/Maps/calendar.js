@@ -137,14 +137,59 @@ window.EventsCalendar = function() {
 							return this.getButtonToEvent("SE Gleaming Caverns Overview Start");
 						}
 						break;
-					case 30:
-						this.customEventScript = initializePostAdventurePlaceholder;
+					case 21:
+						this.customEventScript = initializeShunnedByHerOwn;
 						this.getEndDayButton = function() {
-							return this.getButtonToEvent("SE Post Adventure Placeholder");
+							return this.getButtonToEvent("SE ShunnedByHerOwn Start");
+						}
+						break;
+					case 25:
+						this.customEventScript = initializeGleamingCavernsAdventure;
+						this.getEndDayButton = function() {
+							return this.getButtonToEvent("FA ReachedTheSwamp Start");
+						}
+						break;
+					case 28:
+						this.customEventScript = initGleamingCavernsSecondDay;
+						this.getEndDayButton = function() {
+							return this.getButtonToEvent("FA VaryontesOffer1");
+						}
+						break;
+					case 29:
+						this.customEventScript = initGleamingCavernsDayPlaceholder;
+						this.getEndDayButton = function() {
+							return this.getButtonToEvent("FA 0.3.3 Placeholder Story Event");
+						}
+						break;
+					case 30:
+						this.customEventScript = initGleamingCavernsDayPlaceholder;
+						this.getEndDayButton = function() {
+							return this.getButtonToEvent("FA 0.3.3 Placeholder Story Event");
 						}
 						break;
 				}
 				break;
+			case 2:
+				switch (State.variables.daycycle.day) {
+					case 1:
+						this.customEventScript = initGleamingCavernsDayPlaceholder;
+						this.getEndDayButton = function() {
+							return this.getButtonToEvent("FA 0.3.3 Placeholder Story Event");
+						}
+						break;
+					case 2:
+						this.customEventScript = initGleamingCavernsDayPlaceholder;
+						this.getEndDayButton = function() {
+							return this.getButtonToEvent("FA 0.3.3 Placeholder Story Event");
+						}
+						break;
+					case 3:
+						this.customEventScript = finishGleamingCavernsAdventure;
+						this.getEndDayButton = function() {
+							return this.getButtonToEvent("FA 0.3.3 Placeholder Story Event");
+						}
+						break;
+				}
 		}
 		
 		if ( this.customEventScript == blankFunction ) {
@@ -347,9 +392,11 @@ setup.eventsMetaInfo["mt1"] = new eventMetaInfo(
 		var allowed = false;
 		
 		if ( gC("chPlayerCharacter").domChar == "chNash" ) {
-			if ( gRelTypeAb("chPlayerCharacter","chNash") == "tutorship" ) {
-				if ( gC("chPlayerCharacter").hasFreeBodypart("arms") && gC("chPlayerCharacter").hasFreeBodypart("legs") && gC("chNash").hasFreeBodypart("arms") && gC("chNash").hasFreeBodypart("legs") ) {
-					allowed = true;
+			if ( gRelTypeAb("chPlayerCharacter","chNash").type == "tutorship" ) {
+				if ( gC("chNash").hasFreeBodypart("arms") && gC("chNash").hasFreeBodypart("legs") ) {
+					if ( ( gC("chPlayerCharacter").hasFreeBodypart("arms") || getEquipById(gC("chPlayerCharacter").body.arms.bondage).owner == "chNash" ) && ( gC("chPlayerCharacter").hasFreeBodypart("legs") || getEquipById(gC("chPlayerCharacter").body.legs.bondage).owner == "chNash" ) ) {
+						allowed = true;
+					}
 				}
 			}
 		}
@@ -361,7 +408,58 @@ setup.eventsMetaInfo["mt1"] = new eventMetaInfo(
 		return weight;
 	}
 );
-
+setup.eventsMetaInfo["fak0"] = new eventMetaInfo(
+	"Flaunting A Kitty",
+	"fak0",
+	initializeSeFaK, // initFunc
+	"SE FAK Start",
+	function() { // Reqs
+		var allowed = false;
+		
+		if ( gC("chClaw").domChar == "chPlayerCharacter" && gC("chMir").domChar == null ) {
+			if ( gCstat("chPlayerCharacter","charisma") >= 12 ) {
+				if ( gC("chMir").hasFreeBodypart("pussy") && gC("chClaw").hasFreeBodypart("mouth") ) {
+					allowed = true;
+				}
+			}
+		}
+		
+		return allowed;
+	},
+	function() { // Weight
+		var weight = 100;
+		weight += (rLvlAbt("chMir","chPlayerCharacter","sexualTension") + rLvlAbt("chMir","chClaw","sexualTension") + rLvlAbt("chMir","chPlayerCharacter","submission")) * 10 + (gC("chMir").dPleasure.level * 10);
+		return weight;
+	}
+);
+setup.eventsMetaInfo["BAw0"] = new eventMetaInfo(
+	"Bondage Awakening",
+	"BAw0",
+	initializeBondageAwakening, // initFunc
+	"SE BoAw Start",
+	function() { // Reqs
+		var allowed = false;
+		
+		if ( gC("chClaw").domChar != "chNash" && gC("chClaw").domChar != "chPlayerCharacter" && gC("chClaw").domChar != "chMir" ) {
+			if ( gC("chNash").domChar != "chClaw" && gC("chNash").domChar != "chMir" && gC("chNash").domChar != "chPlayerCharacter" ) {
+				if ( gC("chMir").domChar != "chPlayerCharacter" && gC("chMir").domChar != "chNash" && gC("chMir").domChar != "chClaw" ) {
+					if ( gC("chPlayerCharacter").domChar != "chNash" && gC("chPlayerCharacter").domChar != "chMir" && gC("chPlayerCharacter").domChar != "chClaw" ) {
+						if ( gC("chNash").hasFreeBodypart("arms") && gC("chNash").hasFreeBodypart("legs") && gC("chClaw").hasFreeBodypart("arms") && gC("chClaw").hasFreeBodypart("legs") && gC("chMir").hasFreeBodypart("arms") && gC("chPlayerCharacter").hasFreeBodypart("arms") ) {
+							allowed = true;
+						}
+					}
+				}
+			}
+		}
+		
+		return allowed;
+	},
+	function() { // Weight
+		var weight = 50;
+		weight += rLvlAbt("chNash","chClaw","enmity") * 5 + rLvlAbt("chNash","chClaw","rivalry") * 3 + rLvlAbt("chClaw","chNash","enmity") * 5 + rLvlAbt("chClaw","chNash","rivalry") * 3 - rLvlAbt("chNash","chClaw","friendship") - rLvlAbt("chClaw","chNash","friendship") - rLvlAbt("chNash","chClaw","romance") - rLvlAbt("chClaw","chNash","romance");
+		return weight;
+	}
+);
 
 window.chooseRandomStoryEvent = function() {
 	var result = "errorWList"; // Default error string returned by bugged weighted lists. If this is the end result, no event will be initialized
@@ -390,7 +488,9 @@ window.chooseRandomStoryEvent = function() {
 	return result;
 }
 
-
+window.gEMI = function(eventFlag) {
+	return setup.eventsMetaInfo[eventFlag];
+}
 
 
 

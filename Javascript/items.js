@@ -142,6 +142,7 @@ window.removeItem = function(id) {
 		}
 	}
 	removeLostItems();
+	fixOwnedEquipmentLists();
 }
 window.lowerItemIdByOne = function(id) {
 	var item = getEquipById(id);
@@ -165,6 +166,16 @@ window.removeLostItems = function() {
 		}
 	}
 	State.variables.equipmentList = newItemsList;
+}
+
+	// Bug fixing
+window.fixOwnedEquipmentLists = function() {
+	for ( var cK of ["chDummy"].concat(getActiveSimulationCharactersArray()) ) {
+		gC(cK).ownedEquipment = [];
+	}
+	for ( var eq of State.variables.equipmentList ) {
+		gC(eq.owner).ownedEquipment.push(eq.id);
+	}
 }
 
 // Constructors, serializers, etc.
@@ -224,7 +235,8 @@ const equipmentType = {
 	STAFFOFBATTLE: "w0",
 	KNUCKLES: "w1",
 	WAND: "w2",
-	HANDFAN: "w3"
+	HANDFAN: "w3",
+	HUNTINGBOW: "w4"
 }
 /*const equipmentType = {
 	COLLAR: 0,
@@ -547,6 +559,22 @@ setup.equipDataList[equipmentType.HANDFAN] = new equipmentData("Hand fan","tool"
 		+ "\nIncreases perception and charisma.",
 	2000,0,
 	[["perception",1],["charisma",1]],["flaunt"]);
+setup.equipDataList[equipmentType.HUNTINGBOW] = new equipmentData("Hunting bow","tool","weapon",
+	function(owner,wearer) { // Put on
+		gC(wearer).perception.sumModifier += 2;
+		gC(wearer).perception.multModifier += 0.1;
+		gC(wearer).agility.sumModifier += 2;
+		gC(wearer).agility.multModifier += 0.1;
+	},
+	function(owner,wearer) { // Put out
+		gC(wearer).perception.sumModifier -= 2;
+		gC(wearer).perception.multModifier -= 0.1;
+		gC(wearer).agility.sumModifier -= 2;
+		gC(wearer).agility.multModifier -= 0.1;
+	}, "A short bow, appropriate for hunting prey."
+		+ "\nIncreases agility and perception.",
+	2000,0,
+	[["perception",1],["agility",1]],["disablingShot"]);
 
 // AI
 
@@ -746,6 +774,16 @@ window.isSubOverDomsPowerThreshold = function(subChar,domChar) {
 	}
 	
 	return flag;
+}
+
+window.findValidSoftBondageOnTargetFromActor = function(bondageIDsList,target,actor) {
+	var chosenID = -1;
+	for ( var id of bondageIDsList ) {
+		if ( getEquipDataById(id).type == equipmentType.COLLAR ) {
+			chosenID = id;
+		}
+	}
+	return chosenID;
 }
 
 // Auxiliar

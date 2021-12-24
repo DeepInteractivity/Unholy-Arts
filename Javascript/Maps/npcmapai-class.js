@@ -48,10 +48,8 @@ window.NpcMapAi = function(charKey) {
 	
 	/////////// PROVISIONAL ///////////
 	this.main = function() { // General function for the AI to regulate itself. It must be executed regularly.
-		
 		if ( this.type != "static" ) {
 			var sisKey = State.variables.compass.findFirstSisIdInvolvingCharacter(this.charKey);
-			
 			if ( this.state == "idle" && sisKey == -1 ) {
 				if ( State.variables.compass.flagEndedScenario == false ) {
 					gC(this.charKey).globalAi.generalEvaluations();
@@ -76,8 +74,8 @@ window.NpcMapAi = function(charKey) {
 				var rT = gRelTypeAb(this.charKey,fT);
 				if ( rT != null ) {
 					if ( isLiberationChallengePossible(this.charKey,fT) ) {
-						if ( limitedRandomInt(100) > 94 ) {
-							if ( proportionQuantifiedCharactersStrength(this.charKey,fT) > 0.9 ) {
+						if ( limitedRandomInt(100) < (6 * modifierLiberationChallengeChance(this.charKey,fT)) ) {
+							if ( proportionQuantifiedCharactersStrength(this.charKey,fT) > 0.85 + limitedRandom(0.1) ) {
 								initiateLiberationChallenge(this.charKey,fT);
 							}
 						}
@@ -154,11 +152,11 @@ window.createMapAiGoalAction = function(charKey,goalRoom,goalAction,minutes) {
 	goal.goalAction = goalAction;
 	goal.minutes = minutes;
 	goal.isValid = function() { // Checks if the goal may be executed
-		 return checkMapAction(State.variables.compass.getCharactersGroup(charKey),goal.goalRoom,goal.goalAction);
+		 return checkMapAction(getCharGroup(charKey),goal.goalRoom,goal.goalAction);
 	}
 	goal.createEvent = function() { // Adds an event to the events pile
 		 var mapAction = null;
-		 var charsGroup = State.variables.compass.getCharactersGroup(this.charKey);
+		 var charsGroup = getCharGroup(this.charKey);
 		 for ( var mapA of getRoomInfoA(this.goalRoom).getActions(charsGroup) ) {
 			 if ( this.goalAction == mapA.key ) {
 				 mapAction = mapA;
@@ -525,7 +523,6 @@ MapAiGoal.prototype.toJSON = function() {
 };
 
 ////////// GOAL CHECKERS //////////
-
 window.checkMoveTo = function(charGroup,currentRoomKey,goalRoomKey) {
 	var cons = getRoomInfoA(currentRoomKey).getConnections(charGroup);
 	var validCon = false;
@@ -544,6 +541,9 @@ window.checkMapAction = function(charGroup,roomKey,mapActionKey) {
 			flagAllowed = true; // Current room allows to initiate goal action
 		}
 	}
+	if ( gC(charGroup[0]).currentRoom != roomKey ) {
+		flagAllowed = false;
+	}
 	
 	return flagAllowed;
 }
@@ -551,7 +551,10 @@ window.checkMapAction = function(charGroup,roomKey,mapActionKey) {
 window.checkTalkTo = function(charGroup,targetChar) {
 	var flagAllowed = false;
 	var flagAllowedInteraction = gC(targetChar).getIsAvailableForSocialInteractions(charGroup[0]); // True if target may join SIS
-	var flagSameRoom = ( gC(targetChar).currentRoom == gC(charGroup[0]).currentRoom ); // True if they're at the same room
+	var flagSameRoom = false;
+	if ( gC(targetChar).currentRoom == gC(charGroup[0]).currentRoom ) {
+		flagSameRoom = true;
+	}		// True if they're at the same room
 	
 	var targetEvent = State.variables.compass.findFirstEventInvolvingCharacter(targetChar);
 	var flagMayBeInterrupted = true; // True if the character's event may be interrupted or there's no event
@@ -1179,5 +1182,15 @@ window.aAsksBtoUnfollowB = function(charA,charB) {
 	}
 	
 	return flagAccepted;
+}
+
+window.modifierLiberationChallengeChance = function(sub,dom) {
+	var modifier = 1;
+	var relMod = (rLvlAbt(sub,dom,"domination") - rLvlAbt(sub,dom,"submission") - rLvlAbt(sub,dom,"friendship") - rLvlAbt(sub,dom,"romance") * 2 + rLvlAbt(sub,dom,"enmity") * 2 + rLvlAbt(sub,dom,"rivalry"));
+	var drivesMod = (getCharsDrive(sub,"dAmbition") + getCharsDrive(sub,"dDomination")) * 0.05;
+	relMod = isPosNegX1(relMod) * getNumbersLength(relMod*relMod) * 0.1;
+	modifier = 1 + relMod + drivesMod;
+	if ( modifier < 0.1 ) { modifier = 0.1; }
+	return modifier;
 }
 

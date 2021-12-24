@@ -212,7 +212,7 @@ window.ghScissorEndCondition = function(none) {
 window.playerOrgasmEndCondition = function(none) {
 	var flagEndScene = false;
 	
-	if ( State.variables.chPlayerCharacter.orgasmSceneCounter > 0 ) {
+	if ( State.variables.chPlayerCharacter.getAllSceneOrgasms() > 0 ) {
 		flagEndScene = true;
 	}
 	
@@ -221,7 +221,7 @@ window.playerOrgasmEndCondition = function(none) {
 window.valtanOrgasmEndCondition = function(none) {
 	var flagEndScene = false;
 	
-	if ( State.variables.chVal.orgasmSceneCounter > 0 ) {
+	if ( State.variables.chVal.getAllSceneOrgasms() > 0 ) {
 		flagEndScene = true;
 	}
 	
@@ -230,7 +230,7 @@ window.valtanOrgasmEndCondition = function(none) {
 window.playerNvaltanOrgasmEndCondition = function(none) {
 	var flagEndScene = false;
 	
-	if ( State.variables.chPlayerCharacter.orgasmSceneCounter > 0 && State.variables.chVal.orgasmSceneCounter > 0 ) {
+	if ( State.variables.chPlayerCharacter.getAllSceneOrgasms() > 0 && State.variables.chVal.getAllSceneOrgasms() > 0 ) {
 		flagEndScene = true;
 	}
 	
@@ -239,7 +239,7 @@ window.playerNvaltanOrgasmEndCondition = function(none) {
 window.playerNnashOrgasmEndCondition = function(none) {
 	var flagEndScene = false;
 	
-	if ( State.variables.chPlayerCharacter.orgasmSceneCounter > 0 && State.variables.chNash.orgasmSceneCounter > 0 ) {
+	if ( State.variables.chPlayerCharacter.getAllSceneOrgasms() > 0 && State.variables.chNash.getAllSceneOrgasms() > 0 ) {
 		flagEndScene = true;
 	}
 	
@@ -267,6 +267,7 @@ window.stHyInitMirToVal = function() {
 	State.variables.sc.customScript = ccsStHyMirToVal;
 	createPosKneel("chVal", ["chMir"]);
 	ccsStHyAssignChoices();
+	setRefreshLustScript();
 }
 window.ccsStHyMirToVal = function() {
 	ccsStHyAssignChoices();
@@ -324,9 +325,10 @@ window.stHyInitPlToVal = function() {
 	createPosKneel("chVal", ["chPlayerCharacter"]);
 	ccsStHyAssignChoicesPlToVal();
 	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
 }
 window.ccsStHyPlToVal = function() {
-	ccsStHyAssignChoicesPlToVal()
+	ccsStHyAssignChoicesPlToVal();
 }
 window.ccsStHyAssignChoicesPlToVal = function() {
 	var valChoices = [["chVal","strokeBreasts"]];
@@ -376,6 +378,7 @@ window.stHyInitValToPl = function() {
 	createPosKneel("chPlayerCharacter", ["chVal"]);
 	ccsStHyAssignChoicesValToPl();
 	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
 }
 window.ccsStHyValToPl = function() {
 	ccsStHyAssignChoicesValToPl();
@@ -417,6 +420,7 @@ window.stHyInitSpitroast = function() {
 	createPosSpitroast("chPlayerCharacter","chVal","chMir");
 	ccsStHyAssignChoicesSpitroast();
 	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
 }
 window.ccsStHySpitroast = function() {
 	ccsStHyAssignChoicesSpitroast();
@@ -488,6 +492,7 @@ window.stHpIIinit = function() {
 	State.variables.chNash.aiAlgorythm.setRoleDomination();
 	//
 	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
 }
 
 // Beating a Kitty Into Friendship
@@ -509,6 +514,7 @@ window.btifFirstBattleInit = function() {
 	State.variables.sc.customScript = ccsBtifFirstBattleScript;
 	State.variables.sc.outHeadingDescription = '<span style="color:mediumvioletred">//"Your goal in battles is to disrupt your opponent\'s aether. Or, in other words, to knock them out. The most direct way to do this is by harming them until they run out of strength."//</span>\n\n';
 	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
 }
 
 window.ccsBtifFirstBattleScript = function() {
@@ -567,6 +573,7 @@ window.ccsBtifNashVsClawBattleInit = function() {
 		}
 	}
 	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
 }
 window.ccsBtifPlayerVsClawBattleInit = function() {
 	var clawGoal = "";
@@ -601,6 +608,7 @@ window.ccsBtifPlayerVsClawBattleInit = function() {
 		}
 	}
 	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
 }
 window.ccsBtifTeamfightBattleInit = function() {
 	State.variables.sc.startScene(
@@ -623,6 +631,7 @@ window.ccsBtifTeamfightBattleInit = function() {
 		}
 	}
 	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
 }
 
 // Aspiring Tree Climber
@@ -641,6 +650,7 @@ window.aspiringTCdommingClaw = function() {
 	State.variables.chClaw.aiAlgorythm.setRoleSubmission();
 	//
 	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
 }
 window.aspiringTCdommedByClaw = function() {
 	State.variables.sc.startScene(
@@ -658,6 +668,7 @@ window.aspiringTCdommedByClaw = function() {
 	//
 	State.variables.sc.continuedActions.push(createCaHoldArms("chClaw",["chPlayerCharacter"]));
 	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
 }
 
 // Luring Masquerade
@@ -674,6 +685,7 @@ window.ccsLuMaPlayerVsTwoBattleInit = function() {
 		}
 	}
 	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
 }
 window.ccsLuMaTwoVsValBattleInit = function() {
 	State.variables.sc.startScene( 
@@ -685,6 +697,7 @@ window.ccsLuMaTwoVsValBattleInit = function() {
 		}
 	}
 	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
 }
 window.ccsLuMaPlayerVsValBattleInit = function() {
 	State.variables.sc.startScene( 
@@ -698,12 +711,12 @@ window.ccsLuMaPlayerVsValBattleInit = function() {
 	State.variables.sc.formatScenePassage();
 }
 
-// Gifts for nature
+// Gifts for Nature
 window.giftsForNatureInPadmirisCare = function() {
 	State.variables.sc.startScene(
 	"ss","fixed",["chPlayerCharacter"],["chMir"],"Your mind is foggy. Your body moves as Padmiri commands.",function(none) {
 		var sceneMayEnd = false;
-		if ( gC("chPlayerCharacter").orgasmSceneCounter > 0 && gC("chMir").orgasmSceneCounter > 0 ) { sceneMayEnd = true; }
+		if ( gC("chPlayerCharacter").getAllSceneOrgasms() > 0 && gC("chMir").getAllSceneOrgasms() > 0 ) { sceneMayEnd = true; }
 		return sceneMayEnd;
 	},30,
 	"SE Gifts For Nature Parasafi Explanation");
@@ -724,7 +737,7 @@ window.giftsForNatureInPadmirisCare = function() {
 				State.variables.sc.headingDescription = "You're slowly recovering control over your body.";
 				State.variables.StVars.check4 = true;
 			}
-			if ( State.variables.StVars.check3 == false && gC("chPlayerCharacter").orgasmSceneCounter > 0 ) {
+			if ( State.variables.StVars.check3 == false && gC("chPlayerCharacter").getAllSceneOrgasms() > 0 ) {
 				State.variables.StVars.check3 = true;
 				State.variables.sc.headingDescription = '<span @style=$chMir.colorStyleKey>//"That should be enough. ...But I hope you don\'t mind if I help myself..."//<'
 											  + '/span>' + '\n\nYour mind is still foggy. Your body moves as Padmiri commands.';
@@ -743,6 +756,7 @@ window.giftsForNatureInPadmirisCare = function() {
 	}
 	
 	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
 }
 
 // The Grapes of Lust
@@ -754,9 +768,7 @@ window.tryGettingGrape = function() {
 	var checkedAction = "doNothing";
 	if ( State.variables.sc.remainingGrapes != undefined ) {
 		if ( State.variables.sc.remainingGrapes > 0 ) {
-			State.variables.logL1.push(State.variables.sc.teamBchosenActions[0],State.variables.sc.teamAchosenActions[0]);
 			checkedAction = setup.saList[State.variables.sc.teamBchosenActions[0]];
-			State.variables.logL1.push(checkedAction);
 			if ( checkedAction.flavorTags.includes("usePussy") && checkedAction.flavorTags.includes("targetMouth") ) {
 				if ( limitedRandomInt(100) > 78 ) {
 					gotGrape = State.variables.sc.teamBchosenTargets[0];
@@ -841,6 +853,7 @@ window.cssTgolValxAte = function() {
 	*/
 	//
 	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
 }
 window.cssTgolValxAtePlayer = function() {
 	State.variables.sc.remainingGrapes = 8;
@@ -864,6 +877,7 @@ window.cssTgolValxAtePlayer = function() {
 	State.variables.chAte.aiAlgorythm.setRoleSubmission();
 	//
 	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
 }
 window.cssTgolValVsPlayer = function() {
 	var clawGoal = "";
@@ -887,6 +901,332 @@ window.cssTgolValVsPlayer = function() {
 		}
 	}
 	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
 }
 
+// Flaunting A Kitty
+window.fakClawOralsPadmiriInit = function() {
+	State.variables.sc.startScene(
+	"ss","fixed",["chClaw"],["chMir"],"The Leirien fights to keep her cool while she keeps reading.",endConditionTurns,4,
+	"SE FAK Eat her out 2");
+	State.variables.sc.sceneConditions.push("cantCancelPositions");
+	State.variables.chClaw.hasLead = true;
+	State.variables.chMir.hasLead = false;
+	State.variables.sc.customScript = fakAssignChoicesClawToMir;
+	createPosKneel("chMir", ["chClaw"]);
+	fakAssignChoicesClawToMir();
+	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
+}
+window.fakAssignChoicesClawToMir = function() {
+	var clawChoices = [];
+	var mirChoices = [["chMir","doNothing"]];
+	if ( State.variables.sc.continuedActions.length < 1 ) {
+		if ( gC("chMir").hasFreeBodypart("dick") ) {
+			clawChoices.push(["chMir","giveBlowjob"]);
+		}
+		if ( gC("chMir").hasFreeBodypart("pussy") ) {
+			clawChoices.push(["chMir","giveCunnilingus"]);
+		} 
+	} else {
+		if ( State.variables.sc.continuedActions[0].key == "getBlowjob" ) {
+			clawChoices.push(["chMir","suckDick"],["chMir","suckDick"]);
+		} else if ( State.variables.sc.continuedActions[0].key == "legHoldingHead" ) {
+			clawChoices.push(["chMir","lickPussy"],["chMir","lickPussy"]);
+		}
+		if ( gC("chMir").hasFreeBodypart("dick") ) {
+			clawChoices.push(["chMir","strokeDick"]);
+		}
+		if ( gC("chMir").hasFreeBodypart("pussy") ) {
+			clawChoices.push(["chMir","strokePussy"]);
+		} 
+	}
+	
+	State.variables.chClaw.aiAlgorythm = createAiRandomChoice(clawChoices);
+	State.variables.chMir.aiAlgorythm = createAiRandomChoice(mirChoices);
+}
+window.fakPlayerPleasuresClaw = function() {
+	State.variables.sc.startScene(
+	"ss","fixed",["chPlayerCharacter"],["chClaw"],"Shelves full of dramatic plays fill most sides of the room. There are also some chairs and tables reserved for studying.",fakMoaningKittyEndCondition,4,
+	"SE FAK Moaning kitty 2");
+	State.variables.sc.sceneConditions.push("cantCancelPositions");
+	State.variables.chPlayerCharacter.hasLead = true;
+	State.variables.chClaw.hasLead = false;
+	createPosMountFromBehind("chPlayerCharacter", ["chClaw"]);
+	State.variables.chClaw.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chClaw.aiAlgorythm.setRoleSubmission();
+	State.variables.sc.formatScenePassage();	
+	setRefreshLustScript();
+}
+window.fakMoaningKittyEndCondition = function() {
+	var flagReady = false;
+	if ( getBarPercentage("chClaw","lust") <= 0.75 ) {
+		flagReady = true;
+	}
+	return flagReady;
+}
+window.fakPlayerTakesClaw = function() {
+	State.variables.sc.startScene(
+	"ss","fixed",["chPlayerCharacter"],["chClaw"],"Padmiri hides most of her face behind the scroll, but take a peek quite often.",fakMoaningKitty2EndCondition,4,
+	"SE FAK Padmiri Gives In");
+	State.variables.sc.sceneConditions.push("cantCancelPositions");
+	State.variables.chPlayerCharacter.hasLead = true;
+	State.variables.chClaw.hasLead = false;
+	createPosMountFromBehind("chPlayerCharacter", ["chClaw"]);
+	State.variables.sc.formatScenePassage();
+	State.variables.chClaw.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chClaw.aiAlgorythm.setRoleSubmission();
+	setRefreshLustScript();
+}
+window.fakMoaningKitty2EndCondition = function() {
+	var flagReady = false;
+	if ( getBarPercentage("chClaw","lust") <= 0.55 ) {
+		flagReady = true;
+	}
+	return flagReady;
+}
+window.playerMirClawOrgasmEndCondition = function(none) {
+	var flagEndScene = false;
+	
+	if ( State.variables.chPlayerCharacter.getAllSceneOrgasms() > 0 && State.variables.chClaw.getAllSceneOrgasms() > 0 && State.variables.chMir.getAllSceneOrgasms() > 0 ) {
+		flagEndScene = true;
+	}
+	
+	return flagEndScene;
+}
+window.fakClawGetsShared = function(targetPassage) {
+	State.variables.sc.startScene(
+	"ss","fixed",["chPlayerCharacter","chMir"],["chClaw"],"The scroll stands abandoned in top of the table.",playerMirClawOrgasmEndCondition,4,
+	targetPassage);
+	State.variables.sc.sceneConditions.push("cantCancelPositions");
+	State.variables.chPlayerCharacter.hasLead = true;
+	State.variables.chMir.hasLead = true;
+	State.variables.chClaw.hasLead = false;
+	createPosKneel("chMir",["chClaw"]);
+	createComPosSpitroast("chPlayerCharacter","chClaw");
+	State.variables.sc.formatScenePassage();
+	State.variables.chClaw.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chClaw.aiAlgorythm.setRoleSubmission();
+	State.variables.chMir.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chMir.aiAlgorythm.setRoleActive();
+	setRefreshLustScript();
+}
+window.fakMirSubmits = function(targetPassage) {
+	State.variables.sc.startScene(
+	"ss","fixed",["chPlayerCharacter"],["chClaw","chMir"],"The scroll stands abandoned in top of the table.",playerMirClawOrgasmEndCondition,4,
+	targetPassage);
+	State.variables.chPlayerCharacter.hasLead = true;
+	State.variables.chMir.hasLead = false;
+	State.variables.chClaw.hasLead = false;
+	State.variables.sc.formatScenePassage();
+	State.variables.chClaw.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chClaw.aiAlgorythm.setRoleSubmission();
+	State.variables.chMir.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chMir.aiAlgorythm.setRoleSubmission();
+	setRefreshLustScript();
+}
+window.fakMirGetsShared = function(targetPassage) {
+	State.variables.sc.startScene(
+	"ss","fixed",["chPlayerCharacter","chClaw"],["chMir"],"The scroll stands abandoned in top of the table.",playerMirClawOrgasmEndCondition,4,
+	targetPassage);
+	State.variables.sc.sceneConditions.push("cantCancelPositions");
+	State.variables.chPlayerCharacter.hasLead = true;
+	State.variables.chMir.hasLead = false;
+	State.variables.chClaw.hasLead = true;
+	createPosKneel("chClaw",["chMir"]);
+	createComPosSpitroast("chPlayerCharacter","chMir");
+	State.variables.sc.formatScenePassage();
+	State.variables.chClaw.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chClaw.aiAlgorythm.setRoleActive();
+	State.variables.chMir.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chMir.aiAlgorythm.setRoleSubmission();
+	setRefreshLustScript();
+}
 
+// Bondage Awakening
+window.BoAwPadmiriAbusesTrio = function() {
+	State.variables.sc.startScene(
+	"ss","fixed",["chPlayerCharacter","chNash","chClaw"],["chMir"],"Nothing disrupts the quietness of the lake, save for your moans.",mirTwoOrgasms,4,
+	"SE BoAw Trapped Trio PostSex");
+	State.variables.chPlayerCharacter.hasLead = false;
+	State.variables.chMir.hasLead = true;
+	State.variables.chClaw.hasLead = false;
+	State.variables.chNash.hasLead = false;
+	State.variables.sc.formatScenePassage();
+	State.variables.chClaw.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chClaw.aiAlgorythm.setRoleSubmission();
+	State.variables.chMir.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chMir.aiAlgorythm.setRoleDomination();
+	State.variables.chNash.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chNash.aiAlgorythm.setRoleSubmission();
+	setRefreshLustScript();
+}
+window.mirTwoOrgasms = function(none) {
+	var flagEndScene = false;
+	
+	if ( State.variables.chMir.getAllSceneOrgasms() > 1 ) {
+		flagEndScene = true;
+	}
+	
+	return flagEndScene;
+}
+window.BoAwPlayerAbusesDuo = function(newPassage) {
+	State.variables.sc.startScene(
+	"ss","fixed",["chPlayerCharacter"],["chClaw","chNash"],"Nothing disrupts the quietness of the lake, save for your moans.",playerTwoOrgasms,4,
+	newPassage);
+	State.variables.chPlayerCharacter.hasLead = true;
+	State.variables.chClaw.hasLead = false;
+	State.variables.chNash.hasLead = false;
+	State.variables.sc.formatScenePassage();
+	State.variables.chClaw.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chClaw.aiAlgorythm.setRoleSubmission();
+	State.variables.chNash.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chNash.aiAlgorythm.setRoleSubmission();
+	setRefreshLustScript();
+}
+window.playerTwoOrgasms = function(none) {
+	var flagEndScene = false;
+	
+	if ( State.variables.chPlayerCharacter.getAllSceneOrgasms() > 1 ) {
+		flagEndScene = true;
+	}
+	
+	return flagEndScene;
+}
+window.BoAwPairAbusesDuo = function(newPassage) {
+	State.variables.sc.startScene(
+	"ss","dynamic",["chPlayerCharacter","chMir"],["chClaw","chNash"],"Nothing disrupts the quietness of the lake, save for your moans.",playerMirTwoOrgasms,4,
+	newPassage);
+	/*
+	State.variables.chPlayerCharacter.hasLead = true;
+	State.variables.chMir.hasLead = false;
+	State.variables.chClaw.hasLead = false;
+	State.variables.chNash.hasLead = false;*/
+	addSceneTagToChar("noLead","chClaw");
+	addSceneTagToChar("noLead","chNash");
+	State.variables.sc.formatScenePassage();
+	State.variables.chClaw.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chClaw.aiAlgorythm.setRoleSubmission();
+	State.variables.chMir.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chMir.aiAlgorythm.setRoleDomination();
+	State.variables.chNash.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chNash.aiAlgorythm.setRoleSubmission();
+	setRefreshLustScript();
+}
+window.playerMirTwoOrgasms = function(none) {
+	var flagEndScene = false;
+	
+	if ( State.variables.chPlayerCharacter.getAllSceneOrgasms() > 1 && State.variables.chMir.getAllSceneOrgasms() > 1 ) {
+		flagEndScene = true;
+	}
+	
+	return flagEndScene;
+}
+
+// Blackmailed by Claw
+	// Dommed by Claw
+window.bbCdommedByClaw = function(newPassage) {
+	State.variables.sc.startScene(
+	"ss","fixed",["chPlayerCharacter"],["chClaw"],"You feel the strong grip of Claw on your skin.",clawTwoOrgasms,gSettings().stdSxScDur,
+	newPassage);
+	// Positioning, conditions
+	State.variables.sc.sceneConditions.push("cantCancelPositions");
+	State.variables.sc.sceneConditions.push("cantChangePositions");
+	State.variables.chClaw.hasLead = true;
+	State.variables.chPlayerCharacter.hasLead = false;
+	createPosMountFromBehind("chClaw",["chPlayerCharacter"]);
+	// Custom Dialogues
+	State.variables.sc.setDialoguesList("bbCshutup");
+	// Assign choices
+	State.variables.chClaw.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chClaw.aiAlgorythm.fixedTarget = "chPlayerCharacter";
+	State.variables.chClaw.aiAlgorythm.setRoleDomination();
+	// Custom script
+		// Set StVars.check4 to the sub char's current amount of orgasms
+		// If check4 grows from the previous turn,
+			// Chance for the sub character to moan, attracting attention
+				// Update scene sub-description
+				// Reduce character's reputation
+			// Update check4 to new quantity
+	State.variables.StVars.check4 = 0; // Sub's orgasm counter
+	State.variables.StVars.check5 = "chClaw"; // Who's the sub to be checking
+	if ( gC("chClaw").hasLead == true ) { State.variables.StVars.check5 = "chPlayerCharacter"; }
+	State.variables.sc.customScript = function() {
+		if ( gC(State.variables.StVars.check5).getAllSceneOrgasms() > State.variables.StVars.check4 ) { // Sub orgasmed
+			State.variables.sc.importantMessages += gC(State.variables.StVars.check5).getFormattedName() + " can barely contain " + gC(State.variables.StVars.check5).refPr + ". //" + colorText(randomFromList(['"Nnggh..."','"Nhh-Aaaah!"','"Mmmhhhnn!"','"Hmmnn."']), gC(State.variables.StVars.check5).nameColor) + "//\n"
+			+ "Barely seen by a Shapeshifter below, rumors spread and " + gC(State.variables.StVars.check5).getFormattedName() + "'s respect in the tribe slightly falls (-5).";
+			gC(State.variables.StVars.check5).ssRsp -= 5;
+			State.variables.StVars.check4 = gC(State.variables.StVars.check5).getAllSceneOrgasms();
+		}
+	}
+	//
+	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
+}
+window.clawTwoOrgasms = function(none) {
+	var flagEndScene = false;
+	
+	if ( State.variables.chClaw.getAllSceneOrgasms() > 1 ) {
+		flagEndScene = true;
+	}
+	
+	return flagEndScene;
+}
+
+	// Domming Claw
+window.bbCdommingClaw = function() {
+	State.variables.sc.startScene(
+	"ss","fixed",["chPlayerCharacter"],["chClaw"],"Claw pushes back against you, trying to stand away from the cliff.",playerTwoOrgasms,gSettings().stdSxScDur,
+	"FASE BbC Dommed Claw");
+	// Positioning, conditions
+	State.variables.sc.sceneConditions.push("cantCancelPositions");
+	State.variables.sc.sceneConditions.push("cantChangePositions");
+	State.variables.chClaw.hasLead = false;
+	State.variables.chPlayerCharacter.hasLead = true;
+	createPosMountFromBehind("chPlayerCharacter",["chClaw"]);
+	// Custom Dialogues
+	State.variables.sc.setDialoguesList("bbCshutup");
+	// Assign choices
+	State.variables.chClaw.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chClaw.aiAlgorythm.setRoleSubmission();
+	// Custom script
+		// Set StVars.check4 to the sub char's current amount of orgasms
+		// If check4 grows from the previous turn,
+			// Chance for the sub character to moan, attracting attention
+				// Update scene sub-description
+				// Reduce character's reputation
+			// Update check4 to new quantity
+	State.variables.StVars.check4 = 0; // Sub's orgasm counter
+	State.variables.StVars.check5 = "chClaw"; // Who's the sub to be checking
+	if ( gC("chClaw").hasLead == true ) { State.variables.StVars.check5 = "chPlayerCharacter"; }
+	State.variables.sc.customScript = function() {
+		if ( gC(State.variables.StVars.check5).getAllSceneOrgasms() > State.variables.StVars.check4 ) { // Sub orgasmed
+			State.variables.sc.importantMessages += gC(State.variables.StVars.check5).getFormattedName() + " can barely contain " + gC(State.variables.StVars.check5).refPr + ". //" + colorText(randomFromList(['"Nnggh..."','"Nhh-Aaaah!"','"Mmmhhhnn!"','"Hmmnn."']), gC(State.variables.StVars.check5).nameColor) + "//\n"
+			+ "Barely seen by a Shapeshifter below, rumors spread and " + gC(State.variables.StVars.check5).getFormattedName() + "'s respect in the tribe slightly falls (-5).";
+			gC(State.variables.StVars.check5).ssRsp -= 5;
+			State.variables.StVars.check4 = gC(State.variables.StVars.check5).getAllSceneOrgasms();
+		}
+	}
+	//
+	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
+}
+
+	// Fighting Claw
+window.bbCfightingClaw = function() {
+	State.variables.sc.startScene( // Both you and your opponent catiously stand away from the edge of the cliff
+	// FASE BbC Fight Victory
+	// FASE BbC Fight Defeat
+	"bs","fixed",["chPlayerCharacter"],["chClaw"],"__Caverns ~ Union Lake Upper Platform__\nBoth you and your opponent catiously stand away from the edge of the cliff.",createEndConditionStoryBattle("FASE BbC Fight Victory","FASE BbC Fight Defeat"),6,
+	"FASE BbC Fight Victory");
+	for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
+		if ( charKey != "chPlayerCharacter" ) {
+			gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+		}
+	}
+	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
+}
+	
+	// State.variables.sc.startScene( 
+	//"bs","fixed",["chPlayerCharacter"],["chVal"],"__Forest__\nThe trees are shaken by the wind.",createEndConditionStoryBattle("Luring Masquerade Sweet //Revenge","Luring Masquerade Saved By Mir")

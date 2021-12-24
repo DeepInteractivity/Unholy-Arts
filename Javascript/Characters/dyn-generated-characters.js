@@ -109,7 +109,65 @@ window.generateFutaHumanoidTest = function() {
 	return chKey;
 }
 
+window.generateFemaleAnonShapeshifter = function(usedNames) {
+	var nKey = findEarliestDynamicCharacterPosition();
+	var chKey = "ch" + nKey;
+	var name = generateNonRepeatedNameWithFunction(usedNames,generateRandomFemaleShapeshifterName);
+	var character = generateBaseHumanoid(name,10);
+	character.addFemaleParts();
+	character.assignFemeninePronouns();
+	State.variables[chKey] = character;
+	// Images
+	character.fullPortrait = function() {
+		return "[img[img/portraits/RdFmSs-full.png]]";
+	}
+	character.avatar = function() {
+		return "[img[img/portraits/RdFmSs-avatar.png]]";
+	}
+	character.fullPortraitL = "img/portraits/RdFmSs-full.png";
+	character.avatarL = "img/portraits/RdFmSs-avatar.png";
+	character.saList = returnBaList().concat(returnFirstScrollGroupActionsList());
+	var color = randomFromList(["salmon","hotpink","orchid","fuchsia","blueviolet","palegreen","mediumspringgreen"]);
+	character.setColors(color,color);
+	return chKey;
+}
+window.generateMaleAnonShapeshifter = function(usedNames) {
+	var nKey = findEarliestDynamicCharacterPosition();
+	var chKey = "ch" + nKey;
+	var name = generateNonRepeatedNameWithFunction(usedNames,generateRandomMaleShapeshifterName);
+	var character = generateBaseHumanoid(name,10);
+	character.addMaleParts();
+	character.assignMasculinePronouns();
+	State.variables[chKey] = character;
+	// Images
+	character.fullPortrait = function() {
+		return "[img[img/portraits/RdMlSs-full.png]]";
+	}
+	character.avatar = function() {
+		return "[img[img/portraits/RdMlSs-avatar.png]]";
+	}
+	character.fullPortraitL = "img/portraits/RdMlSs-full.png";
+	character.avatarL = "img/portraits/RdMlSs-avatar.png";
+	character.saList = returnBaList().concat(returnFirstScrollGroupActionsList());
+	var color = randomFromList(["darksalmon","red","orchid","darkorchid","darkslateblue","greenyellow","springgreen"]);
+	character.setColors(color,color);
+	return chKey;
+}
 
-// Bodyparts and pronouns
 // Names
+window.generateNonRepeatedNameWithFunction = function(usedNames,generatingFunction) {
+	var name = "";
+	while ( name == "" || usedNames.includes(name) ) {
+		name = generatingFunction();
+	}
+	return name;
+}
+window.generateRandomFemaleShapeshifterName = function() {
+	var name = randomFromList(["Tsellen","Maltya","Styria","Lisllin","Iliau","Versques","Faria","Esferia","Gaisyia","Lereimes","Feisien","Teseilla","Elvistir","Feness","Renesq"]);
+	return name;
+}
+window.generateRandomMaleShapeshifterName = function() {
+	var name = randomFromList(["Questian","Renesq","Maeso","Velsin","Parsque","Kullen","Guslen","Feness","Baste","Vursq","Fasian","Velos","Feisien","Tsellen"]);
+	return name;
+}
 

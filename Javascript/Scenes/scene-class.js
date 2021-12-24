@@ -66,6 +66,8 @@ window.scene = function() {
 	this.flagSceneActive = false;
 	this.extraEndInfo = "";
 	
+	this.endRoundEffects = []; // Functions to be executed and cleaned at the end of every round
+	
 	this.flagFullAvatar = false;
 	this.selectedFullAvatar = "chPlayerCharacter";
 	
@@ -122,12 +124,14 @@ window.scene = function() {
 			if ( valid ) { teamBcharKeys.push(cK); }
 		}
 		
+		// Swap teams if required
 		if ( teamBcharKeys.includes("chPlayerCharacter") ) {
 			var tempTeamKeys = teamBcharKeys;
 			teamBcharKeys = teamAcharKeys;
 			teamAcharKeys = tempTeamKeys;
 		}
 		
+		// Initialize vars
 		this.sceneType = sceneType;
 		this.enabledLead = enabledLead;
 		this.sceneConditions = [];
@@ -210,6 +214,8 @@ window.scene = function() {
 		} else {
 			this.lastPlayerTarget = this.teamAcharKeys[0];
 		}
+		
+		this.turnsWithoutActions = 0;
 		
 		this.formatScenePassage();
 	}
@@ -474,6 +480,10 @@ window.scene = function() {
 		this.teamBchosenActions = [];
 		this.teamBchosenTargets = [];
 		
+		if ( this.spectators != undefined ) {
+			delete this.spectators;
+		}
+		
 		this.lastPlayerCommand = "";
 		this.lastPlayerTarget = "";
 		
@@ -503,6 +513,9 @@ window.scene = function() {
 		this.flagFullAvatar = false;
 		this.selectedFullAvatar = "chPlayerCharacter";
 		
+		this.cleanCustomDialogues();
+		delete this.turnsWithoutActions;
+		
 		this.checkEndConditions = function() {
 			return true;
 		}
@@ -519,6 +532,13 @@ window.scene = function() {
 		}
 		this.endSceneScript = function() {
 			return true;
+		}
+		
+		if ( this.genericCharacters != undefined ) {
+			for ( var chKey of this.genericCharacters ) {
+				delete State.variables[chKey];
+			}
+			delete this.genericCharacters;
 		}
 	}
 	
@@ -600,6 +620,20 @@ window.scene = function() {
 		this.stakes = stakes;
 		this.aggressor = attacker;
 		this.defender = defender;
+	}
+	
+	window.getCharsTeam = function(cK) {
+		var team = [];
+		if ( gC("sc").teamAcharKeys.includes(cK) ) {
+			team = gC("sc").teamAcharKeys;
+		} else if ( gC("sc").teamBcharKeys.includes(cK) ) {
+			team = gC("sc").teamBcharKeys;
+		}
+		return team;
+	}
+	window.getCharsTeamMinusSelf = function(cK) {
+		var team = arrayMinusA(getCharsTeam(cK),cK);
+		return team;
 	}
 	
 	// Logic
@@ -741,6 +775,8 @@ window.scene = function() {
 		var i = 0;
 		
 		if ( this.sceneType == "bs" ) {
+										// This code is trash, but it works well, so do not touch it much @vvv@ //
+			var unorderedActions = [];
 			// Reorder data
 			var actionsInfo = new weightedList(); 
 			var charKeys = this.teamAcharKeys.concat(this.teamBcharKeys);
@@ -753,25 +789,37 @@ window.scene = function() {
 				actionsInfo[this.teamBcharKeys[i]] = [ this.teamBcharKeys[i] , actK , this.teamBchosenTargets[i] ];
 				i++;
 			}
-			// Weighted list
-			var wL = new weightedList();
-			for ( var charK of charKeys ) {
-				wL[charK] = new weightedElement(charK,gC(charK).luck.getValue());
-			}
-			// Take weighted random elements from wL, execute their action, delete them from the list, until j == 0
-			var j = charKeys.length;
-			while ( j > 0 ) {
-				var currentC = randomFromWeightedList(wL); // Take weighted random char
-				if ( actionsInfo[currentC] != undefined ) {
-					var currentA = actionsInfo[currentC][1]; // Execute action
-					var actionDesc = setup.saList[currentA].description;
-					var actionName = "[<span title=" + '"' + actionDesc + '"' + ">" + setup.saList[currentA].name + "</span>] ";
-					this.actionsDescription += colorText(actionName,"darkgray");
-					this.actionsDescription += tryExecuteAction(currentA,currentC,actionsInfo[currentC][2]).description;
-					this.actionsDescription += "\n";
-					delete wL[currentC]; // Delete from weighted list
+			// Divide actions to execute by blocks of priority
+			while ( getActionsInfoLength(actionsInfo) > 0 ) {
+				var highestPriority = findHighestPriorityInActionsInfo(actionsInfo);
+				var currentChars = [];
+				for ( var ai of getActionsInfoListWithPriority(actionsInfo,highestPriority) ) {
+					currentChars.push(ai[0]);
 				}
-				j--; // Reduce j
+				var currentActions = actionsInfoArrayToActionsInfoList(getActionsInfoListWithPriority(actionsInfo,highestPriority))
+				actionsInfo = actionsInfoArrayToActionsInfoList(getActionsInfoListWithoutPriority(actionsInfo,highestPriority));
+				
+				// Out of this priority block, execute all actions with a weighted random order, with luckier characters having higher weight
+				// Weighted list
+				var wL = new weightedList();
+				for ( var charK of currentChars ) {
+					wL[charK] = new weightedElement(charK,gC(charK).luck.getValue());
+				}
+				// Take weighted random elements from wL, execute their action, delete them from the list, until j == 0
+				var j = currentChars.length;
+				while ( j > 0 ) {
+					var currentC = randomFromWeightedList(wL); // Take weighted random char
+					if ( currentActions[currentC] != undefined ) {
+						var currentA = currentActions[currentC][1]; // Execute action
+						var actionDesc = setup.saList[currentA].description;
+						var actionName = "[<span title=" + '"' + actionDesc + '"' + ">" + setup.saList[currentA].name + "</span>] ";
+						this.actionsDescription += colorText(actionName,"darkgray");
+						this.actionsDescription += tryExecuteAction(currentA,currentC,currentActions[currentC][2]).description;
+						this.actionsDescription += "\n";
+						delete wL[currentC]; // Delete from weighted list
+					}
+					j--; // Reduce j
+				}
 			}
 		}
 		else {
@@ -798,6 +846,61 @@ window.scene = function() {
 			}
 		}
 	}
+			// Here be goblins, shoo //
+	window.getActionsInfoLength = function(actionsInfo) {
+		var l = 0;
+		for ( var i in actionsInfo ) {
+			if ( gC(actionsInfo[i][0]) != undefined ){
+				l++;
+			}
+		}
+		return l;
+	}
+	window.findHighestPriorityInActionsInfo = function(actionsInfo) {
+		var highestPriority = -1000;
+		for ( var i in actionsInfo ) {
+			if ( gC(actionsInfo[i][0]) != undefined ){
+				var actInf = actionsInfo[i];
+				if ( setup.saList[actInf[1]].priority > highestPriority ) {
+					highestPriority = setup.saList[actInf[1]].priority;
+				}
+			}
+		}
+		return highestPriority;
+	}
+	window.getActionsInfoListWithPriority = function(actionsInfo,priority) {
+		var newList = [];
+		for ( var i in actionsInfo ) {
+			if ( gC(actionsInfo[i][0]) != undefined ){
+				var actInf = actionsInfo[i];
+				if ( setup.saList[actInf[1]].priority == priority ) {
+					newList.push(actionsInfo[i]);
+				}
+			}
+		}
+		return newList;
+	}
+	window.getActionsInfoListWithoutPriority = function(actionsInfo,priority) {
+		var newList = [];
+		for ( var i in actionsInfo ) {
+			if ( gC(actionsInfo[i][0]) != undefined ){
+				var actInf = actionsInfo[i];
+				if ( setup.saList[actInf[1]].priority != priority ) {
+					newList.push(actionsInfo[i]);
+				}
+			}
+		}
+		return newList;
+	}
+	window.actionsInfoArrayToActionsInfoList = function(actionsInfoArray) {
+		var actsInfoList = new weightedList(); 
+		for ( var aie of actionsInfoArray ) {
+			actsInfoList[aie[0]] = aie;
+		}
+		return actsInfoList;
+	}
+			// // //		   // // //
+	
 	scene.prototype.updateCancelActionButtons = function() {
 		this.cabID = 0;
 		for ( var ca in this.continuedActions ) {
@@ -930,7 +1033,7 @@ window.scene = function() {
 			for ( var as of gC(key).alteredStates ) {
 				if ( as.scope == "scene" ) {
 					as.remainingTurns--; // Reduce remaining turns
-					if ( as.remainingTurns <= 0 && as.remainingTurns > -1 ) {
+					if ( as.remainingTurns <= 0 ) {
 						as.flagRemove = true; // Finish effect
 						cleanStates = true;
 					}
@@ -940,6 +1043,33 @@ window.scene = function() {
 				gC(key).cleanStates();
 			}
 		}
+	}
+	
+	scene.prototype.wereThereAnyActions = function() { // Checks if any character chose any action other than "doNothing"
+		var thereWereActions = false;
+		for ( var act of this.teamAchosenActions ) {
+			if ( act != "doNothing" ) {
+				thereWereActions = true;
+			}
+		}
+		for ( var act of this.teamBchosenActions ) {
+			if ( act != "doNothing" ) {
+				thereWereActions = true;
+			}
+		}
+		if ( thereWereActions ) {
+			this.turnsWithoutActions = 0;
+		} else {
+			this.turnsWithoutActions++;
+		}
+	}
+	
+	scene.prototype.checkForcedDraw = function() { // Checks if the scene has grown stale. If some, executeTurn() must force a stalemate
+		var forcedDraw = false;
+		if ( this.turnsWithoutActions >= 3 ) {
+			forcedDraw = true;
+		}
+		return forcedDraw;
 	}
 	
 	scene.prototype.executeTurn = function() {	
@@ -954,12 +1084,14 @@ window.scene = function() {
 		this.extraEffectsDescription = "";
 		this.otherMessages = [];	
 		
+		
 		for ( var charKey of this.teamAcharKeys ) {
 			gC(charKey).turnPrefTags = [];
 		}
 		for ( var charKey of this.teamBcharKeys ) {
 			gC(charKey).turnPrefTags = [];
 		}
+		
 		
 		// Choose actions
 		var aiResults;
@@ -1008,6 +1140,14 @@ window.scene = function() {
 		// Execute actions
 		this.applyPrefTurnTags();
 		this.executeActions();
+		
+		for ( var effect of this.endRoundEffects ) {
+			var efMsg = effect();
+			if ( efMsg != "" ) {
+				this.actionsDescription += efMsg + "\n";
+			}
+		}
+		this.endRoundEffects = [];
 		
 		// Execute altered states
 		executeAlteredStatesTurnEffects();
@@ -1062,8 +1202,17 @@ window.scene = function() {
 			this.outHeadingDescription = this.headingDescription + "\n\n";
 		}
 		
+		// Were there any actions check
+		this.wereThereAnyActions();
+		
 		// Check scene end
 		this.flagSceneEnded = this.checkEndConditions(this.endConditionsVars);
+		if ( this.flagSceneEnded == false ) {
+			if ( this.checkForcedDraw() ) {
+				this.flagSceneEnded = true;
+				this.extraEndInfo = "stalemate";
+			}
+		}
 		
 		// Remember player commands
 		var playerPosition = -1;
@@ -1255,9 +1404,13 @@ window.scene = function() {
 				if ( threshold > 85 ) { threshold = 85; }
 				var i = 0;
 				while ( i < this.teamAcharKeys.length ) {
-					if ( limitedRandomInt(100) > threshold && (this.teamAcharKeys[i] != this.teamAchosenTargets[i]) ) { // Activate dialog
+					var extraThreshold = 0;
+					if ( gC(this.teamAcharKeys[i]).hasFreeBodypart("mouth") == false ) {
+						(100 - threshold) / 1.5;
+					}
+					if ( limitedRandomInt(100) > (threshold + extraThreshold) && (this.teamAcharKeys[i] != this.teamAchosenTargets[i]) ) { // Activate dialog
 						var actionsAgainstActor = getActionsAgainstTarget(this.teamAcharKeys[i]);					
-						var nd = chooseDialogFromList(setup.dialogDB.ssDialogs,this.teamAcharKeys[i],this.teamAchosenTargets[i][0],this.teamAchosenActions[i],actionsAgainstActor);
+						var nd = chooseDialogFromList(setup.dialogDB[this.getDialogsList()],this.teamAcharKeys[i],this.teamAchosenTargets[i][0],this.teamAchosenActions[i],actionsAgainstActor);
 						if ( nd != "" ) {
 							if ( dialogs == "" ) { dialogs += nd; }
 							else { dialogs += "\n" + nd; }
@@ -1267,9 +1420,13 @@ window.scene = function() {
 				}
 				i = 0;
 				while ( i < this.teamBcharKeys.length ) {
-					if ( limitedRandomInt(100) > threshold && (this.teamBcharKeys[i] != this.teamBchosenTargets[i]) ) { // Activate dialog
+					var extraThreshold = 0;
+					if ( gC(this.teamBcharKeys[i]).hasFreeBodypart("mouth") == false ) {
+						(100 - threshold) / 1.5;
+					}
+					if ( limitedRandomInt(100) > (threshold + extraThreshold) && (this.teamBcharKeys[i] != this.teamBchosenTargets[i]) ) { // Activate dialog
 						var actionsAgainstActor = getActionsAgainstTarget(this.teamBcharKeys[i]);					
-						var nd = chooseDialogFromList(setup.dialogDB.ssDialogs,this.teamBcharKeys[i],this.teamBchosenTargets[i][0],this.teamBchosenActions[i],actionsAgainstActor);
+						var nd = chooseDialogFromList(setup.dialogDB[this.getDialogsList()],this.teamBcharKeys[i],this.teamBchosenTargets[i][0],this.teamBchosenActions[i],actionsAgainstActor);
 						if ( nd != "" ) {
 							if ( dialogs == "" ) { dialogs += nd; }
 							else { dialogs += "\n" + nd; }
@@ -1281,6 +1438,19 @@ window.scene = function() {
 		}
 		this.genericDialogs = dialogs;
 	}
+	scene.prototype.setDialoguesList = function(dialoguesList) { // Dialogues list is a string that refers to a object in setup.dialogDB
+		State.variables.sc.customDialogues = dialoguesList;
+	}
+	scene.prototype.getDialogsList = function() {
+		var dialoguesList = "ssDialogs";
+		if ( State.variables.sc.hasOwnProperty("customDialogues") ) {
+			dialoguesList = State.variables.sc.customDialogues;
+		}
+		return dialoguesList;
+	}
+	scene.prototype.cleanCustomDialogues = function() {
+		delete State.variables.sc.customDialogues;
+	}
 	
 	scene.prototype.textOrgasmMessage = function(charKey,overflow,type) {
 		var orgasmText = "";
@@ -1289,10 +1459,11 @@ window.scene = function() {
 		if ( type == "ruined" ) {
 			orgasmText = colorText((gC(charKey).name + " almost reached climax for " + (getChar(charKey).lust.max + overflow).toFixed(2) + " total lust damage, but... "),"red") + description + " " + gC(charKey).name + " feels " + gC(charKey).posPr + " strength flowing away.";
 		} else if ( type == "mindblowing" ) {
-			orgasmText = colorText((getChar(charKey).name + " reached a most powerful climax for " + (getChar(charKey).lust.max + overflow).toFixed(2) + " total lust damage. "),"red") + description;
+			orgasmText = colorText((getChar(charKey).name + " reached a most powerful climax for " + (getChar(charKey).lust.max + overflow).toFixed(2) + " lust damage and " + (gC(charKey).willpower.max * 0.2).toFixed(2) + " willpower damage."),"red") + description;
 		} else {
-			orgasmText = colorText((getChar(charKey).name + " reached climax for " + (getChar(charKey).lust.max + overflow).toFixed(2) + " total lust damage. "),"red") + description;
+			orgasmText = colorText((getChar(charKey).name + " reached climax for " + (getChar(charKey).lust.max + overflow).toFixed(2) + " total lust damage."),"red") + description;
 		}
+		orgasmText += " ";
 		return orgasmText;
 	}
 	
@@ -1335,6 +1506,15 @@ window.scene = function() {
 					if ( this.positionsDescription != "" ) { this.positionsDescription += "\n"; } 
 					this.positionsDescription += colorText(("[" + getChar(key).position.name + "] "),"darkgray");
 					this.positionsDescription += getChar(key).position.description;
+					checkedChars = checkedChars.concat(getCharsAtCharsPosition(key));
+				}
+			}
+			/*
+			if ( checkedChars.includes(key) == false ) {
+				if ( getChar(key).position.type != "free" ) {
+					if ( this.positionsDescription != "" ) { this.positionsDescription += "\n"; } 
+					this.positionsDescription += colorText(("[" + getChar(key).position.name + "] "),"darkgray");
+					this.positionsDescription += getChar(key).position.description;
 					checkedChars.push(key);
 					
 					if ( gC(key).position.hasOwnProperty("initiator") ) {
@@ -1360,6 +1540,7 @@ window.scene = function() {
 					}
 				}
 			}
+			*/
 		}
 		
 		if ( this.positionsDescription != "" ) {
@@ -1369,6 +1550,38 @@ window.scene = function() {
 			this.positionsDescription += "\n";
 		}
 	}
+
+window.getCharsAtCharsPosition = function(charKey) {
+	// Finds all characters positionally connected to charKey and returns them as a list
+	var charList = [charKey];
+	var searchedChars = [];
+	while ( charList.length != searchedChars.length ) {
+		var newChars = [];
+		for ( var cK of charList ) {
+			if ( searchedChars.includes(cK) == false ) {
+				newChars = newChars.concat(getImmediatelyConnectedCharsToChar(cK));
+				searchedChars.push(cK);
+			}
+		}
+		charList = removeDuplicatesFromList(charList.concat(newChars));
+	}
+	return charList;
+}
+window.getImmediatelyConnectedCharsToChar = function(charKey) {
+	var charList = [];
+	var position = gC(charKey).position;
+	if ( position.initiator != undefined ) {
+		charList.push(position.initiator);
+	}
+	if ( position.targetsList != undefined ) {
+		charList = charList.concat(position.targetsList);
+	}
+	if ( position.secondaryInitiators != undefined ) {
+		charList = charList.concat(position.secondaryInitiators);
+	}
+	charList = removeDuplicatesFromList(charList);
+	return charList;
+}
 
 	scene.prototype.logAccumulatedDamage = function() {
 		var charKeys = this.teamAcharKeys.concat(this.teamBcharKeys );
@@ -1958,3 +2171,37 @@ window.cleanSceneTags = function() {
 	}
 }
 
+window.endSceneScriptRefreshLustIfOrgasmed = function() {
+	var allChars = State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys);
+	for ( var cK of allChars ) {
+		if ( gC(cK).orgasmSceneCounter > 0 || gC(cK).mindblowingOrgasmSC > 0 ) {
+			gC(cK).lust.restore();
+		}
+	}
+}
+window.setRefreshLustScript = function() {
+	State.variables.sc.endSceneScript = endSceneScriptRefreshLustIfOrgasmed;
+}
+window.endSceneScriptRefreshLustIfOrgasmed = function() {
+	var allChars = State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys);
+	for ( var cK of allChars ) {
+		if ( gC(cK).lust.max * 0.5 > gC(cK).lust.current ) {
+			gC(cK).lust.current += gC(cK).lust.max * 0.25; 
+		}
+	}
+}
+window.setRefreshSomeLustBattleScript = function() {
+	State.variables.sc.endSceneScript = endSceneScriptRefreshLustIfOrgasmed;
+}
+
+	// Data
+window.getCharsEnemyTeam = function(cK) { // Checks if the "cK" character is in any team. If so, returns the opposite team
+	var team = [];
+	if ( State.variables.sc.teamAcharKeys.includes(cK) ) {
+		team = State.variables.sc.teamBcharKeys;
+	}
+	if ( State.variables.sc.teamBcharKeys.includes(cK) ) {
+		team = State.variables.sc.teamAcharKeys;
+	}
+	return team;
+}

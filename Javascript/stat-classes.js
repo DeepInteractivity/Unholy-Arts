@@ -28,6 +28,16 @@ window.applyBarDamage = function(target,bar,damage) {
 	}
 	return msg;
 }
+window.applyBarDamageWithoutOverflow = function(target,bar,damage) {
+	var msg = "";
+	var overflow = 0;
+	gC(target)[bar].attack(damage);
+	if ( gC(target)[bar].current < 0 ) { gC(target)[bar].current = 0; }
+	return msg;
+}
+window.applyBarPercentualDamage = function(target,bar,percent) {
+	applyBarDamage(target,bar,-(gC(target)[bar].max*percent));
+}
 
 window.getBarPercentage = function(target,bar) {
 	var pr = gC(target)[bar].current / gC(target)[bar].max;
@@ -523,6 +533,12 @@ window.checkCharsVirginityExists = function(charKey,type) {
 	return flag;
 }
 
+window.destroyCharsVirginitiesNoFlavor = function(chKey) {
+	for ( var vir in gC(chKey).virginities ) {
+		gC(chKey).virginities[vir].taken = true;
+	}
+}
+
 // Class methods
 Virginity.prototype.assignTaker = function(taker,method) {
 		this.taken = true;
@@ -718,6 +734,7 @@ window.flavorAffinities = function() {
 	this.fire = new flavorAffinity("fire");
 	this.ice = new flavorAffinity("ice");
 	this.thunder = new flavorAffinity("thunder");
+	this.holy = new flavorAffinity("holy");
 	
 	// Social
 	this.social = new flavorAffinity("social");

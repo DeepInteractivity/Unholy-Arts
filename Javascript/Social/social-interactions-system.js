@@ -155,7 +155,7 @@ window.SocIntSys = function(key,charList) {
 				if ( this.flagPlayerTakenToScene == true ) {
 					flagExtraOptions = false;
 				} else if ( gC("chPlayerCharacter").followingTo != "" ) {
-					if ( (gC("chPlayerCharacter").followingTo == gC("chPlayerCharacter").domChar) || (gC("chPlayerCharacter").followingForDebt == true) ) {
+					if ( (gC("chPlayerCharacter").followingTo == gC("chPlayerCharacter").domChar) || ((gC("chPlayerCharacter").followingForDebt == true) && rFavor("chPlayerCharacter",gC("chPlayerCharacter").followingTo) > 0 ) ) {
 						flagExtraOptions = false;
 					}
 				}

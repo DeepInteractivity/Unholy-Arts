@@ -46,6 +46,12 @@ window.isActionUsable = function(actionKey,actorKey,targetsKeys,skipLinkedCheck)
 			if ( State.variables.settings.debugFunctions ) { iAU.explanation += "This action is disallowed by user-selected settings.\n"; }
 		}
 	}
+	if ( action.getIsCustomAllowed ) {
+		if ( action.getIsCustomAllowed(actionKey,actorKey,targetsKeys,skipLinkedCheck) == false ) {
+			iAU.isUsable = false;
+			if ( State.variables.settings.debugFunctions ) { iAU.explanation += "This action is disallowed by a custom requirement.\n"; }
+		}
+	}
 	
 	// Is target ko'ed
 	if ( targetsKeys.length > 0 ) {
@@ -244,7 +250,7 @@ window.isActionUsable = function(actionKey,actorKey,targetsKeys,skipLinkedCheck)
 			for ( var target of targetsList ) {
 				if ( (positions[0] == actor.position.key) && (positions[1] == target.position.key) && (areCharactersLinked(actorKey,target.varName) == true) ) {
 					iAU.isUsable = false;
-					if ( State.variables.settings.debugFunctions ) { iAU.explanation += "The actor and a target share an unvalid position.\n"; }
+					if ( State.variables.settings.debugFunctions ) { iAU.explanation += "The actor and a target share an invalid position.\n"; }
 				}
 			}
 		}
@@ -372,6 +378,28 @@ window.isActionUsable = function(actionKey,actorKey,targetsKeys,skipLinkedCheck)
 		if ( gC(actorKey).position.type != "free" ) {
 			iAU.isUsable = false;
 			if ( State.variables.settings.debugFunctions ) { iAU.explanation += "Actor needs to be free of any position to perform the action.\n"; }
+		}
+	}
+	
+	// Multiple full sex continued actions
+	if ( action.flavorTags.includes("fullsex") && action.flavorTags.includes("continuedAction") ) { // Action is fsca
+		if ( gSettings().mfsca == undefined ) { // Ensure setting is properly defined, required for retro save compatibility
+			gSettings().mfsca = setup.defaultMfscaOption;
+		}
+		if ( gSettings().mfsca == "disable" ) { // Is mfsca disallowed by settings
+		
+			var existingFsca = false;
+			for ( var ca of State.variables.sc.continuedActions ) {
+				if ( (ca.initiator == actorKey && ca.targetsList.includes(targetsKeys[0])) || (ca.initiator == targetsKeys[0] && ca.targetsList.includes(actorKey)) ) {
+					if ( ca.flavorTags.includes("fullsex") ) {
+						existingFsca = true;
+					}
+				}
+			}
+			if ( existingFsca ) {
+				iAU.isUsable = false;
+				if ( State.variables.settings.debugFunctions ) { iAU.explanation += "Multiple full sex continued actions are disabled.\n"; }
+			}
 		}
 	}
 	
@@ -506,6 +534,7 @@ window.sceneAction = function() {
 	this.affinities = [];
 	
 	this.getIsAllowedBySettings = null;
+	this.getIsCustomAllowed = null; // function(actionKey,actorKey,targetsKeys,skipLinkedCheck) { return true; }
 	
 	this.requiredPositions = []; // If the list contains anything, the actor requires one of these positions
 	this.targetRequiredPositions = []; // If the list contains anything, the targets require one of these positions
@@ -527,6 +556,8 @@ window.sceneAction = function() {
 	this.requiredRace = []; // If length > 0, requires the character's race to be included
 	this.actorDisabledByAs = []; // If the character has any of these states, the action cannot be used
 	this.targetDisabledByAs = []; // If the target has any of these states, the action cannot be used
+		
+	this.priority = 0;
 	
 	this.willpowerCost = 0; // If any of these three higher than 0, requires the character to have enough of it
 	this.energyCost = 0;
@@ -768,10 +799,15 @@ window.saList = function() {
 	
 	// Magic
 	
+	this.holyBlast = createHolyBlast();
 	this.embers = createSaEmbers();
+	this.flamingFan = createSaFlamingFan();
+	this.flaringFeint = createFlaringFeint();
 	this.freezeFeet = createSaFreezeFeet();
 	this.sparkingRubbing = createSaSparkingRubbing();
 	this.lightningDarts = createSaLightningDarts();
+	this.earthWall = createEarthWall();
+	this.quake = createSaQuake();
 	
 	this.taunt = createSaTaunt();
 	this.baTease = createSaBaTease();
@@ -779,11 +815,16 @@ window.saList = function() {
 		// Hypnosis
 	
 	this.baHypnoticGlance = createSaBaHypnoticGlance();
+	this.baOrderKneeling = createBaOrderKneeling();
+	this.baOrderMasturbation = createBaOrderMasturbation();
+	this.baCorrodeMind = createBaCorrodeMind();
+	this.tackle = createTackle();
 	
 		// Drain
 		
 	this.baDrainingKiss = createSaBaDrainingKiss();
 	this.baEnergyDrainingKiss = createSaBaEnergyDrainingKiss();
+	this.baDrainingRoots = createBaDrainingRoots();
 	
 		// Bondage
 		
@@ -806,7 +847,15 @@ window.saList = function() {
 	this.boldJab = createBoldJab();
 	this.channelAether = createSaChannelAether();
 	this.flaunt = createSaFlaunt();
+	this.disablingShot = createDisablingShot();
 };
+
+window.returnBaList = function() {
+	return ["struggle","baKissLips","baStrokeDick","baStrokePussy","baTeaseLockedDick","baTeaseLockedPussy","pounceFrontal","pounceFrontalD2P","pounceFrontalP2D","pounceFrontalP2P","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","coldGuts","baScratch","catAspect","embers","freezeFeet","sparkingRubbing","lightningDarts","taunt","baTease","baHypnoticGlance","baOrderKneeling","baDrainingKiss","baEnergyDrainingKiss","baEtherealChains","baVineArmLock","baBorrowedIdentity","baRelaxingScent","holyBlast","flamingFan","flaringFeint","disablingShot","earthWall","quake"];
+}
+window.returnFirstScrollGroupActionsList = function() {
+	return ["pushHipsBack","pushAssBack","scissor","thrust","mountFromBehind","rideDick","pushDickBack","kneel","makeKneel","legHoldHead","getBlowjob","fuckFace","suckDick","lickPussy","rideFace","giveCunnilingus","giveBlowjob",'strokeAss','penetrateAss','analThrust','doublePenetration','doubleThrust','analMountDick','analRideDick','analPushDickBack','spanking','holdArms','vinesHoldArms','dickFootjob','pussyFootjob','lickLegs','denyOrgasm','teaseLockedPussy','teaseLockedDick','baTeaseLockedDick','baTeaseLockedPussy','extraMountFromBehind','extraKneel','extraMakeKneel','extraLegHoldHead','coldGuts','pounceFrontal'];
+}
 
 // Constructors, serializers, etc.
 saList.prototype._init = function (obj) {

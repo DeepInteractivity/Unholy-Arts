@@ -65,3 +65,20 @@ window.createTestMapEndEvent = function(minutes) {
 	return sEvent;
 }
 
+
+window.createAdventureEndEvent = function(minutes) {
+	var sEvent = new systemEvent(minutes,["chDummy"],"scenarioEnd","End of day",function(cList) {
+			State.variables.compass.finishMapSimulation();
+			
+			State.variables.compass.scenarioEndPassage = "The day is over. The Candidates will now return to their rooms"
+													   + " and end the day.\n\n"
+													   + '<<' + 'link [[Continue|Personal Room]]>><<' + 'script>>'
+													   + 'State.variables.personalRoom.initPersonalRoom();'
+													   + '<</s' + 'cript>><</' + 'link>>';
+		}
+	);
+	sEvent.executeWithoutCharacters = true;
+	sEvent.priority = 100;
+	return sEvent;
+}
+

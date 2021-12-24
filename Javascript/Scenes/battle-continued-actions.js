@@ -1,5 +1,7 @@
 ///// BATTLE POSITIONS /////
 
+	// Pounces
+
 window.createBcaNeutralPounce = function(initiator,targetsList) {
 	var ca = new continuedAction();
 	ca.key = "mounting";
@@ -252,4 +254,58 @@ window.createBposP2DfrontalPounce = function(initiator, targetsList) {
 	gC(target).position.description = ktn(initiator) + " is holding " + ktn(target) + " below " + gC(initiator).posPr + " legs.";
 }
 
+	// Others
 
+window.createBposMakeKneel = function(initiator, targetsList) {
+	var target = targetsList[0];
+	
+	gC(initiator).position.makeActive(targetsList);
+	gC(initiator).position.key = "makeKneel";
+	gC(initiator).position.name = "Making kneel";
+	gC(initiator).position.description = ktn(target) + "'s cannot defy " + ktn(initiator) + "'s authority, and remains in " + gC(target).posPr + " knees.";
+	
+	gC(initiator).position.cAction = createBcaMakingKneel(initiator,targetsList);
+	
+	gC(target).position.makePassive(initiator);
+	gC(target).position.key = "madeKneel";
+	gC(target).position.name = "Being made to kneel";
+	gC(initiator).position.description = ktn(target) + "'s cannot defy " + ktn(initiator) + "'s authority, and remains in " + gC(target).posPr + " knees.";
+}
+
+window.createBcaMakingKneel = function(initiator,targetsList) {
+	var ca = new continuedAction();
+	ca.key = "baMakingKneel";
+	ca.name = "Making Kneel";
+	ca.initiator = initiator;
+	ca.targetsList = targetsList;
+	ca.initiatorBodyparts = [ "eyes" ];
+	ca.targetsBodyparts = [ "eyes" ];
+	ca.occupyBodyparts();
+	ca.affinities = ["hypnosis"];
+	
+	ca.execute = function() {
+		var results = new saResults;
+		var actor = this.initiator;
+		var target = this.targetsList[0];
+		
+		// Damage to target
+		var actAffinities = ["hypnosis","useEyes","targetEyes"];
+		var inDamValue = gCstat(actor,"will") * 0.1 + gCstat(actor,"charisma") * 0.1;
+		inDamValue = addLuckFactor(inDamValue,0.1,gCstat(actor,"luck"));
+		var damage = calculateAttackEffects("willpower",actor,target,actAffinities,inDamValue);
+		
+		// Apply effects
+		var overflowMsg = applyBarDamage(target,"willpower",-damage);
+		results.value += damage;
+				
+		results.description += randomFromList( [
+								(ktn(initiator) + " keeps " + gC(initiator).posPr + " eyes locked on " + ktn(target) + "'s, depriving " + gC(target).comPr + " of the freedom to stand up."),
+								(ktn(initiator) + " keeps " + gC(initiator).posPr + " grip on " + ktn(target) + "'s mind, locking " + gC(target).comPr + " on " + gC(target).posPr + " knees."),
+								(ktn(target) + " finds " + gC(target).refPr + " lost in the labyrinth of " + ktn(initiator) + "'s hypnotic clutch.")
+									] );
+		results.description += " " + ktn(target) + " received " + textWillpowerDamage(damage) + ". " + overflowMsg;
+		
+		return results;
+	}	
+	return ca;
+}

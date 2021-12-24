@@ -1,3 +1,20 @@
+/* From stat-classes.js
+window.alteredState = function(title,acr,scope,turns,provokeEffect,cancelEffect,description) {
+	this.title = title;
+	this.type = "none";
+	this.acr = acr;
+	this.scope = scope; // "scene", "days" or "equipment"
+	this.remainingTurns = turns;
+	this.provokeEffect = provokeEffect;
+	this.cancelEffect = cancelEffect;
+	this.description = description;
+	this.remainingDays = -1; // If something other than -1, modify outside of constructor
+	// this.turnEffect = function(character) -> Property added outside of constructor
+	
+	this.flagRemove = false;
+}
+*/
+
 ////////// ALTERED STATE CONSTRUCTORS //////////
 // These are invoked by scene actions, events or others, and applied to a characterSet
 // Max intensity = 10
@@ -200,6 +217,93 @@ window.createASflaunting = function(intensity) {
 	return as;
 }
 
+window.createASflaringFeint = function(intensity) {
+	// Increased agility, will, control recovery, fire strength
+	var sgs = 5 + intensity * 1.5; // 5 ~ 20
+	var sgm = 0.2 + intensity * 0.02; // 0.2 ~ 0.4
+	var icr = 0.1 + intensity * 0.01; // 0.1 ~ 0.2
+	var ipa = 15 + intensity * 1.5; // 15 ~ 30
+	var turns = 3 + limitedRandomInt(1); // 3 ~ 4
+	var provokeEffect = function(charKey) {
+		gC(charKey).agility.sumModifier += sgs;
+		gC(charKey).agility.multModifier += sgm;
+		gC(charKey).will.sumModifier += sgs;
+		gC(charKey).will.multModifier += sgm;
+		gC(charKey).controlRecovery += icr;
+		gC(charKey).combatAffinities.fire.strength += ipa;
+		gC(charKey).combatAffinities.fire.resistance += ipa;
+	}
+	var cancelEffect = function(charKey) {
+		gC(charKey).agility.sumModifier -= sgs;
+		gC(charKey).agility.multModifier -= sgm;
+		gC(charKey).will.sumModifier -= sgs;
+		gC(charKey).will.multModifier -= sgm;
+		gC(charKey).controlRecovery -= icr;
+		gC(charKey).combatAffinities.fire.strength -= ipa;
+		gC(charKey).combatAffinities.fire.resistance -= ipa;
+	}
+	var description = "The inner fire of this character is empowered.\n"
+					+ "Increased agility, will, control recovery and fire affinity.";
+	var as = new alteredState("Flaring feint","FlFn","scene",turns,provokeEffect,cancelEffect,description);
+	as.type = "buff";
+	return as;
+}
+
+window.createASearthWall = function(intensity) {
+	// Increased resilience and will, decreased perception, pounce, physical, magic, social resistances
+	var sgs = 5 + intensity * 1.5; // 5 ~ 20
+	var sgm = 0.2 + intensity * 0.4; // 0.2 ~ 0.6
+	var iPr = 100 + intensity * 10; // 100 ~ 200
+	var ipr = 70 + intensity * 7; // 70 ~ 140
+	var imr = 20 + intensity * 2; // 20 ~ 40
+	var provokeEffect = function(charKey) {
+		gC(charKey).resilience.sumModifier += sgs;
+		gC(charKey).resilience.multModifier += sgm;
+		gC(charKey).will.sumModifier += sgs;
+		gC(charKey).will.multModifier += sgm;
+		gC(charKey).perception.sumModifier -= sgs;
+		gC(charKey).perception.multModifier -= sgm;
+		gC(charKey).combatAffinities.pounce.resistance += iPr;
+		gC(charKey).combatAffinities.physical.resistance += ipr;
+		gC(charKey).combatAffinities.magic.resistance += imr;
+		gC(charKey).combatAffinities.social.resistance += imr;
+	}
+	var cancelEffect = function(charKey) {
+		gC(charKey).resilience.sumModifier -= sgs;
+		gC(charKey).resilience.multModifier -= sgm;
+		gC(charKey).will.sumModifier -= sgs;
+		gC(charKey).will.multModifier -= sgm;
+		gC(charKey).perception.sumModifier += sgs;
+		gC(charKey).perception.multModifier += sgm;
+		gC(charKey).combatAffinities.pounce.resistance -= iPr;
+		gC(charKey).combatAffinities.physical.resistance -= ipr;
+		gC(charKey).combatAffinities.magic.resistance -= imr;
+		gC(charKey).combatAffinities.social.resistance -= imr;
+	}
+	var description = "This character is protected by earth walls.\n"
+					+ "Increased resilience, will, decreased perception.\nGreatly increased pounce and physical resistances, slightly increased magical and social resistances.";
+	var as = new alteredState("Earth Wall","EaWa","scene",1,provokeEffect,cancelEffect,description);
+	as.type = "buff";
+	return as;
+}
+
+window.createAStaintedControlRecovery = function(intensity) {
+	// Control recovery reduction, agility loss (sum, mult) // Turns
+	var crc = 0.1 + intensity * 0.01; // 0.1 ~ 0.2
+	var turns = 4 + limitedRandomInt(2); // 4 ~ 6
+	var provokeEffect = function(charKey) {
+		gC(charKey).controlRecovery -= crc;
+	}
+	var cancelEffect = function(charKey) {
+		gC(charKey).controlRecovery += crc;
+	}
+	var description = "Damage in the limbs of this character has provoked a reduction in control recovery.\n"
+					+ "Loss of agility, weakened control recovery, energy becomes tainted.";
+	var as = new alteredState("Tainted control recovery","TCRc","scene",turns,provokeEffect,cancelEffect,description);
+	as.type = "debuff";
+	return as;
+}
+
 // Hypnosis
 
 window.createAShypnosisStroke = function(intensity) {
@@ -262,6 +366,81 @@ window.createASaetherialChainsArms = function(intensity) {
 	return as;
 }
 
+window.createASaetChainedArms = function(intensity,days) {
+	// Agility, physique loss // Days
+	var sls = 2 + intensity * 0.4; // 2 - 6
+	var slm = 0.08 + 0.008 * intensity; // 0.08 ~ 0.16
+	var provokeEffect = function(cK) {
+		gC(cK).agility.sumModifier -= this.sls;
+		gC(cK).agility.multModifier -= this.slm;
+		gC(cK).physique.sumModifier -= this.sls;
+		gC(cK).physique.multModifier -= this.slm;
+		gC(cK).body.arms.state = "locked";
+	}
+	var cancelEffect = function(cK) {
+		gC(cK).agility.sumModifier += this.sls;
+		gC(cK).agility.multModifier += this.slm;
+		gC(cK).physique.sumModifier += this.sls;
+		gC(cK).physique.multModifier += this.slm;
+		gC(cK).body.arms.state = "free";
+	}
+	var description = "Aetherial chains crafted with extreme care block the movement of their arms.\n"
+					+ "Arms locked, loss of physique and agility.";
+	var as = new alteredState("Long-term chained arms","LCAr","days",days,provokeEffect,cancelEffect,description);
+	as.type = "debuff";
+	as.sls = sls;
+	as.slm = slm;
+	return as;
+}
+window.createASaetChainedLegs = function(intensity,days) {
+	// Agility, resilience loss // Days
+	var sls = 2 + intensity * 0.4; // 2 - 6
+	var slm = 0.08 + 0.008 * intensity; // 0.08 ~ 0.16
+	var provokeEffect = function(cK) {
+		gC(cK).agility.sumModifier -= this.sls;
+		gC(cK).agility.multModifier -= this.slm;
+		gC(cK).resilience.sumModifier -= this.sls;
+		gC(cK).resilience.multModifier -= this.slm;
+		gC(cK).body.legs.state = "locked";
+	}
+	var cancelEffect = function(cK) {
+		gC(cK).agility.sumModifier += this.sls;
+		gC(cK).agility.multModifier += this.slm;
+		gC(cK).resilience.sumModifier += this.sls;
+		gC(cK).resilience.multModifier += this.slm;
+		gC(cK).body.legs.state = "free";
+	}
+	var description = "Aetherial chains crafted with extreme care block the movement of their legs.\n"
+					+ "Arms locked, loss of resilience and agility.";
+	var as = new alteredState("Long-term chained legs","LCLe","days",days,provokeEffect,cancelEffect,description);
+	as.type = "debuff";
+	as.sls = sls;
+	as.slm = slm;
+	return as;
+}
+window.createASaetChainedMouth = function(intensity,days) {
+	// Charisma loss // Days
+	var sls = 4 + intensity * 0.8; // 4 - 12
+	var slm = 0.12 + 0.024 * intensity; // 0.12 ~ 0.24
+	var provokeEffect = function(cK) {
+		gC(cK).charisma.sumModifier -= this.sls;
+		gC(cK).charisma.multModifier -= this.slm;
+		gC(cK).body.mouth.state = "locked";
+	}
+	var cancelEffect = function(cK) {
+		gC(cK).charisma.sumModifier += this.sls;
+		gC(cK).charisma.multModifier += this.slm;
+		gC(cK).body.mouth.state = "free";
+	}
+	var description = "An aetherial gag crafted with extreme care blocks the mouth of this character.\n"
+					+ "Arms locked, loss of charisma.";
+	var as = new alteredState("Long-term gagged mouth","LGMo","days",days,provokeEffect,cancelEffect,description);
+	as.type = "debuff";
+	as.sls = sls;
+	as.slm = slm;
+	return as;	
+}
+
 	// Vines
 
 window.createASvinesLockArms = function(intensity) {
@@ -289,6 +468,80 @@ window.createASvinesLockArms = function(intensity) {
 	return as;
 }
 
+window.createASvinChainedArms = function(intensity,days) {
+	// Agility, physique loss // Days
+	var sls = 2 + intensity * 0.4; // 2 - 6
+	var slm = 0.08 + 0.008 * intensity; // 0.08 ~ 0.16
+	var provokeEffect = function(cK) {
+		gC(cK).agility.sumModifier -= this.sls;
+		gC(cK).agility.multModifier -= this.slm;
+		gC(cK).physique.sumModifier -= this.sls;
+		gC(cK).physique.multModifier -= this.slm;
+		gC(cK).body.arms.state = "locked";
+	}
+	var cancelEffect = function(cK) {
+		gC(cK).agility.sumModifier += this.sls;
+		gC(cK).agility.multModifier += this.slm;
+		gC(cK).physique.sumModifier += this.sls;
+		gC(cK).physique.multModifier += this.slm;
+		gC(cK).body.arms.state = "free";
+	}
+	var description = "Extremely resilient vines block the movement of their arms.\n"
+					+ "Arms locked, loss of physique and agility.";
+	var as = new alteredState("Long-term vined arms","LVAr","days",days,provokeEffect,cancelEffect,description);
+	as.type = "debuff";
+	as.sls = sls;
+	as.slm = slm;
+	return as;
+}
+window.createASvinChainedLegs = function(intensity,days) {
+	// Agility, resilience loss // Days
+	var sls = 2 + intensity * 0.4; // 2 - 6
+	var slm = 0.08 + 0.008 * intensity; // 0.08 ~ 0.16
+	var provokeEffect = function(cK) {
+		gC(cK).agility.sumModifier -= this.sls;
+		gC(cK).agility.multModifier -= this.slm;
+		gC(cK).resilience.sumModifier -= this.sls;
+		gC(cK).resilience.multModifier -= this.slm;
+		gC(cK).body.legs.state = "locked";
+	}
+	var cancelEffect = function(cK) {
+		gC(cK).agility.sumModifier += this.sls;
+		gC(cK).agility.multModifier += this.slm;
+		gC(cK).resilience.sumModifier += this.sls;
+		gC(cK).resilience.multModifier += this.slm;
+		gC(cK).body.legs.state = "free";
+	}
+	var description = "Extremely resilient vines block the movement of their legs.\n"
+					+ "Arms locked, loss of resilience and agility.";
+	var as = new alteredState("Long-term vined legs","LVAr","days",days,provokeEffect,cancelEffect,description);
+	as.type = "debuff";
+	as.sls = sls;
+	as.slm = slm;
+	return as;
+}
+window.createASvinChainedMouth = function(intensity,days) {
+	// Charisma loss // Days
+	var sls = 4 + intensity * 0.8; // 4 - 12
+	var slm = 0.12 + 0.024 * intensity; // 0.12 ~ 0.24
+	var provokeEffect = function(cK) {
+		gC(cK).charisma.sumModifier -= this.sls;
+		gC(cK).charisma.multModifier -= this.slm;
+		gC(cK).body.mouth.state = "locked";
+	}
+	var cancelEffect = function(cK) {
+		gC(cK).charisma.sumModifier += this.sls;
+		gC(cK).charisma.multModifier += this.slm;
+		gC(cK).body.mouth.state = "free";
+	}
+	var description = "Extremely resilient vines block the mouth of this character.\n"
+					+ "Mouth locked, loss of charisma.";
+	var as = new alteredState("Long-term vine-gagged mouth","LVMo","days",days,provokeEffect,cancelEffect,description);
+	as.type = "debuff";
+	as.sls = sls;
+	as.slm = slm;
+	return as;	
+}
 
 // Pain
 
@@ -591,3 +844,107 @@ window.createInjury = function() {
 	as.type = "other";
 	return as;
 }
+
+window.createHypnosisResistanceBoon = function() {
+	var provokeEffect = function(charKey) {
+		gC(charKey).will.sumModifier += 5;
+		gC(charKey).combatAffinities.hypnosis.resistance += 50;
+	}
+	var cancelEffect = function(charKey) {
+		gC(charKey).will.sumModifier -= 5;
+		gC(charKey).will.value -= 2;
+		gC(charKey).combatAffinities.hypnosis.resistance -= 50;
+		gC(charKey).combatAffinities.hypnosis.weakness += 20;
+	}
+	var description = "This character has been booned with higher willpower, raising their will and their resistance to hypnosis attacks. A reverse effect may take place when it ends.";
+	var as = new alteredState("Hypnosis Resistance","HyRe","days",5,provokeEffect,cancelEffect,description);
+	as.type = "other";
+	return as;
+}
+
+// Maps
+window.createHeatedBath = function(intensity) {
+	// Percentual stats gain (phy, agi, res) and affinities, lasts for one day
+	var psg = 0.3;
+	var afg = 0.2;
+	var provokeEffect = function(charKey) {
+		gC(charKey).physique.multModifier += 0.3;
+		gC(charKey).resilience.multModifier += 0.3;
+		gC(charKey).agility.multModifier += 0.3;
+		gC(charKey).physique.affinity += 0.2;
+		gC(charKey).resilience.affinity += 0.2;
+		gC(charKey).agility.affinity += 0.2;
+	}
+	var cancelEffect = function(charKey) {
+		gC(charKey).physique.multModifier -= 0.3;
+		gC(charKey).resilience.multModifier -= 0.3;
+		gC(charKey).agility.multModifier -= 0.3;
+		gC(charKey).physique.affinity -= 0.2;
+		gC(charKey).resilience.affinity -= 0.2;
+		gC(charKey).agility.affinity -= 0.2;
+	}
+	var description = "This character has taken a hot bath, relieving the pressure in their muscles.\n"
+					+ "Increased multiplier and affinities for physique, agility and resilience.";
+	var as = new alteredState("Heated bath","HeBa","days",1,provokeEffect,cancelEffect,description);
+	as.remainingDays = 1;
+	as.type = "dayBuff";
+	return as;
+}
+
+window.createFrozenBath = function(intensity) {
+	// Percentual stats gain (int, wll, per) and affinities, lasts for one day
+	var psg = 0.3;
+	var afg = 0.2;
+	var provokeEffect = function(charKey) {
+		gC(charKey).intelligence.multModifier += 0.3;
+		gC(charKey).will.multModifier += 0.3;
+		gC(charKey).perception.multModifier += 0.3;
+		gC(charKey).intelligence.affinity += 0.2;
+		gC(charKey).will.affinity += 0.2;
+		gC(charKey).perception.affinity += 0.2;
+	}
+	var cancelEffect = function(charKey) {
+		gC(charKey).intelligence.multModifier -= 0.3;
+		gC(charKey).will.multModifier -= 0.3;
+		gC(charKey).perception.multModifier -= 0.3;
+		gC(charKey).intelligence.affinity -= 0.2;
+		gC(charKey).will.affinity -= 0.2;
+		gC(charKey).perception.affinity -= 0.2;
+	}
+	var description = "This character has taken a frozen bath, forcing their mind to stay alert.\n"
+					+ "Increased multiplier and affinities for intelligence, perception and will.";
+	var as = new alteredState("Frozen bath","FrBa","days",1,provokeEffect,cancelEffect,description);
+	as.remainingDays = 1;
+	as.type = "dayBuff";
+	return as;
+}
+
+window.createPublicBath = function(intensity) {
+	// Percentual stats gain (cha, emp, lck) and affinities, lasts for one day
+	var psg = 0.3;
+	var afg = 0.2;
+	var provokeEffect = function(charKey) {
+		gC(charKey).charisma.multModifier += 0.3;
+		gC(charKey).empathy.multModifier += 0.3;
+		gC(charKey).luck.multModifier += 0.3;
+		gC(charKey).charisma.affinity += 0.2;
+		gC(charKey).empathy.affinity += 0.2;
+		gC(charKey).luck.affinity += 0.2;
+	}
+	var cancelEffect = function(charKey) {
+		gC(charKey).charisma.multModifier -= 0.3;
+		gC(charKey).empathy.multModifier -= 0.3;
+		gC(charKey).luck.multModifier -= 0.3;
+		gC(charKey).charisma.affinity -= 0.2;
+		gC(charKey).empathy.affinity -= 0.2;
+		gC(charKey).luck.affinity -= 0.2;
+	}
+	var description = "This character has taken a bath in public, letting go of their shame.\n"
+					+ "Increased multiplier and affinities for charisma, empathy and luck.";
+	var as = new alteredState("Public bath","PuBa","days",1,provokeEffect,cancelEffect,description);
+	as.remainingDays = 1;
+	as.type = "dayBuff";
+	return as;
+}
+
+

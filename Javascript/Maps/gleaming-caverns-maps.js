@@ -1,5 +1,13 @@
 ////////// GLEAMING CAVERNS MAPS ////////// 
 
+	// Actions
+
+window.mayGetAction = function(condition,failedMessage,action) {
+	
+}
+window.mayGetBinaryAction = function(condition,extraMessage) {
+}
+
 	// Swamp //
 
 setup.mapGleamingCaverns = [];
@@ -69,7 +77,7 @@ setup.mapGleamingCaverns.marshLP1 = new RoomInfo(
 	"Swamp ~ Western Path 1", // Title
 	"GleCav/marsh-forest-r.png", // Med Icon
 	"GleCav/marsh-forest-r-sm.png", // Icon
-	"A section of the road finds its limit next to a bridge. The smell of wet grass floods your nose.", // Description
+	"A section of the road finds its limit next to a bridge. The smell of wet flora floods your nose.", // Description
 	[ new RoomConnection('marshLbridge',2),
 	  new RoomConnection('marshLP2',2),
 	  new RoomConnection('marshLPlake',5),
@@ -139,7 +147,7 @@ setup.mapGleamingCaverns.marshLriver2 = new RoomInfo(
 	"Swamp ~ Western River 2", // Title
 	"GleCav/marsh-river.png", // Med Icon
 	"GleCav/marsh-river-r-sm.png", // Icon
-	"Few reeds and bushes compete for the the scarce fertile soils that surround the river.", // Description
+	"Close to the confines of the swamp, a surge of vegetation hinders movement along the shore of the river.", // Description
 	[ new RoomConnection('marshLPlake',5) ,
 	  new RoomConnection('marshLP1',4) ,
 	  new RoomConnection('marshNP4',4) ,
@@ -275,7 +283,8 @@ setup.mapGleamingCaverns.marshNP2 = new RoomInfo(
 	"To your north, an ample lake opens its arms, welcoming you.", // Description
 	[ new RoomConnection('marshNP1',2) , 
 	  new RoomConnection('marshNP3',2) ,
-	  new RoomConnection('marshNElake',5) ], // Connections
+	  new RoomConnection('marshNElake',5) ,
+	  new RoomConnection('hiddenCamp',3) ], // Connections
 	null, // getActions
 	[163,51]
 );
@@ -373,9 +382,10 @@ setup.mapGleamingCaverns.marshCentrance = new RoomInfo(
 	"GleCav/cavern-entrance-rev.png", // Med Icon
 	"GleCav/cavern-entrance-rev-sm.png", // Icon
 	"An eerie, yet appealing cyan light comes out of the cavern.", // Description
-	[ new RoomConnection('marshSP1',2) ], // Connections
+	[ new RoomConnection('marshSP1',2),
+		new RoomConnection('cavernMP3',2) ], // Connections 
 	null, // getActions
-	[256,174]
+	[34,11] // 34,11 , [228,170] , [256,174]
 );
 
 // marshNP1, marshEUriver, marshELriver, marshNEbridge, marshNEriver, marshEUlake, marshMpath, marshMentrance
@@ -481,18 +491,1038 @@ setup.mapGleamingCaverns.marshMentrance = new RoomInfo(
 	[257,59]
 );
 
+setup.mapGleamingCaverns.hiddenCamp = new RoomInfo(
+	"hiddenCamp", // Key
+	"Swamp ~ Hidden Camp", // Title
+	"GleCav/mountain-path-forested.png", // Med Icon
+	"GleCav/mountain-path-forested-sm.png", // Icon
+	"Hidden behind a small grove, a trail leads to the top of the hills in the middle of the swamp.", // Description
+	[ new RoomConnection('marshNP2',3) ], // Connections
+	function(characters) {
+		var actions = [ createRestingActionStandard() ];
+		return actions;
+	}, // getActions
+	[160,84]
+);
+
+	// Caverns //
+
+setup.mapGleamingCaverns.cavernMP3 = new RoomInfo(
+	"cavernMP3", // Key
+	"Caverns ~ Main Path 3", // Title
+	"GleCav/caverns-pavemented-path.png", // Med Icon
+	"GleCav/caverns-pavemented-path-sm.png", // Icon
+	"Tiles crafted with clay garnish the walls, guiding the unwary traveller through the safe tunnels of the caverns.", // Description
+	[ new RoomConnection('cavernMP2',2) ,
+		  new RoomConnection('marshCentrance',2),
+		  new RoomConnection('hiddenHut',2) ], // Connections
+	null, // getActions
+	[59,29]
+);
+setup.mapGleamingCaverns.hiddenHut = new RoomInfo(
+	"hiddenHut", // Key
+	"Caverns ~ Morph Artist Hut", // Title
+	"GleCav/town-lonely-house.png", // Med Icon
+	"GleCav/town-lonely-house-sm.png", // Icon
+	"After passing through an inconspicuous passage, you find a secluded hut.", // Description
+	[ new RoomConnection('cavernMP3',2) ], // Connections
+	null, // getActions
+	[66,4]
+);
+setup.mapGleamingCaverns.cavernMP2 = new RoomInfo(
+	"cavernMP2", // Key
+	"Caverns ~ Main Path 2", // Title
+	"GleCav/caverns-pavemented-path.png", // Med Icon
+	"GleCav/caverns-pavemented-path-sm.png", // Icon
+	"A painting on the wall resembles a person surrounded by rocks and water, unable to find their way out. This is a warning for the over-confident explorers, telling them to stay away of the unmarked path.", // Description
+	[ new RoomConnection('cavernMP1',2) ,
+		  new RoomConnection('cavernMP3',2),
+		  new RoomConnection('labyrinthEntrance',2) ], // Connections
+	null, // getActions
+	[69,54]
+);
+setup.mapGleamingCaverns.labyrinthEntrance = new RoomInfo(
+	"labyrinthEntrance", // Key
+	"Caverns ~ Deeper Tunnels Entrance", // Title
+	"GleCav/cavern-wild-path-r.png", // Med Icon
+	"GleCav/cavern-wild-path-r-sm.png", // Icon
+	"The guidance of the ceramic art ends here, only gleaming crystals illuminating the way ahead. Beyond this point, the walls and waters of the Caverns may leave you trapped at their own whims.", // Description
+	[ new RoomConnection('cavernMP2',2) ], // Connections
+	function(characters) {
+		var actions = [ createActionMovingWildTunnel("wildTunnel1","Section 1",0,2),
+						createActionMovingWildTunnel("wildTunnel2","Section 2",0,2) ];
+		return actions;
+	}, // getActions
+	[93,48]
+);
+setup.mapGleamingCaverns.cavernMP1 = new RoomInfo(
+	"cavernMP1", // Key
+	"Caverns ~ Main Path 1", // Title
+	"GleCav/caverns-pavemented-path.png", // Med Icon
+	"GleCav/caverns-pavemented-path-sm.png", // Icon
+	"The way forks here in three directions. You can reach the Shapeshifter tribe and the Lake of Union from here.", // Description
+	[ new RoomConnection('cavernMP2',2) ,
+		  new RoomConnection('unionLakeEast',2),
+		  new RoomConnection('mainStreet1',2) ], // Connections
+	null, // getActions
+	[72,79]
+);
+setup.mapGleamingCaverns.unionLakeEast = new RoomInfo(
+	"unionLakeEast", // Key
+	"Caverns ~ Union Lake Entrance", // Title
+	"GleCav/caverns-semi-flooded-path-r.png", // Med Icon
+	"GleCav/caverns-semi-flooded-path-r-sm.png", // Icon
+	"A tranquil, bottomless lake rests in front of you. The smallest of waves echo through the giant chamber.", // Description
+	[ new RoomConnection('cavernMP1',2) ,
+		  new RoomConnection('unionLakeWest',2),
+		  new RoomConnection('unionLakeUpper',4) ], // Connections
+	function(characters) {
+		var actions = [ createRestingActionStandard() ];
+		return actions;
+	}, // getActions
+	[45,82]
+);
+setup.mapGleamingCaverns.unionLakeWest = new RoomInfo(
+	"unionLakeWest", // Key
+	"Caverns ~ Union Lake Interior", // Title
+	"GleCav/caverns-semi-flooded-path.png", // Med Icon
+	"GleCav/caverns-semi-flooded-path-sm.png", // Icon
+	"A few earth mounds make the terrain fairly irregular here, both on ground and water. It is easy to find an intimate spot.", // Description
+	[ new RoomConnection('unionLakeEast',2) ], // Connections
+	function(characters) {
+		var actions = [ createRestingActionStandard() ];
+		return actions;
+	}, // getActions
+	[21,87]
+);
+setup.mapGleamingCaverns.unionLakeUpper = new RoomInfo(
+	"unionLakeUpper", // Key
+	"Caverns ~ Union Lake Upper Platform", // Title
+	"GleCav/cavern-wild-path-r.png", // Med Icon
+	"GleCav/cavern-wild-path-r-sm.png", // Icon
+	"After climbing a somewhat laborious path, you find yourself atop a high platform, giving you a great view of the lake.", // Description
+	[ new RoomConnection('unionLakeEast',4) ], // Connections
+	function(characters) {
+		var actions = [ createRestingActionStandard(),
+						createCheapWaitingActionCaverns() ];
+						// TO DO: Does voyeur action lead to correct passage? Does voyeur scene lead to correct interlude?
+						// TO DO: Post-effects
+						// TO DO, later: Map-story event with Claw
+		// Check: is there scene, either create message or map action
+		// Voyeur action
+		
+		
+			// Dice
+		var baseChance = gCstat(characters[0],"perception") * 2 + gCstat(characters[0],"luck");
+		var dice200 = limitedRandomInt(200);
+		var difficulty = 100;
+			// Settings
+		if ( State.variables.mapGleamingCaverns.voyeurRerollCounter == undefined || State.variables.mapGleamingCaverns.voyeurRerollCounter != State.variables.daycycle.minutes ) {
+			State.variables.mapGleamingCaverns.voyeurRerollCounter = State.variables.daycycle.minutes;
+			State.variables.mapGleamingCaverns.femCharA = true;
+			State.variables.mapGleamingCaverns.femCharB = true;
+			State.variables.mapGleamingCaverns.egaScene = true;
+			if ( gSettings().lewdMales == "enable" ) {
+				if ( limitedRandomInt(100) < 30 ) {
+					State.variables.mapGleamingCaverns.femCharA = false;
+				}
+				if ( limitedRandomInt(100) < 30 ) {
+					State.variables.mapGleamingCaverns.femCharB = false;
+				}
+			}
+			if ( ( limitedRandomInt(100) < 35 ) ) {
+				State.variables.mapGleamingCaverns.egaScene = false;
+			}
+		}
+		var voyeurAction = createGleamingCavernsVoyeurAction(State.variables.mapGleamingCaverns.femCharA,State.variables.mapGleamingCaverns.femCharB,State.variables.mapGleamingCaverns.egaScene,characters);
+		if ( (baseChance + dice200) >= difficulty ) {
+			if ( characters[0] == "chPlayerCharacter" ) {
+				var sceneDesc = "";
+				if ( State.variables.mapGleamingCaverns.femCharA && State.variables.mapGleamingCaverns.femCharB && State.variables.mapGleamingCaverns.egaScene ) {
+					sceneDesc = "Two women, caressing each other.";
+				} else if ( State.variables.mapGleamingCaverns.egaScene && ( State.variables.mapGleamingCaverns.femCharA || State.variables.mapGleamingCaverns.femCharB ) ) {
+					sceneDesc = "A man and a woman, meeting each other.";
+				} else if ( State.variables.mapGleamingCaverns.femCharA && State.variables.mapGleamingCaverns.femCharB ) {
+					sceneDesc = "Two women, one mounting the other.";
+				} else if ( State.variables.mapGleamingCaverns.egaScene && State.variables.mapGleamingCaverns.femCharA == false && State.variables.mapGleamingCaverns.femCharB == false ) {
+					sceneDesc = "Two men, seeking each other's touch.";
+				} else if ( State.variables.mapGleamingCaverns.femCharA == false && State.variables.mapGleamingCaverns.femCharB == false ) {
+					sceneDesc = "Two men, one above the other.";
+				} else if ( State.variables.mapGleamingCaverns.egaScene == false && State.variables.mapGleamingCaverns.femCharA ) {
+					sceneDesc = "A woman, mounting a man.";
+				} else {
+					sceneDesc = "A man, mounting a woman.";
+				}
+				State.variables.compass.setMapActionsMessage("You spot a couple of shapes down below... " + sceneDesc + " " + colorText("Check PASSED","green") + ": Stats (" + baseChance + ")" + hoverText("^^(?)^^","Agility * 2 + + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
+			}
+		} else {
+			voyeurAction.requirements = function(cG) { return false; }
+			if ( characters[0] == "chPlayerCharacter" ) {
+				State.variables.compass.setMapActionsMessage("The caverns look lonely... " + colorText("Check FAILED","red") + ": Stats (" + baseChance + ")" + hoverText("^^(?)^^","Agility * 2 + + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
+			}
+		}
+		actions.push(voyeurAction);
+		
+		
+		return actions;
+	}, // getActions
+	[37,58]
+);
+
+	// Tribe
+setup.mapGleamingCaverns.mainStreet1 = new RoomInfo(
+	"mainStreet1", // Key
+	"Shapeshifters ~ Western Main Street", // Title
+	"GleCav/town-common-street-ext.png", // Med Icon
+	"GleCav/town-common-street-ext-sm.png", // Icon
+	"The Shapeshifter tribe appears before your eyes. You see clay huts in all directions, divided by a large main street that continues until the end of the village.", // Description
+	[ new RoomConnection('mainStreet2',2),
+		new RoomConnection('cavernMP1',2),
+		new RoomConnection('workshop',2),
+		new RoomConnection('frozenBaths',2) ], // Connections
+	null, // getActions
+	[95,126]
+);
+setup.mapGleamingCaverns.workshop = new RoomInfo(
+	"workshop", // Key
+	"Shapeshifters ~ Workshops", // Title
+	"GleCav/town-workshop.png", // Med Icon
+	"GleCav/town-workshop-sm.png", // Icon
+	"There are several workshops in this area, well equipped with tools and furnaces to craft ceramics, glass and ornaments.", // Description
+	[ new RoomConnection('mainStreet1',2),
+		new RoomConnection('houses',1),
+		new RoomConnection('mainStreet2',2) ], // Connections
+	function(characters) {
+		var actions = [ createWorkshopCraftingAction(),
+						createWorkshopPaintingAction() ];
+		return actions;
+	}, // getActions
+	[115,96]
+);
+setup.mapGleamingCaverns.houses = new RoomInfo(
+	"houses", // Key
+	"Shapeshifters ~ Houses", // Title
+	"GleCav/town-lonely-house.png", // Med Icon
+	"GleCav/town-lonely-house-sm.png", // Icon
+	"A few lone houses have been erected in this corner of the village.", // Description
+	[ new RoomConnection('workshop',1),
+		new RoomConnection('thermalBaths',1),
+		new RoomConnection('mainStreet2',2) ], // Connections
+	null, // getActions
+	[145,91]
+);
+setup.mapGleamingCaverns.thermalBaths = new RoomInfo(
+	"thermalBaths", // Key
+	"Shapeshifters ~ Thermal Baths", // Title
+	"GleCav/town-bath.png", // Med Icon
+	"GleCav/town-bath-sm.png", // Icon
+	"Underground heat reaches the water of this bath, making it great to discharge the pressure of tense muscles.", // Description
+	[ new RoomConnection('houses',1),
+		new RoomConnection('mainStreet2',1),
+		new RoomConnection('mainStreet3',1) ], // Connections
+	function(characters) {
+		var actions = [ createHeatedBathAction(),
+						createRestingActionStandard() ];
+		return actions;
+	}, // getActions
+	[181,91]
+);
+
+setup.mapGleamingCaverns.mainStreet2 = new RoomInfo(
+	"mainStreet2", // Key
+	"Shapeshifters ~ Central Main Street", // Title
+	"GleCav/town-main-street.png", // Med Icon
+	"GleCav/town-main-street-sm.png", // Icon
+	"Beautiful tiles embellish the floor, their paintings illustrating various stories. One of them shows a giant Goddess embracing the Leirien, the Aiishen, and the Shapeshifters. A different one shows dozens of Shapeshifters entering the Caverns.", // Description
+	[ new RoomConnection('mainStreet1',2),
+		new RoomConnection('workshop',2),
+		new RoomConnection('houses',2),
+		new RoomConnection('thermalBaths',2),
+		new RoomConnection('mainStreet3',2),
+		new RoomConnection('frozenBaths',2),
+		new RoomConnection('publicBaths',2),
+		new RoomConnection('templeShrine',2) ], // Connections
+	null, // getActions
+	[149,130]
+);
+setup.mapGleamingCaverns.mainStreet3 = new RoomInfo(
+	"mainStreet3", // Key
+	"Shapeshifters ~ Eastern Main Street", // Title
+	"GleCav/town-common-street-ext-r.png", // Med Icon
+	"GleCav/town-common-street-ext-r-sm.png", // Icon
+	"At the end of the main street, you find the entrance to the amphitheater.", // Description
+	[ new RoomConnection('mainStreet2',2),
+		new RoomConnection('thermalBaths',2),
+		new RoomConnection('assembly',2),
+		new RoomConnection('publicBaths',2) ], // Connections
+	null, // getActions
+	[201,132]
+);
+setup.mapGleamingCaverns.assembly = new RoomInfo(
+	"assembly", // Key
+	"Shapeshifters ~ Assembly", // Title
+	"GleCav/town-assembly.png", // Med Icon
+	"GleCav/town-assembly-sm.png", // Icon
+	"Stone mounds with the very rough form of hyperrectangles serve as seats, forming increasingly elevated semi-circles around a large, circular platform.", // Description
+	[ new RoomConnection('mainStreet3',2),
+		new RoomConnection('dressingRoom',1) ], // Connections
+	function(characters) {
+		var actions = [ createTheaterImprovisationAction() ];
+		return actions;
+	}, // getActions
+	[242,136]
+);
+setup.mapGleamingCaverns.dressingRoom = new RoomInfo(
+	"dressingRoom", // Key
+	"Shapeshifters ~ Assembly's Dressing Room", // Title
+	"GleCav/town-room-interior.png", // Med Icon
+	"GleCav/town-room-interior-sm.png", // Icon
+	"Plenty of dresses, attires and ornaments are to be found here, to be used by performers on a daily basis.", // Description
+	[ new RoomConnection('assembly',1) ], // Connections
+	null, // getActions
+	[257,105]
+);
+
+setup.mapGleamingCaverns.frozenBaths = new RoomInfo(
+	"frozenBaths", // Key
+	"Shapeshifters ~ Frozen Baths", // Title
+	"GleCav/town-bath.png", // Med Icon
+	"GleCav/town-bath-sm.png", // Icon
+	"The water here seeps to the last nook of your bones. If you're resilient enough to survive it, you will have proven the strength of your willpower.", // Description
+	[ new RoomConnection('mainStreet1',2),
+		new RoomConnection('mainStreet2',2),
+		new RoomConnection('templeStorage',2),
+		new RoomConnection('templeShrine',2) ], // Connections
+	function(characters) {
+		var actions = [ createFrozenBathAction(),
+						createRestingActionStandard() ];
+		return actions;
+	}, // getActions
+	[101,155]
+);
+setup.mapGleamingCaverns.publicBaths = new RoomInfo(
+	"publicBaths", // Key
+	"Shapeshifters ~ Public Baths", // Title
+	"GleCav/town-bath.png", // Med Icon
+	"GleCav/town-bath-sm.png", // Icon
+	"Enclosed by no walls or curtains, this bath is open to everyone's eyesight, and so are the bodies of those who enter it.", // Description
+	[ new RoomConnection('mainStreet2',2),
+		new RoomConnection('mainStreet3',2),
+		new RoomConnection('templeShrine',2) ], // Connections
+	function(characters) {
+		var actions = [ createPublicBathAction(),
+						createRestingActionStandard() ];
+		return actions;
+	}, // getActions
+	[189,164]
+);
+setup.mapGleamingCaverns.templeStorage = new RoomInfo(
+	"templeStorage", // Key
+	"Shapeshifters ~ Temple Storage", // Title
+	"GleCav/town-room-interior.png", // Med Icon
+	"GleCav/town-room-interior-sm.png", // Icon
+	"Among rooms dedicated to store salfis flowers and other supplies used by the Temple, some rooms have been prepared to accommodate the Candidates.", // Description
+	[ new RoomConnection('frozenBaths',2),
+		new RoomConnection('templeShrine',2) ], // Connections
+	function(characters) {
+		var actions = [ createRestingActionStandard() ];
+		return actions;
+	}, // getActions
+	[107,199]
+);
+setup.mapGleamingCaverns.templeShrine = new RoomInfo(
+	"templeShrine", // Key
+	"Shapeshifters ~ Temple of Harmony", // Title
+	"GleCav/town-harmony-temple.png", // Med Icon
+	"GleCav/town-harmony-temple-sm.png", // Icon
+	"A large dome houses a marble statue of the Goddess, surrounded by carved figures of the praying faithful.", // Description
+	[ new RoomConnection('mainStreet2',2),
+		new RoomConnection('frozenBaths',2),
+		new RoomConnection('publicBaths',2),
+		new RoomConnection('templeStorage',2)
+//		,new RoomConnection('templeSanctum',1)
+		], // Connections
+	null, // getActions
+	[147,196]
+);
+
+setup.mapGleamingCaverns.templeShrine.displayConnections = function() {
+	var string = "";
+	for ( var connection of this.connections ) {
+		string += getLinkToRoom(connection.loc,"Go to " + getCurrentMap().rooms[connection.loc].title,connection.distance)
+			    + " (" + colorText(connection.distance,"khaki") + ") ";
+				if ( State.variables.chPlayerCharacter.hasFreeBodypart("eyes") ) {
+					string += displayCharIconsInRoom(connection.loc);
+				}
+		string += "\n";
+	}
+		// Temple Sanctum
+	if ( isStVarOn("alwSct") ) {
+		string += getLinkToRoom("templeSanctum","Go to " + getCurrentMap().rooms["templeSanctum"].title,2)
+			    + " (" + colorText(2,"khaki") + ") " + displayCharIconsInRoom("templeSanctum") + "\n";
+	} else {
+		string += colorText("Nersmias blocks the entrance to the Temple Sanctum.\n","red");
+	}
+	
+	return string;
+}
+setup.mapGleamingCaverns.templeSanctum = new RoomInfo(
+	"templeSanctum", // Key
+	"Shapeshifters ~ Temple's Sanctum", // Title
+	"GleCav/town-room-interior.png", // Med Icon
+	"GleCav/town-room-interior-sm.png", // Icon
+	"One large corridor separates columns of pews that look towards a small shrine. Behind it, you can find the doors to a few small rooms.", // Description
+	[ new RoomConnection('templeShrine',1) ], // Connections
+	null, // getActions
+	[186,201]
+);
+
+	// Deeper Tunnels
+setup.mapGleamingCaverns.wildTunnel1 = new RoomInfo(
+	"wildTunnel1", // Key
+	"Wild Tunnels ~ Tunnel 1", // Title
+	"GleCav/caverns-wild-path.png", // Med Icon
+	"GleCav/caverns-wild-path-sm.png", // Icon
+	"", // Description
+	[ new RoomConnection('labyrinthEntrance',2) ], // Connections
+	function(characters) {
+		var actions = [ createActionMovingWildTunnel("wildTunnel3","Section 3",0,2),
+						createActionMovingWildTunnel("wildTunnel4","Section 4",0,2) ];
+		return actions;
+	}, // getActions
+	[166,32]
+);
+setup.mapGleamingCaverns.wildTunnel2 = new RoomInfo(
+	"wildTunnel2", // Key
+	"Wild Tunnels ~ Tunnel 2", // Title
+	"GleCav/caverns-wild-path.png", // Med Icon
+	"GleCav/caverns-wild-path-sm.png", // Icon
+	"", // Description
+	[ new RoomConnection('labyrinthEntrance',2) ], // Connections
+	function(characters) {
+		var actions = [ createActionMovingWildTunnel("wildTunnel4","Section 4",0,2),
+						createActionMovingWildTunnel("wildTunnel5","Section 5",0,2)	]; // Provisional ToDo: Remove ,
+// createActionMovingWildTunnel("wildTunnel22","Section 22",5,2)					
+			// Path to Tunnel 6
+			var baseChance = gCstat(characters[0],"perception") + gCstat(characters[0],"agility") + gCstat(characters[0],"resilience") + gCstat(characters[0],"will") + gCstat(characters[0],"luck");
+			var dice200 = limitedRandomInt(200);
+			var difficulty = 100;
+			var act0 = createActionMovingWildTunnel("wildTunnel6","Section 6",0,2);
+			if ( (baseChance + dice200) >= difficulty ) {
+				if ( characters[0] == "chPlayerCharacter" ) {
+					State.variables.compass.setMapActionsMessage("Access to Section 6: " + colorText("Check PASSED","green") + ": Stats (" + baseChance + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") => Difficulty (" + difficulty + ")");
+				}
+			} else {
+				act0.requirements = function(cG) { return false; }
+				if ( characters[0] == "chPlayerCharacter" ) {
+					State.variables.compass.setMapActionsMessage("Access to Section 6: " + colorText("Check FAILED","red") + ": Stats (" + baseChance + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
+				}
+			}
+			actions.push(act0);
+		return actions;
+	}, // getActions
+	[166,32]
+);
+setup.mapGleamingCaverns.wildTunnel3 = new RoomInfo(
+	"wildTunnel3", // Key
+	"Wild Tunnels ~ Tunnel 3", // Title
+	"GleCav/caverns-semi-flooded-path.png", // Med Icon
+	"GleCav/caverns-semi-flooded-path-sm.png", // Icon
+	"", // Description
+	[], // Connections
+	function(characters) {
+		var actions = [ createActionMovingWildTunnel("wildTunnel2","Section 2",0,2) ];
+			// Path to Tunnel 9
+			var baseChance = gCstat(characters[0],"perception") + gCstat(characters[0],"agility") + gCstat(characters[0],"resilience") + gCstat(characters[0],"will") + gCstat(characters[0],"luck");
+			var dice200 = limitedRandomInt(200);
+			var difficulty = 130;
+			var act0 = createActionMovingWildTunnel("wildTunnel9","Section 9",0,2);
+			if ( (baseChance + dice200) >= difficulty ) {
+				if ( characters[0] == "chPlayerCharacter" ) {
+					State.variables.compass.setMapActionsMessage("Access to Section 9: " + colorText("Check PASSED","green") + ": Stats (" + baseChance + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") => Difficulty (" + difficulty + ")");
+				}
+			} else {
+				act0.requirements = function(cG) { return false; }
+				if ( characters[0] == "chPlayerCharacter" ) {
+					State.variables.compass.setMapActionsMessage("Access to Section 9: " + colorText("Check FAILED","red") + ": Stats (" + baseChance + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
+				}
+			}
+			actions.push(act0);
+		return actions;
+	}, // getActions
+	[166,32]
+);
+setup.mapGleamingCaverns.wildTunnel4 = new RoomInfo(
+	"wildTunnel4", // Key
+	"Wild Tunnels ~ Tunnel 4", // Title
+	"GleCav/cavern-wild-path-r.png", // Med Icon
+	"GleCav/cavern-wild-path-r-sm.png", // Icon
+	"", // Description
+	[], // Connections
+	function(characters) {
+		var actions = [ createActionMovingWildTunnel("wildTunnel3","Section 3",5,2),
+						createActionMovingWildTunnel("wildTunnel6","Section 6",0,2) ];
+		return actions;
+	}, // getActions
+	[166,32]
+);
+setup.mapGleamingCaverns.wildTunnel5 = new RoomInfo(
+	"wildTunnel5", // Key
+	"Wild Tunnels ~ Tunnel 5", // Title
+	"GleCav/caverns-semi-flooded-path-r.png", // Med Icon
+	"GleCav/caverns-semi-flooded-path-r-sm.png", // Icon
+	"", // Description
+	[], // Connections
+	function(characters) {
+		var actions = [ createActionMovingWildTunnel("wildTunnel7","Section 7",5,2) ];
+			// Path to Tunnel 9
+			var baseChance = gCstat(characters[0],"perception") + gCstat(characters[0],"agility") + gCstat(characters[0],"resilience") + gCstat(characters[0],"will") + gCstat(characters[0],"luck");
+			var dice200 = limitedRandomInt(200);
+			var difficulty = 130;
+			var act0 = createActionMovingWildTunnel("wildTunnel9","Section 9",0,2);
+			if ( (baseChance + dice200) >= difficulty ) {
+				if ( characters[0] == "chPlayerCharacter" ) {
+					State.variables.compass.setMapActionsMessage("Access to Section 9: " + colorText("Check PASSED","green") + ": Stats (" + baseChance + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") => Difficulty (" + difficulty + ")");
+				}
+			} else {
+				act0.requirements = function(cG) { return false; }
+				if ( characters[0] == "chPlayerCharacter" ) {
+					State.variables.compass.setMapActionsMessage("Access to Section 9: " + colorText("Check FAILED","red") + ": Stats (" + baseChance + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
+				}
+			}
+			actions.push(act0);
+		return actions;
+	}, // getActions
+	[166,32]
+);
+setup.mapGleamingCaverns.wildTunnel6 = new RoomInfo(
+	"wildTunnel6", // Key
+	"Wild Tunnels ~ Tunnel 6", // Title
+	"GleCav/caverns-wild-path.png", // Med Icon
+	"GleCav/caverns-wild-path-sm.png", // Icon
+	"", // Description
+	[], // Connections
+	function(characters) {
+		var actions = [ createActionMovingWildTunnel("wildTunnel8","Section 8",0,2),
+						createActionMovingWildTunnel("wildTunnel9","Section 9",10,2) ];
+		return actions;
+	}, // getActions
+	[166,32]
+);
+setup.mapGleamingCaverns.wildTunnel7 = new RoomInfo(
+	"wildTunnel7", // Key
+	"Wild Tunnels ~ Tunnel 7", // Title
+	"GleCav/caverns-flooded-path.png", // Med Icon
+	"GleCav/caverns-flooded-path-sm.png", // Icon
+	"", // Description
+	[], // Connections
+	function(characters) {
+		var actions = [ createActionMovingWildTunnel("wildTunnel10","Section 10",0,2) ];
+			// Path to Tunnel 11
+			var baseChance = gCstat(characters[0],"perception") + gCstat(characters[0],"agility") + gCstat(characters[0],"resilience") + gCstat(characters[0],"will") + gCstat(characters[0],"luck");
+			var dice200 = limitedRandomInt(200);
+			var difficulty = 250;
+			var act0 = createActionMovingWildTunnel("wildTunnel11","Section 11",10,2);
+			if ( (baseChance + dice200) >= difficulty ) {
+				if ( characters[0] == "chPlayerCharacter" ) {
+					State.variables.compass.setMapActionsMessage("Access to Section 11: " + colorText("Check PASSED","green") + ": Stats (" + baseChance + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") => Difficulty (" + difficulty + ")");
+				}
+			} else {
+				act0.requirements = function(cG) { return false; }
+				if ( characters[0] == "chPlayerCharacter" ) {
+					State.variables.compass.setMapActionsMessage("Access to Section 11: " + colorText("Check FAILED","red") + ": Stats (" + baseChance + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
+				}
+			}
+			actions.push(act0);
+		return actions;
+	}, // getActions
+	[166,32]
+);
+setup.mapGleamingCaverns.wildTunnel8 = new RoomInfo(
+	"wildTunnel8", // Key
+	"Wild Tunnels ~ Tunnel 8", // Title
+	"GleCav/caverns-wild-path.png", // Med Icon
+	"GleCav/caverns-wild-path-sm.png", // Icon
+	"It's possible to climb a few ledges to reach a platform further above.", // Description
+	[ ], // Connections
+	function(characters) {
+		var actions = [ createActionMovingWildTunnel("mountainsExit","Exit to Mountains",10,2),
+						createActionMovingWildTunnel("wildTunnel7","Section 7",0,2) ];
+		return actions;
+	}, // getActions
+	[166,32]
+);
+setup.mapGleamingCaverns.wildTunnel9 = new RoomInfo(
+	"wildTunnel9", // Key
+	"Wild Tunnels ~ Tunnel 9", // Title
+	"GleCav/caverns-wild-path-r.png", // Med Icon
+	"GleCav/caverns-wild-path-r-sm.png", // Icon
+	"", // Description
+	[], // Connections
+	function(characters) {
+		var actions = [ createActionMovingWildTunnel("wildTunnel12","Section 12",5,2),
+						createActionMovingWildTunnel("wildTunnel13","Section 13",0,2) ];
+		return actions;
+	}, // getActions
+	[166,32]
+);
+setup.mapGleamingCaverns.wildTunnel10 = new RoomInfo(
+	"wildTunnel10", // Key
+	"Wild Tunnels ~ Tunnel 10", // Title
+	"GleCav/caverns-semi-flooded-path-r.png", // Med Icon
+	"GleCav/caverns-semi-flooded-path-r-sm.png", // Icon
+	"", // Description
+	[], // Connections
+	function(characters) {
+		var actions = [ createActionMovingWildTunnel("wildTunnel9","Section 9",5,2) ];
+			// Path to Tunnel 11
+			var baseChance = gCstat(characters[0],"perception") + gCstat(characters[0],"agility") + gCstat(characters[0],"resilience") + gCstat(characters[0],"will") + gCstat(characters[0],"luck");
+			var dice200 = limitedRandomInt(200);
+			var difficulty = 225;
+			var act0 = createActionMovingWildTunnel("wildTunnel11","Section 11",0,2);
+			if ( (baseChance + dice200) >= difficulty ) {
+				if ( characters[0] == "chPlayerCharacter" ) {
+					State.variables.compass.setMapActionsMessage("Access to Section 11: " + colorText("Check PASSED","green") + ": Stats (" + baseChance + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") => Difficulty (" + difficulty + ")");
+				}
+			} else {
+				act0.requirements = function(cG) { return false; }
+				if ( characters[0] == "chPlayerCharacter" ) {
+					State.variables.compass.setMapActionsMessage("Access to Section 11: " + colorText("Check FAILED","red") + ": Stats (" + baseChance + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
+				}
+			}
+			actions.push(act0);
+		return actions;
+	}, // getActions
+	[166,32]
+);
+setup.mapGleamingCaverns.wildTunnel11 = new RoomInfo(
+	"wildTunnel11", // Key
+	"Wild Tunnels ~ Tunnel 11", // Title
+	"GleCav/caverns-wild-path.png", // Med Icon
+	"GleCav/caverns-wild-path-sm.png", // Icon
+	"You spot a very tight tunnel at the bottom of the river. A well-trained, disciplined person would be able to fit through if they waited long enough for the natural transformations of the Caverns to widen the gap.", // Description
+	[], // Connections
+	function(characters) {
+		var actions = [ createWaitingActionCaverns(),
+						createActionMovingWildTunnel("wildTunnel1","Section 1",0,2) ];
+			// Path to Pond of Illumination
+			var baseChance = gCstat(characters[0],"perception") + gCstat(characters[0],"agility") + gCstat(characters[0],"resilience") + gCstat(characters[0],"will") + gCstat(characters[0],"luck");
+			var dice200 = limitedRandomInt(200);
+			var difficulty = 260;
+			var act0 = createActionMovingWildTunnel("pondIllumination","Tight tunnel",0,2);
+			if ( (baseChance + dice200) >= difficulty ) {
+				if ( characters[0] == "chPlayerCharacter" ) {
+					State.variables.compass.setMapActionsMessage("Access to tight tunnel: " + colorText("Check PASSED","green") + ": Stats (" + baseChance + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") => Difficulty (" + difficulty + ")");
+				}
+			} else {
+				act0.requirements = function(cG) { return false; }
+				if ( characters[0] == "chPlayerCharacter" ) {
+					State.variables.compass.setMapActionsMessage("Access to tight tunnel: " + colorText("Check FAILED","red") + ": Stats (" + baseChance + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
+				}
+			}
+			actions.push(act0);
+		return actions;
+	}, // getActions
+	[166,32]
+);
+setup.mapGleamingCaverns.wildTunnel12 = new RoomInfo(
+	"wildTunnel12", // Key
+	"Wild Tunnels ~ Tunnel 12", // Title
+	"GleCav/caverns-semi-flooded-path.png", // Med Icon
+	"GleCav/caverns-semi-flooded-path-sm.png", // Icon
+	"", // Description
+	[], // Connections
+	function(characters) {
+		var actions = [ createActionMovingWildTunnel("wildTunnel2","Section 2",0,2) ];
+			// Path to Tunnel 17
+			var baseChance = gCstat(characters[0],"perception") + gCstat(characters[0],"agility") + gCstat(characters[0],"resilience") + gCstat(characters[0],"will") + gCstat(characters[0],"luck");
+			var dice200 = limitedRandomInt(200);
+			var difficulty = 115;
+			var act0 = createActionMovingWildTunnel("wildTunnel17","Section 17",0,2);
+			if ( (baseChance + dice200) >= difficulty ) {
+				if ( characters[0] == "chPlayerCharacter" ) {
+					State.variables.compass.setMapActionsMessage("Access to Section 17: " + colorText("Check PASSED","green") + ": Stats (" + baseChance + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") => Difficulty (" + difficulty + ")");
+				}
+			} else {
+				act0.requirements = function(cG) { return false; }
+				if ( characters[0] == "chPlayerCharacter" ) {
+					State.variables.compass.setMapActionsMessage("Access to Section 17: " + colorText("Check FAILED","red") + ": Stats (" + baseChance + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
+				}
+			}
+			actions.push(act0);
+		return actions;
+	}, // getActions
+	[166,32]
+);
+setup.mapGleamingCaverns.wildTunnel13 = new RoomInfo(
+	"wildTunnel13", // Key
+	"Wild Tunnels ~ Tunnel 13", // Title
+	"GleCav/caverns-semi-flooded-path-r.png", // Med Icon
+	"GleCav/caverns-semi-flooded-path-r-sm.png", // Icon
+	"", // Description
+	[], // Connections
+	function(characters) {
+		var actions = [  ];
+			var dice100 = limitedRandomInt(100);
+			// Path to Tunnels 14 / 17
+			var act0 = createActionMovingWildTunnel("wildTunnel14","Section 14",0,2);
+			var act1 = createActionMovingWildTunnel("wildTunnel17","Section 17",0,2)
+			if ( dice100 < 50 ) {
+				act1.requirements = function(cG) { return false; }
+				if ( characters[0] == "chPlayerCharacter" ) {
+					State.variables.compass.setMapActionsMessage("The river current allows access to Section 14: Dice 100 (" + dice100 + ") < 50, access to Section 17 is blocked.");
+				}
+			} else {
+				act0.requirements = function(cG) { return false; }
+				if ( characters[0] == "chPlayerCharacter" ) {
+					State.variables.compass.setMapActionsMessage("The river current allows access to Section 17: Dice 100 (" + dice100 + ") >= 50, access to Section 14 is blocked.");
+				}
+			}
+			actions.push(act0);
+			actions.push(act1);
+		return actions;
+	}, // getActions
+	[166,32]
+);
+setup.mapGleamingCaverns.wildTunnel14 = new RoomInfo(
+	"wildTunnel14", // Key
+	"Wild Tunnels ~ Tunnel 14", // Title
+	"GleCav/caverns-wild-path.png", // Med Icon
+	"GleCav/caverns-wild-path-sm.png", // Icon
+	"Gentle stairs of naturally formed slabs give you access to wildly different directions through the Caverns.", // Description
+	[], // Connections
+	function(characters) {
+		var actions = [ createActionMovingWildTunnel("wildTunnel11","Section 11",0,2),
+						createActionMovingWildTunnel("wildTunnel15","Section 15",0,2),
+						createActionMovingWildTunnel("wildTunnel18","Section 18",5,2) ];
+		return actions;
+	}, // getActions
+	[166,32]
+);
+setup.mapGleamingCaverns.wildTunnel15 = new RoomInfo(
+	"wildTunnel15", // Key
+	"Wild Tunnels ~ Tunnel 15", // Title
+	"GleCav/caverns-semi-flooded-path.png", // Med Icon
+	"GleCav/caverns-semi-flooded-path-sm.png", // Icon
+	"", // Description
+	[], // Connections
+	function(characters) {
+		var actions = [ createActionMovingWildTunnel("wildTunnel16","Section 16",0,2),
+						createActionMovingWildTunnel("wildTunnel19","Section 19",5,2) ];
+		return actions;
+	}, // getActions
+	[166,32]
+);
+setup.mapGleamingCaverns.wildTunnel16 = new RoomInfo(
+	"wildTunnel16", // Key
+	"Wild Tunnels ~ Tunnel 16", // Title
+	"GleCav/caverns-semi-flooded-path-r.png", // Med Icon
+	"GleCav/caverns-semi-flooded-path-r-sm.png", // Icon
+	"Up above the river there's a tunnel fairly hard to reach. An agile enough person could make the climb if the river was high enough.", // Description
+	[], // Connections
+	function(characters) {
+		var actions = [ createWaitingActionCaverns(),
+						createActionMovingWildTunnel("wildTunnel4","Section 4",0,2),
+						createActionMovingWildTunnel("wildTunnel23","Section 23",5,2) ];
+			// Path to Pond of Illumination
+			var baseChance = gCstat(characters[0],"perception") + gCstat(characters[0],"agility") + gCstat(characters[0],"resilience") + gCstat(characters[0],"will") + gCstat(characters[0],"luck");
+			var dice200 = limitedRandomInt(200);
+			var difficulty = 220;
+			var act0 = createActionMovingWildTunnel("pondIllumination","Tight tunnel",0,2);
+			if ( (baseChance + dice200) >= difficulty ) {
+				if ( characters[0] == "chPlayerCharacter" ) {
+					State.variables.compass.setMapActionsMessage("Access to tight tunnel: " + colorText("Check PASSED","green") + ": Stats (" + baseChance + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") => Difficulty (" + difficulty + ")");
+				}
+			} else {
+				act0.requirements = function(cG) { return false; }
+				if ( characters[0] == "chPlayerCharacter" ) {
+					State.variables.compass.setMapActionsMessage("Access to tight tunnel: " + colorText("Check FAILED","red") + ": Stats (" + baseChance + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
+				}
+			}
+			actions.push(act0);
+		return actions;
+	}, // getActions
+	[166,32]
+);
+setup.mapGleamingCaverns.wildTunnel17 = new RoomInfo(
+	"wildTunnel17", // Key
+	"Wild Tunnels ~ Tunnel 17", // Title
+	"GleCav/caverns-wild-path-r.png", // Med Icon
+	"GleCav/caverns-wild-path-r-sm.png", // Icon
+	"", // Description
+	[], // Connections
+	function(characters) {
+		var actions = [ createActionMovingWildTunnel("wildTunnel18","Section 18",0,2),
+						createActionMovingWildTunnel("wildTunnel20","Section 20",0,2) ];
+		return actions;
+	}, // getActions
+	[166,32]
+);
+setup.mapGleamingCaverns.wildTunnel18 = new RoomInfo(
+	"wildTunnel18", // Key
+	"Wild Tunnels ~ Tunnel 18", // Title
+	"GleCav/caverns-wild-path-r.png", // Med Icon
+	"GleCav/caverns-wild-path-r-sm.png", // Icon
+	"", // Description
+	[], // Connections
+	function(characters) {
+		var actions = [ createActionMovingWildTunnel("wildTunnel19","Section 19",0,2),
+						createActionMovingWildTunnel("wildTunnel21","Section 21",0,2) ];
+		return actions;
+	}, // getActions
+	[166,32]
+);
+setup.mapGleamingCaverns.wildTunnel19 = new RoomInfo(
+	"wildTunnel19", // Key
+	"Wild Tunnels ~ Tunnel 19", // Title
+	"GleCav/caverns-flooded-path.png", // Med Icon
+	"GleCav/caverns-flooded-path-sm.png", // Icon
+	"", // Description
+	[], // Connections
+	function(characters) {
+		var actions = [ createActionMovingWildTunnel("wildTunnel21","Section 21",0,2) ];
+			// Path to Tunnels 22 / 23
+			var dice100 = limitedRandomInt(100);
+			var act0 = createActionMovingWildTunnel("wildTunnel22","Section 22",5,2);
+			var act1 = createActionMovingWildTunnel("wildTunnel23","Section 23",5,2);
+			if ( dice100 < 50 ) {
+				act1.requirements = function(cG) { return false; }
+				if ( characters[0] == "chPlayerCharacter" ) {
+					State.variables.compass.setMapActionsMessage("The river current allows access to Section 22: Dice 100 (" + dice100 + ") < 50, access to Section 23 is blocked.");
+				}
+			} else {
+				act0.requirements = function(cG) { return false; }
+				if ( characters[0] == "chPlayerCharacter" ) {
+					State.variables.compass.setMapActionsMessage("The river current allows access to Section 23: Dice 100 (" + dice100 + ") >= 50, access to Section 22 is blocked.");
+				}
+			}
+			actions.push(act0);
+			actions.push(act1);
+		return actions;
+	}, // getActions
+	[166,32]
+);
+setup.mapGleamingCaverns.wildTunnel20 = new RoomInfo(
+	"wildTunnel20", // Key
+	"Wild Tunnels ~ Tunnel 20", // Title
+	"GleCav/caverns-semi-flooded-path-r.png", // Med Icon
+	"GleCav/caverns-semi-flooded-path-r-sm.png", // Icon
+	"", // Description
+	[], // Connections
+	function(characters) {
+		var actions = [ createActionMovingWildTunnel("wildTunnel1","Section 1",0,2) ];
+			// Path to Tunnel 21
+			var baseChance = gCstat(characters[0],"perception") + gCstat(characters[0],"agility") + gCstat(characters[0],"resilience") + gCstat(characters[0],"will") + gCstat(characters[0],"luck");
+			var dice200 = limitedRandomInt(200);
+			var difficulty = 135;
+			var act0 = createActionMovingWildTunnel("wildTunnel21","Section 21",0,2);
+			if ( (baseChance + dice200) >= difficulty ) {
+				if ( characters[0] == "chPlayerCharacter" ) {
+					State.variables.compass.setMapActionsMessage("Access to Section 21: " + colorText("Check PASSED","green") + ": Stats (" + baseChance + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") => Difficulty (" + difficulty + ")");
+				}
+			} else {
+				act0.requirements = function(cG) { return false; }
+				if ( characters[0] == "chPlayerCharacter" ) {
+					State.variables.compass.setMapActionsMessage("Access to Section 21: " + colorText("Check FAILED","red") + ": Stats (" + baseChance + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
+				}
+			}
+			actions.push(act0);
+		return actions;
+	}, // getActions
+	[166,32]
+);
+setup.mapGleamingCaverns.wildTunnel21 = new RoomInfo(
+	"wildTunnel21", // Key
+	"Wild Tunnels ~ Tunnel 21", // Title
+	"GleCav/caverns-semi-flooded-path.png", // Med Icon
+	"GleCav/caverns-semi-flooded-path-sm.png", // Icon
+	"", // Description
+	[], // Connections
+	function(characters) {
+		var actions = [ createWaitingActionCaverns(),
+						createActionMovingWildTunnel("wildTunnel3","Section 3",0,2) ];
+			// Path to Tunnel 22
+			var baseChance = gCstat(characters[0],"perception") + gCstat(characters[0],"agility") + gCstat(characters[0],"resilience") + gCstat(characters[0],"will") + gCstat(characters[0],"luck");
+			var dice200 = limitedRandomInt(200);
+			var difficulty = 185;
+			var act0 = createActionMovingWildTunnel("wildTunnel22","Section 22",0,2);
+			if ( (baseChance + dice200) >= difficulty ) {
+				if ( characters[0] == "chPlayerCharacter" ) {
+					State.variables.compass.setMapActionsMessage("Access to Section 22: " + colorText("Check PASSED","green") + ": Stats (" + baseChance + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") => Difficulty (" + difficulty + ")");
+				}
+			} else {
+				act0.requirements = function(cG) { return false; }
+				if ( characters[0] == "chPlayerCharacter" ) {
+					State.variables.compass.setMapActionsMessage("Access to Section 22: " + colorText("Check FAILED","red") + ": Stats (" + baseChance + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
+				}
+			}
+			actions.push(act0);
+		return actions;
+	}, // getActions
+	[166,32]
+);
+setup.mapGleamingCaverns.wildTunnel22 = new RoomInfo(
+	"wildTunnel22", // Key
+	"Wild Tunnels ~ Tunnel 22", // Title
+	"GleCav/caverns-flooded-path-r.png", // Med Icon
+	"GleCav/caverns-flooded-path-r-sm.png", // Icon
+	"The water becomes denser, heavier, and unbearable. Reaching the deepest corners of the Caverns will require skill, discipline and patience.", // Description
+	[], // Connections
+	function(characters) {
+		var actions = [ createActionMovingWildTunnel("wildTunnel1","Section 1",0,2),
+						createActionMovingWildTunnel("wildTunnel23","Section 23",5,2) ];
+			// Path to Tortuous End
+			var baseChance = gCstat(characters[0],"perception") + gCstat(characters[0],"agility") + gCstat(characters[0],"resilience") + gCstat(characters[0],"will") + gCstat(characters[0],"luck");
+			var dice1000 = limitedRandomInt(1000);
+			var difficulty = 1060;
+			var act0 = createActionMovingWildTunnel("tortuousEnd","Unreachable Tunnel",0,2);
+			if ( (baseChance + dice1000) >= difficulty ) {
+				if ( characters[0] == "chPlayerCharacter" ) {
+					State.variables.compass.setMapActionsMessage("Access to Unreachable Tunnel: " + colorText("Check PASSED","green") + ": Stats (" + baseChance + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 1000 (" + dice1000 + ") => Difficulty (" + difficulty + ")");
+				}
+			} else {
+				act0.requirements = function(cG) { return false; }
+				if ( characters[0] == "chPlayerCharacter" ) {
+					State.variables.compass.setMapActionsMessage("Access to Unreachable Tunnel: " + colorText("Check FAILED","red") + ": Stats (" + baseChance + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 1000 (" + dice1000 + ") < Difficulty (" + difficulty + ")");
+				}
+			}
+			actions.push(act0);
+		return actions;
+	}, // getActions
+	[166,32]
+);
+setup.mapGleamingCaverns.wildTunnel23 = new RoomInfo(
+	"wildTunnel23", // Key
+	"Wild Tunnels ~ Tunnel 23", // Title
+	"GleCav/caverns-flooded-path-ext.png", // Med Icon
+	"GleCav/caverns-flooded-path-ext-sm.png", // Icon
+	"The water becomes denser, heavier, and unbearable. Reaching the deepest corners of the Caverns will require skill, discipline and patience.", // Description
+	[], // Connections
+	function(characters) {
+		var actions = [ createActionMovingWildTunnel("wildTunnel22","Section 22",5,2) ];
+			// Path to Tortuous End
+			var baseChance = gCstat(characters[0],"perception") + gCstat(characters[0],"agility") + gCstat(characters[0],"resilience") + gCstat(characters[0],"will") + gCstat(characters[0],"luck");
+			var dice1000 = limitedRandomInt(1000);
+			var difficulty = 1060;
+			var act0 = createActionMovingWildTunnel("tortuousEnd","Unreachable Tunnel",0,2);
+			if ( (baseChance + dice1000) >= difficulty ) {
+				if ( characters[0] == "chPlayerCharacter" ) {
+					State.variables.compass.setMapActionsMessage("Access to Unreachable Tunnel: " + colorText("Check PASSED","green") + ": Stats (" + baseChance + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 1000 (" + dice1000 + ") => Difficulty (" + difficulty + ")");
+				}
+			} else {
+				act0.requirements = function(cG) { return false; }
+				if ( characters[0] == "chPlayerCharacter" ) {
+					State.variables.compass.setMapActionsMessage("Access to Unreachable Tunnel: " + colorText("Check FAILED","red") + ": Stats (" + baseChance + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 1000 (" + dice1000 + ") < Difficulty (" + difficulty + ")");
+				}
+			}
+			actions.push(act0);
+			// Path to Tunnels 2 / 7
+			var act1 = createActionMovingWildTunnel("wildTunnel2","Section 2",0,2);
+			var act2 = createActionMovingWildTunnel("wildTunnel7","Section 7",0,2);
+			var dice100 = limitedRandomInt(100);
+			if ( dice100 < 50 ) {
+				act2.requirements = function(cG) { return false; }
+				if ( characters[0] == "chPlayerCharacter" ) {
+					State.variables.compass.setMapActionsMessage("The river current allows access to Section 2: Dice 100 (" + dice100 + ") < 50, access to Section 7 is blocked.");
+				}
+			} else {
+				act1.requirements = function(cG) { return false; }
+				if ( characters[0] == "chPlayerCharacter" ) {
+					State.variables.compass.setMapActionsMessage("The river current allows access to Section 7: Dice 100 (" + dice100 + ") >= 50, access to Section 2 is blocked.");
+				}
+			}
+			actions.push(act1,act2);
+		return actions;
+	}, // getActions
+	[166,32]
+);
+
+setup.mapGleamingCaverns.pondIllumination = new RoomInfo(
+	"pondIllumination", // Key
+	"Wild Tunnels ~ Pond of Illumination", // Title
+	"GleCav/caverns-semi-flooded-path.png", // Med Icon
+	"GleCav/caverns-semi-flooded-path-sm.png", // Icon
+	"A spheric room appears before you after you fall through the tunnel. A fine line of water falls from the exact center of the ceiling, emitting a constant stream of white noise as it crashes against a small pond that forms an almost perfect circle. Outside this small refuge, the rest of the world might as well no longer exist.", // Description
+	[ new RoomConnection('labyrinthEntrance',10) ], // Connections
+	function(characters) {
+		var actions = [ createTrainingActionSecludedMeditation(),
+						createRestingActionStandard() ];
+		return actions;
+	}, // getActions
+	[170,53]
+);
+setup.mapGleamingCaverns.mountainsExit = new RoomInfo(
+	"mountainsExit", // Key
+	"Wild Tunnels ~ Exit to Mountains", // Title
+	"GleCav/cavern-entrance-rev.png", // Med Icon
+	"GleCav/cavern-entrance-rev-sm.png", // Icon
+	"", // Description
+	[], // Connections
+	function(characters) {
+		var actions = [ createActionMovingWildTunnel("wildTunnel2","Section 2",0,10) ];
+		return actions;
+	}, // getActions
+	[246,4]
+);
+setup.mapGleamingCaverns.tortuousEnd = new RoomInfo(
+	"tortuousEnd", // Key
+	"Wild Tunnels ~ Tortuous End", // Title
+	"GleCav/caverns-flooded-path-r-ext.png", // Med Icon
+	"GleCav/caverns-flooded-path-r-ext-sm.png", // Icon
+	"", // Description
+	[], // Connections
+	function(characters) {
+		var actions = [ createActionMovingWildTunnel("wildTunnel22","Section 22",0,2),
+						createActionMovingWildTunnel("wildTunnel23","Section 23",0,2) ];
+		return actions;
+	}, // getActions
+	[258,45]
+);
+
+
+// Functions
+
 window.initMapGleamingCaverns = function() {
 	State.variables.mapGleamingCaverns = new Chart("mapGleamingCaverns","Gleaming Caverns");
 	State.variables.mapGleamingCaverns.diagramDimensions = [301,209];
 	State.variables.mapGleamingCaverns.icon = "marsh-map.png";
+	State.variables.mapGleamingCaverns.subarea = "marsh";
 
 	State.variables.mapGleamingCaverns.autogenerateRooms("mapGleamingCaverns");
+}
+window.setSubareaMarsh = function() {
+	State.variables.mapGleamingCaverns.diagramDimensions = [301,209];
+	State.variables.mapGleamingCaverns.icon = "marsh-map.png";
+	State.variables.mapGleamingCaverns.subarea = "marsh";
+}
+window.setSubareaCaverns = function() {
+	State.variables.mapGleamingCaverns.diagramDimensions = [301,233];
+	State.variables.mapGleamingCaverns.icon = "gleaming-caverns-map.png";
+	State.variables.mapGleamingCaverns.subarea = "gleaming-caverns";
 }
 window.deinitMapGleamingCaverns = function() {
 	delete State.variables.mapGleamingCaverns;
 }
 
-
-
-
+setup.mapGleamingCaverns.marshSP1.setSubarea = setSubareaMarsh;
+setup.mapGleamingCaverns.marshCentrance.setSubarea = setSubareaCaverns;
+// [228,170] , [256,174]
+setup.mapGleamingCaverns.marshSP1.getSpecialAreaCoordinates = function() {
+	var coords = "";
+	if ( State.variables.mapGleamingCaverns.subarea == "gleaming-caverns" ) {
+		coords = "6,7,26,27";
+	} else {
+		coords = "" + this.mapPos[0] + ',' + this.mapPos[1] + ',' + (this.mapPos[0]+20) + ',' + (this.mapPos[1]+20);
+	}
+	return coords;
+}
+setup.mapGleamingCaverns.marshCentrance.getSpecialAreaCoordinates = function() {
+	var coords = "";
+	if ( State.variables.mapGleamingCaverns.subarea == "gleaming-caverns" ) {
+		coords = "" + this.mapPos[0] + ',' + this.mapPos[1] + ',' + (this.mapPos[0]+20) + ',' + (this.mapPos[1]+20);
+	} else {
+		coords = "256,174,276,194";
+	}
+	return coords;
+}
 

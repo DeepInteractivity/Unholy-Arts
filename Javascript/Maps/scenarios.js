@@ -16,6 +16,7 @@ window.initStandardTrainingGrounds = function() {
 }
 //          //
 
+	// Passion Temple
 window.initTrainingPeriodPassionTemple = function() {
 	
 	// Place Candidates on map
@@ -29,6 +30,7 @@ window.initTrainingPeriodPassionTemple = function() {
 	// Assign AIs
 	for ( var charKey of chars ) {
 		if ( charKey != "chPlayerCharacter" ) {
+			gC(charKey).globalAi = createCandidateGlobalAi(charKey);
 			gC(charKey).mapAi.type = "balancedTraining";
 			gC(charKey).mapAi.createNewMission = cMissionBalancedRandomTrain;
 			gC(charKey).mapAi.state = "idle";
@@ -49,7 +51,6 @@ window.initTrainingPeriodPassionTemple = function() {
 	State.variables.compass.sortOnGoingEventsByTime();
 }
 
-
 window.initSocializationPeriodPassionTemple = function() {
 	
 	// Place Candidates on map
@@ -63,6 +64,7 @@ window.initSocializationPeriodPassionTemple = function() {
 	// Assign AIs
 	for ( var charKey of chars ) {
 		if ( charKey != "chPlayerCharacter" ) {
+			gC(charKey).globalAi = createCandidateGlobalAi(charKey);
 			gC(charKey).mapAi.type = "balancedTraining";
 			gC(charKey).mapAi.createNewMission = cMissionBalancedRandomTrain;
 			gC(charKey).mapAi.state = "idle";
@@ -82,7 +84,6 @@ window.initSocializationPeriodPassionTemple = function() {
 	
 	State.variables.compass.sortOnGoingEventsByTime();
 }
-
 
 window.initTrainingPeriodPassionTempleTests = function() {
 	
@@ -125,7 +126,57 @@ window.initTrainingPeriodPassionTempleTests = function() {
 	State.variables.compass.sortOnGoingEventsByTime();
 }
 
+	// Gleaming Caverns
+window.initAdventurePeriodGleamingCaverns = function() {
+	// Initial settings
+	State.variables.settings.followingAllowed = false;
+	State.variables.settings.relationshipTypesAllowed = false;
+	State.variables.settings.challengingAllowed = false;
+	State.variables.settings.assaultingAllowed = false;
+	State.variables.settings.talkingAllowed = false;
+	
+	// Place Characters on map
+	State.variables.compass.initializeMap("mapGleamingCaverns","templeStorage");
+	State.variables.mapGleamingCaverns.placeCharacters(["chHope","chRock","chArt"],"hiddenCamp");
+	State.variables.mapGleamingCaverns.placeCharacters(["chNer"],"templeShrine");
+	State.variables.mapGleamingCaverns.placeCharacters(["chMes"],"hiddenHut");	
+	State.variables.mapGleamingCaverns.placeCharacters(["chVal"],"pondIllumination");	
+	State.variables.mapGleamingCaverns.placeCharacters(["chSil"],"templeSanctum");	
+	State.variables.mapGleamingCaverns.placeCharacters(["chPlayerCharacter","chNash","chMir","chClaw","chAte"],"templeStorage");
+	setSubareaCaverns();
+	
+	// Stablish period type
+	State.variables.simCycPar.templeDayPeriod = "adventure";
+	
+	// Assign AIs
+	for ( var charKey of ["chNash","chClaw","chMir","chAte","chVal"] ) {
+		gC(charKey).globalAi = createCandidateGcAi(charKey);
+		gC(charKey).mapAi.createNewMission = cMissionBalancedRandomTrain;
+		gC(charKey).mapAi.type = "gcCandidate";
+		gC(charKey).mapAi.state = "idle";
+		gC(charKey).mapAi.goalsList = [];
+	}
+	gC("chVal").globalAi = createValGcAi("chVal");
+	for ( var charKey of ["chArt","chHope","chRock","chNer","chSil","chMes"] ) {
+		gC(charKey).globalAi = createCandidateGcAi(charKey);
+		gC(charKey).mapAi.type = "static";
+		gC(charKey).mapAi.goalsList = [];
+	}
+	
+	State.variables.compass.allCharsCheckMapAi();
+	
+	// Set period variables
+	State.variables.simCycPar.trainingResultsBase = 1.0; // Training has enhanced effectiveness
+	
+	// Stablish period duration
+	var periodMins = 14 * 60;
+	State.variables.compass.ongoingEvents.push(createAdventureEndEvent(periodMins));
+	State.variables.compass.periodEndsTip = getRelativeTimeString(periodMins);
+	
+	State.variables.compass.sortOnGoingEventsByTime();
+}
 
+	// Tests
 window.initCommandTestsPeriodPassionTemple = function() {
 	
 	// Place Candidates on map
@@ -363,9 +414,9 @@ window.testGleamingCaverns = function() {
 	deinitMapTrainingGrounds();
 	initMapGleamingCaverns();
 	// Place characters on map
-	State.variables.compass.initializeMap("mapGleamingCaverns","marshLP5");
+	State.variables.compass.initializeMap("mapGleamingCaverns","cavernMP2");
 	var chars = ["chPlayerCharacter"]
-	State.variables.mapGleamingCaverns.placeCharacters(chars,"marshLP5");
+	State.variables.mapGleamingCaverns.placeCharacters(chars,"cavernMP2");
 	
 	// Assign AIs
 	for ( var charKey of chars ) {
@@ -380,11 +431,12 @@ window.testGleamingCaverns = function() {
 	State.variables.compass.allCharsCheckMapAi();
 	
 	// Stablish period duration
-	var periodMins = 1 * 120;
+	var periodMins = 60 * 14;
 	State.variables.compass.ongoingEvents.push(createTestMapEndEvent(periodMins));
 	State.variables.compass.periodEndsTip = getRelativeTimeString(periodMins);
 	
 	State.variables.compass.sortOnGoingEventsByTime();
+	setSubareaCaverns();
 }
 
 

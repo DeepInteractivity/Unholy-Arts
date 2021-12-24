@@ -13,6 +13,16 @@ window.limitedRandomInt = function(limit) { // Returns a random ranging between 
 	return window.float2int(window.limitedRandom(limit));
 }
 
+window.getNumbersLength = function(n) {
+	var num = n;
+	if ( num < 0 ) { num = -num; }
+	return parseInt(parseInt(num).toString().length);
+}
+window.isPosNegX1 = function(n) {
+	if ( n >= 0 ) { return 1; }
+	else { return -1; }
+}
+
 // Programming logic
 window.shuffleArray = function(array) {
 	var newArray = [];
@@ -69,6 +79,11 @@ window.firstToCap = function(string) { // Returns a string similar to input with
 }
 window.ftc = function(string) { // firstToCap abbreviation
 	return firstToCap(string);
+}
+
+window.hoverText = function(txt,hText) {
+	var result = "<span title='" + hText + "'>" + txt + "</span>";
+	return result;
 }
 
 window.ktn = function(charKey) { // Returns the stdName of a character given its char key
@@ -131,7 +146,8 @@ window.getBarName = function(barType) {
 State.variables.customRoomIntro = "";
 window.setRoomIntro = function(mapName,roomName) {
 	//var room = State.variables[mapName].rooms[roomName];
-	var intro = "<div class='standardBox'>__" + setup[mapName][roomName].title + "__";
+	var intro = `<div class='standardBox'>  <span style="vertical-align: middle;"><img src="img/mapIcons/` + setup[mapName][roomName].medIcon + `" style="vertical-align: middle;">` + " __" + setup[mapName][roomName].title + "__</span>";
+	//var intro = "<div class='standardBox'>[img[img/mapIcons/" + setup[mapName][roomName].medIcon + "]]__" + setup[mapName][roomName].title + "__";
 	if ( setup[mapName][roomName].getDescription() != "" ) {
 		intro += "\n" + setup[mapName][roomName].getDescription();
 	}
@@ -177,6 +193,24 @@ window.getCharNames = function(charKeysList) {
 	}
 	return text;
 }
+window.getCharKtns = function(charKeysList) {
+	var text = "";
+	var i = 0;
+	for ( var charKey in charKeysList ) {
+		text += ktn(charKeysList[charKey]);
+		i++;
+		if ( charKeysList.length == i ) {
+			//text += ".";
+		}
+		else if ( i == charKeysList.length - 1 ) {
+			text += " and ";
+		}
+		else if ( i < charKeysList.length ) {
+			text += ", ";
+		}
+	}
+	return text;
+}
 
 window.stringArrayToText = function(stringArray) {
 	var text = "";
@@ -204,6 +238,9 @@ window.addToStVarsList = function(v) {
 	if ( State.variables.StVarsList.includes(v) == false ) {
 		State.variables.StVarsList.push(v);
 	}
+}
+window.isStVarOn = function(v) {
+	return ( State.variables.StVarsList.includes(v) );
 }
 
 config.saves.isAllowed = function () {
@@ -621,14 +658,15 @@ pseudoList.prototype.toJSON = function() {
 
 window.getHotfixButton = function() {
 	// This button will be used to apply hotfixes to saved games, when required. It may be found at the personal room screen.
-	var bText = "\n\n<<l" + "ink [[Apply Hotfix|Personal Room]]>><<s" + "cript>>\n";
-		bText 	 += "applyHotfix();\n";
-		bText	 += "<</s" + "cript>><</l" + "ink>> Apply this hotfix at least once if you started this playthrough before version 0.2.10e.\n";
-		bText	 += "<<l" + "ink [[Reset items and bodyparts|Personal Room]]>><<s" + "cript>>\n";
-		bText 	 += "finishAllAlteredStates(getActiveSimulationCharactersArray());\n";
+	var bText = "\n\n"; //"\n\n<<l" + "ink [[Apply Hotfix|Personal Room]]>><<s" + "cript>>\n";
+		//bText 	 += "applyHotfix();\n";
+		//bText	 += "<</s" + "cript>><</l" + "ink>> Apply this hotfix at least once if you started this playthrough before version 0.2.10e.\n";
+		bText	 += "<<l" + "ink [[Hotfix: Reset items, altered states and bodyparts|Personal Room]]>><<s" + "cript>>\n";
+		bText 	 += "destroyAllAlteredStates(getActiveSimulationCharactersArray());\n";
 		bText 	 += "fixEquipmentAndParts();\n";
 		bText 	 += "unlockAllBodyparts(getActiveSimulationCharactersArray());\n";
-		bText	 += "<</s" + "cript>><</l" + "ink>> This option unequips all items and resets the state of all bodyparts to 'free'. Use it only if any character's bodypart was bugged in an incorrect state.\n"
+		bText 	 += "resetStatModifiers();\n";
+		bText	 += "<</s" + "cript>><</l" + "ink>> This option unequips all items, finishes all altered states and resets the state of all bodyparts to 'free'. Use it only if the game throws an exception that prevents you from initiating a new day.\n"
 	//var	bText	  = "\n\n<<l" + "ink [[Apply lag fix|Personal Room]]>><<s" + "cript>>\n";
 	//	bText 	 += "applyLagFix();\n";
 	//	bText	 += "<</s" + "cript>><</l" + "ink>>\n\n";
@@ -791,4 +829,24 @@ window.unlockAllBodyparts = function(charList) {
 	}
 }
 
+window.takeOffAllBondage = function() {
+	for ( var item of State.variables.equipmentList ) {
+		if ( getEquipDataById(item.id).slotType == "bodypart" ) {
+			unequipObject(item.id);
+		}
+	}
+}
+
+	// States
+window.destroyAllAlteredStates = function(charList) {
+	for ( var cK of charList ) {
+		destroyCharsStates(cK);
+	}
+}
+window.destroyCharsStates = function(charKey) {
+	// Altered states are removed without removing their effects
+	for ( var as of gC(charKey).alteredStates ) {
+	}
+	gC(charKey).alteredStates = [];
+}
 

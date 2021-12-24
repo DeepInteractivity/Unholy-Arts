@@ -398,6 +398,11 @@ Character.prototype.setAffinities = function(ph,ag,re,wi,nt,pe,em,ch,lu) {
 		this.charisma.affinity = ch;
 		this.luck.affinity = lu;
 	}
+Character.prototype.adjustAttributes = function(statVariance,statBuff) {
+	for ( var st of getStatNamesArray() ) {
+		this[st].value += limitedRandomInt(statVariance) + statBuff;
+	}
+}
 
 Character.prototype.cleanAccumulatedDamages = function() {
 		this.lust.cleanDamage();
@@ -436,6 +441,10 @@ Character.prototype.tryOrgasm = function() {
 		
 		return [overflow,type];
 	}
+Character.prototype.getAllSceneOrgasms = function() {
+	var orgasms = this.orgasmSceneCounter + this.ruinedOrgasmSceneCounter + this.mindblowingOrgasmSC;
+	return orgasms;
+}
 Character.prototype.influenceSexPrefs = function(probability,intensity) {
 	for ( var tag of this.turnPrefTags ) {
 		if ( probability > limitedRandomInt(100) ) {
@@ -609,6 +618,23 @@ Character.prototype.textBodyparts = function() { // Bodyparts
 		return text;
 	}
 	
+Character.prototype.textRelationshipWithPlayer = function() {
+	var text = "";
+	if ( this.varName != "chPlayerCharacter" ) {
+		if ( this.relations["chPlayerCharacter"] != undefined && gC("chPlayerCharacter").relations[this.varName] != undefined ) {
+			text += "\n\n__Relationship towards/by the player__\n";
+			text += rLvlAbt(this.varName,"chPlayerCharacter","friendship") + " / Friendship / " + rLvlAbt("chPlayerCharacter",this.varName,"friendship") + "\n"
+				  + rLvlAbt(this.varName,"chPlayerCharacter","sexualTension") + " / Sexual Tension / " + rLvlAbt("chPlayerCharacter",this.varName,"sexualTension") + "\n"
+				  + rLvlAbt(this.varName,"chPlayerCharacter","romance") + " / Romance / " + rLvlAbt("chPlayerCharacter",this.varName,"romance") + "\n"
+				  + rLvlAbt(this.varName,"chPlayerCharacter","domination") + " / Domination / " + rLvlAbt("chPlayerCharacter",this.varName,"domination") + "\n"
+				  + rLvlAbt(this.varName,"chPlayerCharacter","submission") + " / Submission / " + rLvlAbt("chPlayerCharacter",this.varName,"submission") + "\n"
+				  + rLvlAbt(this.varName,"chPlayerCharacter","rivalry") + " / Rivalry / " + rLvlAbt("chPlayerCharacter",this.varName,"rivalry") + "\n"
+				  + rLvlAbt(this.varName,"chPlayerCharacter","enmity") + " / Enmity / " + rLvlAbt("chPlayerCharacter",this.varName,"enmity")
+		}
+	}
+	return text;
+}
+	
 	// Pronouns
 Character.prototype.assignFemeninePronouns = function() {
 		this.perPr = "she";
@@ -720,6 +746,7 @@ Character.prototype.getCharacterScreenInfo = function() { // Returns a string th
 		string += "__Bodyparts__:\n";
 		string += this.textBodyparts() + "\n";
 		string += textEquipment(this.varName);
+		string += this.textRelationshipWithPlayer();
 		return string;
 	}
 	
@@ -750,6 +777,21 @@ window.recalculateMaxBars = function(charKey) {
 			gC(charKey)[sBar].current = gC(charKey)[sBar].max;
 		}
 	}
+
+	// Special experience
+window.getCharsSpecialExperience = function(cK,spExp) {
+	var val = 0;
+	if ( gC(cK)[spExp] != undefined ) {
+		val = gC(cK)[spExp];
+	}
+	return val;
+}
+window.addCharsSpecialExperience = function(cK,spExp,amount) {
+	if ( gC(cK)[spExp] == undefined ) {
+		gC(cK)[spExp] = 0;
+	}
+	gC(cK)[spExp] += amount;
+}
 
 	// Control
 window.attackControl = function(charKey,damage) {
@@ -1130,6 +1172,10 @@ window.getCharsDrivePercent = function(charKey,driveType) {
 	var percent = gC(charKey)[driveType].level / getCharsTotalDriveLevels(charKey);
 	return percent;
 }
+window.getCharsDrive = function(charKey,driveType) {
+	// Returns the percentage of the driveType's levels in relation to the character's total drive levels
+	return gC(charKey)[driveType].level;
+}
 window.getCharsTotalDriveLevels = function(charKey) {
 	var total = 0;
 	for ( var drive of [ "dImprovement" , "dLove", "dPleasure", "dCooperation", "dDomination", "dAmbition" ] ) {
@@ -1263,6 +1309,9 @@ window.textCharactersDrives = function(character) {
 	var drives = ["dImprovement","dPleasure","dLove","dCooperation","dDomination","dAmbition"];
 	var driveNames = ["Self-Improvement","Pleasure","Love","Cooperation","Domination","Ambition"];
 	var i = 0;
+	if ( character == "chPlayerCharacter" ) {
+		desc = "Beware: characters' drives or values represent their values or ideas and determine their behavior as NPCs. The player character's drives cannot determine their behavior, but they may push them towards desiring certain events, which could slightly raise the difficulty of certain willpower checks.\n";
+	}
 	while ( i < 6 ) {
 		desc += driveNames[i] + " - Level: " + gC(character)[drives[i]].level + " , Value: " + gC(character)[drives[i]].value.toFixed(1);
 		if ( i < 5 ) { desc += "\n"; }

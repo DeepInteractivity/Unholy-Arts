@@ -391,9 +391,13 @@ window.createAiEarlyStrategic = function() { // November 2020 - Last checked Apr
 				directEnemy = randomFromList(validEnemies);
 			} else if ( downedEnemies.length > 0 ) { // Pounce on anyone?
 				var validDownedTargets = [];
-				for ( var charKey of downedEnemies ) {
-					if ( (quantifyCharacterStrength(character) / quantifyCharacterStrength(charKey)) >= 0.7 ) {
-						validDownedTargets.push(charKey);
+				if ( gC(character).race == "monster" ) {
+					validDownedTargets = downedEnemies;
+				} else {
+					for ( var charKey of downedEnemies ) {
+						if ( (quantifyCharacterStrength(character) / quantifyCharacterStrength(charKey)) >= 0.7 ) {
+							validDownedTargets.push(charKey);
+						}
 					}
 				}
 				if ( validDownedTargets.length > 0 && gC(character).control > gC(character).maxControl * 0.5 ) {
@@ -795,8 +799,12 @@ window.chooseValidBasicAction = function(actor,allyCharacters,enemyCharacters) {
 	
 	// Actions on self
 	var actionsOnSelf = listValidBasicActionsOnTarget(actor,actor); // Simple list of actions
+		// Purge denial actions
+		actionsOnSelf = purgeActionsWithPreferenceTag(actionsOnSelf,"denial");
 	// Actions on others
 	var nwActionsOnOthers = listTargetedWeightedActionListOnCharacters(actor,allOtherCharacters); // List of [target/action/weight=0]
+	
+		// What's this thing below? - wL = Weighted list of [t/a/w], wE = Weighted choice of [t/a] (I assume)
 	
 	// Are actions on self possible? Are actions on others possible?
 	if ( actionsOnSelf.length == 0 && nwActionsOnOthers.length == 0 ) {
@@ -840,6 +848,30 @@ window.listValidBasicActionsOnTarget = function(actor,target) {
 	aList = purgeActionsWithPreferenceTag(aList,"position");
 	aList = arrayMinusA(aList,"doNothing");
 	return aList;
+	// Example of aList = ["baKissLips", "baStrokePussy", "pounceFrontalP2P", "kick", "taunt", "baTease"];
+}
+window.simulateListValidBasicActionsOnTargetDuringCombat = function(actor,target) {
+	// Previous scene data
+	var oriSceneType = State.variables.sc.sceneType;
+	var oriTeamAchars = State.variables.sc.teamAcharKeys; 
+	var oriTeamBchars = State.variables.sc.teamBcharKeys;
+	
+	// Simulate scene data
+	State.variables.sc.sceneType = "bs";
+	State.variables.sc.teamAcharKeys = [actor]; 
+	State.variables.sc.teamBcharKeys = [target];
+	
+	var aList = State.variables.sc.listUsableActionsOnTarget(actor,target);
+	aList = purgeActionsWithPreferenceTag(aList,"position");
+	aList = arrayMinusA(aList,"doNothing");
+	
+	// Restore scene data
+	State.variables.sc.sceneType = oriSceneType;
+	State.variables.sc.teamAcharKeys = oriTeamAchars; 
+	State.variables.sc.teamBcharKeys = oriTeamBchars;
+	
+	return aList;
+	// Example of aList = ["baKissLips", "baStrokePussy", "pounceFrontalP2P", "kick", "taunt", "baTease"];
 }
 window.listTargetedWeightedActionListOnCharacters = function(actor,targets) {
 	var totalList = [];
@@ -890,7 +922,7 @@ window.assignWeightsToTargetedWeightedActionList = function(actor,twaList) {
 		wL[i] = new weightedElement([twa[0],twa[1]],assignWeightToActionFromActorToTargetWithDesires(twa[1],actor,twa[0],desires,mult));
 		i++;
 	}
-	// Content: [targetKey,actionKey]
+	// Content: [targetKey,actionKey],weight
 	return wL;
 }
 
@@ -900,28 +932,33 @@ window.assignWeightToActionFromActorToTargetWithDesires = function(action,actor,
 	var desiresMultiplier = 1;
 	var targetDesires = getActorsCurrentDesires(target);
 	
-	for ( var taste of setup.saList[action].flavorTags ) {
-		// Base preference
-		weight *= setup.basePreferencesMultipliers[taste];
-		var extraM = 1;
-		if ( taste == "foreplay" || taste == "talk" || taste == "oral" || taste == "fullsex" ) {
-			extraM = 0.5;
+	// Denial check
+	if ( setup.saList[action].flavorTags.includes("denial") && getBarPercentage(target,"lust") > 0.15 ) {
+		weight = 0;
+	} else {
+		for ( var taste of setup.saList[action].flavorTags ) {
+			// Base preference
+			weight *= setup.basePreferencesMultipliers[taste];
+			var extraM = 1;
+			if ( taste == "foreplay" || taste == "talk" || taste == "oral" || taste == "fullsex" ) {
+				extraM = 0.5;
+			}
+			// Weights and ranks
+			if ( taste != "position" && taste != "continuedAction" ) {
+				newMult += gC(actor).tastes[taste].w * 0.01;
+				newMult += (1 + gC(actor).tastes[taste].r * 0.5);
+				newMult *= extraM;
+			}
+			// Desires
+			if ( desires.includes(taste) ) {
+				desiresMultiplier += (0.5 * extraM);
+			}
+			if ( targetDesires.includes(getOppositeTag(taste)) ) {
+				desiresMultiplier += (0.25 * extraM);
+			}		
 		}
-		// Weights and ranks
-		if ( taste != "position" && taste != "continuedAction" ) {
-			newMult += gC(actor).tastes[taste].w * 0.01;
-			newMult += (1 + gC(actor).tastes[taste].r * 0.5);
-			newMult *= extraM;
-		}
-		// Desires
-		if ( desires.includes(taste) ) {
-			desiresMultiplier += (0.5 * extraM);
-		}
-		if ( targetDesires.includes(getOppositeTag(taste)) ) {
-			desiresMultiplier += (0.25 * extraM);
-		}		
+		weight *= (newMult + desiresMultiplier + mult);
 	}
-	weight *= (newMult + desiresMultiplier + mult);
 	
 	return weight;
 }

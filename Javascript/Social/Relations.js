@@ -229,6 +229,8 @@ Relation.prototype.toJSON = function() {
 	return JSON.reviveWrapper('(new Relation())._init($ReviveData$)', ownData);
 };
 
+  // Utilities
+
 	// Relationship description
 window.getRelationshipDescription = function(charA,charB) {
 	var results = [(gC(charA).getFormattedName() + " is indifferent towards " + gC(charB).getFormattedName() + "."),"0",0]; // 0: Description, 1: Type, 2: Level
@@ -340,6 +342,47 @@ window.getRelationshipDescription = function(charA,charB) {
 	}
 	
 	return results;
+}
+
+window.getAverageRelationStatBetweenCharAndGroup = function(stat,charA,charList) { // Returns the average level of the relationship stat "stat" between the character "charA" and each character in the list "charList". Result is altered to make sure it won't be zero.
+	var average = 1;
+	var it = 0;
+	for ( var cK of charList ) {
+		if ( rLvlAbt(charA,cK,stat) != undefined ) {
+			average += rLvlAbt(charA,cK,stat);
+			it++;
+		}
+	}
+	return average;
+}
+window.getRelationshipStatProportionBetweenCharAndGroup = function(statsA,statsB,charA,charList,flagProportional) { // Using the previous function, returns the fraction of the sum of all statsA the sum of all statsB returned by getAverageRelationStatBetweenCharAndGroup(). Result is altered to make sure it won't be zero. If flagProportional is true, statsA and statsB will be divided by the total amount of stats to be accounted for in each list
+	var topAverage = 1;
+	var botAverage = 1;
+	var result = 0;
+	var it = 0;
+	for ( var st of statsA ) {
+		var stAv = getAverageRelationStatBetweenCharAndGroup(st,charA,charList);
+		if ( stAv != undefined ) {
+			topAverage += stAv;
+			if ( flagProportional ) { it++; }
+		}
+	}
+	if ( flagProportional && it != 0 ) {
+		topAverage *= 1/it;
+		it = 0;
+	}
+	for ( var st of statsB ) {
+		var stAv = getAverageRelationStatBetweenCharAndGroup(st,charA,charList);
+		if ( stAv != undefined ) {
+			botAverage += stAv;
+			if ( flagProportional ) { it++; }
+		}
+	}
+	if ( flagProportional && it != 0 ) {
+		topAverage *= 1/it;
+	}
+	result = topAverage / botAverage; // Get the fraction between statsA and statsB
+	return result;
 }
 
 ////////// RELATIONSHIPTYPE CLASS  //////////

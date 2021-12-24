@@ -24,14 +24,13 @@ Maps\pathfinder.js
 Maps\scenarios.js
 Others\jobs.js
 Social\Relations.js
-Others\pre-built-characters.js
+Characters\pre-built-characters.js
 Social\social-interactions-data.js
 Social\social-interactions-system.js
 Others\personal-room.js
 Maps\map-global-events.js
 HTML\statsChart.js
 Supporter Rewards\non-supporter-data.js
-Supporter Rewards\supporter-tools.js
 Others\story-events.js
 Maps\calendar.js
 Social\social-interactions-specifics.js
@@ -51,5 +50,9 @@ items.js
 merchants.js
 z-setup.js
 Others\punishments.js
+Characters\dyn-generated-characters.js
+Characters\Monsters.js
+Maps\adv-actions-gleaming-caverns.js
 Maps\gleaming-caverns-maps.js
-Others\dyn-generated-characters.js
+Adventures\gleamingCavernsScripts.js
+Adventures\map-story-events.js

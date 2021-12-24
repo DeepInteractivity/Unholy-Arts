@@ -221,7 +221,7 @@ window.createSaDickFootjob = function() {
 		
 		for (var target of targetActors) {
 			var multAr = getSexDamageMult(actorKey,target,this.key);
-			var lustDamage = ((getChar(actorKey).agility.getValue() * 2) / 12) * multAr[0];
+			var lustDamage = ((getChar(actorKey).agility.getValue() * 2) / 8) * multAr[0];
 			getChar(target).lust.changeValue(-lustDamage);
 			
 			if ( doesCharHaveAlteredState(target,"Dic+") == false ) {
@@ -265,7 +265,8 @@ window.createSaPussyFootjob = function() {
 		var results = new saResults;
 		
 		for (var target of targetActors) {
-			var lustDamage = ((getChar(actorKey).agility.getValue() * 2) / 12);
+			var multAr = getSexDamageMult(actorKey,target,this.key);
+			var lustDamage = ((getChar(actorKey).agility.getValue() * 2) / 8) * multAr[0];
 			getChar(target).lust.changeValue(-lustDamage);
 			
 			if ( doesCharHaveAlteredState(target,"Pus+") == false ) {
@@ -280,8 +281,8 @@ window.createSaPussyFootjob = function() {
 			results.description += randomFromList( [
 											(ktn(actorKey) + " rubbed " + ktn(target) + "'s " + pussyWord() + " with " + gC(actorKey).posPr + " feet."),
 											(ktn(actorKey) + "'s feet stimulated " + ktn(target) + "'s " + pussyWord() + "."),
-											(ktn(actorKey) + "'s feet massaged " + ktn(target) + "'s " + dickWord() + ".") ] );
-			results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ".";
+											(ktn(actorKey) + "'s feet massaged " + ktn(target) + "'s " + pussyWord() + ".") ] );
+			results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1];
 		}
 		
 		return results;
@@ -1119,7 +1120,7 @@ window.createSaFuckFace = function() {
 		
 		results.description += randomFromList( [
 								(ktn(actor) + " fiercely penetrated " + ktn(target) + "'s throat."),
-								(ktn(target) + " struggles to breathe due to " + ktn(actor) + "'s enthisiam in fucking " + gC(target).posPr + " throat."),
+								(ktn(target) + " struggles to breathe due to " + ktn(actor) + "'s enthusiam in fucking " + gC(target).posPr + " throat."),
 								(ktn(actor) + "'s " + dickWord() + " is looking for treasure within " + ktn(target) + "'s mouth."),
 								(ktn(actor) + " keeps pushing " + gC(actor).posPr + " " + dickWord() + " into " + ktn(target) + "'s mouth.") ] );
 		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamageTarget) + " and " + textWillpowerDamage(willpowerDamageTarget)
@@ -1338,7 +1339,7 @@ window.createSaRealHypnoticGlance = function() {
 		}
 		else {
 			var multAr = getSexDamageMult(actorKey,target,this.key);
-			var willpowerDamage = ((getChar(actorKey).charisma.getValue() / 8) + (getChar(actorKey).will.getValue()) / 16) * multAr[0];
+			var willpowerDamage = ((getChar(actorKey).charisma.getValue() / 5) + (getChar(actorKey).will.getValue()) / 10) * multAr[0];
 			getChar(targetActors[0]).willpower.changeValue(-willpowerDamage);
 			results.value += willpowerDamage;
 			results.description += randomFromList( [
@@ -1616,7 +1617,7 @@ window.createGiveCunnilingus = function() {
 		 
 		 results.value = 0;
 		 results.description += randomFromList( [
-									(ktn(actorKey) + " started to " + randomFromList("lick","devour","pleasure") + " " + ktn(target) + "'s " + pussyWord() + "."),
+									(ktn(actorKey) + " started to " + randomFromList(["lick","devour","pleasure"]) + " " + ktn(target) + "'s " + pussyWord() + "."),
 									(ktn(target) + "'s clitoris lights up as " + ktn(actorKey) + " starts to lick and suck it."),
 									(ktn(actorKey) + "'s tongue starts exploring the insides of " + ktn(target) + "'s " + pussyWord() + ".") ] );
 		
@@ -1864,6 +1865,16 @@ window.createSaAnalMountDick = function() {
 	sa.description = "The character impales their ass in their partner's dick, and begins fucking them.\n\nSingle target continued action."
 				   + "\nActor requires free ass, target requires free dick.\n\nFull sex."
 				   + "\n\n__Influences__:\nLust and energy damage: Actor's physique x3, actor's resilience x1.\nContinued damage: Actor's and target's physique x1, actor's and target's resilience x1";
+	
+	sa.getIsAllowedBySettings = function() {
+		var isAllowed = true;
+		
+		if ( State.variables.settings.anal == "disable" ) {
+			isAllowed = false;
+		}
+		
+		return isAllowed;
+	}
 	
 	sa.execute = function(actorKey,targetActors) {
 		var results = new saResults;

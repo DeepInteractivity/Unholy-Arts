@@ -9,13 +9,21 @@ Config.history.maxStates = 1;
 // monActUs
 // go0
 // chTts
+	// First adventure
+// alwSct -> Allowed into sanctum
+// blmClaw -> Blackmailed by Claw - Map Story Event triggered
+  // Special experiences
+// VarDom
 
 ////////// GAME SETTINGS CLASS //////////
 
-setup.versionName = "Unholy Arts v0.3.0";
+setup.versionName = "Unholy Arts v0.3.4";
 
 setup.infamySecondThreshold = 1.2;
 setup.infamyThirdThreshold = 1.4;
+
+// Default settings, useful for retro save compatibility
+setup.defaultMfscaOption = "enable";
 
 window.Settings = function() { 
 	this.debugFunctions = true;
@@ -28,6 +36,7 @@ window.Settings = function() {
 	this.relationshipTypesAllowed = false;
 	this.challengingAllowed = false;
 	this.assaultingAllowed = false;
+	this.talkingAllowed = true;
 
 	this.autosaving = "enable"; // "enable" / "disable"
 
@@ -40,10 +49,13 @@ window.Settings = function() {
 	this.npcBonus = "none"; // "none" / "bondage" / "hypnosis" / "draining" / "all"
 	
 	this.lewdMales = "enable"; // "enable" / "disable"
+	this.lewdMonsters = "enable"; // "enable" / "disable"
 	
 	this.anal = "enable"; // "enable" / "disable"
 	
 	this.pain = "enable"; // "enable" / "disable"
+	
+	this.mfsca = "enable"; // "enable" / "disable"
 	
 	this.battleDefeatSex = "enable"; // "enable" / "disable"
 	
@@ -157,6 +169,21 @@ Settings.prototype.formatDifficultyChoices = function() {
 		this.analChoices += '>> Disable</label>';	
 	}
 	
+	Settings.prototype.formatMFSCAchoices = function() {
+		if ( this.mfsca == undefined ) {
+			this.mfsca = setup.defaultMfscaOption;
+		}
+		var MFSCAchoices = "__Multiple full sex continued actions__" + getMFSCAtooltip() + ":\n"
+						 + '<label><<radiobutton "$settings.mfsca" "enable"';
+					if ( this.mfsca == 'enable' ) { MFSCAchoices += " checked"; }
+		MFSCAchoices += '>> Enable</label>\n'
+			          + '<label><<radiobutton "$settings.mfsca" "disable"';
+					if ( this.mfsca == 'disable' ) { MFSCAchoices += " checked"; }
+		MFSCAchoices += '>> Disable</label>';	
+		
+		return MFSCAchoices;
+	}
+	
 	Settings.prototype.formatBattleDefeatSexChoices = function() {
 		this.battleDefeatSexChoices = '__Sex as result of battles__' + getSexFromBattlesTooltip() + ':\n';
 		this.battleDefeatSexChoices += '<label><<radiobutton "$settings.battleDefeatSex" "enable"';
@@ -212,6 +239,17 @@ Settings.prototype.formatMaleCharsChoices = function() {
 	chText += '>> Disable</label>';
 	return chText;
 }
+Settings.prototype.formatMonstersChoices = function() {
+	var chText = "__Monsters Allowed to use Lewd Actions__"
+			   + ' <span title="Disabling this option will prevent all characters whose race is monster from using lewd actions.">^^(?)^^</span>' + ":\n";
+	chText += '<label><<radiobutton "$settings.lewdMonsters" "enable"';
+	if ( this.lewdMonsters == "enable" ) { chText += " checked"; }
+	chText += '>> Enable</label>\n';
+	chText += '<label><<radiobutton "$settings.lewdMonsters" "disable"';
+	if ( this.lewdMonsters == "disable" ) { chText += " checked"; }
+	chText += '>> Disable</label>';
+	return chText;
+}
 
 	Settings.prototype.formatAllChoices = function() {
 		formatAutosavingChoices();
@@ -232,8 +270,8 @@ Settings.prototype.formatMaleCharsChoices = function() {
 		if ( this.exitPassage != "Personal Room" ) { // These options shouldn't be accessible after the start of the game
 			this.allChoices += this.difficultyChoices + "\n\n" + this.futaChoices + "\n\n" + this.sexPrefChoices + "\n\n" + this.npcBonusChoices + "\n\n"
 		}
-		this.allChoices += this.formatSexSceneDurationChoices() + "\n" + this.formatMaleCharsChoices() + "\n\n"
-						+ this.analChoices + "\n\n" + this.painChoices + "\n\n"
+		this.allChoices += this.formatSexSceneDurationChoices() + "\n" + this.formatMaleCharsChoices() + "\n" + this.formatMonstersChoices() + "\n\n"
+						+ this.analChoices + "\n\n" + this.painChoices + "\n\n" + this.formatMFSCAchoices() + "\n\n"
 						+ this.battleDefeatSexChoices + "\n\n" + this.servitudeRelationshipsChoices + "\n\n"
 						+ this.stealingServitudeChoices + "\n\n" + this.chastityChoices + "\n\n"
 						+ this.exitButton;
@@ -379,6 +417,12 @@ window.getPainTooltip = function() {
 	var tText = '<span title="This option enables or disables sadism and masochism actions in sex scenes. Common fighting actions will remain enabled in combat scenes.">^^(?)^^</span>';
 	return tText;
 }
+window.getMFSCAtooltip = function() {
+	var tText = '<span title="This option enables or disables simultaneous continued full sex actions between any two characters.\n'
+			  + 'Examples: A character X performing anal penetration on character Y while character Y performs scissoring with character Z will always be possible (as long as anal actions are enabled), but in order for character X to do both anal penetration and scissoring with character Y, this option requires to be enabled, since both are considered full sex continued actions. This option will allow anatomically impossible situations, such as two characters penetrating each other at the same time.">^^(?)^^</span>';
+	return tText;
+}
+
 window.getSexFromBattlesTooltip = function() {
 	var tText = '<span title="Partially implemented. Disabling this option will prevent characters from demanding sex after they win a battle.">^^(?)^^</span>';;
 	return tText;
@@ -417,8 +461,10 @@ window.isAssaultPossible = function(actor,target) {
 	else if ( gSettings().assaultingAllowed == false ) { // Assaulting is allowed
 		flagPossible = false;
 	}
-	else if ( getCharsRoom(target).combatAllowed == false ) { // Combat is allowed in target's current room
-		flagPossible = false;
+	else if ( getCharsRoom(target) != undefined ) {
+		if ( getCharsRoom(target).combatAllowed == false ) { // Combat is allowed in target's current room
+			flagPossible = false;
+		}
 	}
 	else { // Actor and target don't have a special relationship that prevents assaults
 		var relType = gRelTypeAb(actor,target);
@@ -437,6 +483,16 @@ window.isAssaultPossible = function(actor,target) {
 	
 	return flagPossible;
 }
+window.assaultPreConditions = function(actor,target) {
+	var flagPossible = true;
+	var relType = gRelTypeAb(actor,target);
+	if ( relType ) {
+		if ( relType.disallowedAssault ) {
+			flagPossible = false;
+		}
+	}
+	return flagPossible;
+}
 window.isChallengePossible = function(actor,target) {
 	var flagPossible = true;
 	
@@ -449,8 +505,10 @@ window.isChallengePossible = function(actor,target) {
 	else if ( gSettings().challengingAllowed == false ) { // Challenging is allowed
 		flagPossible = false;
 	}
-	else if ( getCharsRoom(target).combatAllowed == false ) { // Combat is allowed in target's current room
-		flagPossible = false;
+	else if ( getCharsRoom(target) != undefined ) {
+		if ( getCharsRoom(target).combatAllowed == false ) { // Combat is allowed in target's current room
+			flagPossible = false;
+		}
 	}
 	else { // Actor and target don't have a special relationship that prevents challenges
 		var relType = gRelTypeAb(actor,target);
@@ -469,6 +527,16 @@ window.isChallengePossible = function(actor,target) {
 	
 	return flagPossible;
 }
+window.challengePreConditions = function(actor,target) {
+	var flagPossible = true;
+	var relType = gRelTypeAb(actor,target);
+	if ( relType ) {
+		if ( relType.disallowedChallenge ) {
+			flagPossible = false;
+		}
+	}
+	return flagPossible;
+}
 window.isLiberationChallengePossible = function(actor,target) {
 	var flagPossible = true;
 	var eventsList = getEventsWherCharIsInvolved(actor).concat(getEventsWherCharIsInvolved(target));
@@ -480,9 +548,7 @@ window.isLiberationChallengePossible = function(actor,target) {
 	
 	if ( gSettings().challengingAllowed == false ) {
 		flagPossible = false;
-	} else if ( gC(actor).domChar != target ) {
-		flagPossible = false;
-	} else if ( gRelTypeAb(actor,target).liberationChallenge == false ) {
+	} else if ( liberationChallengePreConditions(actor,target) == false ) {
 		flagPossible = false;
 	}
 	else if ( getCharsRoom(target).combatAllowed == false ) { // Combat is allowed in target's current room
@@ -492,6 +558,15 @@ window.isLiberationChallengePossible = function(actor,target) {
 		flagPossible = false;
 	}
 	
+	return flagPossible;
+}
+window.liberationChallengePreConditions = function(actor,target) {
+	var flagPossible = true;
+	if ( gC(actor).domChar != target ) {
+		flagPossible = false;
+	} else if ( gRelTypeAb(actor,target).liberationChallenge == false ) {
+		flagPossible = false;
+	}
 	return flagPossible;
 }
 
@@ -511,6 +586,11 @@ window.isLewdingPossible = function(actor,target) {
 					flag = false;
 				}
 			}
+		}
+	}
+	if ( gSettings().lewdMonsters == "disable" ) {
+		if ( gC(actor).race == "monster" ) {
+			flag = false;
 		}
 	}
 	return flag;
@@ -537,9 +617,36 @@ Settings.prototype.toJSON = function() {
 
 //////////////
 
-setup.creditsGoddessEnthusiast = [ "LessIDableName ","Sordax","Fox McQwerty","ben ","Peter ","Troy Armstrong","Colton Foote","Barnabas Collins","Vadrin ","Jake Ross","Nevyn ","Tyler Kreutzer","Pandavenger ","Chris40 ","He Who Remembers All","Bluebomber ","Brian Keefe","ElCrazy1 ","Grissie","Jacob LaRiviere","ShardOfCard ","ElrondHubbard ","Thomas Colasanto","Nat Byham","Evgeniy ","Cody Shawver","Brad11 ","tiffany mawhorter","Trickster ","Anonimus Mito","Redace","Alex Srisaard","วํฒนะ มานะภักดี","Oliver_Ritchie ","Ermin Pivac","Alex2011","Scott","anactualgoat ","TheShwig ","Jou Chen","Michael ","Mateusz Karliczek","Robert Crawford","MrTheDarkRed ","Black Rose Valerie","Kandschur ","Andrew Dupuis","mainman879 ","Chris Shaw","Christopher Hopkins","Kevin Andrews","DankMeme ","Anburaru ","Meserym ","Quinzell Antrom","Pandavenger","Logan Villa","Norann","Pingo ","Burckle","Mig Dig","Jan Hynek","Franko Bogdan","Alex Gaskins","Torrin ","Andrew Elvin","ArkSilver ","White Pebble","Gamenerd3 ","Yukari ","Grimaga ","Felkesste","Marcus Lu","Alysha Malone","Dage ","ArtificerZeltara","J AndMck","Snazy","Vkad 64","Dragon","Roze14 ","C Fra","Tyler Trounce","Michael Dennis Eagles","Manraj Dhanda","FirefoxV2 ","Chris","Boopley Boop","Grandius Grimm","Taziah Robinson","Mekhet ","cbcpdxkq3z","Markus Boos","Remi BB","Jack Fereday","Patrick McCabe","Tyler Kelly","mahdeennave ","Kou Mao","Gavin Winkler","jason cole","Jojolity ","Takos ","Shawn ","AD","Richard Dolder","ZXapol ","Kasen081 ","Nathan Reina","Name ","Lena Elmer","Jake Davis","Aleister Crowley","Alexander Presley","Void-Searcher .","Mikkel Christoffer Kraesing Neergaard","Blake ","Tinwen ","Michael Rydel","Josh white","Desmond Finney","Nemo-Iratus ","Jack Jamieson","yospeakr","Tarcc ","Lily Dawn","Zangi ","Richard Whitcher","ErDragon","Duchairn ","DarkyCrusad","aleante ","pebbles ","Keira Nguyen","Omoi T Wilkes","Ryan Lines","Tyler","TJ Gulledge","lvence","Zargothrax ","DANG NGUYEN MINH LUAN","PyriteP ","Oleg Kuzen","doofy goof","uwuwuwu ","Davos Sunshine","Aidan Myers","James Sampson","P-tron ","DefectiveGamer ","Ghostty","Ron Volpe","Coleman Stephan Johnson","Daniel Voronin","J","Oskar Hjorth","Brandon Livingston","NooBie ","shawn plumridge","sera","Micah Watkins","Jonathan Sane","ArsonisticMadCat ","Normal Accidents","TheApatheticAsshat","Drayton ","SmolFish ","Richard ","yoon sung ju","D B","proninja22nd .","Cyril Remo Reyes","Alakdar ","Oleg Moloh","Harutenrai","Nikolas Ambross","Alkhiro Saber","Terrell Simms","Rory Baker","t s","Eli Shmidt","Nick ","Benjamin Delgren","Sans ","Jacob Saganek","Alice Hiess","Iamus The Fox","dias","Sven Kalus","Ryan Krieger","Kilborn ","Halcy Grand","Mahin Ahmed","Classyjarl","昀之 贾","Karma","A.K.A wut","Nathan ","Loxica","Andres ","owen moore","Eduardo ","Madison Hickman","Bobby White","Shane Daley","Vienna Prudenciano","Souleater","Colin Owler","Selunea","MyHobos ","Bo Botkin","Jack ","Kurious ","Israfel ","Hatz","Robert England","Cody Powers","Ben Jones" ];
-setup.creditsPassionTemplePreacher = [ "Ryuko ","Barada Azana","aattss ","Samurai_Jack141 ","Name2146 ","Snakes! ","Irasur","Alex ","Nathaniel Grams","Cory Elliott","SenoirKain ","Andreas","Gura ","ThatsAllFolks ","Joshua Boguth","Ross Fountain","Thomas ","Emily S.","Hunter Glad","Devin White","Anon ","hiorka","dark_dragon ","Hairdevill","A giant crab","Kai Scheele","pyrite","Georgii Brisuela","Stephen","Stephen Pieper","Weathnarh ","Zergling ","Rodimus Darnath","kirito shiba","Unsung ","NoWorries623 ","Aplysina Cyanobacterium","Terminal_ERROR","Grant Manthey","Matt Miller","Dan Schrader","Slywolf357 ","Vysirez ","Benjamin Grieder","Michael Avellino","Satile ","Kestrel","Paladin_Wiggles_II ","CancerMage ","NightStrike01 ","ZVReaper16","Mcquaqua ","billyboy","Eric Wood","Elisia Seda","Sebastian Baran","Jabbtoth ","Snaked ","MaxTan ","Cyril guillas","Bartolomeo ","Pikarukawa","This Guy","Nemesison ","Sunny Reehal","Joshua Todd Shaffer","TheLastBang ","c0nevs ","Rj Sawyer","Максим Конорев","Jacob Wrightsman","Desseus ","Lexi Knight","CriticalExistenceFailure ","floccinaucinihilipilification ","Friendly Neighbor","이재승 ","NovaDragn ","Chris Douglas","Bob Fruman","StrayWolf ","Skyrim mod lvr","William K Bennett","Spencer Bradford","Phenix995 ","Foolwatchout ","Lunaraia ","Guardx","Curtis1122","Kyle ","Kuma III","Weegee","Wirglays ","DeathbyKimchi ","Yi ","Reddy Allen","Bohrne","Honey Crab","12inpen","Be","k0lt ","Jim S","Joe Barrass","This guy","LunarGuardsman ","CorprealFale","Willayfiddle ","Renpon ","warshotcv ","Something ","Jens Bertrams","Hartmanns Youkai","Aeonian Argos","Joe X","FalconNrOne ","'---- ","Randall H","Anomally","SlamJammer ","acpmage","Christian Adalbert","Dr_Russian ","Aspios ","Grumpy ","Gabriel Grey","Chris ","CrysHistory ","Jean Otus","SetsunaYuki","muckenmaker ","Rockstad ","Nathan Taylor","noah ","Konomori ","Rex J Jensen","Red Duke","Shirogitsune","Wazzugazzu","Wesley A. Collins","Hillfillk","Parzival","Tharm","Perseus_paradox ","Austin Anderson","BruceM ","Peter Managarm","Inquisitor Gaia","Elowin ","matthew nemec","Ultrasexy ","YJs ","MajorCoincoin ","Myles ","Mayu The Kitsune","Cotton59 ","Bunne","magenta_bang ","Shadowed Song","Isan-San ","NRFB ","Sam Williams","der","richardTrickle ","Rune ","Hendrijk Watson","Zanaam","Niklas ","Mikhail Petrovic","Qwazpoi","Pink Wolf","AxiosMIles ","Jacob Perry","BlackDickens ","L","swaginator ","Izanagi15 ","OmcMcAlp ","Layne Landis","DivingRocket","Beebo","Robin ","Kevin Ball","John","Windarian ","Mithrandir ","Silcerius","Rene Bien","segev hype","Lucy Ventura","Bryan Shepherd","Tom Hoffs","lolwutt","Anders Bergström","David Townsend","Gandohar ","TreeSquared ","Cheezzyninja ","MJN ","David S Abraham","urdnot123 ","Pedro Garza","brandon stenlake","Dr_Fizzle ","Martin Santiago","drew hal","Maudika ","Crette ","Thunderstruck025","John Doe","jacques ","MechaMarshmallow ","Grekken ","Mike13858","Joseph Padgett","Ronald Kim","Ian","John Denny","Steinhammer","Auntie Grieves","PassingbyPosts","Girmout Lokison","Rachel Gern","Aureate_Folly","Lunanar","rowgran","Anthony Zeppieri","Seraph ","Dan ","Gavin Lane","Hjaalfar Skjoldrsson","lamonte robinson","Hunter Cottrell","TheDarkSoul11","8 bit","Lordaron ","Cameron Spangler","MrPotatoAim6349","Jeff Mcbiscuits","Jackoshack","Haidrin","DeathCoyote","Azra","Whyohwhy 12","Houya","Maseca","kyle hoopes","Disparrow ","Logan Berek","Toa Disk","Brian Niceley","Etak ","josh","Matt ","William Padilla","Stefan Karfusehr","James Edison","Slacker ","Moonswitch3399 ","Colette Lelette","Heptu","Vrocket","Grippa ","Andrew Henniges","Vapantraath","bunker buster","Earl Martin","02010 ","Dean Laird","TheVelourFog ","....... ","Mastergamer ","Ophis ","Narsauce ","Panda","Noir Usagi","Endy Cubed","IzumoKai","Jakob Cagle","Darklordiablo ","Suzaku ","Orvas","K DA","Grocon A","Mr. J.","Robert gray","Slacker","BruceM","DemonQueen Sera","Mal","MonsterAD","Aria","Jen-Hsun Huang","Alice Reich","UserPig ","Anon the 13th","megahellreaper ","Bobby D Floyd","asfdAD ","\<SK\> ","0Kanata0","snakbar ","philip","SquigglyJim","Shearly ","Elijah McGovern","Jan Klauser","Lizzon ","Mark Hagan","Parad0x ","Arentios ","CptFalric ","Phenix995","Mars88","Maerwin" ];
-setup.creditsPassionTempleClergy = [ "Alygness ","Joshua Smith","Longwave","Carlos Sierra","Elmeri Kunnas","Arkaykami" ];
+const storyState = {
+	firstLoop: 0,
+	firstAdventure: 1,
+	secondLoop: 2
+}
+
+State.variables.storyState = storyState.firstLoop;
+
+window.getCurrentStoryState = function() {
+	var storyState = 0;
+	if ( State.variables.storyState != undefined ) {
+		storyState = State.variables.storyState;
+	}
+	return storyState;
+}
+window.isCurrentStoryStateInMainLoop = function() {
+	var result = true;
+	if ( State.variables.storyState == storyState.firstAdventure ) {
+		result = false;
+	}
+	return result;
+}
+
+//////////////
+
+setup.creditsGoddessEnthusiast = [ "LessIDableName ","Sordax","Fox McQwerty","ben ","Peter ","Troy Armstrong","Colton Foote","Barnabas Collins","Vadrin ","Jake Ross","Nevyn ","Tyler Kreutzer","Pandavenger ","Chris40 ","He Who Remembers All","Bluebomber ","Brian Keefe","ElCrazy1 ","Grissie","Jacob LaRiviere","ShardOfCard ","ElrondHubbard ","Thomas Colasanto","Nat Byham","Evgeniy ","Cody Shawver","Brad11 ","tiffany mawhorter","Trickster ","Redace","Alex Srisaard","วํฒนะ มานะภักดี","Oliver_Ritchie ","Ermin Pivac","Alex2011","Scott","anactualgoat ","TheShwig ","Jou Chen","Michael ","Mateusz Karliczek","Robert Crawford","MrTheDarkRed ","Black Rose Valerie","Kandschur ","Andrew Dupuis","mainman879 ","Chris Shaw","Christopher Hopkins","Kevin Andrews","DankMeme ","Meserym ","Quinzell Antrom","Pandavenger","Logan Villa","Norann","Pingo ","Mig Dig","Jan Hynek","Franko Bogdan","Alex Gaskins","Torrin ","Andrew Elvin","ArkSilver ","White Pebble","Yukari ","Grimaga ","Marcus Lu","Alysha Malone","Dage ","ArtificerZeltara","J AndMck","Snazy","Vkad 64","Dragon","Roze14 ","C Fra","Tyler Trounce","Michael Dennis Eagles","Manraj Dhanda","FirefoxV2 ","Boopley Boop","Grandius Grimm","Taziah Robinson","Mekhet ","cbcpdxkq3z","Markus Boos","Remi BB","Jack Fereday","Patrick McCabe","Tyler Kelly","mahdeennave ","Kou Mao","Gavin Winkler","jason cole","Jojolity ","Takos ","Shawn ","AD","Richard Dolder","ZXapol ","Kasen081 ","Nathan Reina","Name ","Lena Elmer","Jake Davis","Aleister Crowley","Alexander Presley","Void-Searcher .","Mikkel Christoffer Kraesing Neergaard","Blake ","Tinwen ","Michael Rydel","Josh white","Desmond Finney","Nemo-Iratus ","Jack Jamieson","yospeakr","Tarcc ","Lily Dawn","Zangi ","Richard Whitcher","ErDragon","Duchairn ","DarkyCrusad","aleante ","pebbles ","Keira Nguyen","Omoi T Wilkes","Ryan Lines","Tyler","TJ Gulledge","lvence","Zargothrax ","DANG NGUYEN MINH LUAN","PyriteP ","Oleg Kuzen","doofy goof","uwuwuwu ","Davos Sunshine","Aidan Myers","James Sampson","P-tron ","DefectiveGamer ","Ghostty","Ron Volpe","Coleman Stephan Johnson","Daniel Voronin","J","Oskar Hjorth","Brandon Livingston","NooBie ","shawn plumridge","sera","Micah Watkins","Jonathan Sane","ArsonisticMadCat ","Normal Accidents","TheApatheticAsshat","Drayton ","SmolFish ","yoon sung ju","D B","proninja22nd .","Cyril Remo Reyes","Alakdar ","Oleg Moloh","Harutenrai","Alkhiro Saber","Terrell Simms","Rory Baker","Eli Shmidt","Nick ","Benjamin Delgren","Sans ","Jacob Saganek","Alice Hiess","Iamus The Fox","dias","Sven Kalus","Kilborn ","Halcy Grand","Mahin Ahmed","Classyjarl","昀之 贾","A.K.A wut","Loxica","Andres ","Eduardo ","Madison Hickman","Bobby White","Shane Daley","Vienna Prudenciano","Souleater","Colin Owler","MyHobos ","Bo Botkin","Jack ","Hatz","Robert England","Cody Powers","Ben Jones","Words Words","Samantha ","Kris","Miyako Kobayashi","Hooman","Brett Evans","Canadian321 ","cory kinsley","Jason ","MistressCynthia ","Brad Davis","Anon1998","Bob ","robbert roth","joe","Michal Reimer","Luke Ballard","Sagaptor ","Scott Christensen","Fauxfox ","anactualgoat","Bob Johnson","AdmiralBreaker","cynthia","SHSL Gamer","Realms×Myths","Feltenix","Pink Milk","Ashenbones ","Zachary","Fiona Quinn","Joseph Beals","Vidar ","Ryan Allday","Nora Knox","Wildhawk ","A ","jack slate","Aaron Gahr","lolknight ","ColorfulGreyGoo","buddhapest","Vadrin","Kilian Gnauck","jason","Hannes Westander","witedragon","zachary gafken","Benyrx ","Anton Åkesson","Chessia58","Jayson Hudson","devin wagner","Kevin Banda","a сertain hypocrite","Destroyerofsin35 Gaming","Someothermon","anonymous kid","Liches-Favour ","Pole Star","Anita Juckum","shadow master","Tyler Coffey","Felipe","Stephen Clifford","Bob Dole","Lol Djsj","Fang","Lior","Hayden John Williams","ragond","billy","Devon Edwards","Twofeather Quanto","Omnimagnus ","ZombieSniper246 ","Callan Weir","gff af","Kuroi Mato","SpilledAntifreeze","William Shepherd","nosyk drofecnul","Clancy Gilroy","riff smitty","BloGer _VID_","huge legend","kadir ","Justin Kays","VySaika ","Jack Whitehouse","Melanie","Dark Solitude","BannedHeresy ","Matthew Schultz","Kin_Teb","Teltmanden","Oberon","Leo ","annonomu ","Stratus","michael glover","Steven Adams","Ana Silva","Dani James","C Tsang","Ignissik" ];
+
+setup.creditsPassionTemplePreacher = [ "Ryuko ","Barada Azana","aattss ","Samurai_Jack141 ","Name2146 ","Snakes! ","Irasur","Alex ","Nathaniel Grams","Cory Elliott","SenoirKain ","Andreas","Gura ","ThatsAllFolks ","Joshua Boguth","Ross Fountain","Thomas ","Emily S.","Hunter Glad","Devin White","Anon ","hiorka","dark_dragon ","Hairdevill","A giant crab","Kai Scheele","pyrite","Georgii Brisuela","Anonimus Mito","Stephen","Stephen Pieper","Weathnarh ","Zergling ","Rodimus Darnath","kirito shiba","Unsung ","NoWorries623 ","Aplysina Cyanobacterium","Terminal_ERROR","Grant Manthey","Matt Miller","Dan Schrader","Slywolf357 ","Vysirez ","Benjamin Grieder","Michael Avellino","Satile ","Kestrel","Paladin_Wiggles_II ","CancerMage ","NightStrike01 ","ZVReaper16","Mcquaqua ","billyboy","Eric Wood","Elisia Seda","Sebastian Baran","Jabbtoth ","Snaked ","MaxTan ","Cyril guillas","Bartolomeo ","Pikarukawa","Anburaru ","This Guy","Nemesison ","Sunny Reehal","Joshua Todd Shaffer","TheLastBang ","Burckle","c0nevs ","Rj Sawyer","Максим Конорев","Jacob Wrightsman","Desseus ","Lexi Knight","CriticalExistenceFailure ","floccinaucinihilipilification ","Friendly Neighbor","이재승 ","NovaDragn ","Chris Douglas","Bob Fruman","Gamenerd3 ","StrayWolf ","Skyrim mod lvr","Felkesste","William K Bennett","Spencer Bradford","Phenix995 ","Foolwatchout ","Lunaraia ","Guardx","Curtis1122","Kyle ","Kuma III","Weegee","Wirglays ","DeathbyKimchi ","Yi ","Reddy Allen","Bohrne","Honey Crab","12inpen","Be","k0lt ","Jim S","Joe Barrass","This guy","LunarGuardsman ","CorprealFale","Willayfiddle ","Renpon ","warshotcv ","Something ","Jens Bertrams","Hartmanns Youkai","Aeonian Argos","Chris","Joe X","FalconNrOne ","'---- ","Randall H","Anomally","SlamJammer ","acpmage","Christian Adalbert","Dr_Russian ","Aspios ","Grumpy ","Gabriel Grey","Chris ","CrysHistory ","Jean Otus","SetsunaYuki","muckenmaker ","Rockstad ","Nathan Taylor","noah ","Konomori ","Rex J Jensen","Red Duke","Shirogitsune","Wazzugazzu","Wesley A. Collins","Hillfillk","Parzival","Tharm","Perseus_paradox ","Austin Anderson","BruceM ","Peter Managarm","Inquisitor Gaia","Elowin ","matthew nemec","Ultrasexy ","YJs ","MajorCoincoin ","Myles ","Mayu The Kitsune","Cotton59 ","Bunne","magenta_bang ","Shadowed Song","Isan-San ","NRFB ","Sam Williams","der","richardTrickle ","Rune ","Hendrijk Watson","Zanaam","Niklas ","Mikhail Petrovic","Qwazpoi","Pink Wolf","AxiosMIles ","Jacob Perry","BlackDickens ","L","swaginator ","Izanagi15 ","OmcMcAlp ","Layne Landis","DivingRocket","Beebo","Robin ","Kevin Ball","John","Windarian ","Mithrandir ","Silcerius","Rene Bien","segev hype","Lucy Ventura","Bryan Shepherd","Tom Hoffs","lolwutt","Anders Bergström","David Townsend","Gandohar ","TreeSquared ","Cheezzyninja ","MJN ","David S Abraham","urdnot123 ","Pedro Garza","brandon stenlake","Dr_Fizzle ","Martin Santiago","drew hal","Maudika ","Crette ","Thunderstruck025","John Doe","jacques ","MechaMarshmallow ","Grekken ","Mike13858","Joseph Padgett","Ronald Kim","Ian","John Denny","Steinhammer","Auntie Grieves","PassingbyPosts","Girmout Lokison","Rachel Gern","Aureate_Folly","Lunanar","rowgran","Anthony Zeppieri","Seraph ","Dan ","Gavin Lane","Hjaalfar Skjoldrsson","lamonte robinson","Hunter Cottrell","TheDarkSoul11","8 bit","Lordaron ","Cameron Spangler","MrPotatoAim6349","Jeff Mcbiscuits","Jackoshack","Haidrin","DeathCoyote","Azra","Whyohwhy 12","Houya","Maseca","kyle hoopes","Disparrow ","Logan Berek","Toa Disk","Brian Niceley","Etak ","josh","Matt ","William Padilla","Richard ","Stefan Karfusehr","James Edison","Slacker ","Moonswitch3399 ","Nikolas Ambross","Colette Lelette","Heptu","Vrocket","Grippa ","Andrew Henniges","Vapantraath","bunker buster","t s","Earl Martin","02010 ","Dean Laird","TheVelourFog ","....... ","Mastergamer ","Ophis ","Narsauce ","Panda","Noir Usagi","Endy Cubed","IzumoKai","Jakob Cagle","Darklordiablo ","Suzaku ","Orvas","Ryan Krieger","K DA","Grocon A","Mr. J.","Robert gray","Slacker","BruceM","DemonQueen Sera","Mal","MonsterAD","Aria","Jen-Hsun Huang","Karma","Alice Reich","Nathan ","UserPig ","Anon the 13th","megahellreaper ","owen moore","Bobby D Floyd","asfdAD ","SK ","0Kanata0","snakbar ","philip","Selunea","SquigglyJim","Elijah McGovern","Jan Klauser","Kurious ","Israfel ","Lizzon ","Mark Hagan","Parad0x ","Arentios ","CptFalric ","Phenix995","Mars88","Maerwin","Norael ","Leche con chocolate","C","Khariel ","Rachel Burry","thisisnotreallyme ","Kara Regas","Alexander Brown","Azahel Noel Kurtz","Martin Griffin","Brave ","jordan zhou","Jeff ","Josh Button","Kashra Bascombe","Preusk ","Jake345 ","Fyodor ","Bryden Hoff","VYet","Mark Griffin","Kamren Drybread","Stephen Kennedy","Gaveal ","LionsFate ","hankhillpropane","mardoc","Kelbeck","parle42","Dav G.","Daver ","Milkygf","Narsauce","Wanderer","Jeyne Poole","William Taylor","EPIC BIRD","Justin Doyle","Califried","Drew Lichter","Rogi250","Logan Dodd","Cargo RSteele","Master Spark","Ocelotinside ","frog","Wind Walker","Ookami Kuchi","kafqm kqgmp","NeoDnyarri ","hundheim ","meowcat242","QQQdev ","Dakota Keeffer","Malte Schwantje","ThatoneBrah ","Tyragor ","Jayun ","sksksksksksksksksksks kskskskskskskskskssksksksksk","maps","JubileeGeode","Rene","Dr_Russian","aiden ploughe","faye ","Sarah","Andi Li","j l ","Alisdair Gaston","Josh S","James Maes","Ian Harlow","Max ","Kitsune Tenko 9","Bobert the great","Joe Thelizard","Steve ","0ffnixleoi","Matatus Gratorus","Devon Farion","Kholonoe Lavist","Ninja ","DemonBlade","'-药不够- ","Miyuki Irie (Realtime6)","Tim Fischer","Cody Gardner","SaltyNeko","Nicklas Høgh","jim ","midnight sky","Jacob","divaroach","Losevka","Noam Halpert","RC ","Sara Kline","Michael Mancuso","Daniel Smith","TheGman","Klopss ","NeitherMeNorYou ","Rekka","Vlad Brown","Zaibunny","Старпёр ","Owlbear","Jahmir Roy","Richard Mills","Edward Phillips","Alayla Risen","Anonynym","The One Who Knocks","R754","Ikarie","Azra El Crackhead","Cheezzy","Myah","DeadWolf357" ];
+
+setup.creditsPassionTempleClergy = [ "Alygness ","Joshua Smith","Longwave","Carlos Sierra","Elmeri Kunnas","Arkaykami","Shearly " ];
 setup.creditsTier1 = "";
 setup.creditsTier2 = "";
 setup.creditsTier3 = "";

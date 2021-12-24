@@ -79,7 +79,7 @@ window.mayEventBeSpectated = function(sEvent) {
 	var flag = false;
 	if ( sEvent ) {
 		if ( sEvent.title == "battle" || sEvent.title == "scene" ) {
-			if ( sEvent.characters.includes("chPlayerCharacter") == false ) {
+			if ( sEvent.characters.includes("chPlayerCharacter") == false && gC("chPlayerCharacter").followingTo == "" ) {
 			// if ( sEvent.charactersTeamA.includes("chPlayerCharacter") == false && sEvent.charactersTeamB.includes("chPlayerCharacter") == false ) {
 				flag = true;
 			}
@@ -117,6 +117,17 @@ window.mayBattleBeJoinedByChar = function(sEvent,charKey) {
 window.getSisCharIsIn = function(character) {
 	var sisKey = State.variables.compass.findFirstSisIdInvolvingCharacter(character);
 	return State.variables.compass.sisList[sisKey];
+}
+
+window.isCharInScene = function(character) {
+	var isInScene = false;
+	var sEvent = getCharsActiveEvent(character);
+	if ( sEvent ) {
+		if ( sEvent.title == "scene" || sEvent.title == "battle" ) {
+			isInScene = true;
+		}
+	}
+	return isInScene;
 }
 
 window.charLeavesAnySis = function(character) {
@@ -306,7 +317,7 @@ window.initiatePlayerAssault = function(target) {
 	
 	// Message
 	var iText = "You're assaulting " + getCharNames(getCharGroup(target)) + "!\n"
-			  + "You have gained " + infamy.toFixed(1) + " infamy.\n"
+			  + "You have gained " + infamy.toFixed(1) + " infamy.\n\n"
 			  + "[[Continue|Scene]]";
 	State.variables.compass.setInterludeTrigger(iText);
 }
@@ -565,6 +576,7 @@ window.Compass = function() {
 	this.scenarioEndPassage = "";
 	
 	this.roomMessage = "";
+	this.roomActionsMessage = "";
 	
 	this.sisList = new pseudoList();
 	this.lastSisId = -1;
@@ -682,6 +694,7 @@ window.Compass = function() {
 		
 		// Clean messages
 		this.roomMessage = "";
+		this.roomActionsMessage = "";
 		
 		// Clean scene
 		State.variables.sc.cleanScene();
@@ -934,10 +947,12 @@ window.Compass = function() {
 	Compass.prototype.pushTimeToOngoingEvents = function(minutes) {
 		if ( this.ongoingEvents.length > 0 ) {
 			this.purgeDuplicityEvents();
+			this.purgeInvalidEvents();
 			var newList = [];
 			for ( var sEvent of this.ongoingEvents ) {
 				sEvent.flagDontPushTimeYet = false;
 			}
+			
 			this.executingEvents = true; // Executing events and pushing time
 			for ( var sEvent of this.ongoingEvents ) {
 				if ( sEvent.pushTime(minutes) == false ) { // On true, event time reached 0 and it executes its effect
@@ -969,15 +984,6 @@ window.Compass = function() {
 		
 		this.wakeUpFakeActiveChars();
 		this.allCharsCheckMapAi();
-		
-		//var nashEvents = this.findAllEventsInvolvingCharacter("chNash");
-		//if ( nashEvents.length > -1 ) {
-		//	State.variables.logL1.push(`NashEvents,l:${nashEvents.length},d:${State.variables.daycycle.day},${State.variables.daycycle.hours}:${State.variables.daycycle.minutes}`);
-		//	for ( var e of nashEvents ) {
-		//		State.variables.logL1.push(e.title,e.characters);
-		//	}
-		//}
-		//State.variables.logL1.push("NashEvents:",this.findAllEventsIDsInvolvingCharacter("chNash"));
 	}
 	Compass.prototype.pushAllTimeToAdvance = function() {
 		this.pushTimerUntilPlayerIsDone();
@@ -1049,10 +1055,53 @@ window.Compass = function() {
 			}
 		}
 	}
+	Compass.prototype.purgeInvalidEvents = function() {
+		// Problem: an action of the player may have dragged a NPC to an event X despite the NPC having just started an event Y.
+		// Solution: find all NPCs that share an event with the player, cancel all events that have just started and found NPCs are participating in them.
+		var selectedNPCs = [];
+		for ( var sEvent of this.ongoingEvents ) {
+			if ( sEvent.ongoingTime == 0 ) {
+				if ( sEvent.characters.includes("chPlayerCharacter") ) {
+					selectedNPCs = selectedNPCs.concat(sEvent.characters);
+				}
+			}
+		}
+		// Selected NPCs now contains a list with all charactes that share an event with the player, as well as the player. Now we will force events that contain one of these NPCs *but* not the player and have just started to end
+		for ( var sEvent of this.ongoingEvents ) {
+				if ( sEvent.ongoingTime == 0 ) {
+				var flagFinishEvent = false;
+				for ( var ch of sEvent.characters ) {
+					if ( selectedNPCs.includes(ch) ) { flagFinishEvent = true; }
+				}
+				if ( sEvent.characters.includes("chPlayerCharacter") ) { flagFinishEvent = false; }
+				if ( flagFinishEvent ) { sEvent.forceEnd() }
+			}
+		}
+		// Problem: an action of the player may have provoked two characters to be unable to fight each other, but they may have already started fighting.
+		// Solution: Find incompatible battle events and force them to end
+			// Liberation challenges, challenges, assaults
+		for ( var sEvent of this.ongoingEvents ) {
+			if ( sEvent.label == "liberationChallenge" ) {
+				if ( liberationChallengePreConditions(sEvent.charactersTeamA[0],sEvent.charactersTeamB[0]) == false ) {
+					sEvent.forceEnd();
+				}
+			} else if ( sEvent.label == "challenge" ) {
+				if ( challengePreConditions(sEvent.charactersTeamA[0],sEvent.charactersTeamB[0]) == false ) {
+					sEvent.forceEnd();
+				}
+			} else if ( sEvent.label == "assault" ) {
+				if ( assaultPreConditions(sEvent.charactersTeamA[0],sEvent.charactersTeamB[0]) == false ) {
+					sEvent.forceEnd();
+				}
+			}
+		}
+	}
 	
 	// UI
 	Compass.prototype.refreshRoomPassage = function() {
 		if ( this.flagEndedScenario == false ) {					// Scenario hasn't ended, default behavior
+			this.setCurrentRoom(gC("chPlayerCharacter").currentRoom);
+			if ( getCurrentRoomInfo().setSubarea ) { getCurrentRoomInfo().setSubarea(); } // Set the current room's associated subarea, if required
 			this.roomPassage = "";
 			if ( this.roomMessage != "" ) {
 				this.roomPassage += this.roomMessage + "\n\n";
@@ -1062,7 +1111,7 @@ window.Compass = function() {
 				this.roomPassage += this.mapMenuPassage;
 			}
 			else {
-				this.roomPassage += "<div class='standardBox'>[img[img/mapIcons/" + getCurrentRoomInfo().medIcon + "]] __" + getCurrentRoomInfo().title + "__ \n";
+				this.roomPassage += `<div class='standardBox'>  <span style="vertical-align: middle;"><img src="img/mapIcons/` + getCurrentRoomInfo().medIcon + `" style="vertical-align: middle;">` + " __" + getCurrentRoomInfo().title + "__</span>\n";
 				
 				if  ( getCurrentRoomInfo().getDescription() != "" ) {
 					this.roomPassage += getCurrentRoomInfo().getDescription() + "\n";
@@ -1072,7 +1121,7 @@ window.Compass = function() {
 				// Check if prompt is no longer valid
 				if ( this.flagPlayerIsPrompted ) {
 					if ( this.isPrompterAchar ) {
-						if ( gC(this.promptSender).followingTo != "" && gC(this.promptSender).followingTo != "chPlayerCharacter" ) {
+						if ( gC(this.promptSender).followingTo != "" && gC(this.promptSender).followingTo != "chPlayerCharacter" && isCharInScene(this.promptSender) == false ) {
 							// Cancel prompt
 							this.flagPlayerIsPrompted = false;
 							this.promptPassage = "";
@@ -1082,6 +1131,8 @@ window.Compass = function() {
 				}
 				
 				if ( this.flagPlayerIsPrompted == false ) {  //  Typical behavior
+					this.roomActionsMessage = "";
+				
 					if ( gC("chPlayerCharacter").followingTo == "" ) { // If player is following a character, player can't initiate actions or move on their own
 						if ( getCurrentRoomInfo().connections != null ) {
 							this.roomPassage += getCurrentRoomInfo().displayConnections() + " \n";
@@ -1101,7 +1152,7 @@ window.Compass = function() {
 								// Option 2: Assault - Player should be forced to participate
 								if ( sEvent.label == "assault" ) {
 									this.roomPassage += this.getButtonJoinCombatForced() + " \n\n";
-								} else if ( sEvent.label = "challenge" ) {
+								} else if ( sEvent.label == "challenge" || sEvent.label == "liberationChallenge" ) {
 									this.roomPassage += this.getButtonSpectateCombatAlt() + " \n\n";
 								}
 							}
@@ -1115,6 +1166,11 @@ window.Compass = function() {
 							this.roomPassage += this.getButtonContinueAsFollower("Map") + " \n\n";
 						}
 					}
+					
+					if ( this.roomActionsMessage != "" ) {
+						this.roomPassage += this.roomActionsMessage + "\n\n";
+						this.roomActionsMessage = "";
+					}
 				
 					this.roomPassage += this.displayCharactersInRoom() + " \n";
 					
@@ -1126,11 +1182,22 @@ window.Compass = function() {
 					
 					if ( getCurrentMap().icon ) {
 						var coords = this.getCursorCoordinates();
-						this.roomPassage += "\n\n<div align='center' id='mapDiagram'>"
-										  + '<img src="img/maps/' + getCurrentMap().icon + '" id="mapImage"/>\n'
-										  + '<img src="img/mapCursor.png" id="mapCursor" '
+						this.roomPassage += "\n\n<div align='center' id='mapDiagram'>";
+						this.roomPassage += '<img src="img/maps/' + getCurrentMap().icon + '" id="mapImage" usemap="#image_map"/>\n';
+						this.roomPassage += '<img src="img/mapCursor.png" id="mapCursor" '
 										  + 'style="position:relative;left:' + coords[0] + 'px;top:' + coords[1] + 'px"/>'
-										  + "</div>"
+										  + "</div>";
+						// Areas map
+						this.roomPassage += '\n<map name="image_map">';
+						if ( getCurrentRoomInfo().getConnections(["chPlayerCharacter"]) != null ) {
+							if ( gC("chPlayerCharacter").followingTo == "" ) {
+								for ( var con of getCurrentRoomInfo().getConnections(["chPlayerCharacter"]) ) {
+									var ri = getRoomInfoA(con.loc);
+									this.roomPassage += '<area class="roomAreaButton" title="' + ri.title + '" coords="' + ri.getAreaCoordinates() + '" shape="rect" room-key="' + con.loc + '" travel-time="' + con.distance + '" data-passage="Map" data-setter="State.variables.compass.playerMovesToRoom(\'' + con.loc + '\',' + con.distance + ')" >\n';
+								}
+							}
+						}						
+						this.roomPassage += "</map>";
 					}
 				} else { // Player is prompted
 					this.roomPassage += this.promptPassage;
@@ -1140,6 +1207,11 @@ window.Compass = function() {
 			this.roomPassage = this.scenarioEndPassage;
 		}
 	}
+	window.clickRoomIconEvent = function() {
+		State.variables.compass.playerMovesToRoom(this.getAttribute("room-key"),parseInt(this.getAttribute("travel-time")));
+		state.display("Map");
+	}
+
 	window.adjustCursorPosition = function() {
 		var cursorObject = document.getElementById("mapCursor");
 		cursorObject.style.position = 'relative';
@@ -1194,42 +1266,45 @@ window.Compass = function() {
 		if ( actions.length > 0 ) {
 			var i = 0;
 			for ( var action of actions ) {
-				text += action.title + action.displayDescriptionMark() + ' <<link [[Execute|Interlude]]>><<script>>'
-									 + 'getCurrentRoomInfo().getActions(getPlayerCharsGroup())[' + i + '].eventToPile('
-									 + action.recMins + ',State.variables.compass.getPlayerGroupChars());'
-									 // This sends a systemEvent to pile, that should eventually be executed
-									 + 'State.variables.compass.pushAllTimeToAdvance();'
-									 + '<</' + 'script>><</' + 'link>>';
-									 
-				if ( action.flexibleTimes ) { // Extra buttons to allow the player to select time multiples
-					text += ' / <<link [[x2|Interlude]]>><<script>>'
-						 + 'getCurrentRoomInfo().getActions(getPlayerCharsGroup())[' + i + '].eventToPile('
-						 + (action.recMins * 2) + ',State.variables.compass.getPlayerGroupChars());'
-						 + 'State.variables.compass.pushAllTimeToAdvance();'
-						 + '<</' + 'script>><</' + 'link>>';
-					text += ' / <<link [[x3|Interlude]]>><<script>>'
-						 + 'getCurrentRoomInfo().getActions(getPlayerCharsGroup())[' + i + '].eventToPile('
-						 + (action.recMins * 3) + ',State.variables.compass.getPlayerGroupChars());'
-						 + 'State.variables.compass.pushAllTimeToAdvance();'
-						 + '<</' + 'script>><</' + 'link>>';
-					text += ' / <<link [[x4|Interlude]]>><<script>>'
-						 + 'getCurrentRoomInfo().getActions(getPlayerCharsGroup())[' + i + '].eventToPile('
-						 + (action.recMins * 4) + ',State.variables.compass.getPlayerGroupChars());'
-						 + 'State.variables.compass.pushAllTimeToAdvance();'
-						 + '<</' + 'script>><</' + 'link>>';
-					text += ' / <<link [[x5|Interlude]]>><<script>>'
-						 + 'getCurrentRoomInfo().getActions(getPlayerCharsGroup())[' + i + '].eventToPile('
-						 + (action.recMins * 5) + ',State.variables.compass.getPlayerGroupChars());'
-						 + 'State.variables.compass.pushAllTimeToAdvance();'
-						 + '<</' + 'script>><</' + 'link>>';
-					text += ' / <<link [[x1/2|Interlude]]>><<script>>'
-						 + 'getCurrentRoomInfo().getActions(getPlayerCharsGroup())[' + i + '].eventToPile('
-						 + (action.recMins * 0.5) + ',State.variables.compass.getPlayerGroupChars());'
-						 + 'State.variables.compass.pushAllTimeToAdvance();'
-						 + '<</' + 'script>><</' + 'link>>';
+				if ( action.requirements(this.getPlayerGroupChars()) ) {
+					text += action.title + action.displayDescriptionMark() + ' <<link [[Execute|' + action.getPassage() + ']]>><<script>>'
+										 + 'getCurrentRoomInfo().getActions(getPlayerCharsGroup())[' + i + '].eventToPile('
+										 + action.recMins + ',State.variables.compass.getPlayerGroupChars());'
+										 // This sends a systemEvent to pile, that should eventually be executed
+										 + 'State.variables.compass.pushAllTimeToAdvance();'
+										 + '<</' + 'script>><</' + 'link>>';
+										 
+					if ( action.flexibleTimes ) { // Extra buttons to allow the player to select time multiples
+						text += ' / <<link [[x2|Interlude]]>><<script>>'
+							 + 'getCurrentRoomInfo().getActions(getPlayerCharsGroup())[' + i + '].eventToPile('
+							 + (action.recMins * 2) + ',State.variables.compass.getPlayerGroupChars());'
+							 + 'State.variables.compass.pushAllTimeToAdvance();'
+							 + '<</' + 'script>><</' + 'link>>';
+						text += ' / <<link [[x3|Interlude]]>><<script>>'
+							 + 'getCurrentRoomInfo().getActions(getPlayerCharsGroup())[' + i + '].eventToPile('
+							 + (action.recMins * 3) + ',State.variables.compass.getPlayerGroupChars());'
+							 + 'State.variables.compass.pushAllTimeToAdvance();'
+							 + '<</' + 'script>><</' + 'link>>';
+						text += ' / <<link [[x4|Interlude]]>><<script>>'
+							 + 'getCurrentRoomInfo().getActions(getPlayerCharsGroup())[' + i + '].eventToPile('
+							 + (action.recMins * 4) + ',State.variables.compass.getPlayerGroupChars());'
+							 + 'State.variables.compass.pushAllTimeToAdvance();'
+							 + '<</' + 'script>><</' + 'link>>';
+						text += ' / <<link [[x5|Interlude]]>><<script>>'
+							 + 'getCurrentRoomInfo().getActions(getPlayerCharsGroup())[' + i + '].eventToPile('
+							 + (action.recMins * 5) + ',State.variables.compass.getPlayerGroupChars());'
+							 + 'State.variables.compass.pushAllTimeToAdvance();'
+							 + '<</' + 'script>><</' + 'link>>';
+						text += ' / <<link [[x1/2|Interlude]]>><<script>>'
+							 + 'getCurrentRoomInfo().getActions(getPlayerCharsGroup())[' + i + '].eventToPile('
+							 + (action.recMins * 0.5) + ',State.variables.compass.getPlayerGroupChars());'
+							 + 'State.variables.compass.pushAllTimeToAdvance();'
+							 + '<</' + 'script>><</' + 'link>>';
+							 
+					}
+					
+					text += "\n";
 				}
-				
-				text += "\n";
 				i++;	  
 			}
 		}
@@ -1300,7 +1375,7 @@ window.Compass = function() {
 			}
 			
 			// Interaction buttons
-			if ( mayCharBeInterrupted(character) ) {
+			if ( mayCharBeInterrupted(character) && State.variables.settings.talkingAllowed == true ) {
 				if ( gC("chPlayerCharacter").followingTo == "" && ( gC(character).followingTo == "" || gC(character).followingTo == "chPlayerCharacter" ) ) {			
 					if ( this.canCharBeInteracted(character) && ( character != "chPlayerCharacter" ) && ( charInSis == false ) ) { // Interaction button
 						text += " ( " + this.getButtonBeginSocialInteraction(character) + " , " + this.getButtonBeginSocialInteractionSpecifics(character) + " )";
@@ -1403,6 +1478,10 @@ window.Compass = function() {
 	Compass.prototype.setMapMessage = function(msg) {
 		if ( this.roomMessage != "" ) { this.roomMessage += "\n"; }
 		this.roomMessage += msg;
+	}
+	Compass.prototype.setMapActionsMessage = function(msg) {
+		if ( this.roomActionsMessage != "" ) { this.roomActionsMessage += "\n"; }
+		this.roomActionsMessage += msg;
 	}
 	
 	// UI - Buttons
@@ -1532,6 +1611,7 @@ Compass.prototype.cleanLeftoverData = function() { // Must be used before saving
 	this.scenarioEndPassage = "";
 	
 	this.roomMessage = "";
+	this.roomActionsMessage = "";
 	
 	this.sisList = new pseudoList();
 	this.lastSisId = -1;
@@ -1727,7 +1807,10 @@ window.RoomInfo = function(key,title,medIcon,icon,description,connections,getAct
 	}
 	this.getCustomActionsText = null;
 	this.combatAllowed = true;
+	
 	this.mapPos = mapPos; // Position of icon in map diagram
+	this.setSubarea = null; // If not null, it is a function that sets a new subarea bottom map when the player gets here
+	this.getSpecialAreaCoordinates = null; // If not null, it is a function that returns different areas depending on different circumstances
 }
 
 	RoomInfo.prototype.getDescription = function() {
@@ -1738,6 +1821,14 @@ window.RoomInfo = function(key,title,medIcon,icon,description,connections,getAct
 	}
 	RoomInfo.prototype.displayConnections = function() {
 		return createStandardDisplayConnections(this.connections);
+	}
+	RoomInfo.prototype.getAreaCoordinates = function() {
+		var coords = "";
+		if ( this.getSpecialAreaCoordinates ) { coords = this.getSpecialAreaCoordinates() }
+		else {
+			coords = "" + this.mapPos[0] + ',' + this.mapPos[1] + ',' + (this.mapPos[0]+20) + ',' + (this.mapPos[1]+20);
+		}
+		return coords;
 	}
 
 window.createStandardDisplayConnections = function(connections) {
@@ -1840,7 +1931,7 @@ window.mapAction = function(actionKey,actionTitle,systemEvent,flagHide) {
 	this.recMins = 60;
 	this.flexibleTimes = false;
 	
-	this.requirements = function() {  // This function checks if the characters are able to perform the action
+	this.requirements = function(charGroup) {  // This function checks if the characters are able to perform the action
 		return true;
 	}
 	this.systemEvent = systemEvent; // System event, to be created at compass if a group of characters performs this action
@@ -1862,6 +1953,8 @@ window.mapAction = function(actionKey,actionTitle,systemEvent,flagHide) {
 		State.variables.compass.sortOnGoingEventsByTime();
 		signCharsActive(characters);
 	}
+	
+	this.getPassage = function() { return "Interlude" };
 };
 
 /*
@@ -1896,6 +1989,7 @@ mapAction.prototype.toJSON = function() {
 window.systemEvent = function(minutes,characters,title,name,effect) {
 	this.title = title; // Similar to key
 	this.name = name; // Displayed in text
+	this.label = null; // Doesn't always have to be anything
 	
 	this.timeRemaining = minutes;
 	this.ongoingTime = 0; // Used in effect to calculate dimension of effects

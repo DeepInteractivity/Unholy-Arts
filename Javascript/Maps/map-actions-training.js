@@ -37,12 +37,12 @@ window.tutorshipExtraExp = function(minutes,characters,stat,rate) {
 			if ( gRelTypeAb(charKey,characters[0]).type == "tutorship" ) {
 				var dice = limitedRandomInt(100);
 				if ( gC(charKey)[stat].value < gC(characters[0])[stat].value ) {
-					var rxm = rate * trainingResultsVar() * minutes * 0.1;
+					var rxm = rate * trainingResultsVar() * minutes * 0.25;
 					if ( dice < 21 ) { rxm *= 2; }
 					gC(charKey)[stat].addExperience(rxm);
-					resultsText += "\nAs " + gC(charKey).getFormattedName() + "'s tutor, " + gC(characters[0]).getFormattedName() + " helped " + gC(charKey).getFormattedName() + " gain " + (rxm * gC(charKey)[stat].affinity).toFixed(2) + " additional experience points.";
+					resultsText += "\nAs " + gC(charKey).getFormattedName() + "'s tutor, " + gC(characters[0]).getFormattedName() + " helped " + gC(charKey).getFormattedName() + " gain " + (rxm * gC(charKey)[stat].affinity).toFixed(2) + " additional experience points. ";
 					if ( dice < 21 ) {
-						resultsText += " A most dedicated attention by part of " + gC(charKey).posPr + " tutor doubled this amount, in exchange for increased submission.";
+						resultsText += "A most dedicated attention by part of " + gC(charKey).posPr + " tutor doubled this amount, in exchange for increased submission. ";
 						var dom = gC(charKey).domChar;
 						getRelation(charKey,dom).submission.stv += 40;
 						getRelation(dom,charKey).domination.stv += 40;
@@ -115,6 +115,7 @@ window.sharedTrainingRelationshipEvent = function(charA,charB) {
 	
 	dice = limitedRandomInt(100);
 	if ( (dice < (25 + gC(charA).dCooperation.level + gC(charB).dCooperation.level)) && rivalryFlag == false ) { // Friendship
+		if ( msg != "" ) { msg += ""; }
 		getRelation(charA,charB).friendship.stv += 40;
 		getRelation(charB,charA).friendship.stv += 40;
 		msg += randomFromList( [

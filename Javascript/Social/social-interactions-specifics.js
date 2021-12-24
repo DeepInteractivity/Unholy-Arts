@@ -378,6 +378,8 @@ window.createSistEgalitarianSex = function() {
 		var joinedGroup = getCharGroup(actor).concat(getCharGroup(target));
 		var additionalChars = recruitCharsInSis(sisCharList,actor,joinedGroup,this.doesCharJoinGroup);
 		
+		State.variables.logL1.push("Starting ega sex scene, actor: ",actor,", target: ",target," recruited chars: ",additionalChars);
+		
 		if ( actor == "chPlayerCharacter" ) {
 			State.variables.sisSpecifics.flagSissEnd = true;
 			var addCharsString = [];
@@ -407,9 +409,21 @@ window.createSistEgalitarianSex = function() {
 				// Accept button: Ega sex starts, add chars get called, player group gets added
 				// Reject button: Ega sex starts, add chars get called
 				var addCharsString = [];
-				for ( var cK of additionalChars ) { addCharsString.push("'" + cK + "'"); }
+				var joiningCharsNames = [];
+				var charsWillAlsoJoin = "";
+				for ( var cK of additionalChars ) {
+					addCharsString.push("'" + cK + "'");
+					joiningCharsNames.push(gC(cK).getFormattedName());
+				}
+				if ( additionalChars.length > 0 ) {
+					charsWillAlsoJoin = getCharNames(additionalChars);
+				}
 				
-				var promptText = gC(actor).getFormattedName() + " invited " + gC(target).getFormattedName() + " to have sex and " + gC(target).perPr + " accepted. Would you like to join?\n"
+				var promptText = gC(actor).getFormattedName() + " invited " + gC(target).getFormattedName() + " to have sex and " + gC(target).perPr + " accepted.";
+				if ( charsWillAlsoJoin != "" ) {
+					promptText += " " + charsWillAlsoJoin + " will also join.";
+				}
+				promptText += "\nWould you like to partake?\n"
 							   + "<<l" + "ink [[Join|Scene]]>><<s" + "cript>>\n" // Join button
 							   + "genericSistEffects(getCharGroup('" + actor + "'),getCharGroup('" + target + "').concat([" + addCharsString + "]).concat(getCharGroup('chPlayerCharacter')),sistEgalitarianSexEffects);\n"
 							   + "sistEgalitarianSexEffects(['" + actor + "'],['" + target + "'],getCharGroup('chPlayerCharacter').concat([" + addCharsString + "]));\n"

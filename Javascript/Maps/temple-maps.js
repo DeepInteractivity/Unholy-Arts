@@ -206,7 +206,7 @@ setup.mapTrainingGrounds.upperWaterfall = new RoomInfo(
 						createTrainingActionEnergyReading() ];
 		return actions;
 	}, // getActions
-	[134,8]
+	[158,35]
 );
 setup.mapTrainingGrounds.mainLibrary = new RoomInfo(
 	"mainLibrary", // Key

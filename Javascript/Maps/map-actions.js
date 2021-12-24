@@ -199,6 +199,7 @@ window.createSystemEventScene = function(characters,minutes,label) {
 	sEvent.flagMayChangeGroups = false;
 	sEvent.label = label;
 	sEvent.priority = 5;
+	sEvent.applyEffectIfForcedToEnd = false;
 	return sEvent;
 }
 window.createSystemEventStandardSexScene = function(characters) {
@@ -209,6 +210,7 @@ window.createSystemEventStandardSexScene = function(characters) {
 	sEvent.flagMayChangeGroups = false;
 	sEvent.label = "sexScene";
 	sEvent.priority = 5;
+	sEvent.applyEffectIfForcedToEnd = false;
 	return sEvent;
 }
 
@@ -246,6 +248,7 @@ window.createSystemEventDominantSexEffects = function(characters) {
 	sEvent.flagMayChangeGroups = false;
 	sEvent.label = "sexScene";
 	sEvent.priority = 5;
+	sEvent.applyEffectIfForcedToEnd = false;
 	return sEvent;
 }
 
@@ -286,13 +289,14 @@ window.createSystemEventAltDominantSexEffects = function(charsA,charsB) {
 	sEvent.flagMayChangeGroups = false;
 	sEvent.label = "sexScene";
 	sEvent.priority = 5;
+	sEvent.applyEffectIfForcedToEnd = false;
 	return sEvent;
 }
 
 window.createSystemEventBattle = function(charactersTeamA,charactersTeamB,spectators,minutes,label) {
 	var allChars = charactersTeamA.concat(charactersTeamB.concat(spectators));
 	var sEvent = new systemEvent(minutes,characters,"battle","Battle",function(cList) {
-			var desc = getRoomA(gC(this.characters[0]).currentRoom).description;
+			var desc = getRoomInfoA(gC(this.characters[0]).currentRoom).description;
 			State.variables.sc.startScene("bs","none",this.charactersTeamA,this.charactersTeamB,desc,endConditionStandardBattle,0,"Map");
 			for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
 				if ( charKey != "chPlayerCharacter" ) {
@@ -311,13 +315,14 @@ window.createSystemEventBattle = function(charactersTeamA,charactersTeamB,specta
 	sEvent.flagMayChangeGroups = false;
 	sEvent.label = label;
 	sEvent.priority = 5;
+	sEvent.applyEffectIfForcedToEnd = false;
 	return sEvent;
 }
 window.createSystemEventStandardAssault = function(charactersTeamA,charactersTeamB,spectators) {
 	var allChars = charactersTeamA.concat(charactersTeamB.concat(spectators));
 	var characters = allChars;
 	var sEvent = new systemEvent(20,characters,"battle","Battle",function(cList) {
-			var desc = getRoomA(gC(this.characters[0]).currentRoom).description;
+			var desc = getRoomInfoA(gC(this.characters[0]).currentRoom).description;
 			State.variables.sc.startScene("bs","none",this.charactersTeamA,this.charactersTeamB,desc,endConditionStandardBattle,0,"Scene Results"); // Start scene
 			State.variables.sc.setBattleParameters(3,this.charactersTeamA[0],this.charactersTeamB[0]); // Battle parameters
 			State.variables.sc.endSceneScript = processGenericMapBattleEffects; // Set generic battle effects
@@ -342,13 +347,14 @@ window.createSystemEventStandardAssault = function(charactersTeamA,charactersTea
 	sEvent.flagMayChangeGroups = false;
 	sEvent.label = "assault";
 	sEvent.priority = 5;
+	sEvent.applyEffectIfForcedToEnd = false;
 	return sEvent;
 }
 window.createSystemEventStandardChallenge = function(charactersTeamA,charactersTeamB,spectators,stakes) {
 	var allChars = charactersTeamA.concat(charactersTeamB.concat(spectators));
 	var characters = allChars;
 	var sEvent = new systemEvent(20,characters,"battle","Battle",function(cList) {
-			var desc = getRoomA(gC(this.characters[0]).currentRoom).description;
+			var desc = getRoomInfoA(gC(this.characters[0]).currentRoom).description;
 			State.variables.sc.startScene("bs","none",this.charactersTeamA,this.charactersTeamB,desc,endConditionStandardBattle,0,"Scene Results"); // Start scene
 			State.variables.sc.setBattleParameters(stakes,this.charactersTeamA[0],this.charactersTeamB[0]); // Battle parameters
 			State.variables.sc.endSceneScript = processGenericMapBattleEffects; // Set generic battle effects
@@ -373,6 +379,7 @@ window.createSystemEventStandardChallenge = function(charactersTeamA,charactersT
 	sEvent.flagMayChangeGroups = false;
 	sEvent.label = "challenge";
 	sEvent.priority = 5;
+	sEvent.applyEffectIfForcedToEnd = false;
 	return sEvent;
 }
 
@@ -380,7 +387,7 @@ window.createSystemEventLiberationChallenge = function(charactersTeamA,character
 	var allChars = charactersTeamA.concat(charactersTeamB.concat(spectators));
 	var characters = allChars;
 	var sEvent = new systemEvent(20,characters,"battle","Battle",function(cList) {
-			var desc = getRoomA(gC(this.characters[0]).currentRoom).description;
+			var desc = getRoomInfoA(gC(this.characters[0]).currentRoom).description;
 			State.variables.sc.startScene("bs","none",this.charactersTeamA,this.charactersTeamB,desc,endConditionStandardBattle,0,"Scene Results"); // Start scene
 			State.variables.sc.setBattleParameters(1,this.charactersTeamA[0],this.charactersTeamB[0]); // Battle parameters
 			State.variables.sc.endSceneScript = processLiberationChallengeEffects; // Set generic battle effects
@@ -399,8 +406,9 @@ window.createSystemEventLiberationChallenge = function(charactersTeamA,character
 	sEvent.spectators = spectators;
 	sEvent.flagMayBeInterrupted = false;
 	sEvent.flagMayChangeGroups = false;
-	sEvent.label = "challenge";
+	sEvent.label = "liberationChallenge";
 	sEvent.priority = 5;
+	sEvent.applyEffectIfForcedToEnd = false;
 	return sEvent;
 }
 
