@@ -235,6 +235,10 @@ window.scene = function() {
 	// Management
 	scene.prototype.removeContinuedAction = function(caPosition) {
 		this.continuedActions[caPosition].freeBodyparts();
+		this.continuedActions[caPosition].forgetAssociatedActions();
+		if ( this.continuedActions[caPosition].hasOwnProperty("flagUsingWeapon") ) {
+			setCharsWeaponUnused(this.continuedActions[caPosition].initiator);
+		}
 		this.continuedActions.splice(caPosition,1);
 	}
 	scene.prototype.removeContinuedActionById = function(caId) {
@@ -704,6 +708,16 @@ window.scene = function() {
 		var flagCancelAction = false;
 		var cA = this.continuedActions[position];
 		
+		for ( var caTag of cA.tags ) {
+			switch(caTag) {
+				case "activePosition":
+					if ( getImmediatelyConnectedCharsToChar(cA.initiator).includes(cA.targetsList[0]) == false ) {
+						flagCancelAction = true;
+					}
+					break;
+			}
+		}
+		
 		if ( cA.validRelationalPositions.length > 0 ) {
 			var flagFoundValidRelationalPosition = false;
 			for ( var relationalPosition of cA.validRelationalPositions ) {
@@ -1158,7 +1172,7 @@ window.scene = function() {
 			this.assignNewLead();
 		}		
 		
-		// Execute continued actions
+		// Execute continued action
 		this.checkUnvalidContinuedActions();
 		this.executeContinuedActions();
 		
@@ -1239,7 +1253,6 @@ window.scene = function() {
 	}
 	
 	// Logic 2
-	
 	scene.prototype.checkCancelAction = function(cancellingActorKey,continuedAction) { // This function returns the logic of attempting to cancel a continued action
 		var logic = "noCost"; // The action will be cancelled at no cost
 		
@@ -2182,7 +2195,7 @@ window.endSceneScriptRefreshLustIfOrgasmed = function() {
 window.setRefreshLustScript = function() {
 	State.variables.sc.endSceneScript = endSceneScriptRefreshLustIfOrgasmed;
 }
-window.endSceneScriptRefreshLustIfOrgasmed = function() {
+window.endSceneScriptRefreshSomeLustIfOrgasmed = function() {
 	var allChars = State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys);
 	for ( var cK of allChars ) {
 		if ( gC(cK).lust.max * 0.5 > gC(cK).lust.current ) {
@@ -2191,7 +2204,7 @@ window.endSceneScriptRefreshLustIfOrgasmed = function() {
 	}
 }
 window.setRefreshSomeLustBattleScript = function() {
-	State.variables.sc.endSceneScript = endSceneScriptRefreshLustIfOrgasmed;
+	State.variables.sc.endSceneScript = endSceneScriptRefreshSomeLustIfOrgasmed;
 }
 
 	// Data

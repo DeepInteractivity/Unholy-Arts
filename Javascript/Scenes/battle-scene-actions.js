@@ -1288,7 +1288,7 @@ window.createSaBaEnergyDrainingKiss = function() {
 	
 	sa.getIsCustomAllowed = function(actionKey,actorKey,targetsKeys,skipLinkedCheck) {
 		var isAllowed = true;
-		if ( gC(actorKey).race == "monster" ) {
+		if ( gC(targetsKeys[0]).race == "monster" ) {
 			isAllowed = false;
 		}
 		return isAllowed;
@@ -1380,7 +1380,7 @@ window.createSaBaDrainingKiss = function() {
 	
 	sa.getIsCustomAllowed = function(actionKey,actorKey,targetsKeys,skipLinkedCheck) {
 		var isAllowed = true;
-		if ( gC(actorKey).race == "monster" ) {
+		if ( gC(targetsKeys[0]).race == "monster" ) {
 			isAllowed = false;
 		}
 		return isAllowed;
@@ -1788,7 +1788,7 @@ window.createSaBaScratch = function() {
 								 + ".\n" + evResults.explanation;
 		} else { // Hit fails
 			results.value = 0;
-			results.description = ktn(actor) + " tried to kick " + ktn(target) + ", but failed! " + generateSaCostsText(this,actor)
+			results.description = ktn(actor) + " tried to scratch " + ktn(target) + ", but failed! " + generateSaCostsText(this,actor)
 								+ ".\n" + evResults.explanation;
 		}
 		
@@ -3446,6 +3446,135 @@ window.createDisablingShot = function() {
 			results.value = 0;
 			results.description = ktn(actor) + " aimed at " + ktn(target) + "'s weak spots, but failed the shot! " + generateSaCostsText(this,actor)
 								+ ".\n" + evResults.explanation;
+		}
+		
+		return results;
+	}
+	return sa;
+}
+
+// Dildo
+window.createSaBaDildoPenetratePussy = function() {
+	var sa = new sceneAction();
+	sa.name = "Dildo-Pussy Penetration";
+	sa.key = "baDildoPenetratePussy";
+	sa.actionType = "contact";
+	sa.targetType = "single";
+	
+	sa.tags.push("bs","sUse");
+	sa.reqTags.push("diffTarget","control","activePosition","unusedWeapon");
+	sa.actorBpReqs.push("arms");
+	sa.targetBpReqs.push("pussy");
+	
+	sa.strategyTags.push("damage","sex","targetPussy");
+	sa.affinities.push("sex","targetPussy");
+	
+	sa.description = "The character starts penetrating their target's pussy with their dildo.\n"  
+				   + "\nSingle target continued action.\nRequires an active position over the target, and the target must have a a free pussy."
+				   + "\n\nContact attack." 
+				   + "\n\n__Influences__:\Initial and continued damage: Actor's physique x2, actor's agility x1, target's resilience x-1.";
+				   
+	sa.doesHitLand = function(actor,target) {
+		var evasionPlus = gCstat(actor,"physique") * 0.25 + gCstat(actor,"agility") * 0.25 + gCstat(actor,"perception") * 0.25 + gC(actor).control * 5;
+		var evasionMinus = gCstat(target,"perception") * 0.15 + gCstat(target,"agility") * 0.5;
+		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+	}
+	sa.execute = function(actor,targetsList) {
+		applySaCosts(this,actor);
+		
+		var results = new saResults;
+		var target = targetsList[0];
+		
+		// Evasion
+		var evResults = this.doesHitLand(actor,target);
+		
+		if ( evResults.hit ) { // Hit lands
+			// Initial damage
+			var inDamValue = gCstat(actor,"physique") * 0.2 + gCstat(actor,"agility") * 0.1 - gCstat(actor,"resilience") * 0.1;
+			inDamValue = addLuckFactor(inDamValue,0.1,gCstat(actor,"luck"));
+			var damage = calculateAttackEffects("lust",actor,target,this.affinities,inDamValue);
+			var dmgEffMsg = getWeaknessToAttackText(this.affinities,target);
+			// Apply
+			gC(target).lust.attack(-damage);
+			results.value = damage;
+			
+			// Position
+			//createBposP2PfrontalPounce(actor,[target]);
+			
+			// Continued action
+			State.variables.sc.continuedActions.push(createCaBaDildoPenetratePussy(actor,targetsList));
+			
+			// Description
+			results.description += randomFromList( [
+										(ktn(actor) + " pushed " + gC(actor).posPr + " dildo against " + ktn(target) + "'s lower entrance, penetrating " + gC(target).comPr + " fully."),
+										(ktn(actor) + " filled " + ktn(target) + "'s " + pussyWord() + " with " + gC(actor).posPr + " " + randomFromList("dildo","weapon","tool","toy") + ", forcing pleasure into " + gC(target).comPr + ".")
+									] );
+			results.description += " " + dmgEffMsg + ktn(target) + " received " + textLustDamage(damage) + ". " + generateSaCostsText(this,actor)
+								 + ".\n" + evResults.explanation;
+		} else { // Hit fails
+			results.value = 0;
+			results.description = ktn(actor) + " tried to penetrate " + ktn(target) + "'s " + pussyWord() + " with " + gC(actor).posPr + " dildo, but failed! "	+ "\n" + evResults.explanation;
+		}
+		
+		return results;
+	}
+	return sa;
+}
+
+window.createSaBaThrustDildo = function() {
+	var sa = new sceneAction();
+	sa.name = "Thrust Dildo";
+	sa.key = "baThrustDildo";
+	sa.actionType = "contact";
+	sa.targetType = "single";
+	
+	sa.tags.push("bs");
+	sa.tags.push("sUse");
+	sa.reqTags.push("diffTarget");
+	sa.requiredActiveCAs.push("baDildoPenetratePussy");
+	
+	sa.strategyTags.push("damage","sex","targetPussy");
+	sa.affinities.push("sex","targetPussy");
+	
+	sa.description = "The character pushes their dildo into their target's folds. Actor must be fucking their target with a dildo.\n"
+				   + "This attack damages the target, and the actor receives some retaliation.\n\nSingle target action."
+				   + "\n\nSexual contact attack."
+				   + "\n\n__Influences__:\nDamage: Actor's physique x2, actor's agility x2, target's resilience x-1.";
+				   
+	sa.doesHitLand = function(actor,target) {
+		var evasionPlus = 1;
+		var evasionMinus = 1;
+		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+	}		   			
+				   
+	sa.execute = function(actor,targetActors) {
+		applySaCosts(this,actor);
+		
+		var results = new saResults;
+		var target = targetActors[0];
+		
+		// Evasion
+		var evResults = this.doesHitLand(actor,target);
+		
+		if ( evResults.hit ) { // Hit lands
+			// Damage
+			var inDamValue = (gCstat(actor,"physique") * 0.4 + gCstat(actor,"agility") * 0.4 - gCstat(target,"resilience") * 0.2) * 0.6;
+			inDamValue = addLuckFactor(inDamValue,0.1,gCstat(actor,"luck"));
+			var damage = calculateAttackEffects("lust",actor,target,this.affinities,inDamValue);
+			var dmgEffMsg = getWeaknessToAttackText(this.affinities,target);		
+			// Apply
+			gC(target).lust.attack(-damage);
+			results.value = damage;
+			// Description
+			results.description += randomFromList( [
+									(ktn(actor) + " pushed " + gC(actor).posPr + " " + randomFromList("dildo","toy","tool","weapon","dildo") + " deep into " + ktn(target) + "."),
+									(ktn(actor) + " thrusted into " + ktn(target) + "'s " + pussyWord() + "."),
+									(ktn(actor) + " penetrated " + ktn(target) + "'s " + randomFromList(["insides","pussy"]) + " with " + gC(actor).posPr + " " + randomFromList("dildo","toy","tool","weapon","dildo") + ".")
+								] );
+			results.description += " " + dmgEffMsg + ktn(target) + " received " + textLustDamage(damage) + "." + evResults.explanation;
+		} else { // Hit fails
+			results.value = 0;
+			results.description = "This shouldn't happen.";
 		}
 		
 		return results;

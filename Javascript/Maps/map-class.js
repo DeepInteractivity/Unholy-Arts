@@ -724,7 +724,6 @@ window.Compass = function() {
 		} else { // Set prompt in SIS
 			this.sisList[playerSisId].setSisPlayerPrompt(passageText);
 			this.timeToAdvance = 0;
-			// TO DO : Pause time
 		}
 	}
 	Compass.prototype.finishPlayerPrompt = function() {
@@ -735,7 +734,6 @@ window.Compass = function() {
 			this.pushTimerUntilPlayerIsDone();
 		}
 		this.promptPassage = "";
-		// TO DO : Resume time
 	}
 	
 		// Characters

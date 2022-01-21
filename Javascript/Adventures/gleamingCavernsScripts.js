@@ -178,6 +178,18 @@ window.finishGleamingCavernsAdventure = function() {
 		gC(cK).empathy.affinity -= 0.40;
 	}
 	
+	// Finish Hypnotic Resistance status effect
+	gC("chPlayerCharacter").removeSpecificState("HyRe");
+	
+	// Chance for Nashillbyir to get a dildo - If the dildoPlay map story event took place.
+	if ( isStVarOn("dldPly") ) {
+		if ( getCharsSpecialExperience("chNash","crfExp") >= 5 ) {
+			if ( (limitedRandomInt(100) + getCharsSpecialExperience("chNash","crfExp") * 10) >= 100 ) {
+				createEquipment("w5","chNash");
+			}
+		}
+	}
+	
 	// Maps
 	deinitMapGleamingCaverns();
 	initMapTrainingGrounds();
@@ -187,6 +199,11 @@ window.finishGleamingCavernsAdventure = function() {
 	State.variables.settings.challengingAllowed = true;
 	State.variables.settings.assaultingAllowed = true;
 	State.variables.settings.talkingAllowed = true;
+	
+	// Remove FA-specific story variables
+	removeFromStVarsList("blmClaw");
+	removeFromStVarsList("dldCrf");
+	removeFromStVarsList("dldPly");
 }
 
 	// Battle scenes

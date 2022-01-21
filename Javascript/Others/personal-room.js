@@ -256,24 +256,33 @@ PersonalRoom.prototype.getCharacterInfo = function(character) {
 		iText += colorText("Max energy: ","limegreen") + gC(character).energy.max.toFixed(0) + " ; " + colorText("Max social drive: ","khaki") + gC(character).socialdrive.max.toFixed(0) + " \n";
 		iText += "\nPhysique: " + gC(character).physique.value.toFixed(0) + " (" + gC(character).physique.getValue().toFixed(1) + ")";
 		if ( character == "chPlayerCharacter" ) { iText += " | " + getTextStatExp(gC(character).physique); }
+		iText += " | " + getTextStatAff(gC(character).physique);
 		iText += "\nAgility: " + gC(character).agility.value.toFixed(0) + " (" + gC(character).agility.getValue().toFixed(1) + ")";
 		if ( character == "chPlayerCharacter" ) { iText += " | " + getTextStatExp(gC(character).agility); }
+		iText += " | " + getTextStatAff(gC(character).agility);
 		iText += "\nResilience: " + gC(character).resilience.value.toFixed(0) + " (" + gC(character).resilience.getValue().toFixed(1) + ")";
 		if ( character == "chPlayerCharacter" ) { iText += " | " + getTextStatExp(gC(character).resilience); }
+		iText += " | " + getTextStatAff(gC(character).resilience);
 		
 		iText += "\nWill: " + gC(character).will.value.toFixed(0) + " (" + gC(character).will.getValue().toFixed(1) + ")";
 		if ( character == "chPlayerCharacter" ) { iText += " | " + getTextStatExp(gC(character).will); }
+		iText += " | " + getTextStatAff(gC(character).will);
 		iText += "\nIntelligence: " + gC(character).intelligence.value.toFixed(0) + " (" + gC(character).intelligence.getValue().toFixed(1) + ")";
 		if ( character == "chPlayerCharacter" ) { iText += " | " + getTextStatExp(gC(character).intelligence); }
+		iText += " | " + getTextStatAff(gC(character).intelligence);
 		iText += "\nPerception: " + gC(character).perception.value.toFixed(0) + " (" + gC(character).perception.getValue().toFixed(1) + ")";
 		if ( character == "chPlayerCharacter" ) { iText += " | " + getTextStatExp(gC(character).perception); }
+		iText += " | " + getTextStatAff(gC(character).perception);
 		
 		iText += "\nEmpathy: " + gC(character).empathy.value.toFixed(0) + " (" + gC(character).empathy.getValue().toFixed(1) + ")";
 		if ( character == "chPlayerCharacter" ) { iText += " | " + getTextStatExp(gC(character).empathy); }
+		iText += " | " + getTextStatAff(gC(character).empathy);
 		iText += "\nCharisma: " + gC(character).charisma.value.toFixed(0) + " (" + gC(character).charisma.getValue().toFixed(1) + ")";
 		if ( character == "chPlayerCharacter" ) { iText += " | " + getTextStatExp(gC(character).charisma); }
+		iText += " | " + getTextStatAff(gC(character).charisma);
 		iText += "\nLuck: " + gC(character).luck.value.toFixed(0) + " (" + gC(character).luck.getValue().toFixed(1) + ")";
 		if ( character == "chPlayerCharacter" ) { iText += " | " + getTextStatExp(gC(character).luck); }
+		iText += " | " + getTextStatAff(gC(character).luck);
 		iText += "</div>\n";
 		
 		// Relationships
@@ -424,7 +433,7 @@ window.removeLeftOverData = function() {
 }
 	
 PersonalRoom.prototype.endDayEffects = function() {
-		//State.variables.logL1 = [];
+		State.variables.logL1 = [];
 		State.variables.eventsCalendar.stablishTomorrowsEvent();
 		
 		State.variables.personalRoom.autosavePossible = false;
@@ -874,8 +883,6 @@ window.getCustomizeMoodWindow = function() {
 			+ "State.variables.personalRoom.roomState = 'main';\n"
 			+ "updatePlayerCustomMoods();\n"
 			+ "<</s" + "cript>><</l" + "ink>>\n";
-	// To Do: Button to commit changes
-	// To Do: Button to commit changes and leave
 	return wText;
 }
 window.updatePlayerCustomMoods = function() {

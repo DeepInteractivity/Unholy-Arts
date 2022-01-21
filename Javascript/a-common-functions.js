@@ -155,6 +155,11 @@ window.setRoomIntro = function(mapName,roomName) {
 	State.variables.customRoomIntro = intro;
 }
 
+window.getTextWithTooltip = function(txt,tooltip) {
+	var fTxt = "<span title='" + tooltip + "'>" + txt + "</" + "span>";
+	return fTxt;
+}
+
 // Engine
 window.getChar = function(charKey) {
 	return State.variables[charKey];
@@ -238,6 +243,13 @@ window.addToStVarsList = function(v) {
 	if ( State.variables.StVarsList.includes(v) == false ) {
 		State.variables.StVarsList.push(v);
 	}
+}
+window.removeFromStVarsList = function(v) {
+	var newStVars = [];
+	for ( var varName of State.variables.StVarsList ) {
+		if ( varName != v ) { newStVars.push(varName); }
+	}
+	State.variables.StVarsList = newStVars;
 }
 window.isStVarOn = function(v) {
 	return ( State.variables.StVarsList.includes(v) );

@@ -12,6 +12,7 @@ window.Equipment = function(id,type,owner) {
 	this.days = -2; // Remaining days. -2 means it is not equipped, -1 means it may always be unlocked, >0 means the remaining days until it gets unlocked
 	this.owner = owner; // Equipment's owner's charKey
 	this.equippedOn = null; // Who's wearing the equipment
+	// this.inUse = null; // Initially non-existing property to save up memory. While it doesn't exist, the weapon isn't in use
 }
 	// Use this to create equipment
 window.createEquipment = function(type,owner) {
@@ -168,6 +169,42 @@ window.removeLostItems = function() {
 	State.variables.equipmentList = newItemsList;
 }
 
+	// Extra
+window.isCharsWeaponInUse = function(charKey) {
+	var flagInUse = false;
+	var wId = getCharsWeaponId(charKey);
+	if ( wId != -1 ) {
+		if ( getEquipById(wId).hasOwnProperty("inUse") ) {
+			flagInUse = true;
+		}
+	}
+	return flagInUse;
+}
+window.setCharsWeaponInUse = function(charKey) {
+	var wId = getCharsWeaponId(charKey);
+	if ( wId != -1 ) {
+		getEquipById(wId).inUse = true;
+	}
+}
+window.setCharsWeaponUnused = function(charKey) {
+	var wId = getCharsWeaponId(charKey);
+	if ( wId != -1 ) {
+		delete getEquipById(wId).inUse;
+	}
+}
+
+	// Specific unequip
+window.unequipToolTypeFromChar = function(type,charKey) {
+	if ( gC(charKey)[type] != -1 ) {
+		unequipObject(gC(charKey)[type]);
+	}
+}
+
+	// Auxiliar
+window.getCharsWeaponId = function(charKey) {
+	return gC(charKey).weaponID;
+}
+
 	// Bug fixing
 window.fixOwnedEquipmentLists = function() {
 	for ( var cK of ["chDummy"].concat(getActiveSimulationCharactersArray()) ) {
@@ -236,7 +273,8 @@ const equipmentType = {
 	KNUCKLES: "w1",
 	WAND: "w2",
 	HANDFAN: "w3",
-	HUNTINGBOW: "w4"
+	HUNTINGBOW: "w4",
+	DILDO: "w5"
 }
 /*const equipmentType = {
 	COLLAR: 0,
@@ -575,6 +613,27 @@ setup.equipDataList[equipmentType.HUNTINGBOW] = new equipmentData("Hunting bow",
 		+ "\nIncreases agility and perception.",
 	2000,0,
 	[["perception",1],["agility",1]],["disablingShot"]);
+
+setup.equipDataList[equipmentType.DILDO] = new equipmentData("Dildo","tool","weapon",
+	function(owner,wearer) { // Put on
+		gC(wearer).physique.sumModifier += 1;
+		gC(wearer).physique.multModifier += 0.1;
+		gC(wearer).agility.sumModifier += 1;
+		gC(wearer).agility.multModifier += 0.1;
+		gC(wearer).combatAffinities.sex.strength += 10;
+		gC(wearer).combatAffinities.sex.weakness += 10;
+	},
+	function(owner,wearer) { // Put out
+		gC(wearer).physique.sumModifier -= 1;
+		gC(wearer).physique.multModifier -= 0.1;
+		gC(wearer).agility.sumModifier -= 1;
+		gC(wearer).agility.multModifier -= 0.1;
+		gC(wearer).combatAffinities.sex.strength -= 10;
+		gC(wearer).combatAffinities.sex.weakness -= 10;
+	}, "A ceramic dildo, able to penetrate others during intimacy and battle."
+		+ "\nIncreases physique and agility, as well as sex strength and weakness. Provides with several actions in sex and combat scenes.",
+	3000,0,
+	[["physique",1],["agility",1]],["dildoTeaseGenitals","dildoPenetratePussy","dildoPenetrateAss","dildoPenetrateMouth","thrustDildo","doubleDildoPussyPenetration","baDildoPenetratePussy","baThrustDildo"]);
 
 // AI
 

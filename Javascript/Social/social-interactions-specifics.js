@@ -134,6 +134,11 @@ window.SisSpecifics = function() {
 
 State.variables.sisSpecifics = new SisSpecifics();
 
+window.getDesireTooltip = function() {
+	var tText = '<span title="Desire is the inner temptation of the character to accept a proposal, regardless of their most consciouss rationality. When desire is high enough, the character will be forced to spend willpower in order to reject proposals, and they will only be able to accept if their willpower is low enough.">^^(?)^^</span>';
+	return tText;
+}
+
 // Constructors, serializers, etc.
 SisSpecifics.prototype._init = function (obj) {
 	Object.keys(obj).forEach(function (pn) {
@@ -247,7 +252,7 @@ window.createSistEgalitarianSex = function() {
 		var hadSexFactor = gC(target).daysWithoutSex * 3 - gC(target).sexScenesToday * 3;
 		var missingLustFactor = (1 - getBarPercentage(target,"lust")) * 50;
 		desire = baseDifficulty + moodFactor + relationshipFactor + statsFactor + missingLustFactor + hadSexFactor;
-		var desireString = "Desire: Base difficulty (" + baseDifficulty.toFixed(2) + ") + Mood (" + moodFactor.toFixed(2) + ") + Relationship ("
+		var desireString = "Desire" + getDesireTooltip() + ": Base difficulty (" + baseDifficulty.toFixed(2) + ") + Mood (" + moodFactor.toFixed(2) + ") + Relationship ("
 						 + relationshipFactor.toFixed(2) + ") + Stats (" + statsFactor.toFixed(2) + ") + Lust (" + missingLustFactor.toFixed(2) + ") + Sex life (" + hadSexFactor.toFixed(2) + ") = Total (" + desire.toFixed(2) + ").";
 		
 		return [desire,desireString];
@@ -335,7 +340,7 @@ window.createSistEgalitarianSex = function() {
 		if ( result ) { stringResult = "Success!"; secondStringResult += gC(target).perPr + " accepted."; }
 		else 		  { stringResult = "Failure."; secondStringResult += gC(target).perPr + " refused."; }
 		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Base dif.: " + baseDifficulty
-					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", Desire: " + willpowerCostFactor.toFixed(2) + ", Intentions: " + missionFactor.toFixed(2) + ", Growth: " + powerGrowthFactor.toFixed(2) + " - Result: " + finalValue.toFixed(2);
+					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", desire: " + willpowerCostFactor.toFixed(2) + ", Intentions: " + missionFactor.toFixed(2) + ", Growth: " + powerGrowthFactor.toFixed(2) + " - Result: " + finalValue.toFixed(2);
 		}
 		
 		secondStringResult = gC(actor).getFormattedName() + " invited " + gC(target).getFormattedName() + " to have sex and ";
@@ -605,7 +610,7 @@ window.createSistExcludingEgalitarianSex = function() {
 		var hadSexFactor = gC(target).daysWithoutSex * 3 - gC(target).sexScenesToday * 3;
 		var missingLustFactor = (1 - getBarPercentage(target,"lust")) * 50;
 		desire = baseDifficulty + moodFactor + relationshipFactor + statsFactor + missingLustFactor + hadSexFactor;
-		var desireString = "Desire: Base difficulty (" + baseDifficulty.toFixed(2) + ") + Mood (" + moodFactor.toFixed(2) + ") + Relationship ("
+		var desireString = "Desire" + getDesireTooltip() + ": Base difficulty (" + baseDifficulty.toFixed(2) + ") + Mood (" + moodFactor.toFixed(2) + ") + Relationship ("
 						 + relationshipFactor.toFixed(2) + ") + Stats (" + statsFactor.toFixed(2) + ") + Lust (" + missingLustFactor.toFixed(2) + ") + Sex life (" + hadSexFactor.toFixed(2) + ") = Total (" + desire.toFixed(2) + ").";
 		
 		return [desire,desireString];
@@ -658,7 +663,7 @@ window.createSistExcludingEgalitarianSex = function() {
 		if ( result ) { stringResult = "Success!"; secondStringResult += gC(target).perPr + " accepted."; }
 		else 		  { stringResult = "Failure."; secondStringResult += gC(target).perPr + " refused."; }
 		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Base dif.: " + baseDifficulty
-					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", Desire: " + willpowerCostFactor.toFixed(2) + ", Intentions: " + missionFactor.toFixed(2) + ", Growth: " + powerGrowthFactor.toFixed(2) + " - Result: " + finalValue.toFixed(2);
+					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", desire: " + willpowerCostFactor.toFixed(2) + ", Intentions: " + missionFactor.toFixed(2) + ", Growth: " + powerGrowthFactor.toFixed(2) + " - Result: " + finalValue.toFixed(2);
 		}
 		
 		secondStringResult = gC(actor).getFormattedName() + " invited " + gC(target).getFormattedName() + " to have sex and ";
@@ -815,7 +820,7 @@ window.createSistSubmissiveSex = function() {
 		var hadSexFactor = gC(target).daysWithoutSex * 3 - gC(target).sexScenesToday * 3;
 		var missingLustFactor = (1 - getBarPercentage(target,"lust")) * 50;
 		desire = baseDifficulty + moodFactor + relationshipFactor + statsFactor + missingLustFactor + hadSexFactor;
-		var desireString = "Desire: Base difficulty (" + baseDifficulty.toFixed(2) + ") + Mood (" + moodFactor.toFixed(2) + ") + Relationship ("
+		var desireString = "Desire" + getDesireTooltip() + ": Base difficulty (" + baseDifficulty.toFixed(2) + ") + Mood (" + moodFactor.toFixed(2) + ") + Relationship ("
 						 + relationshipFactor.toFixed(2) + ") + Stats (" + statsFactor.toFixed(2) + ") + Lust (" + missingLustFactor.toFixed(2) + ") + Sex life (" + hadSexFactor.toFixed(2) + ") = Total (" + desire.toFixed(2) + ").";
 		
 		return [desire,desireString];
@@ -865,7 +870,7 @@ window.createSistSubmissiveSex = function() {
 		result = false;
 		if ( finalValue >= 0 ) { result = true; }
 		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Base dif.: " + baseDifficulty
-					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", Desire: " + willpowerCostFactor.toFixed(2) + ", Intentions: " + missionFactor.toFixed(2) + ", Growth: " + powerGrowthFactor.toFixed(2) + " - Result: " + finalValue.toFixed(2);
+					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", desire: " + willpowerCostFactor.toFixed(2) + ", Intentions: " + missionFactor.toFixed(2) + ", Growth: " + powerGrowthFactor.toFixed(2) + " - Result: " + finalValue.toFixed(2);
 		}
 		
 		secondStringResult = gC(actor).getFormattedName() + " invited " + gC(target).getFormattedName() + " to have sex and ";
@@ -1035,7 +1040,7 @@ window.createSistDominantSex = function() {
 		var hadSexFactor = gC(target).daysWithoutSex * 3 - gC(target).sexScenesToday * 3;
 		var missingLustFactor = (1 - getBarPercentage(target,"lust")) * 50;
 		desire = baseDifficulty + moodFactor + relationshipFactor + statsFactor + missingLustFactor + hadSexFactor;
-		var desireString = "Desire: Base difficulty (" + baseDifficulty.toFixed(2) + ") + Mood (" + moodFactor.toFixed(2) + ") + Relationship ("
+		var desireString = "Desire" + getDesireTooltip() + ": Base difficulty (" + baseDifficulty.toFixed(2) + ") + Mood (" + moodFactor.toFixed(2) + ") + Relationship ("
 						 + relationshipFactor.toFixed(2) + ") + Stats (" + statsFactor.toFixed(2) + ") + Lust (" + missingLustFactor.toFixed(2) + ") + Sex life (" + hadSexFactor.toFixed(2) + ") = Total (" + desire.toFixed(2) + ").";
 		
 		return [desire,desireString];
@@ -1086,7 +1091,7 @@ window.createSistDominantSex = function() {
 		result = false;
 		if ( finalValue >= 0 ) { result = true; }
 		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Base dif.: " + baseDifficulty
-					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", Desire: " + willpowerCostFactor.toFixed(2) + ", Intentions: " + missionFactor.toFixed(2) + ", Growth: " + powerGrowthFactor.toFixed(2) + " - Result: " + finalValue.toFixed(2);
+					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", desire: " + willpowerCostFactor.toFixed(2) + ", Intentions: " + missionFactor.toFixed(2) + ", Growth: " + powerGrowthFactor.toFixed(2) + " - Result: " + finalValue.toFixed(2);
 		}
 		
 		secondStringResult = gC(actor).getFormattedName() + " invited " + gC(target).getFormattedName() + " to have sex and ";
@@ -1432,7 +1437,7 @@ window.createSistOfferServitudeAsMaster = function() {
 							 + rLvlAbt(target,actor,"rivalry") * 5;
 		var statsFactor = quantifyCharacterStats(actor) - quantifyCharacterStats(target) * 1.2;
 		desire = baseDifficulty + moodFactor + relationshipFactor + statsFactor;
-		var desireString = "Desire: Base difficulty (" + baseDifficulty.toFixed(2) + ") + Mood (" + moodFactor.toFixed(2) + ") + Relationship ("
+		var desireString = "Desire" + getDesireTooltip() + ": Base difficulty (" + baseDifficulty.toFixed(2) + ") + Mood (" + moodFactor.toFixed(2) + ") + Relationship ("
 						 + relationshipFactor.toFixed(2) + ") + Stats (" + statsFactor.toFixed(2) + ") = Total (" + desire.toFixed(2) + ").";
 		
 		return [desire,desireString];
@@ -1546,7 +1551,7 @@ window.createSistOfferServitudeAsServant = function() {
 							 + rLvlAbt(target,actor,"enmity") * -10 + rLvlAbt(target,actor,"rivalry") * 5;
 		var statsFactor = quantifyCharacterStats(target) - quantifyCharacterStats(actor) * 1.2;
 		desire = baseDifficulty + moodFactor + relationshipFactor + statsFactor;
-		var desireString = "Desire: Base difficulty (" + baseDifficulty.toFixed(2) + ") + Mood (" + moodFactor.toFixed(2) + ") + Relationship ("
+		var desireString = "Desire" + getDesireTooltip() + ": Base difficulty (" + baseDifficulty.toFixed(2) + ") + Mood (" + moodFactor.toFixed(2) + ") + Relationship ("
 						 + relationshipFactor.toFixed(2) + ") + Stats (" + statsFactor.toFixed(2) + ") = Total (" + desire.toFixed(2) + ").";
 		
 		return [desire,desireString];
@@ -1658,7 +1663,7 @@ window.createSistOfferTutorshipAsTutor = function() {
 							 + rLvlAbt(target,actor,"enmity") * -10;
 		var statsFactor = quantifyCharacterStats(actor) - quantifyCharacterStats(target) * 1.2;
 		desire = baseDifficulty + moodFactor + relationshipFactor + statsFactor;
-		var desireString = "Desire: Base difficulty (" + baseDifficulty.toFixed(2) + ") + Mood (" + moodFactor.toFixed(2) + ") + Relationship ("
+		var desireString = "Desire" + getDesireTooltip() + ": Base difficulty (" + baseDifficulty.toFixed(2) + ") + Mood (" + moodFactor.toFixed(2) + ") + Relationship ("
 						 + relationshipFactor.toFixed(2) + ") + Stats (" + statsFactor.toFixed(2) + ") = Total (" + desire.toFixed(2) + ").";
 		
 		return [desire,desireString];
@@ -1789,7 +1794,7 @@ window.createSistOfferTutorshipAsPupil = function() {
 							 + rLvlAbt(target,actor,"enmity") * -10;
 		var statsFactor = quantifyCharacterStats(target) - quantifyCharacterStats(actor) * 1.2;
 		desire = baseDifficulty + moodFactor + relationshipFactor + statsFactor;
-		var desireString = "Desire: Base difficulty (" + baseDifficulty.toFixed(2) + ") + Mood (" + moodFactor.toFixed(2) + ") + Relationship ("
+		var desireString = "Desire" + getDesireTooltip() + ": Base difficulty (" + baseDifficulty.toFixed(2) + ") + Mood (" + moodFactor.toFixed(2) + ") + Relationship ("
 						 + relationshipFactor.toFixed(2) + ") + Stats (" + statsFactor.toFixed(2) + ") = Total (" + desire.toFixed(2) + ").";
 		
 		return [desire,desireString];
@@ -1913,7 +1918,7 @@ window.createSistOfferCompanionship = function() {
 							 + rLvlAbt(target,actor,"rivalry") * -5 + rLvlAbt(target,actor,"enmity") * -10;
 		var statsFactor = (quantifyCharacterStats(actor) - quantifyCharacterStats(target) * 1.2) / 9;
 		desire = baseDifficulty + moodFactor + relationshipFactor + statsFactor;
-		var desireString = "Desire: Base difficulty (" + baseDifficulty.toFixed(2) + ") + Mood (" + moodFactor.toFixed(2) + ") + Relationship ("
+		var desireString = "Desire" + getDesireTooltip() + ": Base difficulty (" + baseDifficulty.toFixed(2) + ") + Mood (" + moodFactor.toFixed(2) + ") + Relationship ("
 						 + relationshipFactor.toFixed(2) + ") + Stats (" + statsFactor.toFixed(2) + ") = Total (" + desire.toFixed(2) + ").";
 		
 		return [desire,desireString];
@@ -2105,7 +2110,7 @@ window.createSistUnlockActorsGenitals = function() {
 	
 	sist.getDesire = function(actor,target) {
 		var desire = 0;
-		var desireString = "Desire: 0";
+		var desireString = "Desire" + getDesireTooltip() + ": 0";
 		
 		return [desire,desireString];
 	}

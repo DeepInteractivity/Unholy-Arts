@@ -233,6 +233,17 @@ Character.prototype.cleanStates = function() {
 		}
 		this.alteredStates = newAlteredStates;
 	}
+Character.prototype.removeSpecificState = function(stateAcr) {
+	var newAlteredStates = [];
+	for ( var as of this.alteredStates ) {
+		if ( as.acr != stateAcr ) {
+			newAlteredStates.push(as);
+		} else {
+			as.cancelEffect(this.varName);
+		}
+	}
+	this.alteredStates = newAlteredStates;
+}
 
 Character.prototype.addBodypart = function(key,name) {
 		this.body[key] = new Bodypart(key,name);
@@ -1229,6 +1240,9 @@ window.textEquipment = function(charKey) {
 	eText += "Weapon: ";
 	if ( gC(charKey).weaponID != -1 ) {
 		eText += '<span title="' + getEquipDataById(gC(charKey).weaponID).description + '">' + getEquipDataById(gC(charKey).weaponID).name + "</span>"
+		if ( isCharsWeaponInUse(charKey) ) {
+			eText += " (In use)";
+		}
 	}
 	eText += "\nClothes: ";
 	if ( gC(charKey).weaponID != -1 ) {

@@ -605,13 +605,8 @@ setup.mapGleamingCaverns.unionLakeUpper = new RoomInfo(
 	function(characters) {
 		var actions = [ createRestingActionStandard(),
 						createCheapWaitingActionCaverns() ];
-						// TO DO: Does voyeur action lead to correct passage? Does voyeur scene lead to correct interlude?
-						// TO DO: Post-effects
-						// TO DO, later: Map-story event with Claw
-		// Check: is there scene, either create message or map action
-		// Voyeur action
 		
-		
+		// Voyeurism map scene
 			// Dice
 		var baseChance = gCstat(characters[0],"perception") * 2 + gCstat(characters[0],"luck");
 		var dice200 = limitedRandomInt(200);
@@ -695,6 +690,9 @@ setup.mapGleamingCaverns.workshop = new RoomInfo(
 	function(characters) {
 		var actions = [ createWorkshopCraftingAction(),
 						createWorkshopPaintingAction() ];
+		if ( isStVarOn("dldCrf") == true && isStVarOn("dldPly") == false && characters[0] == "chPlayerCharacter" ) {
+			actions.push(createGleamingCavernsDildoPlayAction());
+		}
 		return actions;
 	}, // getActions
 	[115,96]

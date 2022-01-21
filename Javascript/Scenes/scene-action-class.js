@@ -83,19 +83,37 @@ window.isActionUsable = function(actionKey,actorKey,targetsKeys,skipLinkedCheck)
 					}
 				}
 				break;
-			case "hasLead":
+			case "hasLead":											// Must have the lead in the scene
 				if ( gC(actorKey).hasLead == false ) {
 					iAU.isUsable = false;
 					if ( State.variables.settings.debugFunctions ) {  iAU.explanation += "This action requires the user to be leading.\n"; }
 				}
 				break;
-			case "control":
+			case "control":											// Must have control in battle
 				if ( gC(actorKey).control <= 0 ) {
 					iAU.isUsable = false;
 					if ( State.variables.settings.debugFunctions ) { iAU.explanation += "This action requires the user to have control higher than 0.\n"; }
 				}
 				break;
-			case "struggle":
+			case "activePosition":									// Shares a position with the target where the actor is the initiator
+				var flagActivePosition = false;
+				if ( gC(actorKey).position.type == "active" ) {
+					if ( gC(actorKey).position.targetsList.includes(targetsKeys[0]) ) {
+						flagActivePosition = true;
+					}
+				}
+				if ( flagActivePosition == false ) {
+					iAU.isUsable = false;
+					if ( State.variables.settings.debugFunctions ) { iAU.explanation += "This action requires the user to be the initiator in a position with the target.\n"; }
+				}
+				 break;
+			case "unusedWeapon":									// Requires the actor to have a currently unused weapon
+				if ( isCharsWeaponInUse(actorKey) ) {
+					iAU.isUsable = false;
+					if ( State.variables.settings.debugFunctions ) { iAU.explanation += "This action requires the user's weapon to be currently not in use.\n"; }
+				}
+				break;
+			case "struggle":										// Specific checks for struggle action
 				if ( State.variables.sc.sceneType != "bs" ) {
 					iAU.isUsable = false;
 					if ( State.variables.settings.debugFunctions ) { iAU.explanation += "This action is only usable in battle scenes.\n"; }
@@ -758,6 +776,20 @@ window.saList = function() {
 	
 	this.energyDrainingKiss = createSaEnergyDrainingKiss();
 	
+	// Weapons
+		// Dildo
+	this.dildoTeaseGenitals = createSaDildoTeaseGenitals();
+	
+	this.thrustDildo = createSaThrustDildo();
+	this.pushAgainstDildo = createSaPushAgainstDildo();
+	
+		// Continued actions
+			// Dildo
+	this.dildoPenetratePussy = createSaDildoPenetratePussy();
+	this.dildoPenetrateAss = createSaDildoPenetrateAss();
+	this.dildoPenetrateMouth = createSaDildoPenetrateMouth();
+	
+	this.doubleDildoPussyPenetration = createSaDoubleDildoPussyPenetration();
 	//
 	
 	this.punch = createBaPunch(); // ToDo: Remove this
@@ -785,6 +817,11 @@ window.saList = function() {
 	this.pounceFrontalP2D = createSaP2DfrontalPounce();
 	this.baRideDick = createSaBaRideDick();
 	this.baPushDickBack = createSaBaPushDickBack();
+	
+		// Items
+	this.baDildoPenetratePussy = createSaBaDildoPenetratePussy();
+	
+	this.baThrustDildo = createSaBaThrustDildo();
 	
 	// Physical
 	
@@ -903,4 +940,16 @@ window.doesAnyActionContainTags = function(actionsList,tagsList) {
 	return flag;
 }
 
+window.getCurrentContinuedActionsBetweenInitiatorAndTarget = function(initiator,target) {
+	var existingCAs = [];
+	
+	// Continued actions
+	for ( var ca of State.variables.sc.continuedActions ) {
+		if ( ca.initiator == initiator && ca.targetsList.includes(target) ) {
+			existingCAs.push(ca.key);
+		}
+	}
+	
+	return existingCAs;
+}
 

@@ -86,6 +86,17 @@ window.createSystemEventCheapWait = function(minutes,characters) {
 	sEvent.priority = -1;
 	return sEvent;
 }
+window.createSystemEventMedWait = function(minutes,characters) {
+	var sEvent = new systemEvent(20,characters,"cavernWait","Wait for a few minutes",function(cList) {
+			
+			var eventMsg = "You rest for a few minutes, your eyes focused on the the occasional, tiny waves taking form at the lake below.. ";
+			State.variables.compass.setMapMessage(eventMsg);
+			return eventMsg;
+		}
+	);
+	sEvent.priority = -1;
+	return sEvent;
+}
 window.createCheapWaitingActionCaverns = function() {
 	var action = new mapAction("cavernWait","Wait for a few minutes",createSystemEventCheapWait,false);
 	action.description = "The characters will wait for a few minutes staring at the lake below.";
@@ -282,6 +293,31 @@ window.createSysEvWorkshopCrafting = function(minutes,characters) {
 				eventMsg += rspMsg;
 				eventMsg += createCharSpentBarMessage(character,barType,barConsumption) + "\n";
 			}
+			// Dildo crafting map event
+			if ( isStVarOn("dldCrf") == false && cList[0] == "chPlayerCharacter" ) { // Dildo crafting map scene
+				// Base requirements
+				var baseSkillRequirement = 50;
+				var pcPhyPoints = (gCstat("chPlayerCharacter","physique") - 10) * 0.5; if ( pcPhyPoints < 0 ) { pcPhyPoints = 0; }
+				var pcPerPoints = (gCstat("chPlayerCharacter","perception") - 10) * 0.5; if ( pcPerPoints < 0 ) { pcPerPoints = 0; }
+				var pcIntPoints = (gCstat("chPlayerCharacter","intelligence") - 10) * 0.5; if ( pcIntPoints < 0 ) { pcIntPoints = 0; }
+				var pcSkill = getCharsSpecialExperience("chPlayerCharacter","crfExp") * 10 + pcPhyPoints + pcPerPoints + pcIntPoints;
+				if ( pcSkill >= 60 ) { // Passed initial check, continue
+					eventMsg += colorText("Initial check PASSED","green") + ": Crafting Skill (" + getCharsSpecialExperience("chPlayerCharacter","crfExp").toFixed(1) * 10 + ") + Physique points (" + pcPhyPoints.toFixed(1) + ") + Perception points (" + pcPerPoints.toFixed(1) + ") + Intelligence Points (" + pcIntPoints.toFixed(1) + ") = " + pcSkill.toFixed(1) + " >= Difficulty (60)\n\n";
+					var hornyPoints = (1 - getBarPercentage("chPlayerCharacter","lust")) * 20; // Missing lust % * 10
+					var dice45 = limitedRandomInt(45);
+					var difficulty = 40;
+					var totalPoints = pcSkill * 0.1 + dice45 + hornyPoints;
+					if ( totalPoints >= difficulty ) { // Passed second check, notify and offer option to create dildo
+						eventMsg += colorText("Second check PASSED","green") + ": Skill points (" + (pcSkill * 0.1).toFixed(1) + ") + Horny points (" + hornyPoints.toFixed(1) + ")" + getTextWithTooltip("^^(?)^^","Receive lust damage to raise this value.") + " Dice 45 (" + dice45 + ") = " + totalPoints.toFixed(1) + " >= Difficulty (" + difficulty + ")\n\n";
+						eventMsg += "<<l" + "ink [[...Craft a toy?|FASE Crafting a Dildo]]>><<s" + "cript>>\n"
+			+ "initializeFaSeCraftingADildo();\n<</s" + "cript>><</l" + "ink>>\n\n";
+					} else { // Didn't pass second check, notify
+						eventMsg += colorText("Second check FAILED","red") + ": Skill points (" + (pcSkill * 0.1).toFixed(1) + ") + Horny points (" + hornyPoints.toFixed(1) + ")" + getTextWithTooltip("^^(?)^^","Receive lust damage to raise this value.") + " Dice 45 (" + dice45 + ") = " + totalPoints.toFixed(1) + " < Difficulty (" + difficulty + ")\n\n";
+					}
+				} else { // Didn't pass initial check, notify
+					eventMsg += colorText("Initial check FAILED","red") + ": Crafting Skill (" + getCharsSpecialExperience("chPlayerCharacter","crfExp").toFixed(1) * 10 + ") + Physique points (" + pcPhyPoints.toFixed(1) + ") + Perception points (" + pcPerPoints.toFixed(1) + ") + Intelligence Points (" + pcIntPoints.toFixed(1) + ") = " + pcSkill.toFixed(1) + " < Difficulty (60)\n\n";
+				}
+			}
 			eventMsg += sharedTrainingRelationshipEvents(characters);
 			return eventMsg;
 		}
@@ -388,7 +424,7 @@ window.createGleamingCavernsVoyeurAction = function(firstCharFemale,secondCharFe
 	var action = new mapAction("gCvoyeur","Spy at the lovers below",createGleamingCavernsVoyeurEvent,false);
 	action.description = "You have spotted a couple of Shapeshifters down below seeking intimacy. You could become an uninvited observer...";
 	action.recMins = 20;
-	action.getPassage = function() { return "Scene" };
+	action.getPassage = function() { return "Scene"; };
 	return action;
 }
 window.createGleamingCavernsVoyeurEvent = function(minutes,characters) {
@@ -412,13 +448,6 @@ window.createGleamingCavernsVoyeurEvent = function(minutes,characters) {
 	recalculateMaxBars(charA);
 	recalculateMaxBars(charB);
 	var sEvent = new systemEvent(20,allChars,"scene","Spying sex",function(cList) {
-			// TO DO:
-			/*
-			Sex scene must lead to interlude
-			Sex scene must have special effects for spectators
-			Anonymous characters must be removed later
-			*/
-		
 			var desc = getRoomInfoA(gC(this.characters[2]).currentRoom).description;
 			State.variables.sc.startScene("ss",sceneType,[charA],[charB],desc,endConditionTurns,gSettings().stdSxScDur,"Scene Results"); // Start scene
 			State.variables.sc.endSceneScript = processGleamingCavernsVoyeurEffects;
@@ -506,5 +535,13 @@ window.createGleamingCavernsVoyeurEvent = function(minutes,characters) {
 	
 	// Finish formatting
 	State.variables.compass.sceneResultsPassage = resultsMessage;
+}
+
+window.createGleamingCavernsDildoPlayAction = function() {
+	var action = new mapAction("dldPlay","Try out the dildo",createSystemEventMedWait,false);
+	action.description = "Find a hidden spot to feel the touch of your new toy against your flesh.";
+	action.recMins = 20;
+	action.getPassage = function() { return "FASE Dildo Play 1"; };
+	return action;
 }
 

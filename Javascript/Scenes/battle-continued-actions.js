@@ -140,16 +140,7 @@ window.createBcaP2Ppounce = function(initiator,targetsList) {
 		var inDamValue2 = gCstat(target,"physique") * 0.04 + gCstat(target,"resilience") * 0.04;
 		inDamValue2 = addLuckFactor(inDamValue2,0.1,gCstat(actor,"luck"));
 		var damage2 = calculateAttackEffects("lust",target,actor,tarAffinities,inDamValue2);
-		
-		/*
-		// Submissive loss of willpower
-		if ( gC(target).hasLead == false && gC(target).position.key == "mountedFromBehind" ) {
-			var exWillpowerDamage = (gC(this.initiator).will.getValue() / gC(target).will.getValue()) * 1;
-			gC(target).willpower.changeValue(-exWillpowerDamage);
-			results.description += ktn(target) + "'s submissive position made " + gC(target).comPr + " receive " + textWillpowerDamage(exWillpowerDamage) + ".";
-		}
-		*/
-		
+				
 		// Apply effects
 		gC(target).lust.attack(-damage);
 		gC(actor).lust.attack(-damage2);
@@ -254,6 +245,50 @@ window.createBposP2DfrontalPounce = function(initiator, targetsList) {
 	gC(target).position.description = ktn(initiator) + " is holding " + ktn(target) + " below " + gC(initiator).posPr + " legs.";
 }
 
+	// Weapons
+	
+		// Secondary continued actions
+window.createCaBaDildoPenetratePussy = function(initiator, targetsList) {
+	var ca = new continuedAction();
+	ca.key = "baDildoPenetratePussy";
+	ca.name = "Dildo-Pussy penetration";
+	ca.initiator = initiator;
+	ca.targetsList = targetsList;
+	ca.initiatorBodyparts = [ "arms" ];
+	ca.targetsBodyparts = [ "pussy" ];
+	ca.occupyBodyparts();
+	ca.rank = 1;
+	ca.affinities = ["targetPussy","sex"];
+	ca.flavorTags = ["targetPussy","top","continuedAction"];
+	ca.tags = ["activePosition"];
+	ca.flagUsingWeapon = true;
+	
+	ca.execute = function() {
+		var results = new saResults;
+		var actor = ca.initiator;
+		var target = targetsList[0];
+		
+		// Damage to target
+		var actAffinities = ["sex","targetPussy"];
+		var inDamValue = gCstat(actor,"physique") * 0.1 + gCstat(actor,"agility") * 0.1 - gCstat(target,"resilience") * 0.05;
+		inDamValue = addLuckFactor(inDamValue,0.1,gCstat(actor,"luck"));
+		var lustDamage = calculateAttackEffects("lust",actor,target,actAffinities,inDamValue);
+		
+		// Apply effects
+		gC(target).lust.attack(-lustDamage);
+		
+		results.value += lustDamage;
+		results.description += randomFromList( [
+								(ktn(initiator) + "'s dildo continues pleasuring " + ktn(target) + "'s insides."),
+								(ktn(initiator) + " keeps penetrating " + ktn(target) + "'s " + pussyWord() + " with " + gC(initiator).posPr + " dildo."),
+								(ktn(initiator) + " is fucking " + ktn(target) + " with " + gC(initiator).posPr + " dildo.") ] );
+		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". "
+		
+		return results;
+	}	
+	return ca;
+}
+
 	// Others
 
 window.createBposMakeKneel = function(initiator, targetsList) {
@@ -309,3 +344,4 @@ window.createBcaMakingKneel = function(initiator,targetsList) {
 	}	
 	return ca;
 }
+

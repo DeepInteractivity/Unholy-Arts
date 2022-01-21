@@ -1349,6 +1349,16 @@ window.purgeActionsWithoutPreferenceTag = function(list,tag) {
 	return newList;
 }
 
+window.purgeInvalidActionsFromListActorOnTarget = function(list,actor,target) {
+	var newList = [];
+	for ( var act of list ) {
+		if ( isActionUsable(act,actor,[target],false).isUsable == true ) {
+			newList.push(act);
+		}
+	}
+	return newList;
+}
+
 	// Altered states
 window.countCharactersBuffs = function(charKey) {
 	var count = 0;

@@ -245,6 +245,15 @@ window.playerNnashOrgasmEndCondition = function(none) {
 	
 	return flagEndScene;
 }
+window.playerNnashTwoOrgasmsEndCondition = function(none) {
+	var flagEndScene = false;
+	
+	if ( State.variables.chPlayerCharacter.getAllSceneOrgasms() > 1 && State.variables.chNash.getAllSceneOrgasms() > 1 ) {
+		flagEndScene = true;
+	}
+	
+	return flagEndScene;
+}
 
 window.reachTurnLimitEndCondition = function(turnLimit) {
 	var flagEndScene = false;
@@ -709,6 +718,7 @@ window.ccsLuMaPlayerVsValBattleInit = function() {
 		}
 	}
 	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
 }
 
 // Gifts for Nature
@@ -1094,16 +1104,11 @@ window.playerTwoOrgasms = function(none) {
 	return flagEndScene;
 }
 window.BoAwPairAbusesDuo = function(newPassage) {
-	State.variables.sc.startScene(
-	"ss","dynamic",["chPlayerCharacter","chMir"],["chClaw","chNash"],"Nothing disrupts the quietness of the lake, save for your moans.",playerMirTwoOrgasms,4,
-	newPassage);
-	/*
-	State.variables.chPlayerCharacter.hasLead = true;
-	State.variables.chMir.hasLead = false;
-	State.variables.chClaw.hasLead = false;
-	State.variables.chNash.hasLead = false;*/
 	addSceneTagToChar("noLead","chClaw");
 	addSceneTagToChar("noLead","chNash");
+	State.variables.sc.startScene(
+	"ss","dynamic",["chPlayerCharacter","chMir"],["chClaw","chNash"],"Nothing disrupts the quietness of the lake, save for your moans.",playerMirTwoOrgasms,4,
+	newPassage);	
 	State.variables.sc.formatScenePassage();
 	State.variables.chClaw.aiAlgorythm = createAiWeightedMissionsByTaste();
 	State.variables.chClaw.aiAlgorythm.setRoleSubmission();
@@ -1228,5 +1233,134 @@ window.bbCfightingClaw = function() {
 	setRefreshLustScript();
 }
 	
-	// State.variables.sc.startScene( 
-	//"bs","fixed",["chPlayerCharacter"],["chVal"],"__Forest__\nThe trees are shaken by the wind.",createEndConditionStoryBattle("Luring Masquerade Sweet //Revenge","Luring Masquerade Saved By Mir")
+// Dildo Play
+window.dldPlyNashTopsPlayer = function() {
+	State.variables.sc.startScene(
+	"ss","fixed",["chPlayerCharacter"],["chNash"],"Piles of materials, resources and crafts surround you, blocking the vision of any intruder. Of any new intruder, at least. Probably.",playerNnashTwoOrgasmsEndCondition,gSettings().stdSxScDur,
+	"FASE DldPly NashTakesControl End");
+	// Control
+	State.variables.chNash.hasLead = true;
+	State.variables.chPlayerCharacter.hasLead = false;
+	// Assign choices
+	State.variables.chNash.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chNash.aiAlgorythm.fixedTarget = "chPlayerCharacter";
+	State.variables.chNash.aiAlgorythm.setRoleDomination();
+	// Equip dildo on Nash
+	unequipObject(State.variables.StVars.check1);
+	unequipToolTypeFromChar("weaponID","chNash");
+	equipObjectOnWearer(State.variables.StVars.check1,"chNash",-1);
+	// Custom script
+		// Chance for Nash to use dildo-related actions only, chance for Nash to use the usual aiAlgorythm
+	State.variables.sc.customScript = function() {
+		var flagNashChoosesDildoAction = true;
+		if ( State.variables.chNash.aiAlgorythm.hasOwnProperty("missionCommands") ) {
+			if ( State.variables.chNash.aiAlgorythm.missionCommands.length > 0 ) {
+				flagNashChoosesDildoAction = false;
+			}
+		}
+		if ( flagNashChoosesDildoAction ) {
+			if ( limitedRandomInt(30) >= 20 ) { // Nash chooses dildo actions
+				var possibleDildoChoices = ["dildoTeaseGenitals","dildoPenetratePussy","dildoPenetrateAss","dildoPenetrateMouth","thrustDildo","doubleDildoPussyPenetration","baDildoPenetratePussy","baThrustDildo","pushAgainstDildo"];
+				possibleDildoChoices = purgeInvalidActionsFromListActorOnTarget(possibleDildoChoices,"chNash","chPlayerCharacter");
+				if ( possibleDildoChoices.length > 0 ) {
+					var fixedDildoChoices = [];
+					for ( var ch of possibleDildoChoices ) {
+						fixedDildoChoices.push(["chPlayerCharacter",ch]);
+					}
+					State.variables.chNash.aiAlgorythm = createAiRandomChoice(fixedDildoChoices);
+					State.variables.chNash.aiAlgorythm.fixedTarget = "chPlayerCharacter";
+				} else { flagNashChoosesDildoAction = false; }
+			} else { flagNashChoosesDildoAction = false; }
+		}
+		if ( flagNashChoosesDildoAction == false ) {
+			State.variables.chNash.aiAlgorythm = createAiWeightedMissionsByTaste();
+			State.variables.chNash.aiAlgorythm.fixedTarget = "chPlayerCharacter";
+			State.variables.chNash.aiAlgorythm.setRoleDomination();
+		}
+	}
+	//
+	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
+}
+window.dldPlyEgaNashHasDildo = function() {
+	State.variables.sc.startScene(
+	"ss","dynamic",["chPlayerCharacter"],["chNash"],"Piles of materials, resources and crafts surround you, blocking the vision of any intruder. Of any new intruder, at least. Probably.",playerNnashTwoOrgasmsEndCondition,gSettings().stdSxScDur,
+	"FASE DldPly EgaNashDld End");
+	// Assign choices
+	State.variables.chNash.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chNash.aiAlgorythm.fixedTarget = "chPlayerCharacter";
+	State.variables.chNash.aiAlgorythm.setRoleActive();
+	// Equip dildo on Nash
+	unequipObject(State.variables.StVars.check1);
+	unequipToolTypeFromChar("weaponID","chNash");
+	equipObjectOnWearer(State.variables.StVars.check1,"chNash",-1);
+	// Custom script
+		// Chance for Nash to use dildo-related actions only, chance for Nash to use the usual aiAlgorythm
+	State.variables.sc.customScript = function() {
+		var flagNashChoosesDildoAction = true;
+		if ( State.variables.chNash.aiAlgorythm.hasOwnProperty("missionCommands") ) {
+			if ( State.variables.chNash.aiAlgorythm.missionCommands.length > 0 ) {
+				flagNashChoosesDildoAction = false;
+			}
+		}
+		if ( flagNashChoosesDildoAction ) {
+			if ( limitedRandomInt(30) >= 20 ) { // Nash chooses dildo actions
+				var possibleDildoChoices = ["dildoTeaseGenitals","dildoPenetratePussy","dildoPenetrateAss","dildoPenetrateMouth","thrustDildo","doubleDildoPussyPenetration","baDildoPenetratePussy","baThrustDildo","pushAgainstDildo"];
+				possibleDildoChoices = purgeInvalidActionsFromListActorOnTarget(possibleDildoChoices,"chNash","chPlayerCharacter");
+				if ( possibleDildoChoices.length > 0 ) {
+					var fixedDildoChoices = [];
+					for ( var ch of possibleDildoChoices ) {
+						fixedDildoChoices.push(["chPlayerCharacter",ch]);
+					}
+					State.variables.chNash.aiAlgorythm = createAiRandomChoice(fixedDildoChoices);
+					State.variables.chNash.aiAlgorythm.fixedTarget = "chPlayerCharacter";
+				} else { flagNashChoosesDildoAction = false; }
+			} else { flagNashChoosesDildoAction = false; }
+		}
+		if ( flagNashChoosesDildoAction == false ) {
+			State.variables.chNash.aiAlgorythm = createAiWeightedMissionsByTaste();
+			State.variables.chNash.aiAlgorythm.fixedTarget = "chPlayerCharacter";
+			State.variables.chNash.aiAlgorythm.setRoleActive();
+		}
+	}
+	//
+	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
+}
+window.dldPlyEgaPlayerHasDildo = function() {
+	State.variables.sc.startScene(
+	"ss","dynamic",["chPlayerCharacter"],["chNash"],"Piles of materials, resources and crafts surround you, blocking the vision of any intruder. Of any new intruder, at least. Probably.",playerNnashTwoOrgasmsEndCondition,gSettings().stdSxScDur,
+	"FASE DldPly EgaPlayerDld End End");
+	// Assign choices
+	State.variables.chNash.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chNash.aiAlgorythm.fixedTarget = "chPlayerCharacter";
+	State.variables.chNash.aiAlgorythm.setRolePassive();
+	// Equip dildo on PC
+	unequipObject(State.variables.StVars.check1);
+	unequipToolTypeFromChar("weaponID","chPlayerCharacter");
+	equipObjectOnWearer(State.variables.StVars.check1,"chPlayerCharacter",-1);
+		//
+	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
+}
+window.dldPlyPlayerTopsNash = function() {
+	State.variables.sc.startScene(
+	"ss","fixed",["chPlayerCharacter"],["chNash"],"Piles of materials, resources and crafts surround you, blocking the vision of any intruder. Of any new intruder, at least. Probably.",playerNnashTwoOrgasmsEndCondition,gSettings().stdSxScDur,
+	"FASE DldPly PlayerTakesControl End");
+	// Control
+	State.variables.chNash.hasLead = false;
+	State.variables.chPlayerCharacter.hasLead = true;
+	// Assign choices
+	State.variables.chNash.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chNash.aiAlgorythm.fixedTarget = "chPlayerCharacter";
+	State.variables.chNash.aiAlgorythm.setRoleSubmission();
+	// Equip dildo on PC
+	unequipObject(State.variables.StVars.check1);
+	unequipToolTypeFromChar("weaponID","chPlayerCharacter");
+	equipObjectOnWearer(State.variables.StVars.check1,"chPlayerCharacter",-1);
+	//
+	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
+}
+
+

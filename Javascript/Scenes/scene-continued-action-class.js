@@ -26,9 +26,14 @@ window.continuedAction = function() {
 	this.initiatorBodyparts = []; // Involved bodyparts for the initiator
 	this.targetsBodyparts = [] ; // Involved bodyparts for the targets
 	
+	this.tags = [];
 	this.validRelationalPositions = [] ; // List of sets of two positions.
 										 // If length > 0 , initiator must have the first position on any set, and targets the second positions
 	this.unvalidRelationalPositions = [] ; // Opposite of validRelationalPositions
+	
+	this.associatedActions = []; // Characters will learn these actions when continued actions involving them start, and forget them when the CAs finish
+	
+	// this.flagUsingWeapon = false; // If this attribute exists, the initiator's weapon will be set to unused when this continued action is finished
 	
 	this.rank = 1;
 	this.continuedTurns = 0;
@@ -55,6 +60,18 @@ window.continuedAction = function() {
 			}
 		}
 	}
+	this.learnAssociatedActions = function() {
+		if ( this.associatedActions.length > 0 ) {
+			var chars = this.targetsList.concat([this.initiator]);
+			charactersLearnSceneActions(chars,this.associatedActions);
+		}
+	}
+	this.forgetAssociatedActions = function() {
+		if ( this.associatedActions.length > 0 ) {
+			var chars = this.targetsList.concat([this.initiator]);
+			charactersForgetSceneActions(chars,this.associatedActions);
+		}
+	}
 }
 
 window.createCaFrenchKiss = function(initiator, targetsList) {
@@ -69,6 +86,8 @@ window.createCaFrenchKiss = function(initiator, targetsList) {
 	ca.flavorTags = ["oral","useMouth","targetMouth","romantic","continuedAction"];
 	
 	ca.unvalidRelationalPositions.push(["standing","kneeling"],["kneeling","standing"]);
+	
+	ca.learnAssociatedActions();
 	
 	ca.execute = function() {
 		var results = new saResults;
@@ -464,6 +483,158 @@ window.createCaGetBlowjob = function(initiator, targetsList) {
 		
 		return results;
 	}
+	return ca;
+}
+
+	// Weapon
+window.createCaDildoPenetratePussy = function(initiator, targetsList) {
+	var ca = new continuedAction();
+	ca.key = "dildoPenetratePussy";
+	ca.name = "Dildo-Pussy penetration";
+	ca.initiator = initiator;
+	ca.targetsList = targetsList;
+	ca.initiatorBodyparts = [ "arms" ];
+	ca.targetsBodyparts = [ "pussy" ];
+	ca.occupyBodyparts();
+	ca.rank = 1;
+	ca.flavorTags = ["targetPussy","top","continuedAction"];
+	ca.flagUsingWeapon = true;
+	
+	ca.unvalidRelationalPositions.push(["standing","kneeling"]);
+	ca.unvalidRelationalPositions.push(["spitroastTarget","spitroastFront"],["spitroastTarget","spitroastBehind"],["spitroastFront","spitroastTarget"]);
+	ca.unvalidRelationalPositions.push(["spitroastFront","spitroastBehind"],["spitroastBehind","spitroastFront"]);
+	
+	ca.execute = function() {
+		var results = new saResults;
+		var target = targetsList[0];
+		
+		var multAr = getSexDamageMultAlt(this.initiator,this.targetsList[0],this.flavorTags);
+		var lustDamage = ((getChar(this.initiator).physique.getValue() * 1 + getChar(this.initiator).agility.getValue() * 1) / 16) * multAr[0];
+		getChar(this.targetsList[0]).lust.changeValue(-lustDamage);
+		results.value += lustDamage;
+		results.description += randomFromList( [
+								(ktn(initiator) + "'s dildo continues pleasuring " + ktn(target) + "'s insides."),
+								(ktn(initiator) + " keeps penetrating " + ktn(target) + "'s " + pussyWord() + " with " + gC(initiator).posPr + " dildo."),
+								(ktn(initiator) + " is fucking " + ktn(target) + " with " + gC(initiator).posPr + " dildo.") ] );
+		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1];
+		
+		return results;
+	}	
+	return ca;
+}
+window.createCaDildoPenetrateAss = function(initiator, targetsList) {
+	var ca = new continuedAction();
+	ca.key = "dildoPenetrateAss";
+	ca.name = "Dildo-Ass penetration";
+	ca.initiator = initiator;
+	ca.targetsList = targetsList;
+	ca.initiatorBodyparts = [ "arms" ];
+	ca.targetsBodyparts = [ "anus" ];
+	ca.occupyBodyparts();
+	ca.rank = 1;
+	ca.flavorTags = ["targetAnus","top","continuedAction"];
+	ca.flagUsingWeapon = true;
+	
+	ca.unvalidRelationalPositions.push(["standing","kneeling"]);
+	ca.unvalidRelationalPositions.push(["spitroastTarget","spitroastFront"],["spitroastTarget","spitroastBehind"],["spitroastFront","spitroastTarget"]);
+	ca.unvalidRelationalPositions.push(["spitroastFront","spitroastBehind"],["spitroastBehind","spitroastFront"]);
+	
+	ca.execute = function() {
+		var results = new saResults;
+		var target = targetsList[0];
+		
+		var multAr = getSexDamageMultAlt(this.initiator,this.targetsList[0],this.flavorTags);
+		var lustDamage = ((getChar(this.initiator).physique.getValue() * 1 + getChar(this.initiator).agility.getValue() * 1) / 24) * multAr[0];
+		var energyDamage = ((getChar(this.initiator).physique.getValue() * 1 + getChar(this.initiator).agility.getValue() * 1) / 32) * multAr[0];
+		getChar(this.targetsList[0]).lust.changeValue(-lustDamage);
+		getChar(this.targetsList[0]).energy.changeValue(-energyDamage);
+		results.value += lustDamage;
+		results.description += randomFromList( [
+								(ktn(initiator) + "'s dildo continues pleasuring " + ktn(target) + "'s rear."),
+								(ktn(initiator) + " keeps penetrating " + ktn(target) + "'s " + assWord() + " with " + gC(initiator).posPr + " dildo."),
+								(ktn(initiator) + " is fucking " + ktn(target) + " with " + gC(initiator).posPr + " dildo.") ] );
+		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + " and " + textEnergyDamage(energyDamage) + "." + multAr[1];
+		
+		return results;
+	}	
+	return ca;
+}
+window.createCaDildoPenetrateMouth = function(initiator, targetsList) {
+	var ca = new continuedAction();
+	ca.key = "dildoPenetrateMouth";
+	ca.name = "Dildo-Mouth penetration";
+	ca.initiator = initiator;
+	ca.targetsList = targetsList;
+	ca.initiatorBodyparts = [ "arms" ];
+	ca.targetsBodyparts = [ "mouth" ];
+	ca.occupyBodyparts();
+	ca.rank = 1;
+	ca.flavorTags = ["targetMouth","top","continuedAction"];
+	ca.flagUsingWeapon = true;
+	
+	ca.unvalidRelationalPositions.push(["kneeling","standing"]);
+	ca.unvalidRelationalPositions.push(["spitroastTarget","spitroastFront"]);
+	ca.unvalidRelationalPositions.push(["spitroastTarget","spitroastBehind"],["spitroastBehind","spitroastTarget"]);
+	
+	ca.execute = function() {
+		var results = new saResults;
+		var target = targetsList[0];
+		
+		var multAr = getSexDamageMultAlt(this.initiator,this.targetsList[0],this.flavorTags);
+		var lustDamage = ((getChar(this.initiator).agility.getValue() * 1) / 15) * multAr[0];
+		var socialDriveDamage = ((getChar(this.initiator).agility.getValue() * 1) / 20) * multAr[0];
+		getChar(this.targetsList[0]).lust.changeValue(-lustDamage);
+		getChar(this.targetsList[0]).socialdrive.changeValue(-socialDriveDamage);
+		results.value += lustDamage;
+		results.description += randomFromList( [
+								(ktn(target) + "'s mouth is full with " + ktn(initiator) + "'s dildo."),
+								(ktn(initiator) + " continues massaging the insides of " + ktn(target) + "'s mouth with " + gC(initiator).posPr + " dildo.")
+								] );
+		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + " and " + textSocialdriveDamage(socialDriveDamage) + "." + multAr[1];
+		
+		return results;
+	}	
+	return ca;
+}
+
+window.createCaDoubleDildoPussyPenetration = function(initiator, targetsList) {
+	var ca = new continuedAction();
+	ca.key = "doubleDildoPussyPenetration";
+	ca.name = "Double Dildo-Pussy penetration";
+	ca.initiator = initiator;
+	ca.targetsList = targetsList;
+	ca.initiatorBodyparts = [ "pussy" ];
+	ca.targetsBodyparts = [ "pussy" ];
+	ca.occupyBodyparts();
+	ca.rank = 2;
+	ca.flavorTags = ["fullsex","usePussy","targetPussy","top","continuedAction"];
+	ca.flagUsingWeapon = true;
+	
+	ca.validRelationalPositions.push(["mountingFaceToFace","mountedFaceToFace"],["mountingAndMounted","mountedFaceToFace"]);
+	
+	ca.associatedActions = ["pushAgainstDildo"];
+	ca.learnAssociatedActions();
+	
+	ca.execute = function() {
+		var results = new saResults;
+		var target = targetsList[0];
+		
+		var multAr = getSexDamageMultAlt(this.initiator,this.targetsList[0],this.flavorTags);
+		var multAr2 = getSexDamageMultAlt(this.initiator,this.initiator,this.flavorTags);
+		var lustDamage = ((getChar(this.initiator).physique.getValue() * 2 + getChar(this.initiator).resilience.getValue() * 1 + getChar(this.initiator).agility.getValue() * 1) / 24) * multAr[0];
+		getChar(this.targetsList[0]).lust.changeValue(-lustDamage);
+		var lustDamage2 = ((getChar(this.targetsList[0]).physique.getValue() * 2 + getChar(this.targetsList[0]).resilience.getValue() * 1 + getChar(this.targetsList[0]).agility.getValue() * 1) / 32) * multAr2[0];
+		getChar(this.initiator).lust.changeValue(-lustDamage2);
+		results.value += lustDamage;
+		results.description += randomFromList( [
+								(ktn(initiator) + "'s and " + ktn(target) + "'s " + randomFromList(["pussies","pussies","pussies","cherries","clams"]) + " remain connected by " + ktn(initiator) + "'s dildo."),
+								(ktn(initiator) + "'s hips move up and down, letting them fall down to " + ktn(target) + "'s groin."),
+								(ktn(initiator) + "'s " + pussyWord() + " feels the thrusts and pushes of " + ktn(target) + " down the other end of the dildo.") ] );
+		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1];
+		results.description += ktn(initiator) + " received " + textLustDamage(lustDamage2) + ". " + multAr2[1];
+		
+		return results;
+	}	
 	return ca;
 }
 

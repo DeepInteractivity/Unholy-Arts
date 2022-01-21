@@ -162,6 +162,10 @@ window.getTextStatExp = function(stat) {
 	}
 	return text;
 }
+window.getTextStatAff = function(stat) {
+	var text = "Affinity: " + stat.affinity.toFixed(2);
+	return text;
+}
 
 // Stat Methods
 Stat.prototype.addExperience = function(exp) {

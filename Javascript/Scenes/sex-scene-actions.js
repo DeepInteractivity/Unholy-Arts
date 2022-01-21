@@ -290,6 +290,89 @@ window.createSaPussyFootjob = function() {
 	return sa;
 }
 
+		// Weapon stroking actions
+window.createSaDildoTeaseGenitals = function() {
+	var sa = new sceneAction();
+	sa.name = "Dildo Tease Genitals";
+	sa.key = "dildoTeaseGenitals";
+	sa.targetType = "single";
+	sa.tags.push("ss");
+	sa.tags.push("sUse");
+	sa.reqTags.push("diffTarget","unusedWeapon");
+	sa.actorBpReqs.push("arms");
+	sa.unvalidRelationalPositions.push(["standing","kneeling"]);
+	sa.unvalidRelationalPositions.push(["spitroastTarget","spitroastFront"],["spitroastTarget","spitroastBehind"],["spitroastFront","spitroastTarget"]);
+	sa.unvalidRelationalPositions.push(["spitroastFront","spitroastBehind"],["spitroastBehind","spitroastFront"]);
+	
+	sa.flavorTags.push("foreplay","teasing");
+	
+	sa.description = "The character rubs their dildo against their target's groin, teasing them about what may be about to come."
+				   + "\nActor requires free arms.\nMay sometimes increase sensitivity for various available genitals."
+				   + "\nInfluenced by the actor's agility, physique and perception.\n\nForeplay, teasing."
+				   + "\n\n__Influences__:\nDamage: Actor's agility x2, actor's physique x2, actor's perception x1,"
+				   + "\nfree target's genitals body parts.";
+				   
+	sa.execute = function(actorKey,targetActors) {
+		var results = new saResults;
+		var target = targetActors[0];
+		
+		var actStatsFactor = (gCstat(actorKey,"agility") + gCstat(actorKey,"physique") + gCstat(actorKey,"perception")) * 0.025;
+		
+		var actorGenitals = ["groin","private parts"];
+		var targetGenitals = ["groin","private parts"];
+		if ( gC(target).hasFreeBodypart("dick") ) {
+			targetGenitals.push("dick");
+			if ( limitedRandomInt(32) < 4 ) {
+				if ( doesCharHaveAlteredState(target,"Dic+") == false ) {
+					// Sensitized dick
+					var intensity = 0.05 + actStatsFactor + limitedRandomInt(5) * 0.01;
+					var turns = 4 + limitedRandomInt(4) + (actStatsFactor - (actStatsFactor % 1));
+					var as = createSensitizedTag(intensity,"useDick","Sensitized dick","Dic+",turns,"The dick of this character will receive extra damage.");
+					applyAlteredState([target],as);
+				}
+			}
+		}
+		if ( gC(target).hasFreeBodypart("pussy") ) {
+			targetGenitals.push("pussy");
+			if ( limitedRandomInt(8) < 4 ) {
+				if ( doesCharHaveAlteredState(target,"Pus+") == false ) {
+					// Sensitized pussy
+					var intensity = 0.05 + actStatsFactor + limitedRandomInt(5) * 0.01;
+					var turns = 4 + limitedRandomInt(4) + (actStatsFactor - (actStatsFactor % 1));
+					var as = createSensitizedTag(intensity,"usePussy","Sensitized pussy","Pus+",turns,"The pussy of this character will receive extra damage.");
+					applyAlteredState([target],as);
+				}
+			}
+		}
+		if ( gC(target).hasFreeBodypart("anus") ) {
+			targetGenitals.push("ass");
+			if ( limitedRandomInt(16) < 4 ) {
+				if ( doesCharHaveAlteredState(target,"Ass+") == false ) {
+					// Sensitized anus
+					var intensity = 0.05 + actStatsFactor + limitedRandomInt(5) * 0.01;
+					var turns = 4 + limitedRandomInt(4) + (actStatsFactor - (actStatsFactor % 1));
+					var as = createSensitizedTag(intensity,"useAnus","Sensitized ass","Ass+",turns,"The ass of this character will receive extra damage.");
+					applyAlteredState([target],as);
+				}
+			}
+		}
+		
+		var multAr = getSexDamageMult(actorKey,target,this.key);
+		var lustDamage = (getChar(actorKey).agility.getValue() * 2 + getChar(actorKey).perception.getValue() + getChar(actorKey).physique.getValue() ) / 15;
+		lustDamage *= (0.3 * targetGenitals.length) * multAr[0];
+		getChar(targetActors[0]).lust.changeValue(-lustDamage);
+		results.value += lustDamage;
+		
+		results.description = randomFromList([(ktn(actorKey) + " played with " + ktn(target) + "'s " + randomFromList(targetGenitals) + " using " + gC(actorKey).posPr + " dildo."),
+									(ktn(actorKey) + " teased " + ktn(target) + "'s " + randomFromList(targetGenitals) + " with " + gC(actorKey).posPr + " dildo."),
+									(ktn(target) + "'s " + randomFromList(targetGenitals) + " tingled from the contact with " + ktn(actorKey) + "'s dildo.")]);
+		results.description += ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1];
+							
+		return results;
+	}
+	return sa;
+}
+
 	// Kissing/Almost sex
 
 window.createSaKissLips = function() {
@@ -344,7 +427,7 @@ window.createSaFrottage = function() {
 	
 	sa.description = "The character rubs their groin against someone else's private parts.\nMay sometimes increase the sensitivity and desire for various available genitals.\n\nSingle target action."
 				   + "\nInfluenced by actor's agility, perception and charisma.\n\nForeplay."
-				   + "\n\n__Influences__:\nDamage: Actor's agility x2, actor's perception x2,actor's charisma x2,"
+				   + "\n\n__Influences__:\nDamage: Actor's agility x2, actor's perception x1,actor's charisma x1,"
 				   + "\nfree actor's genital body parts, free target's genital body parts.";
 	sa.execute = function(actorKey,targetActors) {
 		var results = new saResults;
@@ -1200,6 +1283,121 @@ window.createSaRideFace = function() {
 								(ktn(target) + " has no choice to but swallow " + ktn(actor) + "'s vaginal fluids.") ] );
 		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamageTarget) + " and " + textWillpowerDamage(willpowerDamageTarget)
 							 + ". " + multAr2[1] + ktn(actor) + " received " + textLustDamage(lustDamageSelf) + ". " + multAr[1];
+		
+		return results;
+	}
+	return sa;
+}
+
+	// Weapon
+window.createSaThrustDildo = function() {
+	var sa = new sceneAction();
+	sa.name = "Thrust dildo";
+	sa.key = "thrustDildo";
+	sa.targetType = "single";
+	sa.tags.push("ss");
+	sa.tags.push("sUse");
+	sa.reqTags.push("diffTarget");
+	sa.requiredActiveCAs.push("dildoPenetratePussy","dildoPenetrateAss","dildoPenetrateMouth");
+	
+	sa.flavorTags.push("top");
+	
+	sa.description = "The character thrusts their dildo into the target's bodypart it's inserted at. Different effects depending on the active continued action.\n\nSingle target action."
+				   + "\n\n__Influences__:\nDamage: Actor's physique x1, actor's agility x1.";
+				   
+	sa.execute = function(actorKey,targetActors) {
+		var results = new saResults;
+		var target = targetActors[0];
+		
+		// Custom flavor tags
+		var aFlavorTags = ["top"];
+		var currentCAs = getCurrentContinuedActionsBetweenInitiatorAndTarget(actorKey,target);
+		if ( currentCAs.includes("dildoPenetratePussy")) {
+			aFlavorTags.push("targetPussy");
+		}
+		if ( currentCAs.includes("dildoPenetrateAss")) {
+			aFlavorTags.push("targetAnus");
+		}
+		if ( currentCAs.includes("dildoPenetrateMouth")) {
+			aFlavorTags.push("targetMouth");
+		}
+		var multAr = getSexDamageMultAlt(actorKey,target,aFlavorTags);
+		
+		var lustDamage = ((getChar(actorKey).physique.getValue() * 1 + getChar(actorKey).agility.getValue() + getChar(actorKey).will.getValue()) / 12);
+		var energyDamage = 0;
+		var socialdriveDamage = 0;
+		var targetPartText = ["insides"];
+		
+		// Extra effects
+		if ( currentCAs.includes("dildoPenetratePussy")) {
+			lustDamage *= 1.3;
+			targetPartText.push("pussy","pussy");
+		}
+		if ( currentCAs.includes("dildoPenetrateAss")) {
+			energyDamage = lustDamage * 0.3;
+			energyDamage *= multAr[0];
+			getChar(targetActors[0]).energy.changeValue(-energyDamage);
+			targetPartText.push("ass","rear");
+		}
+		if ( currentCAs.includes("dildoPenetrateMouth")) {
+			socialdriveDamage = lustDamage * 0.3;
+			socialdriveDamage *= multAr[0];
+			getChar(targetActors[0]).socialdrive.changeValue(-socialdriveDamage);
+			targetPartText.push("mouth","throat");
+		}
+		lustDamage *= multAr[0];
+		getChar(targetActors[0]).lust.changeValue(-lustDamage);
+		results.value += lustDamage;
+		
+		results.description += randomFromList( [
+									(ktn(actorKey) + " pushed " + gC(actorKey).posPr + " dildo deep into " + ktn(target) + "."),
+									(ktn(actorKey) + " thrusted " + gC(actorKey).posPr + " " + randomFromList(["dildo","toy","tool"]) + " into " + ktn(target) + "."),
+									(ktn(actorKey) + " penetrated " + ktn(target) + "'s " + randomFromList(targetPartText) + ".") ] );
+		if ( currentCAs.includes("dildoPenetratePussy")) {
+			results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1];
+		} else if ( currentCAs.includes("dildoPenetrateAss")) {
+			results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + " and " + textEnergyDamage(energyDamage) + ". " + multAr[1];
+		} else if ( currentCAs.includes("dildoPenetrateMouth")) {
+			results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + " and " + textSocialdriveDamage(socialdriveDamage) + ". " + multAr[1];
+		}
+		
+		return results;
+	}
+	return sa;	
+}
+window.createSaPushAgainstDildo = function() {
+	var sa = new sceneAction();
+	sa.name = "Push against dildo";
+	sa.key = "pushAgainstDildo";
+	sa.targetType = "single";
+	sa.tags.push("ss");
+	sa.tags.push("sUse");
+	sa.reqTags.push("diffTarget");
+	sa.requiredCAs.push("doubleDildoPussyPenetration");
+	
+	sa.flavorTags.push("usePussy","targetPussy","fullsex");
+	
+	sa.description = "The character pushes their hips against the dildo in their pussy, striking against their partner's.\n\nSingle target action."
+				   + "\n\nFull sex.\n\n__Influences__:\nDamage: Actor's physique x2, actor's resilience x1, actor's agility x1.";
+	
+	sa.execute = function(actorKey,targetActors) {
+		var results = new saResults;
+		var target = targetActors[0];
+		
+		var multAr = getSexDamageMult(actorKey,target,this.key);
+		var multAr2 = getSexDamageMult(actorKey,actorKey,this.key);
+		var lustDamage = ((getChar(actorKey).physique.getValue() * 2 + getChar(actorKey).agility.getValue() + getChar(actorKey).resilience.getValue()) / 10);
+		var lustDamage2 = (lustDamage / 3) * multAr2[0];
+		lustDamage *= multAr[0];
+		getChar(targetActors[0]).lust.changeValue(-lustDamage);
+		getChar(actorKey).lust.changeValue(-lustDamage2);
+		results.value += lustDamage;
+		results.description += randomFromList( [
+									(ktn(actorKey) + " pushed " + gC(actorKey).posPr + " hips against the dildo, striking " + ktn(target) + "'s insides."),
+									(ktn(actorKey) + "'s movements push the dildo deep into " + ktn(target) + "."),
+									(ktn(actorKey) + " thrusted " + gC(actorKey).refPr + " back and forth against the dildo, stimulating " + ktn(target) + "'s " + pussyWord() + " in the proccess.") ] );
+		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1];
+		results.description += ktn(actorKey) + " received " + textLustDamage(lustDamage2) + ". " + multAr2[1];
 		
 		return results;
 	}
@@ -2074,6 +2272,196 @@ window.createSaGiveBlowjob = function() {
 		return results;
 	}
 	
+	return sa;
+}
+
+	// Weapon sex actions
+window.createSaDildoPenetratePussy = function() {
+	var sa = new sceneAction();
+	sa.name = "Dildo-Pussy Penetration (CA)";
+	sa.key = "dildoPenetratePussy";
+	sa.targetType = "single";
+	sa.tags.push("ss","cAct");
+	sa.reqTags.push("diffTarget","unusedWeapon");
+	sa.actorBpReqs.push("arms");
+	sa.targetBpReqs.push("pussy");
+	sa.caRank = 1;
+	
+	sa.unvalidRelationalPositions.push(["standing","kneeling"]);
+	sa.unvalidRelationalPositions.push(["spitroastTarget","spitroastFront"],["spitroastTarget","spitroastBehind"],["spitroastFront","spitroastTarget"]);
+	sa.unvalidRelationalPositions.push(["spitroastFront","spitroastBehind"],["spitroastBehind","spitroastFront"]);
+	
+	sa.flavorTags.push("targetPussy","top","continuedAction");
+	
+	sa.description = "The character sticks their dildo into their partner's vaginal folds, and begins penetrating them.\n\nSingle target continued action."
+				   + "\nActor requires free arms, target requires free pussy."
+				   + "\n\n__Influences__:\nDamage: Actor's physique x1, actor's agility x1.\nContinued damage: Actor's physique and agility x1.";
+	
+	sa.execute = function(actorKey,targetActors) {
+		var results = new saResults;
+		var target = targetActors[0];
+		setCharsWeaponInUse(actorKey);
+		
+		var multAr = getSexDamageMult(actorKey,target,this.key);
+		var lustDamage = ((getChar(actorKey).physique.getValue() * 1 + getChar(actorKey).agility.getValue() * 1) / 8) * multAr[0];
+		getChar(targetActors[0]).lust.changeValue(-lustDamage);
+		results.value += lustDamage;
+		results.description += randomFromList( [
+								(ktn(actorKey) + " entered " + ktn(target) + "'s " + pussyWord() + " with " + gC(actorKey).posPr + " dildo, and began " + randomFromList(["massaging","penetrating","rubbing"]) + " it."),
+								(ktn(target) + "'s " + pussyWord() + " was invaded by " + ktn(actorKey) + "'s dildo."),
+								(ktn(actorKey) + "'s dildo entered the folds of " + ktn(target) + ", who welcomed it inside " + gC(target).comPr + ".")
+								] );
+		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1];
+		
+		// Continued Action
+		State.variables.sc.continuedActions.push(createCaDildoPenetratePussy(actorKey,targetActors));
+		
+		return results;
+	}
+	return sa;
+}
+window.createSaDildoPenetrateAss = function() {
+	var sa = new sceneAction();
+	sa.name = "Dildo-Ass Penetration (CA)";
+	sa.key = "dildoPenetrateAss";
+	sa.targetType = "single";
+	sa.tags.push("ss","cAct");
+	sa.reqTags.push("diffTarget","unusedWeapon");
+	sa.actorBpReqs.push("arms");
+	sa.targetBpReqs.push("anus");
+	sa.caRank = 1;
+	
+	sa.getIsAllowedBySettings = function() {
+		var isAllowed = true;
+		
+		if ( State.variables.settings.anal == "disable" ) {
+			isAllowed = false;
+		}
+		
+		return isAllowed;
+	}
+	
+	sa.unvalidRelationalPositions.push(["standing","kneeling"]);
+	sa.unvalidRelationalPositions.push(["spitroastTarget","spitroastFront"],["spitroastTarget","spitroastBehind"],["spitroastFront","spitroastTarget"]);
+	sa.unvalidRelationalPositions.push(["spitroastFront","spitroastBehind"],["spitroastBehind","spitroastFront"]);
+	
+	sa.flavorTags.push("targetAnus","top","continuedAction");
+	
+	sa.description = "The character sticks their dildo into their partner's backside, and begins penetrating it.\n\nSingle target continued action."
+				   + "\nActor requires free arms, target requires free anus."
+				   + "\n\n__Influences__:\nDamage: Actor's physique x1, actor's agility x1.\nContinued lust and energy damage: Actor's physique and agility x1.";
+	
+	sa.execute = function(actorKey,targetActors) {
+		var results = new saResults;
+		var target = targetActors[0];
+		setCharsWeaponInUse(actorKey);
+		
+		var multAr = getSexDamageMult(actorKey,target,this.key);
+		var lustDamage = ((getChar(actorKey).physique.getValue() * 1 + getChar(actorKey).agility.getValue() * 1) / 8) * multAr[0];
+		getChar(targetActors[0]).lust.changeValue(-lustDamage);
+		results.value += lustDamage;
+		results.description += randomFromList( [
+								(ktn(actorKey) + " entered " + ktn(target) + "'s " + assWord() + " with " + gC(actorKey).posPr + " dildo, and began " + randomFromList(["massaging","penetrating","rubbing"]) + " it."),
+								(ktn(target) + "'s " + assWord() + " was invaded by " + ktn(actorKey) + "'s dildo."),
+								(ktn(actorKey) + "'s dildo entered the rear of " + ktn(target) + ", who welcomed it inside " + gC(target).comPr + ".")
+								] );
+		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1];
+		
+		// Continued Action
+		State.variables.sc.continuedActions.push(createCaDildoPenetrateAss(actorKey,targetActors));
+		
+		return results;
+	}
+	return sa;
+}
+window.createSaDildoPenetrateMouth = function() {
+	var sa = new sceneAction();
+	sa.name = "Dildo-Mouth Penetration (CA)";
+	sa.key = "dildoPenetrateMouth";
+	sa.targetType = "single";
+	sa.tags.push("ss","cAct");
+	sa.reqTags.push("diffTarget","unusedWeapon");
+	sa.actorBpReqs.push("arms");
+	sa.targetBpReqs.push("mouth");
+	sa.caRank = 1;
+	
+	sa.unvalidRelationalPositions.push(["kneeling","standing"]);
+	sa.unvalidRelationalPositions.push(["spitroastTarget","spitroastFront"]);
+	sa.unvalidRelationalPositions.push(["spitroastTarget","spitroastBehind"],["spitroastBehind","spitroastTarget"]);
+	
+	sa.flavorTags.push("targetMouth","top","continuedAction");
+	
+	sa.description = "The character inserts their dildo in their partner's mouth, gagging them with it.\n\nSingle target continued action."
+				   + "\nActor requires free arms, target requires free mouth."
+				   + "\n\n__Influences__:\nDamage: Actor's agility x1.\nContinued lust and social drive damage: Actor's agility x1.";
+	
+	sa.execute = function(actorKey,targetActors) {
+		var results = new saResults;
+		var target = targetActors[0];
+		setCharsWeaponInUse(actorKey);
+		
+		var multAr = getSexDamageMult(actorKey,target,this.key);
+		var lustDamage = ((getChar(actorKey).agility.getValue() * 1) / 12) * multAr[0];
+		getChar(targetActors[0]).lust.changeValue(-lustDamage);
+		results.value += lustDamage;
+		results.description += randomFromList( [
+								(ktn(actorKey) + " inserted " + gC(actorKey).posPr + " dildo in " + ktn(target) + "'s mouth, making " + gC(target).comPr + " gag."),
+								(ktn(actorKey) + " pushed deep inside " + ktn(target) + "'s throat with " + gC(actorKey).posPr + " dildo."),
+								(ktn(actorKey) + " used " + gC(actorKey).posPr + " dildo to penetrate " + ktn(target) + "'s mouth.") 
+								] );
+		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1];
+		
+		// Continued Action
+		State.variables.sc.continuedActions.push(createCaDildoPenetrateMouth(actorKey,targetActors));
+		
+		return results;
+	}
+	return sa;
+}
+window.createSaDoubleDildoPussyPenetration = function() {
+	var sa = new sceneAction();
+	sa.name = "Double Dildo-Pussy Penetration (CA)";
+	sa.key = "doubleDildoPussyPenetration";
+	sa.targetType = "single";
+	sa.tags.push("ss","cAct");
+	sa.reqTags.push("diffTarget","unusedWeapon");
+	sa.actorBpReqs.push("pussy");
+	sa.targetBpReqs.push("pussy");
+	sa.caRank = 2;
+	
+	sa.requiredPositions = ["mountingFaceToFace"];
+	sa.targetRequiredPositions = ["mountedFaceToFace"];
+	sa.requiredPositions.push("mountingAndMounted");
+	sa.targetRequiredPositions.push("mountedFaceToFace");
+	sa.linkedPositions = true;
+	
+	sa.flavorTags.push("fullsex","usePussy","targetPussy","top","continuedAction");
+	
+	sa.description = "The character sticks their dildo into their own pussy and their partner's, both of them able to push it against each other.\n"
+				   + "\n\nSingle target continued action.\nActor and target require free pussy."
+				   + "\n\n__Influences__:\nDamage: Actor's and target's physique x2, agility x1, resilience x1.";
+				   	
+	sa.execute = function(actorKey,targetActors) {
+		var results = new saResults;
+		var actor = actorKey;
+		var target = targetActors[0];
+		setCharsWeaponInUse(actorKey);
+		
+		var multAr = getSexDamageMult(actorKey,target,this.key);
+		var lustDamage = ((getChar(actorKey).physique.getValue() * 2 + getChar(actorKey).agility.getValue() * 1 + getChar(actorKey).resilience.getValue() * 1) / 10) * multAr[0];
+		getChar(targetActors[0]).lust.changeValue(-lustDamage);
+		results.value += lustDamage;
+		results.description += randomFromList( [
+								(ktn(actorKey) + " connected " + ktn(target) + "'s " + pussyWord() + " and " + gC(actor).posPr + " own with " + gC(actor).posPr + " dildo, and started pushing against it."),
+								(ktn(actorKey) + " inserts " + gC(actor).posPr + " dildo into both " + ktn(target) + "'s and " + gC(actor).posPr + " own " + randomFromList(["pussies","pussies","pussies","cherries","clams"]) + ", now connected in pleasure."),
+								("After introducing " + gC(actor).posPr + " dildo into " + gC(actor).posPr + " " + pussyWord() + " and " + ktn(target) + "'s, both of them are now getting pleasured by the pushes of the other.")
+								] );
+		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1];
+		
+		State.variables.sc.continuedActions.push(createCaDoubleDildoPussyPenetration(actorKey,targetActors));
+		
+		return results;
+	}
 	return sa;
 }
 

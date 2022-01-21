@@ -415,8 +415,9 @@ window.setUpMultiBattleTest = function() {
 		// gC(character).recalculateMaxBars();
 		gC(character).restoreBars();
 	}
-	
-	gC("chVal").body.pussy.state = "locked";
+		
+	var dilID = createEquipment("w5","chPlayerCharacter");
+	equipObjectOnWearer(dilID,"chPlayerCharacter",-1);
 	
 	// Start scene
 	State.variables.sc.startScene("bs", "none",
