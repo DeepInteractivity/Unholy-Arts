@@ -293,6 +293,61 @@ window.createSystemEventAltDominantSexEffects = function(charsA,charsB) {
 	return sEvent;
 }
 
+window.createSystemEventStandardTransformationScene = function(charsA,charsB,description,checkEndScene,endScenePassage,
+		tfGoals,tfActors,tfTarget,tfTemporary,genderChange,avatarFileName,portraitFileName,tfMenuPassage) {
+	var allChars = charsA.concat(charsB);
+	var sEvent = new systemEvent(20,allChars,"scene","Scene",function(cList) {
+			// var desc = getRoomInfoA(gC(this.characters[0]).currentRoom).description;
+			State.variables.sc.startTfScene("ss","dynamic",this.charsA,this.charsB,this.description,isTfSceneFinished,1,this.endScenePassage,
+		this.tfGoals,this.tfActors,this.tfTarget,4,this.tfTemporary,7,this.genderChange,this.avatarFileName,this.portraitFileName);
+			for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
+				if ( charKey != "chPlayerCharacter" ) {
+					gC(charKey).aiAlgorythm = createAiWeightedMissionsByTaste();
+				}
+			}
+			if ( this.tfMenuPassage == "FASE MorphHut MorphMenu" ) {
+				State.variables.sc.endSceneScript = tfGleamingCavernsEndScript;
+			} else {
+				State.variables.sc.endSceneScript = tfStandardEndScript;
+			}
+			State.variables.sc.tfPassage = tfMenuPassage;
+			if ( this.characters.includes("chPlayerCharacter") == false ) {
+				State.variables.sc.autoResolveScene();
+			} else {
+				State.variables.sc.formatScenePassage();
+			}
+		}
+	);
+	sEvent.charsA = charsA;
+	sEvent.charsB = charsB;
+	sEvent.description = description;
+	sEvent.endScenePassage = endScenePassage;
+	sEvent.tfGoals = tfGoals;
+	sEvent.tfActors = tfActors;
+	sEvent.tfTarget = tfTarget;
+	sEvent.tfTemporary = tfTemporary;
+	sEvent.genderChange = genderChange;
+	sEvent.avatarFileName = avatarFileName;
+	sEvent.portraitFileName = portraitFileName;
+	sEvent.flagMayBeInterrupted = false;
+	sEvent.flagMayChangeGroups = false;
+	sEvent.tfMenuPassage = tfMenuPassage;
+	sEvent.label = "sexScene";
+	sEvent.priority = 5;
+	sEvent.applyEffectIfForcedToEnd = false;
+	// Relocate actor and target
+	var actor = allChars[0]
+	if ( gC(actor).getRefugeRoomInMap() != "none" && State.variables.storyState != storyState.firstAdventure ) {
+		State.variables.compass.moveCharsToRoom(charsA.concat(charsB),gC(actor).getRefugeRoomInMap());
+	}
+	// Pre-conditions to start event
+	for ( var cK of allChars ) {
+		State.variables.compass.characterEventEndsPrematurely(cK);		
+	}
+	
+	return sEvent;
+}
+
 window.createSystemEventBattle = function(charactersTeamA,charactersTeamB,spectators,minutes,label) {
 	var allChars = charactersTeamA.concat(charactersTeamB.concat(spectators));
 	var sEvent = new systemEvent(minutes,characters,"battle","Battle",function(cList) {
@@ -308,6 +363,7 @@ window.createSystemEventBattle = function(charactersTeamA,charactersTeamB,specta
 			}
 		}
 	);
+	sEvent.flagMayBeInterrupted = false;
 	sEvent.charactersTeamA = charactersTeamA;
 	sEvent.charactersTeamB = charactersTeamB;
 	sEvent.spectators = spectators;

@@ -526,7 +526,20 @@ setup.mapGleamingCaverns.hiddenHut = new RoomInfo(
 	"GleCav/town-lonely-house-sm.png", // Icon
 	"After passing through an inconspicuous passage, you find a secluded hut.", // Description
 	[ new RoomConnection('cavernMP3',2) ], // Connections
-	null, // getActions
+	function(characters) {
+		var actions = [ ] ;
+		if ( isStVarOn("mphInit") == true ) {
+			actions.push(createGleamingCavernsMorphHutMedInit());
+		} else {
+			actions.push(createGleamingCavernsMorphHutInit());
+		}
+	//	createGleamingCavernsMorphHutInit() ];
+	//	if ( isStVarOn("dldCrf") == true && isStVarOn("dldPly") == false && characters[0] == "chPlayerCharacter" ) {
+	//		actions.push(createGleamingCavernsDildoPlayAction());
+	// createGleamingCavernsMorphHutMedInit
+	//	}
+		return actions;
+	}, // getActions
 	[66,4]
 );
 setup.mapGleamingCaverns.cavernMP2 = new RoomInfo(
@@ -544,8 +557,8 @@ setup.mapGleamingCaverns.cavernMP2 = new RoomInfo(
 setup.mapGleamingCaverns.labyrinthEntrance = new RoomInfo(
 	"labyrinthEntrance", // Key
 	"Caverns ~ Deeper Tunnels Entrance", // Title
-	"GleCav/cavern-wild-path-r.png", // Med Icon
-	"GleCav/cavern-wild-path-r-sm.png", // Icon
+	"GleCav/caverns-wild-path-r.png", // Med Icon
+	"GleCav/caverns-wild-path-r-sm.png", // Icon
 	"The guidance of the ceramic art ends here, only gleaming crystals illuminating the way ahead. Beyond this point, the walls and waters of the Caverns may leave you trapped at their own whims.", // Description
 	[ new RoomConnection('cavernMP2',2) ], // Connections
 	function(characters) {
@@ -598,8 +611,8 @@ setup.mapGleamingCaverns.unionLakeWest = new RoomInfo(
 setup.mapGleamingCaverns.unionLakeUpper = new RoomInfo(
 	"unionLakeUpper", // Key
 	"Caverns ~ Union Lake Upper Platform", // Title
-	"GleCav/cavern-wild-path-r.png", // Med Icon
-	"GleCav/cavern-wild-path-r-sm.png", // Icon
+	"GleCav/caverns-wild-path-r.png", // Med Icon
+	"GleCav/caverns-wild-path-r-sm.png", // Icon
 	"After climbing a somewhat laborious path, you find yourself atop a high platform, giving you a great view of the lake.", // Description
 	[ new RoomConnection('unionLakeEast',4) ], // Connections
 	function(characters) {
@@ -743,6 +756,15 @@ setup.mapGleamingCaverns.mainStreet2 = new RoomInfo(
 	null, // getActions
 	[149,130]
 );
+
+// Conditions: Drishtya and the judges have concluded their reunion
+window.isJudgesReunionFinishedFA = function() {
+	if ( State.variables.daycycle.month > 1 || State.variables.daycycle.day > 29 || State.variables.daycycle.hours > 15 ) {
+		return true;
+	} else {
+		return false;
+	}
+}
 setup.mapGleamingCaverns.mainStreet3 = new RoomInfo(
 	"mainStreet3", // Key
 	"Shapeshifters ~ Eastern Main Street", // Title
@@ -756,6 +778,30 @@ setup.mapGleamingCaverns.mainStreet3 = new RoomInfo(
 	null, // getActions
 	[201,132]
 );
+setup.mapGleamingCaverns.mainStreet3.getConnections = function(characters) {
+	var rooms = [this.connections[0],this.connections[1]];
+	if ( isJudgesReunionFinishedFA() ) {
+		rooms.push(this.connections[2]);
+	}
+	rooms.push(this.connections[3]);
+	return rooms;
+}
+setup.mapGleamingCaverns.mainStreet3.displayConnections = function() {
+	var string = getLinkToRoom(this.connections[0].loc,"Go to " + getCurrentMap().rooms[this.connections[0].loc].title,this.connections[0].distance)
+			    + " (" + colorText(2,"khaki") + ") " + displayCharIconsInRoom(this.connections[0].loc) + "\n";
+	string += getLinkToRoom(this.connections[1].loc,"Go to " + getCurrentMap().rooms[this.connections[1].loc].title,this.connections[1].distance)
+			    + " (" + colorText(2,"khaki") + ") " + displayCharIconsInRoom(this.connections[1].loc) + "\n";
+	if ( isJudgesReunionFinishedFA() ) {
+		string += getLinkToRoom(this.connections[2].loc,"Go to " + getCurrentMap().rooms[this.connections[2].loc].title,this.connections[2].distance)
+			    + " (" + colorText(2,"khaki") + ") " + displayCharIconsInRoom(this.connections[2].loc) + "\n";
+	} else {
+		string += colorText("Drishtya and the Shapeshifter judges are discussing in private. Try coming back later.\n","red");
+	}
+	string += getLinkToRoom(this.connections[3].loc,"Go to " + getCurrentMap().rooms[this.connections[3].loc].title,this.connections[3].distance)
+			    + " (" + colorText(2,"khaki") + ") " + displayCharIconsInRoom(this.connections[3].loc) + "\n";
+	return string;
+}
+
 setup.mapGleamingCaverns.assembly = new RoomInfo(
 	"assembly", // Key
 	"Shapeshifters ~ Assembly", // Title
@@ -824,10 +870,21 @@ setup.mapGleamingCaverns.templeStorage = new RoomInfo(
 		new RoomConnection('templeShrine',2) ], // Connections
 	function(characters) {
 		var actions = [ createRestingActionStandard() ];
+		if ( isJudgesReunionFinishedFA() ) {
+			actions.push(createGleamingCavernsDrishtyaConv());
+		}
 		return actions;
 	}, // getActions
 	[107,199]
 );
+setup.mapGleamingCaverns.templeStorage.getDescription = function() {
+	var dText = "Among rooms dedicated to store salfis flowers and other supplies used by the Temple, some rooms have been prepared to accommodate the Candidates.";
+	if ( isJudgesReunionFinishedFA() ) {
+		dText += "\nDrishtya and Melesh spend most of the day here, often attending to different members of their tribe on various issues.";
+	}
+	return dText;
+}
+
 setup.mapGleamingCaverns.templeShrine = new RoomInfo(
 	"templeShrine", // Key
 	"Shapeshifters ~ Temple of Harmony", // Title
@@ -899,8 +956,7 @@ setup.mapGleamingCaverns.wildTunnel2 = new RoomInfo(
 	[ new RoomConnection('labyrinthEntrance',2) ], // Connections
 	function(characters) {
 		var actions = [ createActionMovingWildTunnel("wildTunnel4","Section 4",0,2),
-						createActionMovingWildTunnel("wildTunnel5","Section 5",0,2)	]; // Provisional ToDo: Remove ,
-// createActionMovingWildTunnel("wildTunnel22","Section 22",5,2)					
+						createActionMovingWildTunnel("wildTunnel5","Section 5",0,2)	];
 			// Path to Tunnel 6
 			var baseChance = gCstat(characters[0],"perception") + gCstat(characters[0],"agility") + gCstat(characters[0],"resilience") + gCstat(characters[0],"will") + gCstat(characters[0],"luck");
 			var dice200 = limitedRandomInt(200);
@@ -953,8 +1009,8 @@ setup.mapGleamingCaverns.wildTunnel3 = new RoomInfo(
 setup.mapGleamingCaverns.wildTunnel4 = new RoomInfo(
 	"wildTunnel4", // Key
 	"Wild Tunnels ~ Tunnel 4", // Title
-	"GleCav/cavern-wild-path-r.png", // Med Icon
-	"GleCav/cavern-wild-path-r-sm.png", // Icon
+	"GleCav/caverns-wild-path-r.png", // Med Icon
+	"GleCav/caverns-wild-path-r-sm.png", // Icon
 	"", // Description
 	[], // Connections
 	function(characters) {
@@ -1106,7 +1162,7 @@ setup.mapGleamingCaverns.wildTunnel11 = new RoomInfo(
 			// Path to Pond of Illumination
 			var baseChance = gCstat(characters[0],"perception") + gCstat(characters[0],"agility") + gCstat(characters[0],"resilience") + gCstat(characters[0],"will") + gCstat(characters[0],"luck");
 			var dice200 = limitedRandomInt(200);
-			var difficulty = 260;
+			var difficulty = 250;
 			var act0 = createActionMovingWildTunnel("pondIllumination","Tight tunnel",0,2);
 			if ( (baseChance + dice200) >= difficulty ) {
 				if ( characters[0] == "chPlayerCharacter" ) {
@@ -1217,6 +1273,7 @@ setup.mapGleamingCaverns.wildTunnel16 = new RoomInfo(
 	"GleCav/caverns-semi-flooded-path-r.png", // Med Icon
 	"GleCav/caverns-semi-flooded-path-r-sm.png", // Icon
 	"Up above the river there's a tunnel fairly hard to reach. An agile enough person could make the climb if the river was high enough.", // Description
+	// [ new RoomConnection('pondIllumination',10) ], // Fake connections, used to debug hypnosis to Valtan
 	[], // Connections
 	function(characters) {
 		var actions = [ createWaitingActionCaverns(),
@@ -1443,12 +1500,32 @@ setup.mapGleamingCaverns.pondIllumination = new RoomInfo(
 	"A spheric room appears before you after you fall through the tunnel. A fine line of water falls from the exact center of the ceiling, emitting a constant stream of white noise as it crashes against a small pond that forms an almost perfect circle. Outside this small refuge, the rest of the world might as well no longer exist.", // Description
 	[ new RoomConnection('labyrinthEntrance',10) ], // Connections
 	function(characters) {
-		var actions = [ createTrainingActionSecludedMeditation(),
-						createRestingActionStandard() ];
+		// isStVarOn("vlNoCv")
+		var actions = [];
+		if ( isStVarOn("vlNoCv") == false ) {
+			actions.push(createGleamingCavernsValtanConv());
+		}
+		actions.push(createTrainingActionSecludedMeditation());
+		actions.push(createRestingActionStandard());
 		return actions;
 	}, // getActions
 	[170,53]
 );
+setup.mapGleamingCaverns.pondIllumination.getEventPrompt = function(characters) {
+	if ( characters.includes("chPlayerCharacter") && isStVarOn("vlIlIn") == false ) {
+		State.variables.compass.interludePassage = "You find a familiar face...\n\n"
+			+ "<<l" + "ink [[Continue|FASE ValtanIllumination Init]]>><<s" + "cript>>\n"
+			+ "initValtanAtIlluminationPond();\n"
+			+ "State.variables.compass.finishPlayerPrompt();\n"
+			+ "addToStVarsList('vlIlIn');\n"
+			+ "<</s" + "cript>><</l" + "ink>>";
+		State.variables.compass.setPlayerPrompt(State.variables.compass.interludePassage,"chPlayerCharacter",false);
+	}
+	// No need to initiate an event. An event might break the event chain.
+	//State.variables.compass.ongoingEvents.push(createSystemEventSecludedMeditation(60,characters));
+	//State.variables.compass.sortOnGoingEventsByTime();
+}
+
 setup.mapGleamingCaverns.mountainsExit = new RoomInfo(
 	"mountainsExit", // Key
 	"Wild Tunnels ~ Exit to Mountains", // Title
@@ -1500,6 +1577,50 @@ window.setSubareaCaverns = function() {
 }
 window.deinitMapGleamingCaverns = function() {
 	delete State.variables.mapGleamingCaverns;
+}
+
+window.getGleamingCavernStreetConvs = function() {
+	var posConvs = []; // Possible Conversations
+		// Practicing for festival
+	posConvs.push(colorText('//"Have you been practicing for the Twisted Festival? You know about the importance of this one..."//','gray'));
+		// Lake of Union
+	posConvs.push(colorText('//"Would you... Come to the Lake of Union with me? I\'ve been feeling rather lonely..."//','gray'));
+	if ( isStVarOn('blmClaw') ) { // After 'Blackmailed by Claw
+		posConvs.push(colorText('//"Have you heard? Someone was spying from the top of the Lake of Union. I bet it was one of those Candidates... They bring nothing good."//','gray'));
+	}
+	if ( isJudgesReunionFinishedFA() == false ) { // Closed teather
+		posConvs.push(colorText('//"I\'ve just been kicked out of the teather... It looks like the judges are having quite the heated discussion. Again."//','gray'));
+	}
+		// Painting & Crafting
+	posConvs.push(colorText('//"We\'ve got a good haul of clay and minerals lately. I\'m wondering what could I paint for my house later..."//','gray'));
+		// On Valtan
+	posConvs.push(colorText('//"That Valtan... She comes back to the tribe and the first thing she does is going into hiding"//','gray') + ', to which someone replies: ' + colorText('//"Not like I care. We\'re better off without her.//"','gray'));
+		// On Morph Artist
+	if ( isStVarOn('bdPtSc') == false ) {
+		posConvs.push(colorText('//"Did you see Mesquelles earlier? She looked happy, but kind of anxious..."//','gray') + '\n' + colorText('//"I know, I know. She wants one of the Candidates to allow her to try some transformation magic on them."//','gray'));
+	} else if ( isStVarOn('mphFnTf') ) {
+		posConvs.push(colorText('//"You aren\'t going to believe this! One of the humans from the Passion Temple went to Veshmren\'s hut, and Mesquelles transformed her!"//',"gray") + "\n" + colorText('//"She actually did it!? Her hard training must have paid off..."//',"gray"));
+	}
+	
+	var chosenConv = "";
+	if ( posConvs.length > 0 ) {
+		if ( limitedRandomInt(100) >= 50 ) {
+			chosenConv = randomFromList(["Your ears catch a conversation nearby. ","You cannot help but to pay attention to the gossips of the tribespeople. ","Not paying attention to your presence, or perhaps unaware of it, some Shapeshifters allow you to hear their conversation. "]) + "\n" + randomFromList(posConvs);
+		}
+	}
+	return chosenConv;
+}
+window.getGCtribeRoomDescPlusGossip = function() {
+	var desc = this.description;
+	var conv = getGleamingCavernStreetConvs();
+	if ( conv != "" ) {
+		desc += "\n" + conv;
+	}
+	return desc;
+}
+
+for ( var roomKey of ["mainStreet1","houses","thermalBaths","mainStreet2","mainStreet3","frozenBaths","publicBaths"] ) {
+	setup.mapGleamingCaverns[roomKey].getDescription = getGCtribeRoomDescPlusGossip;
 }
 
 setup.mapGleamingCaverns.marshSP1.setSubarea = setSubareaMarsh;

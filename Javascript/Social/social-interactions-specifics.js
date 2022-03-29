@@ -13,8 +13,10 @@ window.SisSpecifics = function() {
 	this.flagSissEnd = false;
 	this.continueButton = "";
 
+}
+
 		// UI
-	this.formatPassageText = function() {
+	SisSpecifics.prototype.formatPassageText = function() {
 		if ( this.flagSissEnd == false && State.variables.sisPlayerInfo.flagRejectedSis != true ) {		// Normal behavior
 			this.formatTargetsText();
 			this.formatChoicesText();
@@ -42,18 +44,27 @@ window.SisSpecifics = function() {
 			this.passageText += this.continueButton;
 		}
 	}
-	this.formatTargetsText = function() {
+	SisSpecifics.prototype.formatTargetsText = function() {
 		this.targetText = "__Discussing with " + gC(this.playerTarget).formattedName + "__:\n"
 					    + "Favor owed: " + State.variables.chPlayerCharacter.relations[this.playerTarget].favor;
 	}
 	
-	this.formatChoicesText = function() {
+	SisSpecifics.prototype.formatChoicesText = function() {
 		this.choicesText = "";
 		var i = 0;
 		for ( var sT of setup.sistTypes ) {
 			var sist = setup.sistDB[sT];
-			if ( sist.isPossible("chPlayerCharacter",this.playerTarget) ) {
-				this.choicesText += this.getButtonTopicChoice(sist,("setup.sistDB['" + sT + "']")) + sist.subtitle + "\n";
+			var extraPars = sist.recursiveSelfSummon("chPlayerCharacter",this.playerTarget);
+			if ( extraPars == null ) {
+				if ( sist.isPossible("chPlayerCharacter",this.playerTarget) ) {
+					this.choicesText += this.getButtonTopicChoice(sist,("setup.sistDB['" + sT + "']")) + sist.subtitle + "\n";
+				}
+			} else if ( extraPars.length >= 1 ) {
+				for ( var par of extraPars ) {
+					if ( sist.isPossible("chPlayerCharacter",this.playerTarget,par) ) {
+						this.choicesText += this.getButtonTopicChoiceExtraPar(sist,("setup.sistDB['" + sT + "']"),par) + sist.subtitle + "\n";
+					}
+				}
 			}
 		}
 		/*
@@ -65,7 +76,7 @@ window.SisSpecifics = function() {
 		}
 		*/
 	}
-	this.getButtonTopicChoice = function(sisTopic,sisTopicCaller) {
+	SisSpecifics.prototype.getButtonTopicChoice = function(sisTopic,sisTopicCaller) {
 		var bText = "";
 		var socialdriveCost = sisTopic.getSocialdriveOfferCost("chPlayerCharacter",this.playerTarget);
 		if ( gC("chPlayerCharacter").socialdrive.current >= socialdriveCost ) {
@@ -77,8 +88,20 @@ window.SisSpecifics = function() {
 		}
 		return bText;
 	}
+	SisSpecifics.prototype.getButtonTopicChoiceExtraPar = function(sisTopic,sisTopicCaller,extraPar) {
+		var bText = "";
+		var socialdriveCost = sisTopic.getSocialdriveOfferCost("chPlayerCharacter",this.playerTarget);
+		if ( gC("chPlayerCharacter").socialdrive.current >= socialdriveCost ) {
+			bText = "<<l" + "ink [[" + sisTopic.getTitle(extraPar) + "|Social Interactions Specifics]]>><<s" + "cript>>";
+			bText 	 += "State.variables.sisSpecifics.processTopicResultExtraPar('chPlayerCharacter','" + this.playerTarget + "'," + sisTopicCaller + ",'" + extraPar + "');\n";
+			bText	 += "<</s" + "cript>><</l" + "ink>> (Cost: " + colorText(socialdriveCost,"khaki") + ") ";
+		} else {
+			bText = colorText("Locked (not enough social drive): ","firebrick") + sisTopic.getTitle(extraPar);
+		}
+		return bText;
+	}
 	
-	this.formatExitsText = function() {
+	SisSpecifics.prototype.formatExitsText = function() {
 		var bText = "<<l" + "ink [[Back to interactions|Social Interactions]]>><<s" + "cript>>\n";
 		bText	 += "<</s" + "cript>><</l" + "ink>>\n";
 		bText	 += "<<l" + "ink [[Leave conversation|Map]]>><<s" + "cript>>\n";
@@ -89,7 +112,7 @@ window.SisSpecifics = function() {
 	}
 
 		// Logic
-	this.processTopicResult = function(actor,target,sisTopic) {
+	SisSpecifics.prototype.processTopicResult = function(actor,target,sisTopic) {
 		// This gets executed when the player executes a sist. For npcs, check executeStandardSistEffects()
 		var resultsText = "";
 		var rejectionCostText = "";
@@ -122,15 +145,47 @@ window.SisSpecifics = function() {
 		resultsText += "\n" + desire[1] + "\n" + isSuccessful[1] + rejectionCostText; // isSuccessful[1] returns a string detailing why that was the result
 		this.resultsText += resultsText;
 	}
+	SisSpecifics.prototype.processTopicResultExtraPar = function(actor,target,sisTopic,extraPar) {
+		// This gets executed when the player executes a sist. For npcs, check executeStandardSistEffects()
+		var resultsText = "";
+		var rejectionCostText = "";
+		// Apply social drive cost
+		gC(actor).socialdrive.changeValue(-sisTopic.getSocialdriveOfferCost(actor,target,extraPar));
+		// Check if successful
+		var desire = sisTopic.getDesire(actor,target,extraPar);
+		var isSuccessful = sisTopic.isSuccessful(actor,target,extraPar);
+		var willpowerRejectCost = sisTopic.getWillpowerRejectCost(actor,target,extraPar);
+		var effect = 0;
+		if ( isSuccessful[0] == true ) { // Offer accepted
+			resultsText = sisTopic.getSuccessMessage(actor,target,extraPar);
+			effect = sisTopic.getSuccessEffect(actor,target,extraPar);
+		}
+		else if ( willpowerRejectCost > gC(target).willpower.current ) { // Forced to accept offer due to lack of willpower
+			resultsText = "Not enough " + colorText("willpower","darkslateblue"); + " to reject! " + gC(target).getFormattedName() + " resented that. " + sisTopic.getSuccessMessage(actor,target,extraPar);
+			gC(target).relations[actor].enmity.stv += 10;
+			gC(target).relations[actor].rivalry.stv += 10;
+			effect = sisTopic.getSuccessEffect(actor,target,extraPar);
+		}
+		else { // Rejects offer, may take willpower damage
+			resultsText = sisTopic.getFailMessage(actor,target,extraPar);
+			effect = sisTopic.getFailEffect(actor,target,extraPar);
+			// Willpower rejecting cost
+			gC(target).willpower.current -= willpowerRejectCost;
+			if ( willpowerRejectCost > 0 ) {
+				rejectionCostText = "\n" + gC(target).getFormattedName() + " spent " + colorText((willpowerRejectCost.toFixed(2) + " willpower "),"darkslateblue") + "to reject the offer.";
+			}
+		}
+		resultsText += "\n" + desire[1] + "\n" + isSuccessful[1] + rejectionCostText; // isSuccessful[1] returns a string detailing why that was the result
+		this.resultsText += resultsText;
+	}
 
 		// Management
-	this.cleanSiss = function() {
+	SisSpecifics.prototype.cleanSiss = function() {
 		this.playerTarget = "";
 		this.resultsText = "";
 		this.flagSissEnd = false;
 		this.continueButton = "";
 	}
-}
 
 State.variables.sisSpecifics = new SisSpecifics();
 
@@ -164,6 +219,9 @@ SisSpecifics.prototype.toJSON = function() {
 window.sisTopic = function(title) {
 	this.title = title;
 	this.subtitle = "";
+	this.getTitle = function(extraPar) {
+		return this.title;
+	}
 	
 	this.isPossible = function(actor,target) {
 		return true;
@@ -199,6 +257,12 @@ window.sisTopic = function(title) {
 	}
 	this.askToPlayer = null;
 	this.getButtonPlayerAccepts = null;
+	
+	this.recursiveSelfSummon = function(actor,target) {
+		// If returns null, the sisTopic has no recursive self summon
+		// If returns a list with more than 0 elements, the topic is repeatedly called with an extra parameter per element in the list
+		return null;
+	}
 }
 
 window.genericSistEffectsPlusPc = function(actors,targets,plusEffects) {
@@ -340,7 +404,7 @@ window.createSistEgalitarianSex = function() {
 		if ( result ) { stringResult = "Success!"; secondStringResult += gC(target).perPr + " accepted."; }
 		else 		  { stringResult = "Failure."; secondStringResult += gC(target).perPr + " refused."; }
 		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Base dif.: " + baseDifficulty
-					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", desire: " + willpowerCostFactor.toFixed(2) + ", Intentions: " + missionFactor.toFixed(2) + ", Growth: " + powerGrowthFactor.toFixed(2) + " - Result: " + finalValue.toFixed(2);
+					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", Desire: " + willpowerCostFactor.toFixed(2) + ", Intentions: " + missionFactor.toFixed(2) + ", Growth: " + powerGrowthFactor.toFixed(2) + " - Result: " + finalValue.toFixed(2);
 		}
 		
 		secondStringResult = gC(actor).getFormattedName() + " invited " + gC(target).getFormattedName() + " to have sex and ";
@@ -382,8 +446,6 @@ window.createSistEgalitarianSex = function() {
 		var sisCharList = State.variables.compass.sisList[sisId].charList;
 		var joinedGroup = getCharGroup(actor).concat(getCharGroup(target));
 		var additionalChars = recruitCharsInSis(sisCharList,actor,joinedGroup,this.doesCharJoinGroup);
-		
-		State.variables.logL1.push("Starting ega sex scene, actor: ",actor,", target: ",target," recruited chars: ",additionalChars);
 		
 		if ( actor == "chPlayerCharacter" ) {
 			State.variables.sisSpecifics.flagSissEnd = true;
@@ -663,7 +725,7 @@ window.createSistExcludingEgalitarianSex = function() {
 		if ( result ) { stringResult = "Success!"; secondStringResult += gC(target).perPr + " accepted."; }
 		else 		  { stringResult = "Failure."; secondStringResult += gC(target).perPr + " refused."; }
 		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Base dif.: " + baseDifficulty
-					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", desire: " + willpowerCostFactor.toFixed(2) + ", Intentions: " + missionFactor.toFixed(2) + ", Growth: " + powerGrowthFactor.toFixed(2) + " - Result: " + finalValue.toFixed(2);
+					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", Desire: " + willpowerCostFactor.toFixed(2) + ", Intentions: " + missionFactor.toFixed(2) + ", Growth: " + powerGrowthFactor.toFixed(2) + " - Result: " + finalValue.toFixed(2);
 		}
 		
 		secondStringResult = gC(actor).getFormattedName() + " invited " + gC(target).getFormattedName() + " to have sex and ";
@@ -870,7 +932,7 @@ window.createSistSubmissiveSex = function() {
 		result = false;
 		if ( finalValue >= 0 ) { result = true; }
 		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Base dif.: " + baseDifficulty
-					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", desire: " + willpowerCostFactor.toFixed(2) + ", Intentions: " + missionFactor.toFixed(2) + ", Growth: " + powerGrowthFactor.toFixed(2) + " - Result: " + finalValue.toFixed(2);
+					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", Desire: " + willpowerCostFactor.toFixed(2) + ", Intentions: " + missionFactor.toFixed(2) + ", Growth: " + powerGrowthFactor.toFixed(2) + " - Result: " + finalValue.toFixed(2);
 		}
 		
 		secondStringResult = gC(actor).getFormattedName() + " invited " + gC(target).getFormattedName() + " to have sex and ";
@@ -1091,7 +1153,7 @@ window.createSistDominantSex = function() {
 		result = false;
 		if ( finalValue >= 0 ) { result = true; }
 		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Base dif.: " + baseDifficulty
-					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", desire: " + willpowerCostFactor.toFixed(2) + ", Intentions: " + missionFactor.toFixed(2) + ", Growth: " + powerGrowthFactor.toFixed(2) + " - Result: " + finalValue.toFixed(2);
+					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", Desire: " + willpowerCostFactor.toFixed(2) + ", Intentions: " + missionFactor.toFixed(2) + ", Growth: " + powerGrowthFactor.toFixed(2) + " - Result: " + finalValue.toFixed(2);
 		}
 		
 		secondStringResult = gC(actor).getFormattedName() + " invited " + gC(target).getFormattedName() + " to have sex and ";
@@ -2226,6 +2288,402 @@ window.createSistUnlockActorsGenitals = function() {
 	return sist;
 }
 
+	// Transformations
+window.createSistTransformationScene = function() {
+	var sist = new sisTopic("Ask to be transformed");
+	sist.sT = setup.sistType.transformSelf;
+	sist.isPossible = function(actor,target) {
+		var flagPossible = false;
+		if ( isLewdingPossible(actor,target) && ( State.variables.compass.findFirstSisIdInvolvingCharacter(actor) != -1 ) && ((gC(target).followingTo == "") || (gC(target).followingTo == actor) ) ) {
+			if ( getSisCharIsIn(actor).getValidProposedCharacters(actor).includes(target) && getValidTfActors().includes(target) && doesCharHaveState(actor,"Tfmd") == false ) {
+				flagPossible = true;
+			}
+		}
+		return flagPossible;
+	}
+	
+	sist.getDesire = function(actor,target) {
+		var desire = 0;
+		var baseDifficulty = -20;
+		var moodFactor = gC(target).mood.flirty * 0.03 + gC(target).mood.aroused * 0.08 - gC(target).mood.angry * 0.5 - gC(target).mood.bored * 0.5
+					   +  gC(target).mood.submissive * 0.05 - gC(target).mood.dominant * 0.15;
+		var relationshipFactor = rLvlAbt(target,actor,"romance") * 3 + rLvlAbt(target,actor,"sexualTension") * 6
+							 + rLvlAbt(target,actor,"submission") * 4 + rLvlAbt(target,actor,"domination") * -8
+							 + rLvlAbt(target,actor,"enmity") * -12;
+		var statsFactor = gCstat(actor,"charisma") - gCstat(target,"will");
+		var hadSexFactor = gC(target).daysWithoutSex * 2 - gC(target).sexScenesToday * 6;
+		var missingLustFactor = (1 - getBarPercentage(target,"lust")) * 35;
+		var othersFactor = 0;
+		if ( target == "chMes" ) { othersFactor += 20; }
+		desire = baseDifficulty + moodFactor + relationshipFactor + statsFactor + missingLustFactor + hadSexFactor + othersFactor;
+		var desireString = "Desire" + getDesireTooltip() + ": Base difficulty (" + baseDifficulty.toFixed(2) + ") + Mood (" + moodFactor.toFixed(2) + ") + Relationship ("
+						 + relationshipFactor.toFixed(2) + ") + Stats (" + statsFactor.toFixed(2) + ") + Lust (" + missingLustFactor.toFixed(2) + ") + Sex life (" + hadSexFactor.toFixed(2) + ") + Others (" + othersFactor.toFixed(2) + ") = Total (" + desire.toFixed(2) + ").";
+		
+		return [desire,desireString];
+	}
+	
+	sist.doesCharJoinGroup = function(charKey,actor,charList) {		
+		return false;
+	}
+	
+	sist.isSuccessful = function(actor,target) {
+		var result = false;
+		var stringResult = "";
+		var secondStringResult = "";
+		var relType = gRelTypeAb(target,actor);
+		
+		if ( relType ) {
+			if ( relType.forcedToSex ) {
+				result = true;
+				stringResult = gC(target).getFormattedName() + " is bound by your relationship to accept.";
+			}
+		}
+		if ( result == false ) {
+		var baseDifficulty = -20; // -20
+		var targetMoodFactor = gC(target).mood.flirty * 0.03 + gC(target).mood.intimate * 0.05 + gC(target).mood.aroused * 0.11
+							 + gC(target).mood.angry * -0.4 + gC(target).mood.bored * (-0.4) + gC(target).mood.submissive * 0.1
+							 + gC(target).mood.dominant * -0.25;
+		var relationshipFactor = rLvlAbt(target,actor,"romance") * 0.8 + rLvlAbt(target,actor,"sexualTension") * 1.6
+							 + rLvlAbt(target,actor,"submission") * 2 + rLvlAbt(target,actor,"domination") * -2.4
+							 + rLvlAbt(target,actor,"enmity") * -5 + rLvlAbt(target,actor,"rivalry") * -0.8
+		var willpowerCostFactor = this.getWillpowerRejectCost(actor,target) / 2;
+		var drivesFactor = gC(target).dPleasure.level * 3 + gC(target).dImprovement.level * 1 - gC(target).dDomination.level * 2;
+		var powerGrowthFactor = -((quantifyCharacterStats(target) - 110) / 11);
+		if ( powerGrowthFactor < 0 ) { powerGrowthFactor = 0; }
+		var simulationState = 0;
+		if ( State.variables.simCycPar.templeDayPeriod == "training" ) {
+			simulationState = -10;
+		}
+		if ( returnCharsUnlockedGenitals(target).length == 0 ) {
+			simulationState -= 20;
+		}
+		var missionFactor = 0;
+		if ( gC(target).mission == "haveSex" ) { missionFactor += 5; }
+		else if ( gC(target).mission == "haveDomSex" ) { missionFactor -= 10; }
+		var othersFactor = 0;
+		if ( target == "chMes" ) { othersFactor += 20; }
+		
+		var semifinalValue = targetMoodFactor + relationshipFactor + baseDifficulty + simulationState + willpowerCostFactor + drivesFactor + missionFactor + powerGrowthFactor + othersFactor;
+		var sfvTenth = semifinalValue * 0.1;
+		var diceThrow = luckedDiceThrow(gC(actor).luck.getValue());
+		var luckFactor = (sfvTenth * 2 * diceThrow) - sfvTenth;
+		
+		var finalValue = semifinalValue + luckFactor;
+		result = false;
+		if ( finalValue >= 0 ) { result = true; }
+		secondStringResult = gC(actor).getFormattedName() + " asked " + gC(target).getFormattedName() + " to perform a transformation and ";
+		if ( result ) { stringResult = "Success!"; secondStringResult += gC(target).perPr + " accepted."; }
+		else 		  { stringResult = "Failure."; secondStringResult += gC(target).perPr + " refused."; }
+		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Base dif.: " + baseDifficulty
+					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", Desire: " + willpowerCostFactor.toFixed(2) + ", Intentions: " + missionFactor.toFixed(2) + ", Growth: " + powerGrowthFactor.toFixed(2) + ", Others: " + othersFactor.toFixed(2) + " - Result: " + finalValue.toFixed(2);
+		}
+		
+		secondStringResult = gC(actor).getFormattedName() + " asked " + gC(target).getFormattedName() + " to perform a transformation and ";
+		if ( result ) { secondStringResult += gC(target).perPr + " accepted."; }
+		else 		  { secondStringResult += gC(target).perPr + " refused."; }
+		
+		return [result,stringResult,secondStringResult];		
+	}
+	sist.getFailMessage = function(actor,target) {
+		var message = firstToCap(gC(target).perPr) + " refused. " + gC(target).formattedName + " is growing bored.";
+		return message;
+	}
+	sist.getFailEffect = function(actor,target) {
+		gC(target).mood.bored += 10;
+		if ( gC(target).mood.bored > 100 ) {
+			gC(target).mood.bored = 100;
+		}
+	}
+	sist.getSuccessMessage = function(actor,target) {
+		var sisId = State.variables.compass.findFirstSisIdInvolvingCharacter(actor);
+		var sisCharList = State.variables.compass.sisList[sisId].charList;
+		var joinedGroup = getCharGroup(actor).concat(getCharGroup(target));
+		var message = firstToCap(gC(target).perPr) + " agreed. You both leave to a secluded place...";
+		return message;
+	}
+	sist.getSuccessEffect = function(actor,target) {
+		var sisId = State.variables.compass.findFirstSisIdInvolvingCharacter(actor);
+		var sisCharList = State.variables.compass.sisList[sisId].charList;
+		var joinedGroup = getCharGroup(actor).concat(getCharGroup(target));
+		
+		if ( actor == "chPlayerCharacter" ) {
+			State.variables.sisSpecifics.flagSissEnd = true;
+			var addCharsString = [];
+			
+			var bText = "<<l" + "ink [[Continue|TF Std Menu]]>><<s" + "cript>>\n";
+			bText	 += "genericSistEffectsPlusPc(['" + actor + "'],['" + target + "'].concat([" + addCharsString + "]),sistTransformationEffects);\n";
+			bText	 += "State.variables.tfTarget = 'chPlayerCharacter';State.variables.tfActor = '" + target + "';"
+					  + "updateSelectedTransformationsText('chPlayerCharacter','" + State.variables.tfActor + "','TF Std Menu');<</s" + "cript>><</l"
+					  + "ink>>";
+			State.variables.sisSpecifics.continueButton = bText;
+		} else {
+			sistTransformationEffects([actor],[target],[]);
+			genericSistEffects(getCharGroup(actor),getCharGroup(target));
+			//genericSistEffects(getCharGroup(actor),getCharGroup(target).concat(additionalChars));
+			//sistEgalitarianSexEffects([actor],[target],additionalChars);
+		}
+	}
+	sist.askToPlayer = function(actor,target,sisKey) {
+		var promptText = gC(actor).getFormattedName() + " wants you to perform a transformation on " + gC(actor).comPr + ".\n" + this.getDesire(actor,target)[1] + "\n\n"
+					   + this.getButtonPlayerAccepts(actor);
+		var promptMode = "default";
+		if ( gRelTypeAb("chPlayerCharacter",actor) ) {
+			if ( gRelTypeAb("chPlayerCharacter",actor).forcedToSex ) {
+				promptMode = "relTypeForcesToAccept";
+			}
+		}
+		State.variables.compass.sisList[sisKey].setSisPlayerPrompt(promptText,promptMode,this.getWillpowerRejectCost(actor,target),actor,target,this.sT);
+	}
+	sist.getButtonPlayerAccepts = function(actor) {
+		var sisId = State.variables.compass.findFirstSisIdInvolvingCharacter(actor);
+		var sisCharList = State.variables.compass.sisList[sisId].charList;
+		var joinedGroup = getCharGroup(actor).concat(getCharGroup("chPlayerCharacter"));
+		
+		var addCharsString = [];
+		
+		var bText = "<<l" + "ink [[Accept|Scene]]>><<s" + "cript>>\n";
+		bText	 += "getSisCharIsIn('chPlayerCharacter').endSisPlayerPrompt();\n";
+		bText	 += "genericSistEffectsPlusPc(['" + actor + "'],['chPlayerCharacter'].concat([" + addCharsString + "]),sistTransformationEffects);\n";
+		bText	 += "<</s" + "cript>><</l" + "ink>>";
+		
+		return bText;
+	}
+	return sist;
+}
+
+window.createSistSubTransformationScene = function() {
+	var sist = new sisTopic("Ask to transform sub");
+	sist.sT = setup.sistType.transformSub;
+	sist.getTitle = function(targetSub) {
+		return "Ask to transform " + gC(targetSub).name;
+	}
+	sist.isPossible = function(actor,target,targetSub) {
+		var flagPossible = false;
+		if ( isLewdingPossible(actor,target) && ( State.variables.compass.findFirstSisIdInvolvingCharacter(actor) != -1 ) && ((gC(target).followingTo == "") || (gC(target).followingTo == actor) ) ) {
+			if ( getSisCharIsIn(actor).getValidProposedCharacters(actor).includes(target) && getValidTfActors().includes(target) && doesCharHaveState(targetSub,"Tfmd") == false && gC(actor).subChars.includes(targetSub) && gC(actor).followedBy.includes(targetSub) ) {
+				flagPossible = true;
+			}
+		}
+		return flagPossible;
+	}
+	
+	sist.getDesire = function(actor,target,targetSub) {
+		var desire = 0;
+		var baseDifficulty = -20;
+		var moodFactor = gC(target).mood.flirty * 0.03 + gC(target).mood.aroused * 0.08 - gC(target).mood.angry * 0.5 - gC(target).mood.bored * 0.5
+					   +  gC(target).mood.submissive * 0.05 - gC(target).mood.dominant * 0.15;
+		var relationshipFactor = rLvlAbt(target,actor,"romance") * 3 + rLvlAbt(target,targetSub,"sexualTension") * 6
+							 + rLvlAbt(target,actor,"submission") * 4 + rLvlAbt(target,actor,"domination") * -8
+							 + rLvlAbt(target,actor,"enmity") * -12;
+		var statsFactor = gCstat(actor,"charisma") - gCstat(target,"will");
+		var hadSexFactor = gC(target).daysWithoutSex * 2 - gC(target).sexScenesToday * 6;
+		var missingLustFactor = (1 - getBarPercentage(target,"lust")) * 35;
+		var othersFactor = 0;
+		if ( target == "chMes" ) { othersFactor += 20; }
+		desire = baseDifficulty + moodFactor + relationshipFactor + statsFactor + missingLustFactor + hadSexFactor + othersFactor;
+		var desireString = "Desire" + getDesireTooltip() + ": Base difficulty (" + baseDifficulty.toFixed(2) + ") + Mood (" + moodFactor.toFixed(2) + ") + Relationship ("
+						 + relationshipFactor.toFixed(2) + ") + Stats (" + statsFactor.toFixed(2) + ") + Lust (" + missingLustFactor.toFixed(2) + ") + Sex life (" + hadSexFactor.toFixed(2) + ") + Others (" + othersFactor.toFixed(2) + ") = Total (" + desire.toFixed(2) + ").";
+		
+		return [desire,desireString];
+	}
+	
+	sist.doesCharJoinGroup = function(charKey,actor,charList) {		
+		return false;
+	}
+	
+	sist.isSuccessful = function(actor,target,targetSub) {
+		var result = false;
+		var stringResult = "";
+		var secondStringResult = "";
+		var relType = gRelTypeAb(target,actor);
+		
+		if ( relType ) {
+			if ( relType.forcedToSex ) {
+				result = true;
+				stringResult = gC(target).getFormattedName() + " is bound by your relationship to accept.";
+			}
+		}
+		if ( result == false ) {
+		
+		var baseDifficulty = -20; // -20
+		var targetMoodFactor = gC(target).mood.flirty * 0.03 + gC(target).mood.intimate * 0.05 + gC(target).mood.aroused * 0.11
+							 + gC(target).mood.angry * -0.4 + gC(target).mood.bored * (-0.4) + gC(target).mood.submissive * 0.1
+							 + gC(target).mood.dominant * -0.25;
+		var relationshipFactor = rLvlAbt(target,actor,"romance") * 0.8 + rLvlAbt(target,targetSub,"sexualTension") * 1.6
+							 + rLvlAbt(target,actor,"submission") * 2 + rLvlAbt(target,actor,"domination") * -2.4
+							 + rLvlAbt(target,actor,"enmity") * -5 + rLvlAbt(target,actor,"rivalry") * -0.8
+		var willpowerCostFactor = this.getWillpowerRejectCost(actor,target) / 2;
+		var drivesFactor = gC(target).dPleasure.level * 3 + gC(target).dImprovement.level * 1 - gC(target).dDomination.level * 2;
+		var powerGrowthFactor = -((quantifyCharacterStats(target) - 110) / 11);
+		if ( powerGrowthFactor < 0 ) { powerGrowthFactor = 0; }
+		var simulationState = 0;
+		if ( State.variables.simCycPar.templeDayPeriod == "training" ) {
+			simulationState = -10;
+		}
+		if ( returnCharsUnlockedGenitals(target).length == 0 ) {
+			simulationState -= 20;
+		}
+		var missionFactor = 0;
+		if ( gC(target).mission == "haveSex" ) { missionFactor += 5; }
+		else if ( gC(target).mission == "haveDomSex" ) { missionFactor -= 10; }
+		var othersFactor = 0;
+		if ( target == "chMes" ) { othersFactor += 20; }
+		
+		var semifinalValue = targetMoodFactor + relationshipFactor + baseDifficulty + simulationState + willpowerCostFactor + drivesFactor + missionFactor + powerGrowthFactor + othersFactor;
+		var sfvTenth = semifinalValue * 0.1;
+		var diceThrow = luckedDiceThrow(gC(actor).luck.getValue());
+		var luckFactor = (sfvTenth * 2 * diceThrow) - sfvTenth;
+		
+		var finalValue = semifinalValue + luckFactor;
+		result = false;
+		if ( finalValue >= 0 ) { result = true; }
+		secondStringResult = gC(actor).getFormattedName() + " asked " + gC(target).getFormattedName() + " to perform a transformation on " + gC(targetSub).getFormattedName() + " and ";
+		if ( result ) { stringResult = "Success!"; secondStringResult += gC(target).perPr + " accepted."; }
+		else 		  { stringResult = "Failure."; secondStringResult += gC(target).perPr + " refused."; }
+		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Base dif.: " + baseDifficulty
+					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", Desire: " + willpowerCostFactor.toFixed(2) + ", Intentions: " + missionFactor.toFixed(2) + ", Growth: " + powerGrowthFactor.toFixed(2) + ", Others: " + othersFactor.toFixed(2) + " - Result: " + finalValue.toFixed(2);
+		}
+		
+		secondStringResult = gC(actor).getFormattedName() + " asked " + gC(target).getFormattedName() + " to perform a transformation on " + gC(targetSub).getFormattedName() + " and ";
+		if ( result ) { secondStringResult += gC(target).perPr + " accepted."; }
+		else 		  { secondStringResult += gC(target).perPr + " refused."; }
+		
+		return [result,stringResult,secondStringResult];		
+	}
+	sist.getFailMessage = function(actor,target,targetSub) {
+		var message = firstToCap(gC(target).perPr) + " refused. " + gC(target).formattedName + " is growing bored.";
+		return message;
+	}
+	sist.getFailEffect = function(actor,target,targetSub) {
+		gC(target).mood.bored += 10;
+		if ( gC(target).mood.bored > 100 ) {
+			gC(target).mood.bored = 100;
+		}
+	}
+	sist.getSuccessMessage = function(actor,target,targetSub) {
+		var sisId = State.variables.compass.findFirstSisIdInvolvingCharacter(actor);
+		var sisCharList = State.variables.compass.sisList[sisId].charList;
+		var joinedGroup = getCharGroup(actor).concat(getCharGroup(target));
+		var message = firstToCap(gC(target).perPr) + " agreed. You both leave to a secluded place...";
+		return message;
+	}
+	sist.getSuccessEffect = function(actor,target,targetSub) {
+		var sisId = State.variables.compass.findFirstSisIdInvolvingCharacter(actor);
+		var sisCharList = State.variables.compass.sisList[sisId].charList;
+		var joinedGroup = getCharGroup(actor).concat(getCharGroup(target));
+		
+		if ( actor == "chPlayerCharacter" ) {
+			State.variables.sisSpecifics.flagSissEnd = true;
+			var addCharsString = [];
+			
+			var bText = "<<l" + "ink [[Continue|TF Std Menu]]>><<s" + "cript>>\n";
+			bText	 += "genericSistEffectsPlusPc(['" + actor + "'],['" + target + "'].concat([" + addCharsString + "]),sistTransformationEffects);\n";
+			bText	 += "State.variables.tfTarget = '" + targetSub + "';State.variables.tfActor = '" + target + "';"
+					  + "updateSelectedTransformationsText('" + targetSub + "','" + State.variables.tfActor + "','TF Std Menu');<</s" + "cript>><</l"
+					  + "ink>>";
+			State.variables.sisSpecifics.continueButton = bText;
+		} else {
+			genericSistEffects(getCharGroup(actor),getCharGroup(target));
+			sistTransformationEffects([actor],[target],[targetSub]);
+			//genericSistEffects(getCharGroup(actor),getCharGroup(target).concat(additionalChars));
+			//sistEgalitarianSexEffects([actor],[target],additionalChars);
+		}
+	}
+	sist.askToPlayer = function(actor,target,sisKey,targetSub) {
+		var promptText = gC(actor).getFormattedName() + " wants you to perform a transformation on " + gC(targetSub).getFormattedName() + ".\n" + this.getDesire(actor,target)[1] + "\n\n"
+					   + this.getButtonPlayerAccepts(actor);
+		var promptMode = "default";
+		if ( gRelTypeAb("chPlayerCharacter",actor) ) {
+			if ( gRelTypeAb("chPlayerCharacter",actor).forcedToSex ) {
+				promptMode = "relTypeForcesToAccept";
+			}
+		}
+		State.variables.compass.sisList[sisKey].setSisPlayerPrompt(promptText,promptMode,this.getWillpowerRejectCost(actor,target),actor,target,this.sT);
+	}
+	sist.getButtonPlayerAccepts = function(actor,targetSub) {
+		var sisId = State.variables.compass.findFirstSisIdInvolvingCharacter(actor);
+		var sisCharList = State.variables.compass.sisList[sisId].charList;
+		var joinedGroup = getCharGroup(actor).concat(getCharGroup("chPlayerCharacter"));
+		
+		var addCharsString = [];
+		
+		var bText = "<<l" + "ink [[Accept|Scene]]>><<s" + "cript>>\n";
+		bText	 += "getSisCharIsIn('chPlayerCharacter').endSisPlayerPrompt();\n";
+		bText	 += "genericSistEffectsPlusPc(['" + targetSub + "'],['chPlayerCharacter'].concat([" + addCharsString + "]),sistTransformationEffects);\n";
+		bText	 += "<</s" + "cript>><</l" + "ink>>";
+		
+		return bText;
+	}
+	sist.recursiveSelfSummon = function(actor,target) {
+		var targets = [];
+		for ( var cK of gC(actor).followedBy ) {
+			if ( gC(actor).subChars.includes(cK) ) {
+				targets.push(cK);
+			}
+		}
+		return targets;
+	}
+	return sist;
+}
+
+window.sistTransformationEffects = function(actors,targets,additionalChars) {
+	State.variables.sisSpecifics.passageText = "";
+		// Room
+	var room = gC(actors[0]).getRefugeRoomInMap();
+	if ( room == "none" ) { room = gC(targets[1]).getRefugeRoomInMap(); }
+	if ( room == "none" ) { room = "publicBaths"; } 
+	var desc = getRoomInfoA(room).getDescription();
+	
+	// State.variables.compass.moveCharsToRoom(getCharGroup(actor).concat(teamB),gC(actor).getRefugeRoomInMap());
+	
+	if ( actors[0] == "chPlayerCharacter" ) {
+		setupTfMenu(actors[0],targets[0],"TF Std Menu");
+	} else {
+		// Define conditions and start event
+			// Characters
+		var groupA = getCharGroup(actors[0]);
+		if ( groupA.includes(targets[0]) ) {
+			groupA = arrayMinusA(groupA,targets[0]);
+			var groupB = [targets[0]];
+		} else {
+			var groupB = getCharGroup(targets[0]);
+		}
+		var allChars = groupA.concat(groupB);
+		if ( room != "none" ) {
+			State.variables.compass.moveCharsToRoom(allChars,room);
+		}
+		
+			// Transformation parameters
+				// TfGoals
+		var tfGoals = npcDecidesTransformationsOnSelf(actors[0]);
+		var tfActors = [];
+		for ( var cK of getValidTfActors() ) {
+			if ( allChars.includes(cK) ) {
+				tfActors.push(cK);
+			}
+		}
+		var transformationTarget = actors[0];
+		if ( additionalChars.length > 0 ) {
+			transformationTarget = additionalChars[0];
+		}
+		var flagTemporary = doesNpcChooseTemporaryTransformation(actors[0]);
+		
+			// Event
+		eventToPile(createSystemEventStandardTransformationScene(groupA,groupB,desc,isTfSceneFinished,"Scene Results",
+			tfGoals,tfActors,transformationTarget,flagTemporary,"none","","","TF Std Menu"));
+		
+		// charsA,charsB,description,checkEndScene,endScenePassage,
+		// tfGoals,tfActors,tfTarget,tfTemporary,genderChange,avatarFileName,portraitFileName,tfMenuPassage
+		
+		if ( allChars.includes("chPlayerCharacter") ) {
+			setFlagSisExitButtonSkipsTime();
+			//State.variables.compass.pushAllTimeToAdvance();
+		}
+	}
+	
+}
+
+
 // Constructors, serializers, etc.
 sisTopic.prototype._init = function (obj) {
 	Object.keys(obj).forEach(function (pn) {
@@ -2282,12 +2740,16 @@ setup.sistType = {
 	servitudeAsServant: "r1",
 	tutorshipAsTutor: "r2",
 	tutorshipAsPupil: "r3",
-	companionship: "r4"
+	companionship: "r4",
+	
+	transformSelf: "f0",
+	transformSub: "f1"
 }
 
 setup.sistTypes = [ "t0","t1","t2","t3","t4",
 					"o0","o1",
-					"r0","r1","r2","r3","r4" ];
+					"r0","r1","r2","r3","r4",
+					"f0", "f1" ];
 
 setup.sistDB = [];
 setup.sistDB[setup.sistType.egalitarianSex] = new createSistEgalitarianSex();
@@ -2305,4 +2767,5 @@ setup.sistDB[setup.sistType.tutorshipAsTutor] = new createSistOfferTutorshipAsTu
 setup.sistDB[setup.sistType.tutorshipAsPupil] = new createSistOfferTutorshipAsPupil();
 setup.sistDB[setup.sistType.companionship] = new createSistOfferCompanionship();
 
-
+setup.sistDB[setup.sistType.transformSelf] = createSistTransformationScene();
+setup.sistDB[setup.sistType.transformSub] = createSistSubTransformationScene();

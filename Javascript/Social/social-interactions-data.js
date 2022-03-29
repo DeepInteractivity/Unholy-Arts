@@ -1951,11 +1951,11 @@ window.getInsultSocInt = function(type) {
 		return mult;
 	}
 	socInt.getMoodVectorTarget = function() {
-		var mVector = new MoodVector(-5,0,-2,0,0,0,1,5);
+		var mVector = new MoodVector(-5,0,-2,0,-2,0,1,5);
 		return mVector;
 	}
 	socInt.getMoodVectorActor = function() {
-		var mVector = new MoodVector(-3,-1,-1,0,0,0,0,3);
+		var mVector = new MoodVector(-3,-1,-1,0,0,-2,0,3);
 		return mVector;
 	}
 	socInt.getMoodVectorObservers = function() {
@@ -1969,11 +1969,11 @@ window.getInsultSocInt = function(type) {
 		return mult;
 	}
 	socInt.getRelationVectorTarget = function() {
-		var rVector = new RelationVector(-2,0,0,0,0,8,8);
+		var rVector = new RelationVector(-2,0,0,-2,0,8,8);
 		return rVector;
 	}
 	socInt.getRelationVectorActor = function() {
-		var rVector = new RelationVector(-2,0,0,0,0,6,6);
+		var rVector = new RelationVector(-2,0,0,0,-2,6,6);
 		return rVector;
 	}
 	socInt.getRelationVectorObservers = function() {
@@ -1991,11 +1991,11 @@ window.getInsultSocInt = function(type) {
 		socInt.title = "Insult ideals";
 		socInt.socialDriveCost++;
 		socInt.getMoodVectorTarget = function() {
-			var mVector = new MoodVector(-6,0,-4,0,0,0,0,8);
+			var mVector = new MoodVector(-6,0,-4,0,-2,0,0,8);
 			return mVector;
 		}
 		socInt.getRelationVectorTarget = function() {
-			var rVector = new RelationVector(-3,0,-3,0,0,10,10);
+			var rVector = new RelationVector(-3,0,-3,-2,0,10,10);
 			return rVector;
 		}
 			break;

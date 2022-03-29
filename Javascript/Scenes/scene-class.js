@@ -103,7 +103,6 @@ window.scene = function() {
 		
 		var teamAcharKeys = [];
 		var teamBcharKeys = [];
-		
 		// Remove males if disabled
 		for ( var cK of tAck ) {
 			var valid = true;
@@ -544,6 +543,10 @@ window.scene = function() {
 			}
 			delete this.genericCharacters;
 		}
+		
+		if ( this.tfFlag != undefined ) {
+			this.cleanTfSceneData();
+		}
 	}
 	
 	scene.prototype.getCharacterContext = function(charKey) {
@@ -980,8 +983,6 @@ window.scene = function() {
 		for ( var pcAction of positionalContinuedActions ) {
 			var actionName = colorText(("[" + pcAction.name + "] "),"darkgray");
 			var actionDescription = pcAction.execute().description;
-			// TODO: Add action name and description to CAs
-			//var toPush = "" + actionName + actionDescription + "\n"
 			var nonButton = [,"","" + actionName + actionDescription + "\n"];
 			this.cancelActionButtons.push(nonButton);
 			this.cabID++;
@@ -1199,7 +1200,6 @@ window.scene = function() {
 
 		// Custom Script
 		this.customScript();
-	
 		// Check importantMessages
 		if ( this.importantMessages != "" ) {
 			var temp = this.importantMessages;
@@ -1421,7 +1421,7 @@ window.scene = function() {
 					if ( gC(this.teamAcharKeys[i]).hasFreeBodypart("mouth") == false ) {
 						(100 - threshold) / 1.5;
 					}
-					if ( limitedRandomInt(100) > (threshold + extraThreshold) && (this.teamAcharKeys[i] != this.teamAchosenTargets[i]) ) { // Activate dialog
+					if ( limitedRandomInt(100) > (threshold + extraThreshold) && (this.teamAcharKeys[i] != this.teamAchosenTargets[i] && this.teamAchosenTargets[i][0] != undefined ) ) { // Activate dialog
 						var actionsAgainstActor = getActionsAgainstTarget(this.teamAcharKeys[i]);					
 						var nd = chooseDialogFromList(setup.dialogDB[this.getDialogsList()],this.teamAcharKeys[i],this.teamAchosenTargets[i][0],this.teamAchosenActions[i],actionsAgainstActor);
 						if ( nd != "" ) {
@@ -1437,7 +1437,7 @@ window.scene = function() {
 					if ( gC(this.teamBcharKeys[i]).hasFreeBodypart("mouth") == false ) {
 						(100 - threshold) / 1.5;
 					}
-					if ( limitedRandomInt(100) > (threshold + extraThreshold) && (this.teamBcharKeys[i] != this.teamBchosenTargets[i]) ) { // Activate dialog
+					if ( limitedRandomInt(100) > (threshold + extraThreshold) && (this.teamBcharKeys[i] != this.teamBchosenTargets[i] && this.teamBchosenTargets[i][0] != undefined) ) { // Activate dialog
 						var actionsAgainstActor = getActionsAgainstTarget(this.teamBcharKeys[i]);					
 						var nd = chooseDialogFromList(setup.dialogDB[this.getDialogsList()],this.teamBcharKeys[i],this.teamBchosenTargets[i][0],this.teamBchosenActions[i],actionsAgainstActor);
 						if ( nd != "" ) {
@@ -1469,12 +1469,16 @@ window.scene = function() {
 		var orgasmText = "";
 		var actionsAgainstActor = getActionsAgainstTargetIncludingSelf(charKey);
 		var description = chooseMessageFromList(setup.dialogDB.orDialogs,charKey,"",type,actionsAgainstActor);
-		if ( type == "ruined" ) {
-			orgasmText = colorText((gC(charKey).name + " almost reached climax for " + (getChar(charKey).lust.max + overflow).toFixed(2) + " total lust damage, but... "),"red") + description + " " + gC(charKey).name + " feels " + gC(charKey).posPr + " strength flowing away.";
-		} else if ( type == "mindblowing" ) {
-			orgasmText = colorText((getChar(charKey).name + " reached a most powerful climax for " + (getChar(charKey).lust.max + overflow).toFixed(2) + " lust damage and " + (gC(charKey).willpower.max * 0.2).toFixed(2) + " willpower damage."),"red") + description;
+		if ( gC(charKey).race != "monster" ) {
+			if ( type == "ruined" ) {
+				orgasmText = colorText((gC(charKey).name + " almost reached climax for " + (getChar(charKey).lust.max + overflow).toFixed(2) + " total lust damage, but... "),"red") + description + " " + gC(charKey).name + " feels " + gC(charKey).posPr + " strength flowing away.";
+			} else if ( type == "mindblowing" ) {
+				orgasmText = colorText((getChar(charKey).name + " reached a most powerful climax for " + (getChar(charKey).lust.max + overflow).toFixed(2) + " lust damage and " + (gC(charKey).willpower.max * 0.2).toFixed(2) + " willpower damage."),"red") + description;
+			} else {
+				orgasmText = colorText((getChar(charKey).name + " reached climax for " + (getChar(charKey).lust.max + overflow).toFixed(2) + " total lust damage."),"red") + description;
+			}
 		} else {
-			orgasmText = colorText((getChar(charKey).name + " reached climax for " + (getChar(charKey).lust.max + overflow).toFixed(2) + " total lust damage."),"red") + description;
+			orgasmText += colorText(gC(charKey).name + " stops moving as energy expires out of its body.","red");
 		}
 		orgasmText += " ";
 		return orgasmText;
@@ -1679,6 +1683,12 @@ window.getImmediatelyConnectedCharsToChar = function(charKey) {
 			if ( this.endSceneMessage != "" ) { pas += this.endSceneMessage + "\n\n"; }
 			pas += this.endScenePassageScript;
 		}
+		
+		// Transformation scene description
+		if ( this.hasOwnProperty("tfFlag") ) {
+			pas += "\n<div class='standardBox'>" + this.tfProgressDescription() + "</div>\n";
+		}
+		
 		pas += "</div></div>";
 		this.scenePassage = pas;
 	}
@@ -2187,7 +2197,7 @@ window.cleanSceneTags = function() {
 window.endSceneScriptRefreshLustIfOrgasmed = function() {
 	var allChars = State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys);
 	for ( var cK of allChars ) {
-		if ( gC(cK).orgasmSceneCounter > 0 || gC(cK).mindblowingOrgasmSC > 0 ) {
+		if ( gC(cK).orgasmSceneCounter > 0 || gC(cK).mindblowingOrgasmSC > 0 || State.variables.sc.sceneType == "bs" ) {
 			gC(cK).lust.restore();
 		}
 	}
@@ -2218,3 +2228,4 @@ window.getCharsEnemyTeam = function(cK) { // Checks if the "cK" character is in 
 	}
 	return team;
 }
+

@@ -421,6 +421,28 @@ window.isActionUsable = function(actionKey,actorKey,targetsKeys,skipLinkedCheck)
 		}
 	}
 	
+	// Transformation actions
+	if ( action.tags.includes("tf") ) {
+		if ( State.variables.sc.hasOwnProperty("tfFlag") == false ) {
+			iAU.isUsable = false;
+			if ( State.variables.settings.debugFunctions ) { iAU.explanation += "Transformation action in non-transformation scene.\n"; }
+		} else if ( targetsKeys[0] != State.variables.sc.tfTarget ) {
+			iAU.isUsable = false;
+			if ( State.variables.settings.debugFunctions ) { iAU.explanation += "Transformation action for anyone other than transformation target.\n"; }
+		} else {
+			var requiresTfPoints = false;
+			for ( var tfGoal of action.tfGoals ) {
+				if ( getRequiredPointsForTfGoal(tfGoal) > 0 ) {
+					requiresTfPoints = true;
+				}
+			}
+			if ( requiresTfPoints == false ) {
+				iAU.isUsable = false;
+			if ( State.variables.settings.debugFunctions ) { iAU.explanation += "Transformation goals aren't required anymore.\n"; }
+			}
+		}
+	}
+	
 	return iAU;
 };
 window.isActionUsableOnPos = function(actionKey,actorKey,targetKeys,actorPos,targetsPos) {
@@ -739,6 +761,18 @@ window.saList = function() {
 	this.teaseLockedPussy = createSaTeaseLockedPussy();
 	this.teaseLockedDick = createSaTeaseLockedDick();
 	
+			// Transformation
+			
+	this.sculptingKiss = createSaSculptingKiss();
+	this.sculptChest = createSaSculptChest();
+	this.sculptBody = createSaSculptBody();
+	
+	this.formDick = createSaFormDick();
+	this.formPussy = createSaFormPussy();
+	this.buryDick = createSaBuryDick();
+	this.foldPussy = createSaFoldPussy();
+	
+	
 		// Cont. actions
 	
 	this.frenchKiss = createSaFrenchKiss();
@@ -792,7 +826,7 @@ window.saList = function() {
 	this.doubleDildoPussyPenetration = createSaDoubleDildoPussyPenetration();
 	//
 	
-	this.punch = createBaPunch(); // ToDo: Remove this
+	this.punch = createBaPunch(); // Do not use
 	
 	////////////////// BATTLE SCENE ACTIONS ////////////////
 	this.struggle = createSaStruggle();

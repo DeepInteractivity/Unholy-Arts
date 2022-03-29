@@ -780,7 +780,7 @@ window.createCaSlimeHug = function(initiator,targetsList) {
 			//var exLustDamage = ((gC(this.initiator).intelligence.getValue() + gC(this.initiator).resilience.getValue())
 			//					/ (gC(target).will.getValue() * 2 )) * (1 - (gC(target).willpower.current / gC(target).willpower.max)) * 2;
 			gC(target).lust.changeValue(-exLustDamage);
-			results.description += ktn(target) + "'s lack of control aroused " + gC(target).comPr + " and made " + gC(target).comPr + " receive " + textLustDamage(exLustDamage) + ". " + multAr[1];
+			results.description += " " + ktn(target) + "'s lack of control aroused " + gC(target).comPr + " and made " + gC(target).comPr + " receive " + textLustDamage(exLustDamage) + ". " + multAr[1];
 		}
 		
 		return results;

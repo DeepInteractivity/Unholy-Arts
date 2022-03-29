@@ -61,3 +61,63 @@ window.finishFaSeDildoPlay = function() {
 	}
 }
 
+window.initializeFaSePaintingPadmiri = function() {
+	// Global event variable
+	addToStVarsList("bdPtSc");
+	// Init Story UI
+	setPasChars([]);
+	setRoomIntro("mapGleamingCaverns","workshop");	
+	
+	State.variables.compass.characterEventEndsPrematurely("chMir");
+	State.variables.compass.moveCharsToRoom(["chMir"],"workshop");
+	setPasChars([getPresentCharByKey("chMir")]);
+	State.variables.eventsCalendar.activeEvent = true;
+	
+	// Route A (Player falls asleep) / Route B (Mir falls asleep)
+	var playerScore = getBarPercentage("chPlayerCharacter","energy") * 20 + getBarPercentage("chPlayerCharacter","willpower") * 20 + gCstat("chPlayerCharacter","will") * 0.5 + gCstat("chPlayerCharacter","resilience") * 0.5;
+	var mirScore = getBarPercentage("chMir","energy") * 20 + getBarPercentage("chMir","willpower") * 20 + gCstat("chMir","will") * 0.5 + gCstat("chMir","resilience") * 0.5;
+	State.variables.StVars.check1 = playerScore;
+	State.variables.StVars.check2 = mirScore;
+	
+	if ( getCharsSpecialExperience("chMir","pntExp") < 15 ) { addCharsSpecialExperience("chMir","pntExp",15); }
+	if ( getCharsSpecialExperience("chVal","pntExp") < 10 ) { addCharsSpecialExperience("chVal","pntExp",10); }
+}
+window.finishFaSePaintingPadmiri = function() {
+	State.variables.eventsCalendar.activeEvent = false;
+}
+
+window.initFaSeDrishtyaMeleshConv = function() {
+	setPasChars([]);
+	setRoomIntro("mapGleamingCaverns","templeStorage");
+	State.variables.eventsCalendar.activeEvent = true;
+	if ( isStVarOn("drMlCon") ) {
+		State.variables.StVars.check1 = true;
+	} else {
+		State.variables.StVars.check1 = false;
+	}
+}
+
+// Valtan at Illumination Pond
+window.initValtanAtIlluminationPond = function() {
+	// Initial Valtan disposition
+	if ( (rLvlAbt("chVal","chPlayerCharacter","friendship") * 1 + rLvlAbt("chVal","chPlayerCharacter","romance") * 2 - rLvlAbt("chVal","chPlayerCharacter","enmity") * 3) >= 10 ) {
+		State.variables.StVars.check1 = true;
+		State.variables.StVars.check2 = false;
+	} else if ( (rLvlAbt("chVal","chPlayerCharacter","friendship") * 1 + rLvlAbt("chVal","chPlayerCharacter","romance") * 2 - rLvlAbt("chVal","chPlayerCharacter","enmity") * 3) < 0 ) {
+		addToStVarsList("vlNoCv");
+		State.variables.StVars.check1 = false;
+		State.variables.StVars.check2 = true;
+	} else {
+		State.variables.StVars.check1 = false;
+		State.variables.StVars.check2 = false;
+	}
+	if ( isStVarOn("vlSfsh") == false && ((gCstat("chPlayerCharacter","empathy") + gCstat("chPlayerCharacter","intelligence") + gCstat("chPlayerCharacter","perception")) >= 36) ) {
+		State.variables.StVars.check4 = false;
+	} else {
+		State.variables.StVars.check4 = true;
+	}
+}
+window.finishValtanAtIlluminationPond = function() {
+	State.variables.eventsCalendar.activeEvent = false;
+}
+

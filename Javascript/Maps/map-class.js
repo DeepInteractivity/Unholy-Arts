@@ -40,6 +40,16 @@ window.getCharsRoom = function(charKey) {
 	return getRoomA(gC(charKey).currentRoom);
 }
 
+window.doesRoomHaveActionForCharsWithValidTag = function(roomKey,characters,tag) {
+	var flag = false;
+	for ( var action of getRoomInfoA(roomKey).getActions(characters) ) {
+		if ( action.tags.includes(tag) ) {
+			flag = true;
+		}
+	}
+	return flag;
+}
+
 window.getEventsWherCharIsInvolved = function(character) {
 	var events = [];
 	for ( var sEvent of State.variables.compass.ongoingEvents ) {
@@ -141,6 +151,9 @@ window.charLeavesAnySis = function(character) {
 window.createSystemEventMovement = function(minutes, characters, roomKey) {
 	var sEvent = new systemEvent(minutes,characters,"movement","Moving",function(cList) {
 			State.variables.compass.moveCharsToRoom(cList,roomKey);
+			if ( getRoomInfoA(roomKey).getEventPrompt ) {
+				getRoomInfoA(roomKey).getEventPrompt(cList);
+			}
 			
 			var eventMsg = "Characters moved.";
 			return eventMsg;
@@ -316,9 +329,11 @@ window.initiatePlayerAssault = function(target) {
 	State.variables.compass.pushAllTimeToAdvance();
 	
 	// Message
-	var iText = "You're assaulting " + getCharNames(getCharGroup(target)) + "!\n"
-			  + "You have gained " + infamy.toFixed(1) + " infamy.\n\n"
-			  + "[[Continue|Scene]]";
+	var iText = "You're assaulting " + getCharNames(getCharGroup(target)) + "!\n";
+	if ( gC("chPlayerCharacter").cbl.includes(target) == false ) {
+		iText += "You have gained " + infamy.toFixed(1) + " infamy.\n";
+	}
+	iText	 += "\n[[Continue|Scene]]";
 	State.variables.compass.setInterludeTrigger(iText);
 }
 window.initiateNpcAssault = function(actor,target) {
@@ -357,7 +372,8 @@ window.initiateLiberationChallenge = function(actor,target) {
 	addDayTagToChar("liberationAttempt",actor);
 	// Initiate Battle
 		// Event
-	var allChars = getCharGroup(target);
+	var allChars = getCharGroup(target).concat(getCharGroup(actor));
+	allChars = removeDuplicatesFromList(allChars);
 	var spectators = arrayMinusA(arrayMinusA(allChars,actor),target);
 	for ( var charKey of allChars ) {
 		charLeavesAnySis(charKey);
@@ -370,7 +386,6 @@ window.initiateLiberationChallenge = function(actor,target) {
 	
 	if ( allChars.includes("chPlayerCharacter") && target != "chPlayerCharacter" ) {
 		State.variables.compass.timeToAdvance = 0;
-		State.variables.compass.pushAllTimeToAdvance();
 	}
 	
 	if ( actor == "chPlayerCharacter" ) {
@@ -429,14 +444,21 @@ window.processNpcChallengeResponse = function(target,stakes) {
 		State.variables.compass.sortOnGoingEventsByTime();
 		State.variables.compass.pushAllTimeToAdvance();
 		// Message
-		msg = gC(target).getFormattedName() + " accepted the challenge! You gained 1 infamy.\n\n"
+		msg = gC(target).getFormattedName() + " accepted the challenge!";
+		if ( gC("chPlayerCharacter").cbl.includes(target) == false ) {
+			msg += "\nYou gained 1 infamy.";
+		}
+		msg += "\n\n"
 			+ "[[Continue|Scene]]";
 	} else {
 		gC("chPlayerCharacter").changeMerit(1);
 		gC(target).changeMerit(-1);
 		// Message
-		msg = gC(target).getFormattedName() + " rejected the challenge. You gained 1 infamy. You took 1 merit from " + gC(target).comPr + ".\n\n"
-			+ "[[Continue|Map]]";
+		msg = gC(target).getFormattedName() + " rejected the challenge.";
+		if ( gC("chPlayerCharacter").cbl.includes(target) == false ) {
+			msg += "\nYou gained 1 infamy.";
+		}
+		msg += "\nYou took 1 merit from " + gC(target).comPr + ".\n\n[[Continue|Map]]";
 	}
 	
 	State.variables.compass.setInterludeTrigger(msg);
@@ -703,6 +725,22 @@ window.Compass = function() {
 		this.periodEndsTip = "";
 		
 		return true;
+	}
+	
+	Compass.prototype.changeRejectConversationSettings = function() {
+		if ( gC("chPlayerCharacter").hasOwnProperty("rConv") ) {
+			delete gC("chPlayerCharacter").rConv;
+		} else {
+			gC("chPlayerCharacter").rConv = 1;
+		}
+	}
+	
+	Compass.prototype.changeRejectFollowingSettings = function() {
+		if ( gC("chPlayerCharacter").hasOwnProperty("rFol") ) {
+			delete gC("chPlayerCharacter").rFol;
+		} else {
+			gC("chPlayerCharacter").rFol = 1;
+		}		
 	}
 	
 		// External interruptions and calls to player
@@ -1107,8 +1145,7 @@ window.Compass = function() {
 			}
 			if ( this.flagMenuInMap ) {
 				this.roomPassage += this.mapMenuPassage;
-			}
-			else {
+			} else {
 				this.roomPassage += `<div class='standardBox'>  <span style="vertical-align: middle;"><img src="img/mapIcons/` + getCurrentRoomInfo().medIcon + `" style="vertical-align: middle;">` + " __" + getCurrentRoomInfo().title + "__</span>\n";
 				
 				if  ( getCurrentRoomInfo().getDescription() != "" ) {
@@ -1196,6 +1233,14 @@ window.Compass = function() {
 							}
 						}						
 						this.roomPassage += "</map>";
+					}
+					
+					if ( gSettings().talkingAllowed || gSettings().followingAllowed ) { this.roomPassage += "\n"; }
+					if ( gSettings().talkingAllowed ) {
+						this.roomPassage += "\n" + this.getButtonConversationSettings();
+					}
+					if ( gSettings().followingAllowed ) {
+						this.roomPassage += "\n" + this.getButtonRejectFollowingSettings();
 					}
 				} else { // Player is prompted
 					this.roomPassage += this.promptPassage;
@@ -1467,7 +1512,11 @@ window.Compass = function() {
 	}
 	
 	Compass.prototype.setInterludeInfo = function(passageText) {
-		this.interludePassage = passageText + "[[Return to Map" + "|Map]]";
+		if ( this.hasOwnProperty("skipInterludeInfoFlag") == false ) {
+			this.interludePassage = passageText + "[[Return to Map" + "|Map]]";
+		} else {
+			this.interludePassage = passageText;
+		}
 	}
 	Compass.prototype.setInterludeTrigger = function(uniquePassageText) {
 		this.interludePassage = uniquePassageText;
@@ -1598,6 +1647,34 @@ window.Compass = function() {
 		var bText = "<<l" + "ink [[Spectate Combat|Scene]]>><<s" + "cript>>\n";
 		bText += "State.variables.compass.pushAllTimeToAdvance();\n";
 		bText	 += "<</s" + "cript>><</l" + "ink>>";
+		return bText;
+	}
+	
+	Compass.prototype.getButtonConversationSettings = function() {
+		var bText = "";
+		if ( gC("chPlayerCharacter").hasOwnProperty("rConv") ) {
+			bText = "<<l" + "ink [[Stop rejecting conversations|Map]]>><<s" + "cript>>\n";
+			bText 	 += "State.variables.compass.changeRejectConversationSettings();\n";
+			bText	 += "<</s" + "cript>><</l" + "ink>>";
+		} else {
+			bText = "<<l" + "ink [[Auto-reject conversations|Map]]>><<s" + "cript>>\n";
+			bText 	 += "State.variables.compass.changeRejectConversationSettings();\n";
+			bText	 += "<</s" + "cript>><</l" + "ink>>";
+		}
+		return bText;
+	}
+	
+	Compass.prototype.getButtonRejectFollowingSettings = function() {
+		var bText = "";
+		if ( gC("chPlayerCharacter").hasOwnProperty("rFol") ) {
+			bText = "<<l" + "ink [[Stop rejecting following requests|Map]]>><<s" + "cript>>\n";
+			bText 	 += "State.variables.compass.changeRejectFollowingSettings();\n";
+			bText	 += "<</s" + "cript>><</l" + "ink>>";
+		} else {
+			bText = "<<l" + "ink [[Auto-reject following requests|Map]]>><<s" + "cript>>\n";
+			bText 	 += "State.variables.compass.changeRejectFollowingSettings();\n";
+			bText	 += "<</s" + "cript>><</l" + "ink>>";
+		}
 		return bText;
 	}
 	
@@ -1815,6 +1892,7 @@ window.RoomInfo = function(key,title,medIcon,icon,description,connections,getAct
 		return this.description;
 	}
 	RoomInfo.prototype.getConnections = function(characterGroup) { // Returned to AIs. Will only send back valid room connections.
+																   // May be altered for special cases
 		return this.connections;
 	}
 	RoomInfo.prototype.displayConnections = function() {
@@ -1829,7 +1907,9 @@ window.RoomInfo = function(key,title,medIcon,icon,description,connections,getAct
 		return coords;
 	}
 
-window.createStandardDisplayConnections = function(connections) {
+RoomInfo.prototype.getEventPrompt = null; // If it exists, it's a function(characters), which should be called each time a characters group moves in
+
+window.createStandardDisplayConnections = function(connections) { // May be altered for special cases
 	var string = "";
 	for ( var connection of connections ) {
 		string += getLinkToRoom(connection.loc,"Go to " + getCurrentMap().rooms[connection.loc].title,connection.distance)

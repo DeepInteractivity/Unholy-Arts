@@ -180,6 +180,40 @@ window.createRestingActionStandard = function() {
 	return action;
 }
 
+window.createSystemEventBathRest = function(minutes,characters) {
+	var sEvent = new systemEvent(minutes,characters,"bathRest","Bathe for one hour",function(cList) {
+			var percent = 15 * restingResultsVar();
+			var rPercent = percent * 0.01;
+			for ( var character of cList ) {
+				washCharsBodyPainting(character);
+				for ( var bar of ["lust","willpower","energy","socialdrive"] ) {
+					charRecoversBarPercent(character,bar,rPercent*(this.ongoingTime/60));
+				}
+			}
+			if ( cList.length > 1 ) {
+				var eventMsg = "" + ktn(cList[0]) + " and the others relaxed in the bath, chatting and washing their bodies. Lust, energy, willpower and social drive points were restored.\n";
+			}
+			else if (cList.length == 0) {
+				var eventMsg = "";
+			}
+			else {
+				var eventMsg = "" + ktn(cList[0]) + " rested for an hour, chatting and washing their bodies. Lust, energy, willpower and social drive points were restored.\n";
+			}
+			return eventMsg;
+		}
+	);
+	sEvent.priority = 1;
+	return sEvent;
+}
+window.createRestingActionBathing = function() {
+	var action = new mapAction("bathRest","Bathe for one hour",createSystemEventBathRest,false);
+	action.description = "The characters will bathe for an hour, resting more effectively and washing their bodies.";
+	action.tags.push("rest");
+	action.recMins = 60;
+	action.flexibleTimes = true;
+	return action;
+}
+
 	// Empathy
 window.createSystemEventDramaReading = function(minutes,characters) {
 	var sEvent = new systemEvent(minutes,characters,"dramaReading","Drama Reading",function(cList) {

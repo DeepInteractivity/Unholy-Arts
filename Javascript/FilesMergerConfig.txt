@@ -31,7 +31,6 @@ Others\personal-room.js
 Maps\map-global-events.js
 HTML\statsChart.js
 Supporter Rewards\non-supporter-data.js
-Supporter Rewards\supporter-tools.js
 Others\story-events.js
 Maps\calendar.js
 Social\social-interactions-specifics.js
@@ -57,3 +56,6 @@ Maps\adv-actions-gleaming-caverns.js
 Maps\gleaming-caverns-maps.js
 Adventures\gleamingCavernsScripts.js
 Adventures\map-story-events.js
+Scenes\tf-scenes.js
+Others\body-paintings.js
+Others\patches.js

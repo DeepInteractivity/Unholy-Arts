@@ -804,7 +804,7 @@ window.createBdemandUnequipBondage = function() {
 			var value = 1 + limitedRandomInt(3) + relationFactor + drivesFactor;
 			if ( gC(actor).socialAi.loveTs.includes(charKey) ) { value *= 1.7; }
 			if ( gC(actor).socialAi.allyTs.includes(charKey) ) { value *= 1.5; }
-				
+			
 			if ( choicesList.length == 0 ) { choicesList = [getBattleDemandChoiceValueNpc(value,this,extra1,extra2)]; }
 			else { choicesList = choicesList.concat([getBattleDemandChoiceValueNpc(value,this,extra1,extra2)]); }
 		}
@@ -814,6 +814,89 @@ window.createBdemandUnequipBondage = function() {
 	
 	return bDemand;
 }
+
+window.createBdemandBodyPaint = function() {
+	var bDemand = new battleDemand("Paint body");
+	var tooltip = "Paints the body of the target, usually for the sake of shame or humilliation.";
+	bDemand.subtitle += '<span title="' + tooltip + '">(?)</span>';
+	
+	bDemand.isPossible = function(actor,target,battleWeight) {
+		var isPossible = false;
+		if ( gC(actor).type == "candidate" && gC(target).type == "candidate" && battleWeight >= 1 && areBodyPaintsDemandsEnabled() && doesCharHaveState(target,"BdPt") == false ) {
+			var anyPaintPossible = false;
+			for ( var bpTag of setup.bdPntTags ) {
+				if ( canTargetBeBodyPaintedByActor(target,actor,bpTag) ) {
+					anyPaintPossible = true;
+				}
+			}
+			if ( anyPaintPossible ) {
+				isPossible = true;
+			}
+		}
+		return isPossible;
+	}
+	bDemand.calculateInfamy = function(actor,target,battleWeight,infamyMultiplier) {
+		var infamy = 1;
+		return infamy;
+	}
+	bDemand.generateDescription = function(actor,target,battleWeight,infamyMultiplier,extra1,extra2) {
+		return "noDescription";
+	}
+	bDemand.provokeEffect = function(actor,target,battleWeight,infamyMultiplier,extra1,extra2) {
+		if ( actor != "chPlayerCharacter" ) {
+			// Find best bodypaint choice
+			actorBodyPaintsTargetWithTag(actor,target,extra1);
+			gC(actor).changeInfamy(this.calculateInfamy(actor,target,battleWeight,infamyMultiplier));
+		} else {
+			actorBodyPaintsTargetWithTag(actor,target,extra1);
+			gC(actor).changeInfamy(this.calculateInfamy(actor,target,battleWeight,infamyMultiplier));
+		}
+		return 1;
+	}
+	bDemand.resultMessage = function(actor,target,battleWeight,infamyMultiplier,extra1,extra2) {
+		var infamy = this.calculateInfamy(actor,target,battleWeight,infamyMultiplier);
+		var days = 3;
+		
+		var msg = gC(actor).getFormattedName() + " paints " + gC(target).getFormattedName() + "'s body...\n\n"
+				+ "__" + bdPntData(extra1).name + "__ Level: " + bdPntData(extra1).calcLevel(actor,target) + "\n\n"
+				+ State.variables.bdPntDesc + "\n\n"
+				+ bdPntData(extra1).getDescription(actor,target) + "\n\n"
+				+ gC(actor).getFormattedName() + " will get " + infamy.toFixed(1) + " infamy.";
+		delete State.variables.bdPntDesc;
+		return msg;
+	}
+	bDemand.getFormattedPlayerChoice = function(actor,target,stakes,infamyMultiplier,i) {
+		var cText = "";
+		var bpTags = getListOfValidBdPntsFromActorToTarget(actor,target);
+		for ( var bpTag of bpTags ) {
+			cText += "<<l" + "ink [[" + this.title + " (" + bdPntData(bpTag).name + ")|Scene Results]]>><<s" + "cript>>\n"
+				   + "setup.battleDemandsDB[" + i + "].provokeEffect('chPlayerCharacter','" + target + "'," + stakes + "," + infamyMultiplier + ",'" + bpTag + "','');\n"
+				   + "formatGenericBattlePlayerChoice(setup.battleDemandsDB[" + i + "].resultMessage('chPlayerCharacter','" + target + "'," + stakes + "," + infamyMultiplier + ",'" + bpTag + "',''),setup.battleDemandsDB[" + i + "].getPassageLink());\n"
+				   + "<</s" + "cript>><</l" + "ink>>" + getTextWithTooltip("(?)","Paints the body of the target, usually for the sake of shame or humilliation.\n" + bdPntData(bpTag).getPreliminaryDesc()) + "\n";
+		}
+		
+		return cText;
+	}
+	
+	bDemand.generateChoicesValuesForNpcs = function(actor,target,battleWeight,infamyMultiplier) {
+		// Adjust total weight of all potential body paint demands to a fixed value of 20 + chars' infamy, distributed proportionally
+		var paintDemandsList = [];
+		var totalPoints = 0;
+		for ( var bpTag of getListOfValidBdPntsFromActorToTarget(actor,target) ) {
+			var points = scoreBdPnt(bpTag,actor,target);
+			paintDemandsList.push([points,this,bpTag,""]);
+		}
+		var l = paintDemandsList.length;
+		var totalSum = 20 + gC(actor).infamy;
+		for ( var pd of paintDemandsList ) {
+			pd[0] = (pd[0] / totalPoints) * totalSum;
+		}
+		return paintDemandsList;
+	}	
+	
+	return bDemand;
+}
+
 
 // State.variables.battleDemandsDB = [
 setup.battleDemandsDB = [
@@ -832,7 +915,9 @@ setup.battleDemandsDB = [
 	// Force bondage
 	createBdemandForceBondage(),
 	// Liberate from bondage
-	createBdemandUnequipBondage()
+	createBdemandUnequipBondage(),
+	// Paint body
+	createBdemandBodyPaint()
 ];
 
 window.formatBattleDemandButtons = function(target,stakes,infamyMultiplier) {

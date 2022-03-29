@@ -21,6 +21,7 @@ window.processGenericSexSceneEffects = function() {
 		if ( gC(charKey).hasOwnProperty("daysWithoutSex") ) {
 			allCharsMsgs[charKey].msg = "";
 			var effectsMultiplier = getSexEffectsMultiplier(charKey);
+			if ( effectsMultiplier > 3.3 ) { effectsMultiplier = 3.3; }
 			if ( State.variables.sc.enabledLead == "fixed" ) { // Fixed lead
 				if ( gC(charKey).hasLead ) {					  // Char was top
 						// Define values
@@ -356,10 +357,10 @@ window.processGenericMapBattleEffects = function() {
 			}
 			if ( flagWinningTeamIsCooperating ) {
 				for ( var cK of State.variables.sc.teamAcharKeys ) {
-					addPointsToDrive(gC(cK).dCooperation,(15+10*(0.1 * getAverageRelationStatBetweenCharAndGroup("friendship",cK,arrayMinusA(State.variables.sc.teamAcharKeys,cK)))));
+					addPointsToDrive(gC(cK).dCooperation,(30+20*(0.1 * getAverageRelationStatBetweenCharAndGroup("friendship",cK,arrayMinusA(State.variables.sc.teamAcharKeys,cK)))));
 				}
 				for ( var cK of State.variables.sc.teamBcharKeys ) {
-					addPointsToDrive(gC(cK).dCooperation,(6+4*(0.1 * getAverageRelationStatBetweenCharAndGroup("friendship",cK,arrayMinusA(State.variables.sc.teamBcharKeys,cK)))));
+					addPointsToDrive(gC(cK).dCooperation,(15+8*(0.1 * getAverageRelationStatBetweenCharAndGroup("friendship",cK,arrayMinusA(State.variables.sc.teamBcharKeys,cK)))));
 				}
 			}
 			break;
@@ -395,11 +396,11 @@ window.processGenericMapBattleEffects = function() {
 		loser = State.variables.sc.defender;
 		// Drive changes
 		  // Attacker
-		  addPointsToDrive(gC(winner).dDomination,(15+5*(0.1 * (getAverageRelationStatBetweenCharAndGroup("rivalry",winner,getCharsEnemyTeam(winner)) + getAverageRelationStatBetweenCharAndGroup("enmity",winner,getCharsEnemyTeam(winner))))));
-		  addPointsToDrive(gC(winner).dAmbition,(15+10*(0.1 * (getAverageRelationStatBetweenCharAndGroup("enmity",winner,getCharsEnemyTeam(winner))))));
+		  addPointsToDrive(gC(winner).dDomination,(30+10*(0.1 * (getAverageRelationStatBetweenCharAndGroup("rivalry",winner,getCharsEnemyTeam(winner)) + getAverageRelationStatBetweenCharAndGroup("enmity",winner,getCharsEnemyTeam(winner))))));
+		  addPointsToDrive(gC(winner).dAmbition,(30+20*(0.1 * (getAverageRelationStatBetweenCharAndGroup("enmity",winner,getCharsEnemyTeam(winner))))));
 		  driveChangesMessage += gC(winner).getFormattedName() + " gained domination and ambition drive points.\n";
 		  // Defender
-		  addPointsToDrive(gC(loser).dImprovement,15+5*(0.1 * (getAverageRelationStatBetweenCharAndGroup("rivalry",winner,getCharsEnemyTeam(winner)) + getAverageRelationStatBetweenCharAndGroup("enmity",winner,getCharsEnemyTeam(winner)))));
+		  addPointsToDrive(gC(loser).dImprovement,30+10*(0.1 * (getAverageRelationStatBetweenCharAndGroup("rivalry",winner,getCharsEnemyTeam(winner)) + getAverageRelationStatBetweenCharAndGroup("enmity",winner,getCharsEnemyTeam(winner)))));
 		  driveChangesMessage += gC(loser).getFormattedName() + " gained self-improvement drive points.\n";
 		  // Cooperation extra
 		  if ( flagWinningTeamIsCooperating ) {
@@ -411,13 +412,13 @@ window.processGenericMapBattleEffects = function() {
 		infamyMult = 0.5;
 		// Drive changes
 		  // Attacker
-		  addPointsToDrive(gC(loser).dImprovement,(15+5*(0.1 * (getAverageRelationStatBetweenCharAndGroup("rivalry",winner,getCharsEnemyTeam(winner)) + getAverageRelationStatBetweenCharAndGroup("enmity",winner,getCharsEnemyTeam(winner))))));
+		  addPointsToDrive(gC(loser).dImprovement,(30+10*(0.1 * (getAverageRelationStatBetweenCharAndGroup("rivalry",winner,getCharsEnemyTeam(winner)) + getAverageRelationStatBetweenCharAndGroup("enmity",winner,getCharsEnemyTeam(winner))))));
 		  addPointsToDrive(gC(loser).dDomination,-10);
 		  addPointsToDrive(gC(loser).dAmbition,-10);
 		  driveChangesMessage += gC(loser).getFormattedName() + " gained self-improvement drive points and lost domination and ambition drive points.\n";
 		  // Defender
-		  addPointsToDrive(gC(winner).dDomination,(7+1.5*(0.1 * (getAverageRelationStatBetweenCharAndGroup("rivalry",winner,getCharsEnemyTeam(winner)) + getAverageRelationStatBetweenCharAndGroup("enmity",winner,getCharsEnemyTeam(winner))))));
-		  addPointsToDrive(gC(winner).dAmbition,(7+5*(0.1 * (getAverageRelationStatBetweenCharAndGroup("enmity",winner,getCharsEnemyTeam(winner))))));
+		  addPointsToDrive(gC(winner).dDomination,(15+3*(0.1 * (getAverageRelationStatBetweenCharAndGroup("rivalry",winner,getCharsEnemyTeam(winner)) + getAverageRelationStatBetweenCharAndGroup("enmity",winner,getCharsEnemyTeam(winner))))));
+		  addPointsToDrive(gC(winner).dAmbition,(15+10*(0.1 * (getAverageRelationStatBetweenCharAndGroup("enmity",winner,getCharsEnemyTeam(winner))))));
 		  driveChangesMessage += gC(winner).getFormattedName() + " gained domination and ambition drive points.\n";
 		  // Cooperation extra
 		  if ( flagWinningTeamIsCooperating ) {
@@ -504,16 +505,16 @@ window.processLiberationChallengeEffects = function() {
 			// Drive changes
 			addPointsToDrive(gC(loser).dAmbition,-10);
 			addPointsToDrive(gC(loser).dDomination,-10);
-			addPointsToDrive(gC(loser).dImprovement,20);
+			addPointsToDrive(gC(loser).dImprovement,40);
 			// Relations effects
-			resultsMessage = gC(winner).getFormattedName() + " won the challenge! " + gC(winner).getFormattedName() + " will no longer be submissive to " + gC(loser).getFormattedName() + "." + gC(loser).getFormattedName() + " lost 10 ambition and domination drive points, and gained 20 self-improvement drive points." + "\n\n[[Continue|Map]]";
+			resultsMessage = gC(winner).getFormattedName() + " won the challenge! " + gC(winner).getFormattedName() + " will no longer be submissive to " + gC(loser).getFormattedName() + "." + gC(loser).getFormattedName() + " lost 10 ambition and domination drive points, and gained 40 self-improvement drive points." + "\n\n[[Continue|Map]]";
 			finishRelType(winner,loser);
 		} else if ( gC(loser).domChar == winner ) {
 			// Drive changes
 			addPointsToDrive(gC(loser).dAmbition,-20);
-			addPointsToDrive(gC(loser).dImprovement,20);
+			addPointsToDrive(gC(loser).dImprovement,40);
 			// Relations effects
-			resultsMessage = gC(winner).getFormattedName() + " won the challenge! " + gC(winner).getFormattedName() + " stole 3 merit from " + gC(loser).getFormattedName() + ", gained domination towards " + gC(loser).comPr + " and will extend their relationship for an extra day. " + gC(loser).getFormattedName() + " lost 20 ambition drive points and gained 20 self-improvement drive points." + "\n\n[[Continue|Map]]";
+			resultsMessage = gC(winner).getFormattedName() + " won the challenge! " + gC(winner).getFormattedName() + " stole 3 merit from " + gC(loser).getFormattedName() + ", gained domination towards " + gC(loser).comPr + " and will extend their relationship for an extra day. " + gC(loser).getFormattedName() + " lost 20 ambition drive points and gained 40 self-improvement drive points." + "\n\n[[Continue|Map]]";
 			gC(winner).relations[loser].domination.stv += 250;
 			gC(winner).changeMerit(3);
 			gC(loser).relations[winner].submission.stv += 250;
@@ -536,7 +537,8 @@ window.getAllPotentialBattleDemands = function(actor,target,stakes,infamyMult) {
 	var potentialDemands = [];
 	for ( var bd of setup.battleDemandsDB ) {
 		if ( bd.isPossible(actor,target,stakes) ) {
-			potentialDemands = potentialDemands.concat(bd.generateChoicesValuesForNpcs(actor,target,stakes,infamyMult));
+			var choiceValues = bd.generateChoicesValuesForNpcs(actor,target,stakes,infamyMult);
+			potentialDemands = potentialDemands.concat(choiceValues);
 		}
 	}
 	return potentialDemands;

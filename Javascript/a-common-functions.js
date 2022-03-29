@@ -72,6 +72,29 @@ window.randomFromList = function(list) {
 	return list[randomPosition];
 }
 
+window.randomListPurgeMinMax = function(list,min,max) {
+	// Discards a random amount of elements from list and returns the new list. Min and max refer to the minimum and maximum amount of elements the new list must have. The new list must not have less than zero elements or more than the previous list.
+	if ( min < 0 ) { min = 0; }
+	if ( max > list.length ) { max = list.length; }
+	if ( max < min ) { max = min; }
+	
+	var objects = limitedRandomInt(max-min) + min;
+	if ( objects == 0 ) { return []; }
+	else if ( objects == list.length ) { return list; }
+	else {
+		var oldList = list;
+		var newList = [];
+		var currentObject = "";
+		var i = objects;
+		while ( i > 0 ) {
+			currentObject = randomFromList(oldList);
+			newList.push(currentObject);
+			oldList = arrayMinusA(oldList,currentObject);
+		}
+		return newList;
+	}
+}
+
 // Text
 window.firstToCap = function(string) { // Returns a string similar to input with a capitalized first character
 	var nString = string[0].toUpperCase() + string.slice(1);
@@ -157,6 +180,10 @@ window.setRoomIntro = function(mapName,roomName) {
 
 window.getTextWithTooltip = function(txt,tooltip) {
 	var fTxt = "<span title='" + tooltip + "'>" + txt + "</" + "span>";
+	return fTxt;
+}
+window.getTextWithTooltipAlt = function(txt,tooltip) {
+	var fTxt = '<span title="' + tooltip + '">' + txt + '</' + 'span>';
 	return fTxt;
 }
 

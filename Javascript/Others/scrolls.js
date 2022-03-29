@@ -297,7 +297,7 @@ window.getScrollPillowFeetFightContent = function() {
 				+ 'Bell was now massaging Ninllin\'s pussy with her feet. //"Shut up and behave."//\n\n'
 				+ '//"Ok, ok. But please don\'t hurt me."//\n\n'
 				+ 'Bell\'s left foot was describing circular movements on her companion\'s clitoris with incredible care, while the right one was trying to push its big toe inside. Not much time later, Bell changed her position and moved her left leg down...\n\n'
-				+ '//"Lick my ankle"//, she ordered. And Ninllin complied, because the ankle wasn\'t as smelly as the foot itself, and she was scared of Bell.\n\n'
+				+ '//"Lick my ankle,"// she ordered. And Ninllin complied, because the ankle wasn\'t as smelly as the foot itself, and she was scared of Bell.\n\n'
 				+ 'Belluillsha sighed. It wasn\'t the most pleasing activity for herself, especially given that her own parts were still aching, but it would be worth it. Ninllinshian reached her orgasm a few minutes later, and she passed out.\n\n'
 				+ '//"Lucky me that you\'re like this."// She left the bedroll, dragged her companion out, and entered it again, happy and ready to sleep. //"Get tapped in the knee and you wake up in a single moment, but cum your brains out and no one will wake you up."// She sighed. //"At least now I have the whole bedroll for myself."//';
 	return content;
@@ -339,7 +339,7 @@ window.getScrollPunishingTheTraitorsContent = function() {
 				+ '"You two left me with nothing!"\n\n'
 				+ '"What!? Are you torturing us because we left you without sweets!?" Wesia couldn\'t believe her ears.\n\n'
 				+ '"They were the special sweets that the Leirien gave us, and you never know how long it\'ll be until they bring more again! They\'re delicious, and now they\'re GONE!"\n\n'
-				+ '"Cainei," Rasce intervened, "if it makes you feel better, they weren\'t even that good."'
+				+ '"Cainei," Rasce intervened, "if it makes you feel better, they weren\'t even that good."\n'
 				+ '"Don\'t lie to me, you bastard! You ate all of them!"\n\n'
 				+ '"Agh! Rasce, don\'t make her angrier, she\'s hurting me..." Wesia complained.\n\n'
 				+ '"You\'re going to be nothing but a drooling, pained dog in heat, when I\'m done with you."\n\n';

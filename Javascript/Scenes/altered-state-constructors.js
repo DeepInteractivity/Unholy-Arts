@@ -3,7 +3,7 @@ window.alteredState = function(title,acr,scope,turns,provokeEffect,cancelEffect,
 	this.title = title;
 	this.type = "none";
 	this.acr = acr;
-	this.scope = scope; // "scene", "days" or "equipment"
+	this.scope = scope; // "scene", "days", "equipment", "bdPnt" (Body painting)
 	this.remainingTurns = turns;
 	this.provokeEffect = provokeEffect;
 	this.cancelEffect = cancelEffect;
@@ -800,6 +800,67 @@ window.createASbuttplug = function() {
 
 
 
+// Transformations
+window.createFinishedTransformationAs = function(days,tfTypes) {
+	var provokeEffect = function(charKey) {
+	}
+	var cancelEffect = function(charKey) {
+		tfASendEffects(charKey,this);
+	}
+	var description = "This character has been temporarily transformed.";
+	var as = new alteredState("Transformed","Tfmd","days",days,provokeEffect,cancelEffect,description);
+		// tfTypes
+	as.tfTypes = [];
+	for ( var tfGoal of State.variables.sc.tfGoals ) {
+		switch (tfGoal) {
+			case "addDick":
+				if ( State.variables.sc.tfPermanentFlag != true ) {
+					as.tfTypes.push("addDick");
+				}
+				break;
+			case "addPussy":
+				if ( State.variables.sc.tfPermanentFlag != true ) {
+					as.tfTypes.push("addPussy");
+				}
+				break;
+			case "removeDick":
+				if ( State.variables.sc.tfPermanentFlag != true ) {
+					as.tfTypes.push("removeDick");
+				}
+				break;
+			case "removePussy":
+				if ( State.variables.sc.tfPermanentFlag != true ) {
+					as.tfTypes.push("removePussy");
+				}
+				break;
+			case "rebuildFace":
+				if ( State.variables.sc.hasOwnProperty("newPortraitFileName") ) {
+					as.tfTypes.push("rebuildFigure");
+				}
+				if ( (State.variables.sc.genderChange == "feminize" || State.variables.sc.genderChange == "masculinize") ) {
+					as.tfTypes.push("changedGender");
+				}
+				break;
+		}
+	}	
+	as.remainingDays = days;
+	as.type = "tf";
+	return as;
+}
+	// Valid tfTypes: addDick, addPussy, removeDick, removePussy, rebuildFigure, changedGender
+
+// Body Paintings
+window.createBodyPainting = function(bdPntTag,actor,target,levels,resistance) {
+	var as = new alteredState("Body Painting","BdPt","bdPnt",3,function(){return null;},function(){return null;},"");
+	as.actor = actor;
+	as.target = target;
+	as.tag = bdPntTag;
+	as.level = levels;
+	as.resistance = resistance;
+	as.type = "bdPnt";
+	return as;
+}
+
 // Events and story
 window.createFrozenPussy = function() {
 	var provokeEffect = function(charKey) {
@@ -858,6 +919,7 @@ window.createHypnosisResistanceBoon = function() {
 	}
 	var description = "This character has been booned with higher willpower, raising their will and their resistance to hypnosis attacks. A reverse effect may take place when it ends.";
 	var as = new alteredState("Hypnosis Resistance","HyRe","days",5,provokeEffect,cancelEffect,description);
+	as.remainingDays = 5;
 	as.type = "other";
 	return as;
 }

@@ -61,7 +61,6 @@ window.NpcMapAi = function(charKey) {
 						this.goalsList = [];
 						if ( this.createNewMission != null ) {	// TO EDIT IN THE FUTURE
 							this.getNewGoals();
-							
 							if ( this.goalsList.length > 0 ) {
 								this.tryNewGoal();
 							}
@@ -219,15 +218,21 @@ window.createMapAiGoalTalkTo = function(charKey,targetCharKey) {
 						} else {
 							p += getButtonRejectConversation(this.charKey);
 						}
-						State.variables.compass.setPlayerPrompt(p,this.charKey,true);
+						if ( canPlayerBeAskedToTalk(this.charKey) ) {
+							State.variables.compass.setPlayerPrompt(p,this.charKey,true);
+						}
 					} else {
+						var canInterrupt = true;
 						p += getButtonAcceptConversationInterrupted(this.charKey) + "\n";
 						if ( flagPlayerIsSub ) {
 							p += colorText("Locked: ","red") + "You can't refuse a conversation from a character you're submissive to.";
 						} else {
 							p += getButtonRejectConversationInterrupted(this.charKey);
+							canInterrupt = canPlayerBeAskedToTalk(this.charKey);
 						}
-						State.variables.compass.interruptPlayer(p,this.charKey,true);
+						if ( canInterrupt ) {
+							State.variables.compass.interruptPlayer(p,this.charKey,true);
+						}
 					}
 				}
 			}
@@ -461,7 +466,6 @@ window.createMapAiGoalPursueAndChallenge = function(charKey,targetCharKey,stakes
 	goal.createEvent = function() {		
 		if ( gC(this.charKey).currentRoom == gC(this.targetChar).currentRoom ) { // Target in same room
 			if ( checkMayChallenge(getCharGroup(this.charKey),this.targetChar) ) { // Target may be talked to
-					// ToDo mapAiGoalGallenge
 				createMapAiGoalChallenge(this.charKey,this.targetChar).createEvent();
 				gC(this.charKey).mapAi.signActive();
 			}
@@ -654,6 +658,9 @@ window.getRouteToClosestTrainingActivity = function(mapKey,charsGroup) {
 	return route;
 }
 window.getRouteToClosestTaggedActivity = function(mapKey,charsGroup,tag) {
+	if ( tag == "charisma" || tag == "empathy" ) {
+		State.variables.logL2.push("!!");
+	}
 	// Assumes the position of first character in charsGroup
 	
 	var isValid = function(roomKey) {
@@ -664,13 +671,23 @@ window.getRouteToClosestTaggedActivity = function(mapKey,charsGroup,tag) {
 		}
 		return flagValid;
 	}
+	if ( tag == "charisma" || tag == "empathy" ) {
+		State.variables.logL2.push("!2");
+	}
 	
 	var pathfinder = new Pathfinder(mapKey,charsGroup,gC(charsGroup[0]).currentRoom,isValid);
 	var route = pathfinder.getShortestValidRoute();
 	
+	if ( tag == "charisma" || tag == "empathy" ) {
+		State.variables.logL2.push("!3 ROUTE: ",route);
+	}
+	
 	return route;
 }
 window.getRouteToClosestAltTaggedActivity = function(mapKey,charsGroup,tagsList) {
+	if ( tagsList.includes("charisma") || tagsList.includes("empathy") ) {
+		State.variables.logL2.push(23);
+	}
 	// Assumes the position of first character in charsGroup
 	
 	var isValid = function(roomKey) {
@@ -686,6 +703,9 @@ window.getRouteToClosestAltTaggedActivity = function(mapKey,charsGroup,tagsList)
 	
 	var pathfinder = new Pathfinder(mapKey,charsGroup,gC(charsGroup[0]).currentRoom,isValid);
 	var route = pathfinder.getShortestValidRoute();
+	if ( tagsList.includes("charisma") || tagsList.includes("empathy") ) {
+		State.variables.logL2.push(24);
+	}
 	return route;
 }
 window.getRouteToCharacter = function(mapKey,charsGroup,character) {
@@ -777,7 +797,6 @@ window.getLastEitherTaggedActionInRoom = function(mapKey,roomKey,charsGroup,tags
 
 window.cMissionRandomMovement = function(mapKey,charsGroup) {
 	var commandsList = [];
-	
 	var connections = getRoomInfoA(gC(charsGroup[0].currentRoom)).getConnections();
 	
 	if ( connections.length > 0 ) {  // Create command to move to random adjacent location
@@ -821,18 +840,21 @@ window.cMissionBalancedRandomTrain = function(mapKey,charsGroup) {
 	var statToTrain = getRandomStat();
 	
 	var route = getRouteToClosestTaggedActivity(getCurrentMap().key,charsGroup,statToTrain);
+	var targetRoom = null;
 	if ( route.length > 0 ) {
 		var targetRoom = route[route.length - 1];
-	} else {
+	} else if ( doesRoomHaveActionForCharsWithValidTag(gC(charsGroup[0]).currentRoom,charsGroup,statToTrain) ) {
 		var targetRoom = gC(charsGroup[0]).currentRoom;
 	}
-	var actionKey = getLastTaggedActionInRoom(getCurrentMap().key,targetRoom,charsGroup,statToTrain).key
-	
-	if ( route.length > 0 ) {
-		commandsList = commandsList.concat(createRouteMovementCommands(route,charsGroup));
-	}
-	if ( actionKey != null ) {
-		commandsList.push(createMapAiGoalAction(charsGroup[0],targetRoom,actionKey,60));
+	if ( targetRoom) {
+		var actionKey = getLastTaggedActionInRoom(getCurrentMap().key,targetRoom,charsGroup,statToTrain).key
+		
+		if ( route.length > 0 ) {
+			commandsList = commandsList.concat(createRouteMovementCommands(route,charsGroup));
+		}
+		if ( actionKey != null ) {
+			commandsList.push(createMapAiGoalAction(charsGroup[0],targetRoom,actionKey,60));
+		}
 	}
 	
 	return commandsList;
@@ -842,18 +864,21 @@ window.cMissionActionTag = function(mapKey,charsGroup,tag) {
 	var commandsList = [];
 	
 	var route = getRouteToClosestTaggedActivity(getCurrentMap().key,charsGroup,tag);
+	var targetRoom = null;
 	if ( route.length > 0 ) {
-		var targetRoom = route[route.length - 1];
-	} else {
-		var targetRoom = gC(charsGroup[0]).currentRoom;
+		targetRoom = route[route.length - 1];
+	} else if ( doesRoomHaveActionForCharsWithValidTag(gC(charsGroup[0]).currentRoom,charsGroup,tag) ) {
+		targetRoom = gC(charsGroup[0]).currentRoom;
 	}
-	var actionKey = getLastTaggedActionInRoom(getCurrentMap().key,targetRoom,charsGroup,tag).key;
-	
-	if ( route.length > 0 ) {
-		commandsList = commandsList.concat(createRouteMovementCommands(route,charsGroup));
-	}
-	if ( actionKey != null ) {
-		commandsList.push(createMapAiGoalAction(charsGroup[0],targetRoom,actionKey,60));
+	if ( targetRoom ) {
+		var actionKey = getLastTaggedActionInRoom(getCurrentMap().key,targetRoom,charsGroup,tag).key;
+		
+		if ( route.length > 0 ) {
+			commandsList = commandsList.concat(createRouteMovementCommands(route,charsGroup));
+		}
+		if ( actionKey != null ) {
+			commandsList.push(createMapAiGoalAction(charsGroup[0],targetRoom,actionKey,60));
+		}
 	}
 	
 	return commandsList;
@@ -904,7 +929,9 @@ window.npcProposalFollowMe = function(actor,target) {
 							gC(actor).comPr + " in your debt.\n\n";
 					p += getButtonNpcAsksToFollowThemAccept(actor) + "\n";
 					p += getButtonNpcAsksToFollowThemReject(actor);
-					State.variables.compass.setPlayerPrompt(p,actor,true);
+					if ( canPlayerBeAskedToFollow(actor) ) {
+						State.variables.compass.setPlayerPrompt(p,actor,true);
+					}
 				}
 			}
 		} else { // Target is not player
@@ -920,7 +947,9 @@ window.npcProposalFollowYou = function(actor,target) {
 				var p = gD + "\n" + gC(actor).getFormattedName() + " wants to follow you.\n\n";
 				p += getButtonNpcAsksToFollowPlayerAccept(actor) + "\n";
 				p += getButtonNpcAsksToFollowPlayerReject(actor);
-				State.variables.compass.setPlayerPrompt(p,actor,true);
+				if ( canPlayerBeAskedToFollow(actor) ) {
+					State.variables.compass.setPlayerPrompt(p,actor,true);
+				}
 			}
 		} else { // Target is not player
 			aAsksBtoFollowB(actor,target);

@@ -852,7 +852,7 @@ window.createNersmias = function() {
 	// Moves
 	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","biteNeck","mountDick");
 	
-	character.saList.push("baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","taunt","baScratch","freezeFeet","sparkingRubbing","embers","realHypnoticGlance","slimeHug","baHypnoticGlance","baOrderKneeling","baOrderMasturbation","baCorrodeMind"); // 
+	character.saList.push("baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","taunt","freezeFeet","sparkingRubbing","embers","realHypnoticGlance","slimeHug","baHypnoticGlance","baOrderKneeling","baOrderMasturbation","baCorrodeMind"); // 
 	
 	// Body
 	character.addMaleParts();

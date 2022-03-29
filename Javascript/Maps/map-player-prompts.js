@@ -146,5 +146,34 @@ window.getPlayerReturnScreen = function() {
 	return passage;
 }
 
+window.canPlayerBeAskedToTalk = function(requester) {
+	var result = true;
+	if ( gC("chPlayerCharacter").hasOwnProperty("rConv") ) {
+		result = false;
+	}
+	if ( gC("chPlayerCharacter").followingTo == requester ) {
+		result = true;
+	} else if ( gRelTypeAb("chPlayerCharacter",requester) ) {
+		if ( gRelTypeAb("chPlayerCharacter",requester).forcedToFollow ) {
+			result = true;
+		}
+	}
+	return result;
+}
+window.canPlayerBeAskedToFollow = function(requester) {
+	var result = true;
+	if ( gC("chPlayerCharacter").hasOwnProperty("rFol") ) {
+		result = false;
+	}
+	if ( rFavor("chPlayerCharacter",requester) > 0 ) {
+		result = true;
+	} else if ( gRelTypeAb("chPlayerCharacter",requester) ) {
+		if ( gRelTypeAb("chPlayerCharacter",requester).forcedToFollow ) {
+			result = true;
+		}
+	}
+	return result;
+}
+
 ////////////////////////////////
 

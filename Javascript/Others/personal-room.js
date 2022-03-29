@@ -86,6 +86,9 @@ PersonalRoom.prototype.formatRoomText = function() {
 				break;
 		}
 		this.roomText += "\n<<" + "script>>State.variables.eventsCalendar.activeEvent = false;<</" + "script>> \ ";
+		
+		// TO DO: REMOVE
+		applyRequiredPatches();
 	}
 	
 	// Buttons
@@ -294,15 +297,14 @@ PersonalRoom.prototype.getCharacterInfo = function(character) {
 			for ( var relPar in gC(character).relations["chPlayerCharacter"] ) {
 				if ( gC(character).relations["chPlayerCharacter"][relPar] instanceof RelPar ) {
 					iText += rpNames[i] + " - Lvl: " + gC(character).relations["chPlayerCharacter"][relPar].level;
+					iText += ">(" + + formulaRelParTotalLevel(gC(character).relations["chPlayerCharacter"][relPar]) + ")";
 					var levelMod = gC(character).relations["chPlayerCharacter"][relPar].levelMod;
 					if ( levelMod > 0 ) {
 						iText += "+" + levelMod;
 					} else if ( levelMod < 0 ) {
 						iText += "-" + -levelMod;
 					}
-					iText += ">("
-						   + + formulaRelParTotalLevel(gC(character).relations["chPlayerCharacter"][relPar]) + ")"
-						   + " | ST: " + gC(character).relations["chPlayerCharacter"][relPar].stv.toFixed(1)
+					iText += " | ST: " + gC(character).relations["chPlayerCharacter"][relPar].stv.toFixed(1)
 						   + " (" + colorText((gC(character).relations["chPlayerCharacter"][relPar].stv * 0.05).toFixed(1),"red") + ")"
 						   + " | LT: " + gC(character).relations["chPlayerCharacter"][relPar].ltv.toFixed(1)
 						   + " (" + colorText((gC(character).relations["chPlayerCharacter"][relPar].stv * 0.01).toFixed(1),"green") + ")";
@@ -319,14 +321,14 @@ PersonalRoom.prototype.getCharacterInfo = function(character) {
 			for ( var relPar in gC("chPlayerCharacter").relations[character] ) {
 				if ( gC("chPlayerCharacter").relations[character][relPar] instanceof RelPar ) {
 					iText += rpNames[i] + " - Lvl: " + gC("chPlayerCharacter").relations[character][relPar].level;
+					iText += ">(" + formulaRelParTotalLevel(gC("chPlayerCharacter").relations[character][relPar]) + ")";
 					var levelMod = gC("chPlayerCharacter").relations[character][relPar].levelMod;
 					if ( levelMod > 0 ) {
 						iText += "+" + levelMod;
 					} else if ( levelMod < 0 ) {
 						iText += "-" + -levelMod;
 					}
-					iText += ">(" + formulaRelParTotalLevel(gC("chPlayerCharacter").relations[character][relPar]) + ")"
-						   + " | ST: " + gC("chPlayerCharacter").relations[character][relPar].stv.toFixed(1)
+					iText += " | ST: " + gC("chPlayerCharacter").relations[character][relPar].stv.toFixed(1)
 						   + " (" + colorText((gC("chPlayerCharacter").relations[character][relPar].stv * 0.05).toFixed(1),"red") + ")"
 						   + " | LT: " + gC("chPlayerCharacter").relations[character][relPar].ltv.toFixed(1)
 						   + " (" + colorText((gC("chPlayerCharacter").relations[character][relPar].stv * 0.01).toFixed(1),"green") + ")";
@@ -498,6 +500,11 @@ PersonalRoom.prototype.endDayEffects = function() {
 					if ( as.remainingDays <= 0 ) {
 						as.flagRemove = true;
 					}
+				} else if ( as.scope == "bdPnt" ) {
+					bdPntLosesResistance(as,1);
+					if ( as.level <= 0 ) {
+						as.flagRemove = true;
+					}
 				}
 			}
 			gC(charKey).cleanStates();
@@ -572,6 +579,7 @@ PersonalRoom.prototype.endDayRelationMoodEffects = function() {
 	}
 	
 PersonalRoom.prototype.initializeNewDay = function() {
+	
 		if ( isCurrentStoryStateInMainLoop() ) {
 			// Temple period
 			initTrainingPeriodPassionTemple();
@@ -1046,7 +1054,9 @@ window.npcsBuyItems = function() {
 					if ( bestCandidateWeaponValue > currentWeaponValue ) {
 						unequipObject(gC(character).weaponID);
 						var newWeaponID = charBuysItem(character,bestCandidateWeaponID);
-						equipObjectOnWearer(newWeaponID,character,-1);
+						if ( newWeaponID != -1 ) {
+							equipObjectOnWearer(newWeaponID,character,-1);
+						}
 					}
 				}
 			}

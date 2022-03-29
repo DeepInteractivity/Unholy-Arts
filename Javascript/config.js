@@ -5,22 +5,82 @@ Config.saves.autosave = false;
 Config.loadDelay = 50;
 Config.history.maxStates = 1;
 
-// State.variables.StVarsList = [];
+// State.variables.StVarsList = []; // Ex.: isStVarOn("vlHyp") // removeFromStVarsList("dldPly"); addToStVarsList("vlRtSl");
 // monActUs
 // go0
 // chTts
+// ******************** SPOILERS ******************** //
 	// First adventure
 		// Map scenes
-// *** alwSct -> Allowed into sanctum ***
-// *** blmClaw -> Blackmailed by Claw - Map Story Event triggered ***
-// *** dldCrf -> Crafting dildo ***
-// *** dldPly -> Dildo Play ***
+// *** alwSct -> Allowed into sanctum
+// *** blmClaw -> Blackmailed by Claw - Map Story Event triggered
+// *** dldCrf -> Crafting dildo
+// *** dldPly -> Dildo Play
+// *** mphInit -> Morph Init
+// *** mphFsTf -> Morph First Transformation
+// *** mphFnTf -> Morph Finished Transformation
+// *** bdPtSc -> Body Painting Scene									// Kept for now, may be used in a later event
+// *** drMlCon -> Drishtya and Melesh conversation
+// *** drMlHyp -> Drishtya told about Nersmias' hypnosis				// Kept for now, may be used during the adventure or later
+// *** drMlVal -> Melesh told the Player about Valtan's location
+// *** vlIlIn -> Valtan in Illumination Pond, Initialization
+// *** ssBth -> Shapeshifter Birth
+// *** vlNoCv -> Valtan no conversation ( In Gleaming Caverns ) 
+// *** vlSfsh -> Valtan's Selfishness
+// *** vlTlk1 , vlTlk2 , vlTlk3 -> Valtan's conversation triggers
+// *** vlHyp -> Hypnotized Valtan during Gleaming Caverns adventure		// Kept for now, may be used in a later event
+// * vlAtn -> Valtan atone for Sins
+// * vlDvtd -> Valtan devoted
+// * vlPlsr -> Valtan focused on pleasure
+// * vlFgSl -> Valtan forgetting Sillan
+// * vlRtSl -> Valtan won't forget Sillan
   // Special experiences
 // VarDom -> Varyonte's domination
 
+	// Tf Settings constants and definitions
+const tfSetTarget = {
+	removeDick: 0,
+	removePussy: 1,
+	addDick: 2,
+	addPussy: 3,
+	dickOnly: 4,
+	pussyOnly: 5,
+	hermsLoseDicks: 6,
+	femalesLoseFuta: 7,
+	everyoneGetsAllGenitals: 8,
+	copyOwnGenitals: 9,
+	oppositeOwnGenitals: 10,
+	originalTargetGenitals: 11,
+	opposingTargetGenitals: 12,
+	random: 13
+}
+const tfSetSelf = {
+	gainPussy: 0,
+	gainDick: 1,
+	losePussy: 2,
+	loseDick: 3,
+	getOriginalGenitals: 4,
+	femalesGainDick: 5,
+	malesGainPussy: 6,
+	allGainAllGenitals: 7,
+	random: 8
+}
+const tfSetExtra = {
+	noTransformations: 0,
+	temporary: 1,
+	permanent: 2,
+	random: 3
+}
+setup.tfTargetSettingsNames = [ "Remove dick", "Remove pussy", "Add dick", "Add pussy", "Dick only", "Pussy only", // 0-5
+	"Herms lose dicks", "Futas lose dicks", "Everyone gets all genitals", "Copy actor genitals", "Opposite actor genitals", // 6 - 10
+	"Original target genitals", "Opposing target genitals", "Random"]; // 11 -13
+setup.tfSelfSettingsNames = [ "Gain pussy", "Gain dick", "Lose pussy", "Lose dick", "Original genitals", // 0 - 4
+	"Females gain dick", "Males gain pussy", "Everyone gains all genitals", "Random"]; // 5-8
+setup.tfExtraSettingsNames = [ "No transformations", "Temporary", "Permanent", "Random"]; // 0-3
+
 ////////// GAME SETTINGS CLASS //////////
 
-setup.versionName = "Unholy Arts v0.3.5";
+setup.versionName = "Unholy Arts v0.3.8";
 
 setup.infamySecondThreshold = 1.2;
 setup.infamyThirdThreshold = 1.4;
@@ -67,6 +127,10 @@ window.Settings = function() {
 	this.stealingServitudeAllowed = "disable"; // "enable" / "disable"
 	
 	this.chastity = "enable"; // "enable" / "disable"
+	
+	this.tfGeneral = tfSetExtra.random;
+	this.tfSelf = tfSetSelf.random;
+	this.tfTarget = tfSetTarget.random;
 	
 	// Settings formatting
 	this.autosavingChoices = "";
@@ -254,6 +318,39 @@ Settings.prototype.formatMonstersChoices = function() {
 	return chText;
 }
 
+// this.tfGeneral = tfSetExtra.temporary;
+	//this.tfSelf = tfSetSelf.random;
+	//this.tfTarget = tfSetTarget.random;
+
+Settings.prototype.formatTfChoices = function() {
+	var chText = "  __Transformation Settings__" + hoverText("^^(?)^^","These options refer to NPC behavior when taking decision related to dynamic transformations, once they are unlocked at the end of the first month.") + "\n"
+			   + "__General__" + hoverText("^^(?)^^","General transformation settings. Some transformation will always be temporary, even if permanent transformations are enabled.") + ":\n";
+	var it = 0;
+	for ( var tfI of setup.tfExtraSettingsNames ) {
+		chText += '<label><<radiobutton "$settings.tfGeneral" "' + it + '"'; // tfSetExtra[it]
+		if ( parseInt(this.tfGeneral) == parseInt(it) ) { chText += " checked"; } // tfSetExtra[it]
+		chText += '>> ' + tfI + '</label>\n';
+		it++;
+	}
+	chText += "__Transformations on others__" + hoverText("^^(?)^^","Allowed NPC transformations on others.") + ":\n";
+	it = 0;
+	for ( var tfI of setup.tfTargetSettingsNames ) {
+		chText += '<label><<radiobutton "$settings.tfTarget" "' + it + '"';
+		if ( parseInt(this.tfTarget) == parseInt(it) ) { chText += " checked"; }
+		chText += '>> ' + tfI + '</label>\n';
+		it++;
+	}
+	chText += "__Transformations on self__" + hoverText("^^(?)^^","Allowed NPC transformations on themselves.") + ":\n";
+	it = 0;
+	for ( var tfI of setup.tfSelfSettingsNames ) {
+		chText += '<label><<radiobutton "$settings.tfSelf" "' + it + '"';
+		if ( parseInt(this.tfSelf) == parseInt(it) ) { chText += " checked"; }
+		chText += '>> ' + tfI + '</label>\n';
+		it++;
+	}
+	return chText;
+}
+
 	Settings.prototype.formatAllChoices = function() {
 		formatAutosavingChoices();
 		this.formatDifficultyChoices();
@@ -276,7 +373,7 @@ Settings.prototype.formatMonstersChoices = function() {
 		this.allChoices += this.formatSexSceneDurationChoices() + "\n" + this.formatMaleCharsChoices() + "\n" + this.formatMonstersChoices() + "\n\n"
 						+ this.analChoices + "\n\n" + this.painChoices + "\n\n" + this.formatMFSCAchoices() + "\n\n"
 						+ this.battleDefeatSexChoices + "\n\n" + this.servitudeRelationshipsChoices + "\n\n"
-						+ this.stealingServitudeChoices + "\n\n" + this.chastityChoices + "\n\n"
+						+ this.stealingServitudeChoices + "\n\n" + this.chastityChoices + "\n\n" + this.formatTfChoices() + "\n\n"
 						+ this.exitButton;
 	}
 					
@@ -645,11 +742,11 @@ window.isCurrentStoryStateInMainLoop = function() {
 
 //////////////
 
-setup.creditsGoddessEnthusiast = [ "LessIDableName ","Sordax","ben ","Peter ","Troy Armstrong","Colton Foote","Barnabas Collins","Vadrin ","Jake Ross","Nevyn ","Tyler Kreutzer","Pandavenger ","Chris40 ","He Who Remembers All","Bluebomber ","Brian Keefe","ElCrazy1 ","Grissie","Jacob LaRiviere","ShardOfCard ","ElrondHubbard ","Thomas Colasanto","Nat Byham","Evgeniy ","Cody Shawver","Brad11 ","tiffany mawhorter","Trickster ","Redace","Alex Srisaard","วํฒนะ มานะภักดี","Oliver_Ritchie ","Ermin Pivac","Alex2011","Scott","anactualgoat ","TheShwig ","Jou Chen","Michael ","Mateusz Karliczek","Robert Crawford","MrTheDarkRed ","Black Rose Valerie","Kandschur ","Andrew Dupuis","mainman879 ","Chris Shaw","Christopher Hopkins","Kevin Andrews","DankMeme ","Meserym ","Quinzell Antrom","Pandavenger","Logan Villa","Norann","Pingo ","Jan Hynek","Franko Bogdan","Alex Gaskins","Torrin ","Andrew Elvin","ArkSilver ","White Pebble","Yukari ","Grimaga ","Marcus Lu","Alysha Malone","Dage ","ArtificerZeltara","J AndMck","Snazy","Vkad 64","Dragon","Roze14 ","C Fra","Tyler Trounce","Michael Dennis Eagles","Manraj Dhanda","FirefoxV2 ","Boopley Boop","Grandius Grimm","Taziah Robinson","Mekhet ","cbcpdxkq3z","Markus Boos","Remi BB","Jack Fereday","Patrick McCabe","Tyler Kelly","mahdeennave ","Kou Mao","Gavin Winkler","jason cole","Jojolity ","Takos ","Shawn ","AD","Richard Dolder","ZXapol ","Kasen081 ","Nathan Reina","Name ","Lena Elmer","Jake Davis","Aleister Crowley","Alexander Presley","Void-Searcher .","Mikkel Christoffer Kraesing Neergaard","Blake ","Tinwen ","Michael Rydel","Josh white","Desmond Finney","Nemo-Iratus ","Jack Jamieson","yospeakr","Tarcc ","Lily Dawn","Zangi ","Richard Whitcher","ErDragon","Duchairn ","DarkyCrusad","aleante ","pebbles ","Keira Nguyen","Omoi T Wilkes","Ryan Lines","Tyler","TJ Gulledge","lvence","Zargothrax ","DANG NGUYEN MINH LUAN","PyriteP ","Oleg Kuzen","doofy goof","uwuwuwu ","Davos Sunshine","Aidan Myers","James Sampson","P-tron ","Ghostty","Ron Volpe","Coleman Stephan Johnson","Daniel Voronin","J","Oskar Hjorth","Brandon Livingston","NooBie ","shawn plumridge","sera","Micah Watkins","Jonathan Sane","ArsonisticMadCat ","Normal Accidents","TheApatheticAsshat","Drayton ","SmolFish ","yoon sung ju","D B","proninja22nd .","Cyril Remo Reyes","Alakdar ","Oleg Moloh","Harutenrai","Alkhiro Saber","Terrell Simms","Rory Baker","Eli Shmidt","Nick ","Benjamin Delgren","Sans ","Jacob Saganek","Alice Hiess","Iamus The Fox","dias","Sven Kalus","Kilborn ","Halcy Grand","Mahin Ahmed","Classyjarl","昀之 贾","A.K.A wut","Loxica","Andres ","Eduardo ","Madison Hickman","Bobby White","Shane Daley","Vienna Prudenciano","Souleater","Colin Owler","MyHobos ","Bo Botkin","Jack ","Hatz","Robert England","Cody Powers","Ben Jones","Words Words","Samantha ","Kris","Miyako Kobayashi","Hooman","Brett Evans","Canadian321 ","cory kinsley","Jason ","MistressCynthia ","Brad Davis","Anon1998","Bob ","robbert roth","joe","Michal Reimer","Luke Ballard","Sagaptor ","Scott Christensen","Fauxfox ","anactualgoat","Bob Johnson","AdmiralBreaker","cynthia","SHSL Gamer","Realms×Myths","Feltenix","Pink Milk","Ashenbones ","Zachary","Fiona Quinn","Joseph Beals","Vidar ","Ryan Allday","Nora Knox","Wildhawk ","A ","jack slate","Aaron Gahr","lolknight ","ColorfulGreyGoo","buddhapest","Vadrin","Kilian Gnauck","jason","Hannes Westander","zachary gafken","Benyrx ","Anton Åkesson","Chessia58","Jayson Hudson","devin wagner","Kevin Banda","a сertain hypocrite","Destroyerofsin35 Gaming","Someothermon","anonymous kid","Liches-Favour ","Pole Star","Anita Juckum","shadow master","Tyler Coffey","Felipe","Stephen Clifford","Bob Dole","Fang","Lior","Hayden John Williams","ragond","billy","Devon Edwards","Twofeather Quanto","Omnimagnus ","ZombieSniper246 ","Callan Weir","gff af","Kuroi Mato","SpilledAntifreeze","William Shepherd","nosyk drofecnul","Clancy Gilroy","riff smitty","BloGer _VID_","huge legend","kadir ","Justin Kays","VySaika ","Jack Whitehouse","Melanie","Dark Solitude","BannedHeresy ","Matthew Schultz","Kin_Teb","Teltmanden","Oberon","Leo ","annonomu ","michael glover","Steven Adams","Ana Silva","Dani James","C Tsang","Ignissik","Cole Delaney","David Alvå","Dalton Sky","Sejlen","savi","Jade Le","Lucas Pauling","Highlord","MattTheFree ","Triforcealt255 ","Selignite Verine","Benjamin L. Hood","Matthew Baskerville","Maximus ","Nathanael Crockett","Danealus ","SuperSuperMarcel","DarkPsionic ","Colin Yu","BasNek ","Nikolas Podrasky","ShadeOfTheLight ","Marmar ","will ","Bloodhound45","Booga","jf" ];
+setup.creditsGoddessEnthusiast = [ "LessIDableName ","Sordax","ben ","Peter ","Troy Armstrong","Colton Foote","Barnabas Collins","Vadrin ","Jake Ross","Nevyn ","Tyler Kreutzer","Pandavenger ","Chris40 ","Bluebomber ","Brian Keefe","ElCrazy1 ","Grissie","ShardOfCard ","ElrondHubbard ","Thomas Colasanto","Nat Byham","Evgeniy ","Cody Shawver","Brad11 ","tiffany mawhorter","Trickster ","Redace","Alex Srisaard","วํฒนะ มานะภักดี","Oliver_Ritchie ","Ermin Pivac","Alex2011","Scott","anactualgoat ","TheShwig ","Jou Chen","Michael ","Mateusz Karliczek","Robert Crawford","MrTheDarkRed ","Black Rose Valerie","Kandschur ","Andrew Dupuis","mainman879 ","Chris Shaw","Christopher Hopkins","Kevin Andrews","DankMeme ","Meserym ","Quinzell Antrom","Pandavenger","Logan Villa","Norann","Pingo ","Jan Hynek","Franko Bogdan","Alex Gaskins","Torrin ","Andrew Elvin","ArkSilver ","White Pebble","Yukari ","Grimaga ","Marcus Lu","Alysha Malone","Dage ","ArtificerZeltara","J AndMck","Snazy","Vkad 64","Dragon","Roze14 ","C Fra","Tyler Trounce","Michael Dennis Eagles","Manraj Dhanda","FirefoxV2 ","Boopley Boop","Grandius Grimm","Taziah Robinson","Mekhet ","cbcpdxkq3z","Markus Boos","Remi BB","Jack Fereday","Patrick McCabe","Tyler Kelly","mahdeennave ","Kou Mao","Gavin Winkler","jason cole","Jojolity ","Takos ","Shawn ","AD","Richard Dolder","ZXapol ","Kasen081 ","Nathan Reina","Name ","Lena Elmer","Jake Davis","Aleister Crowley","Alexander Presley","Void-Searcher .","Mikkel Christoffer Kraesing Neergaard","Blake ","Tinwen ","Michael Rydel","Josh white","Desmond Finney","Nemo-Iratus ","Jack Jamieson","yospeakr","Tarcc ","Lily Dawn","Zangi ","Richard Whitcher","ErDragon","Duchairn ","DarkyCrusad","aleante ","pebbles ","Keira Nguyen","Omoi T Wilkes","Ryan Lines","Tyler","TJ Gulledge","lvence","Zargothrax ","DANG NGUYEN MINH LUAN","PyriteP ","Oleg Kuzen","doofy goof","uwuwuwu ","Davos Sunshine","Aidan Myers","James Sampson","P-tron ","Ghostty","Ron Volpe","Coleman Stephan Johnson","Daniel Voronin","J","Oskar Hjorth","Brandon Livingston","NooBie ","shawn plumridge","sera","Micah Watkins","Jonathan Sane","ArsonisticMadCat ","Normal Accidents","TheApatheticAsshat","Drayton ","SmolFish ","yoon sung ju","D B","proninja22nd .","Cyril Remo Reyes","Alakdar ","Oleg Moloh","Harutenrai","Alkhiro Saber","Terrell Simms","Rory Baker","Eli Shmidt","Nick ","Benjamin Delgren","Sans ","Jacob Saganek","Alice Hiess","Iamus The Fox","dias","Sven Kalus","Kilborn ","Halcy Grand","Mahin Ahmed","Classyjarl","昀之 贾","A.K.A wut","Loxica","Andres ","Eduardo ","Madison Hickman","Bobby White","Shane Daley","Vienna Prudenciano","Souleater","Colin Owler","MyHobos ","Bo Botkin","Jack ","Hatz","Robert England","Cody Powers","Ben Jones","Words Words","Samantha ","Miyako Kobayashi","Hooman","Brett Evans","Canadian321 ","cory kinsley","Jason ","MistressCynthia ","Brad Davis","Anon1998","Bob ","robbert roth","joe","Michal Reimer","Luke Ballard","Sagaptor ","Scott Christensen","Fauxfox ","anactualgoat","Bob Johnson","AdmiralBreaker","cynthia","SHSL Gamer","Realms×Myths","Feltenix","Pink Milk","Zachary","Fiona Quinn","Joseph Beals","Vidar ","Ryan Allday","Nora Knox","Wildhawk ","A ","jack slate","Aaron Gahr","lolknight ","ColorfulGreyGoo","buddhapest","Vadrin","jason","Hannes Westander","zachary gafken","Benyrx ","Anton Åkesson","Chessia58","Jayson Hudson","devin wagner","Kevin Banda","a сertain hypocrite","Destroyerofsin35 Gaming","Someothermon","anonymous kid","Liches-Favour ","Pole Star","Anita Juckum","shadow master","Tyler Coffey","Felipe","Stephen Clifford","Bob Dole","Fang","Lior","Hayden John Williams","ragond","billy","Devon Edwards","Twofeather Quanto","Omnimagnus ","ZombieSniper246 ","Callan Weir","gff af","Kuroi Mato","SpilledAntifreeze","William Shepherd","nosyk drofecnul","Clancy Gilroy","riff smitty","BloGer _VID_","huge legend","kadir ","Justin Kays","VySaika ","Jack Whitehouse","Melanie","Dark Solitude","BannedHeresy ","Matthew Schultz","Kin_Teb","Oberon","Leo ","annonomu ","michael glover","Steven Adams","Ana Silva","Dani James","C Tsang","Ignissik","Cole Delaney","David Alvå","Dalton Sky","Sejlen","savi","Jade Le","Lucas Pauling","Highlord","MattTheFree ","Triforcealt255 ","Selignite Verine","Benjamin L. Hood","Matthew Baskerville","Maximus ","Nathanael Crockett","Danealus ","SuperSuperMarcel","DarkPsionic ","Colin Yu","BasNek ","Nikolas Podrasky","ShadeOfTheLight ","Marmar ","will ","Bloodhound45","Booga","jf","jedidia bullock","NightMarie","ShadowsterZ","Nex ","peplum02348","EV ","Kharma Bearer","Derps McGee","David Poulson","Phant0mCobra ","Chong Xena","Devereaux Mills","Angelo ","Kaebora ","Parker Heustess","LazyDragon ","darktalon","Zavgonymous","Alivda","EgoDraconis","Zach","Gigi Koch","devin young","Silver Virage","Miss Tea","Will Smith","MammothDionysus","Simon West","Krispie Dwarf","Raven ","Alaco ","Halcyon722","Rasmus Vilsgaard","Christoph Hundt","Dennis ","Salt Mage","Moobere","ManofGloves","Rustlegion ","Nath Dunhoe","Croc says Rawr","Shelby Taylor","Jack Brown","Nia","Jeffrey McKinney","jason ","Adelzon Mello","Eric ","Alec Guillaume","Ronin","Malcolm Kealey","CrystalKore","Adamski234","Adrian Chang","Death by fire Lol life","Opossum Actual","tay","Big Meme","Brozita ","Cooper Wilson","Gian Paulo Villanueva","Mint","Khona Moshr","Degen ","Quillan","EphemeralDreamer ","Madbuddog ","Oblivions_Edge ","npen ","Garrett","Skye Sunnix" ];
 
-setup.creditsPassionTemplePreacher = [ "Ryuko ","Fox McQwerty","Barada Azana","aattss ","Samurai_Jack141 ","Name2146 ","Snakes! ","Irasur","Alex ","Nathaniel Grams","Cory Elliott","SenoirKain ","Andreas","Gura ","ThatsAllFolks ","Joshua Boguth","Ross Fountain","Thomas ","Emily S.","Hunter Glad","Devin White","Anon ","hiorka","dark_dragon ","Hairdevill","A giant crab","Kai Scheele","pyrite","Georgii Brisuela","Anonimus Mito","Stephen","Stephen Pieper","Weathnarh ","Zergling ","Rodimus Darnath","kirito shiba","Unsung ","NoWorries623 ","Aplysina Cyanobacterium","Terminal_ERROR","Grant Manthey","Matt Miller","Dan Schrader","Slywolf357 ","Vysirez ","Benjamin Grieder","Michael Avellino","Satile ","Kestrel","Paladin_Wiggles_II ","CancerMage ","NightStrike01 ","ZVReaper16","Mcquaqua ","billyboy","Eric Wood","Elisia Seda","Sebastian Baran","Jabbtoth ","Snaked ","MaxTan ","Cyril guillas","Bartolomeo ","Pikarukawa","Anburaru ","This Guy","Nemesison ","Sunny Reehal","Joshua Todd Shaffer","TheLastBang ","Burckle","c0nevs ","Rj Sawyer","Максим Конорев","Mig Dig","Jacob Wrightsman","Desseus ","Lexi Knight","CriticalExistenceFailure ","floccinaucinihilipilification ","Friendly Neighbor","이재승 ","NovaDragn ","Chris Douglas","Bob Fruman","Gamenerd3 ","StrayWolf ","Skyrim mod lvr","Felkesste","William K Bennett","Spencer Bradford","Phenix995 ","Foolwatchout ","Lunaraia ","Guardx","Curtis1122","Kyle ","Kuma III","Weegee","Wirglays ","DeathbyKimchi ","Yi ","Reddy Allen","Bohrne","Honey Crab","12inpen","Be","k0lt ","Jim S","Joe Barrass","This guy","LunarGuardsman ","CorprealFale","Willayfiddle ","Renpon ","warshotcv ","Something ","Jens Bertrams","Hartmanns Youkai","Aeonian Argos","Chris","Joe X","FalconNrOne ","'---- ","Randall H","Anomally","SlamJammer ","acpmage","Christian Adalbert","Dr_Russian ","Aspios ","Grumpy ","Gabriel Grey","Chris ","CrysHistory ","Jean Otus","SetsunaYuki","muckenmaker ","Rockstad ","Nathan Taylor","noah ","Konomori ","Rex J Jensen","Red Duke","Shirogitsune","Wazzugazzu","Wesley A. Collins","Hillfillk","Parzival","Tharm","Perseus_paradox ","Austin Anderson","BruceM ","Peter Managarm","Inquisitor Gaia","Elowin ","matthew nemec","Ultrasexy ","YJs ","MajorCoincoin ","Myles ","Mayu The Kitsune","Cotton59 ","Bunne","magenta_bang ","Shadowed Song","Isan-San ","NRFB ","Sam Williams","der","richardTrickle ","Rune ","Hendrijk Watson","Zanaam","Niklas ","Mikhail Petrovic","Qwazpoi","Pink Wolf","AxiosMIles ","Jacob Perry","BlackDickens ","L","swaginator ","Izanagi15 ","OmcMcAlp ","Layne Landis","DivingRocket","Beebo","Robin ","Kevin Ball","John","Windarian ","Mithrandir ","Silcerius","Rene Bien","segev hype","Lucy Ventura","Bryan Shepherd","Tom Hoffs","lolwutt","Anders Bergström","David Townsend","Gandohar ","TreeSquared ","Cheezzyninja ","MJN ","David S Abraham","urdnot123 ","Pedro Garza","brandon stenlake","Dr_Fizzle ","Martin Santiago","drew hal","Maudika ","Crette ","Thunderstruck025","John Doe","jacques ","MechaMarshmallow ","Grekken ","Mike13858","Joseph Padgett","Ronald Kim","DefectiveGamer ","Ian","John Denny","Steinhammer","Auntie Grieves","PassingbyPosts","Girmout Lokison","Rachel Gern","Aureate_Folly","Lunanar","rowgran","Anthony Zeppieri","Seraph ","Dan ","Gavin Lane","Hjaalfar Skjoldrsson","lamonte robinson","Hunter Cottrell","TheDarkSoul11","8 bit","Lordaron ","Cameron Spangler","MrPotatoAim6349","Jeff Mcbiscuits","Jackoshack","Haidrin","DeathCoyote","Azra","Whyohwhy 12","Houya","Maseca","kyle hoopes","Disparrow ","Logan Berek","Toa Disk","Brian Niceley","Etak ","josh","Matt ","William Padilla","Richard ","Stefan Karfusehr","James Edison","Slacker ","Moonswitch3399 ","Nikolas Ambross","Colette Lelette","Heptu","Vrocket","Grippa ","Andrew Henniges","Vapantraath","bunker buster","t s","Earl Martin","02010 ","Dean Laird","TheVelourFog ","....... ","Mastergamer ","Ophis ","Narsauce ","Panda","Noir Usagi","Endy Cubed","IzumoKai","Jakob Cagle","Darklordiablo ","Suzaku ","Orvas","Ryan Krieger","K DA","Grocon A","Mr. J.","Robert gray","Slacker","BruceM","DemonQueen Sera","Mal","MonsterAD","Aria","Jen-Hsun Huang","Karma","Alice Reich","Nathan ","UserPig ","Anon the 13th","megahellreaper ","owen moore","Bobby D Floyd","asfdAD ","<SK> ","0Kanata0","snakbar ","philip","Selunea","SquigglyJim","Elijah McGovern","Jan Klauser","Kurious ","Israfel ","Lizzon ","Mark Hagan","Parad0x ","Arentios ","CptFalric ","Phenix995","Mars88","Maerwin","Norael ","Leche con chocolate","C","Khariel ","Rachel Burry","thisisnotreallyme ","Kara Regas","Alexander Brown","Azahel Noel Kurtz","Martin Griffin","Brave ","jordan zhou","Jeff ","Josh Button","Kashra Bascombe","Preusk ","Jake345 ","Fyodor ","Bryden Hoff","VYet","Mark Griffin","Kamren Drybread","Stephen Kennedy","Gaveal ","LionsFate ","hankhillpropane","mardoc","Kelbeck","parle42","Dav G.","Daver ","Milkygf","Narsauce","Wanderer","Jeyne Poole","William Taylor","EPIC BIRD","Justin Doyle","Califried","Drew Lichter","Rogi250","Logan Dodd","Cargo RSteele","Master Spark","Ocelotinside ","frog","Wind Walker","Ookami Kuchi","kafqm kqgmp","NeoDnyarri ","hundheim ","meowcat242","QQQdev ","Dakota Keeffer","Malte Schwantje","ThatoneBrah ","Tyragor ","Jayun ","sksksksksksksksksksks kskskskskskskskskssksksksksk","maps","JubileeGeode","Rene","Dr_Russian","witedragon","aiden ploughe","faye ","Sarah","Andi Li","j l ","Alisdair Gaston","Josh S","James Maes","Ian Harlow","Max ","Kitsune Tenko 9","Bobert the great","Joe Thelizard","Steve ","0ffnixleoi","Matatus Gratorus","Devon Farion","Kholonoe Lavist","Ninja ","Lol Djsj","DemonBlade","'-药不够- ","Miyuki Irie (Realtime6)","Tim Fischer","Cody Gardner","SaltyNeko","Nicklas Høgh","jim ","midnight sky","Jacob","divaroach","Losevka","Noam Halpert","RC ","Sara Kline","Michael Mancuso","Daniel Smith","TheGman","Klopss ","NeitherMeNorYou ","Rekka","Vlad Brown","Zaibunny","Старпёр ","Owlbear","Jahmir Roy","Richard Mills","Edward Phillips","Stratus","Alayla Risen","Anonynym","The One Who Knocks","R754","Ikarie","Azra El Crackhead","Cheezzy","Myah","DeadWolf357","용재 최","CasualBananas ","Blackwind TV","Dalriada ","Minesthra ","Avery Ioanidis","Black Lagoon23","Gloop ","shy-nerd-girl ","J. S.","Jordan Duggan","inszel ","Aaron Garland","Books Argentus","S","Technicolour","Exalt","A Giant Crab","Satsu" ];
+setup.creditsPassionTemplePreacher = [ "Ryuko ","Fox McQwerty","Barada Azana","aattss ","Samurai_Jack141 ","Name2146 ","Snakes! ","Irasur","Alex ","Nathaniel Grams","Cory Elliott","SenoirKain ","Andreas","Gura ","ThatsAllFolks ","Joshua Boguth","He Who Remembers All","Ross Fountain","Thomas ","Emily S.","Hunter Glad","Devin White","Anon ","hiorka","dark_dragon ","Hairdevill","A giant crab","Kai Scheele","Jacob LaRiviere","pyrite","Georgii Brisuela","Anonimus Mito","Stephen","Stephen Pieper","Weathnarh ","Zergling ","Rodimus Darnath","kirito shiba","Unsung ","NoWorries623 ","Aplysina Cyanobacterium","Terminal_ERROR","Grant Manthey","Matt Miller","Dan Schrader","Slywolf357 ","Vysirez ","Benjamin Grieder","Michael Avellino","Satile ","Kestrel","Paladin_Wiggles_II ","CancerMage ","NightStrike01 ","ZVReaper16","Mcquaqua ","billyboy","Eric Wood","Elisia Seda","Sebastian Baran","Jabbtoth ","Snaked ","MaxTan ","Cyril guillas","Bartolomeo ","Pikarukawa","Anburaru ","This Guy","Nemesison ","Sunny Reehal","Joshua Todd Shaffer","TheLastBang ","Burckle","c0nevs ","Rj Sawyer","Максим Конорев","Mig Dig","Jacob Wrightsman","Desseus ","Lexi Knight","CriticalExistenceFailure ","floccinaucinihilipilification ","Friendly Neighbor","이재승 ","NovaDragn ","Chris Douglas","Bob Fruman","Gamenerd3 ","StrayWolf ","Skyrim mod lvr","Felkesste","William K Bennett","Spencer Bradford","Phenix995 ","Foolwatchout ","Lunaraia ","Guardx","Curtis1122","Kyle ","Kuma III","Weegee","Wirglays ","DeathbyKimchi ","Yi ","Reddy Allen","Bohrne","Honey Crab","12inpen","Be","k0lt ","Jim S","Joe Barrass","This guy","LunarGuardsman ","CorprealFale","Willayfiddle ","Renpon ","warshotcv ","Something ","Jens Bertrams","Hartmanns Youkai","Aeonian Argos","Chris","Joe X","FalconNrOne ","'---- ","Randall H","Anomally","SlamJammer ","acpmage","Christian Adalbert","Dr_Russian ","Aspios ","Grumpy ","Gabriel Grey","Chris ","CrysHistory ","Jean Otus","SetsunaYuki","muckenmaker ","Rockstad ","Nathan Taylor","noah ","Konomori ","Rex J Jensen","Red Duke","Shirogitsune","Wazzugazzu","Wesley A. Collins","Hillfillk","Parzival","Tharm","Perseus_paradox ","Austin Anderson","BruceM ","Peter Managarm","Inquisitor Gaia","Elowin ","matthew nemec","Ultrasexy ","YJs ","MajorCoincoin ","Myles ","Mayu The Kitsune","Cotton59 ","Bunne","magenta_bang ","Shadowed Song","Isan-San ","NRFB ","Sam Williams","der","richardTrickle ","Rune ","Hendrijk Watson","Zanaam","Niklas ","Mikhail Petrovic","Qwazpoi","Pink Wolf","AxiosMIles ","Jacob Perry","BlackDickens ","L","swaginator ","Izanagi15 ","OmcMcAlp ","Layne Landis","DivingRocket","Beebo","Robin ","Kevin Ball","John","Windarian ","Mithrandir ","Silcerius","Rene Bien","segev hype","Lucy Ventura","Bryan Shepherd","Tom Hoffs","lolwutt","Anders Bergström","David Townsend","Gandohar ","TreeSquared ","Cheezzyninja ","MJN ","David S Abraham","urdnot123 ","Pedro Garza","brandon stenlake","Dr_Fizzle ","Martin Santiago","drew hal","Maudika ","Crette ","Thunderstruck025","John Doe","jacques ","MechaMarshmallow ","Grekken ","Mike13858","Joseph Padgett","Ronald Kim","DefectiveGamer ","Ian","John Denny","Steinhammer","Auntie Grieves","PassingbyPosts","Girmout Lokison","Rachel Gern","Aureate_Folly","Lunanar","rowgran","Anthony Zeppieri","Seraph ","Dan ","Gavin Lane","Hjaalfar Skjoldrsson","lamonte robinson","Hunter Cottrell","TheDarkSoul11","8 bit","Lordaron ","Cameron Spangler","MrPotatoAim6349","Jeff Mcbiscuits","Jackoshack","Haidrin","DeathCoyote","Azra","Whyohwhy 12","Houya","Maseca","kyle hoopes","Disparrow ","Logan Berek","Toa Disk","Brian Niceley","Etak ","josh","Matt ","William Padilla","Richard ","Stefan Karfusehr","James Edison","Slacker ","Moonswitch3399 ","Nikolas Ambross","Colette Lelette","Heptu","Vrocket","Grippa ","Andrew Henniges","Vapantraath","bunker buster","t s","Earl Martin","02010 ","Dean Laird","TheVelourFog ","....... ","Mastergamer ","Ophis ","Narsauce ","Panda","Noir Usagi","Endy Cubed","IzumoKai","Jakob Cagle","Darklordiablo ","Suzaku ","Orvas","Ryan Krieger","K DA","Grocon A","Mr. J.","Robert gray","Slacker","BruceM","DemonQueen Sera","Mal","MonsterAD","Aria","Jen-Hsun Huang","Karma","Alice Reich","Nathan ","UserPig ","Anon the 13th","megahellreaper ","owen moore","Bobby D Floyd","asfdAD ","<SK> ","0Kanata0","snakbar ","philip","Selunea","SquigglyJim","Elijah McGovern","Jan Klauser","Kurious ","Israfel ","Lizzon ","Mark Hagan","Parad0x ","Arentios ","CptFalric ","Phenix995","Mars88","Maerwin","Norael ","Leche con chocolate","C","Kris","Khariel ","Rachel Burry","thisisnotreallyme ","Kara Regas","Alexander Brown","Azahel Noel Kurtz","Martin Griffin","Brave ","jordan zhou","Jeff ","Josh Button","Kashra Bascombe","Preusk ","Jake345 ","Fyodor ","Bryden Hoff","VYet","Mark Griffin","Kamren Drybread","Stephen Kennedy","Gaveal ","LionsFate ","hankhillpropane","mardoc","Kelbeck","parle42","Dav G.","Daver ","Milkygf","Narsauce","Wanderer","Jeyne Poole","William Taylor","EPIC BIRD","Justin Doyle","Califried","Drew Lichter","Rogi250","Logan Dodd","Cargo RSteele","Master Spark","Ocelotinside ","frog","Ashenbones ","Wind Walker","Ookami Kuchi","kafqm kqgmp","NeoDnyarri ","hundheim ","meowcat242","QQQdev ","Dakota Keeffer","Malte Schwantje","ThatoneBrah ","Tyragor ","Jayun ","sksksksksksksksksksks kskskskskskskskskssksksksksk","maps","JubileeGeode","Rene","Dr_Russian","Kilian Gnauck","witedragon","aiden ploughe","faye ","Sarah","Andi Li","j l ","Alisdair Gaston","Josh S","James Maes","Ian Harlow","Max ","Kitsune Tenko 9","Bobert the great","Joe Thelizard","Steve ","0ffnixleoi","Matatus Gratorus","Devon Farion","Kholonoe Lavist","Ninja ","Lol Djsj","DemonBlade","'-药不够- ","Miyuki Irie (Realtime6)","Tim Fischer","Cody Gardner","SaltyNeko","Nicklas Høgh","jim ","midnight sky","Jacob","divaroach","Losevka","Noam Halpert","RC ","Sara Kline","Michael Mancuso","Daniel Smith","TheGman","Klopss ","NeitherMeNorYou ","Rekka","Vlad Brown","Zaibunny","Старпёр ","Owlbear","Jahmir Roy","Teltmanden","Richard Mills","Edward Phillips","Stratus","Alayla Risen","Anonynym","The One Who Knocks","R754","Ikarie","Azra El Crackhead","Cheezzy","Myah","DeadWolf357","용재 최","CasualBananas ","Blackwind TV","Dalriada ","Minesthra ","Avery Ioanidis","Black Lagoon23","Gloop ","shy-nerd-girl ","J. S.","Jordan Duggan","inszel ","Aaron Garland","Books Argentus","S","Technicolour","Exalt","A Giant Crab","Satsu","Chronos189 ","jere päivärinta","SomeRandomNamedBob","nk0x ","Brent Linn","BoogerBrigade ","Kelem ","Io96 ","Ah Dude","uzim22001 ","shin04h ","Alexander Schmid","Ethan Touzeau","Francis Lee","Bookmaniac","Dallas 179","Colin Kavanagh","Hampus Granat","Koshiu","Kibowalker ","Shatika Wallico","ChaoticPhoenix","codman56to","El Bardo","Viper21G","brnbabyburn","suttiruk ","Laioken ","Tigeress13 ","Halp ","Insolentdentist","Feadhel","John SMith","Chris Fisher","Sidetrack ","Joe Brenden","THESLINKER","veria","Praise the Sun","Aivilon","King Bravery","João Alexandre","Samantha Lear","Jason Fountain","Nathan Cleere","Katariven ","Jonas Temmen","Emil Larsen","John_Smiht","Patreon Patreon","dveragon ","Bati00 ","Devin Cousineau","Tom Eirik Mikalsen","John Smith","roboit","Lemon Lemon","Hadresian","JM K","Killzone1123","Mike","Kevin Scott","Sharkozis","Pete Moe","iriri ","NAAPURINJORMA","JD","lemonarchistemoderne","ElusiveShadow" ];
 
-setup.creditsPassionTempleClergy = [ "Alygness ","Joshua Smith","Longwave","Carlos Sierra","Elmeri Kunnas","Arkaykami","Shearly" ];
+setup.creditsPassionTempleClergy = [ "Alygness ","Joshua Smith","Longwave","Carlos Sierra","Elmeri Kunnas","Arkaykami","Shearly ","Lil Wolfy","Shinra" ];
 setup.creditsTier1 = "";
 setup.creditsTier2 = "";
 setup.creditsTier3 = "";

@@ -215,7 +215,15 @@ window.createSaBaKissLips = function() {
 		var evasionPlus = gCstat(actor,"agility") * 0.25 + gCstat(actor,"perception") * 0.25 + gC(actor).control * 4;
 		var evasionMinus = gCstat(target,"agility") * 0.35 + gCstat(target,"perception") * 0.35 + gC(target).control * 4 + 10;
 		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
-	}		   			
+	}
+
+	sa.getIsCustomAllowed = function(actionKey,actorKey,targetsKeys,skipLinkedCheck) {
+		var isAllowed = true;
+		if ( gC(targetsKeys[0]).race == "monster" ) {
+			isAllowed = false;
+		}
+		return isAllowed;
+	}
 				   
 	sa.execute = function(actor,targetActors) {
 		applySaCosts(this,actor);

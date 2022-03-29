@@ -11,6 +11,27 @@ window.NpcSocialAi = function(charKey) {
 	this.rivalTs = [];
 };
 
+window.isTargetInActorsTsType = function(target,actor,tType) {
+	var result = false;
+	if ( gC(actor).socialAi != undefined ) {
+		if ( gC(actor).socialAi[tType].includes(target) ) {
+			result = true;
+		}
+	}
+	return result;
+}
+window.isTargetInActorsTsTypes = function(target,actor,tTypes) {
+	var result = false;
+	if ( gC(actor).socialAi != undefined ) {
+		for ( var tType of tTypes ) {
+			if ( gC(actor).socialAi[tType].includes(target) ) {
+				result = true;
+			}
+		}
+	}
+	return result;
+}
+
 	// Methods
 NpcSocialAi.prototype.stablishRelationshipGoal = function(target) {
 		this[target] = new relationshipGoal(this.charKey,target);
@@ -71,6 +92,8 @@ NpcSocialAi.prototype.assignWeightToInteraction = function(target,interactionKey
 NpcSocialAi.prototype.getInterRoundBehavior = function(sis) {
 		var choice = "none";
 		var target = "";
+		var extra = null;
+		var flagSkipSexAttempts = false;
 		
 		// Characters following someone shouldn't be able to propose sex or leave SIS on their own
 		if ( gC(this.charKey).followingTo == "" ) {
@@ -90,7 +113,37 @@ NpcSocialAi.prototype.getInterRoundBehavior = function(sis) {
 					target = validTarget;
 					choice = setup.sistType.companionship;
 				}
-		
+			}
+			// Transformations
+			else if ( gC(this.charKey).mission == "transformSelf" || gC(this.charKey).mission == "transformSub" ) {
+				var transformersInConv = [];
+				for ( var ch of getValidTfActors() ) {
+					if ( sis.charList.includes(ch) ) { transformersInConv.push(ch); }
+				}
+				if ( transformersInConv.length > 0 ) {
+					var chosenTransformer = randomFromList(transformersInConv);
+					// Transform self
+					if ( gC(this.charKey).mission == "transformSelf" ) {
+						flagSkipSexAttempts = true;
+						if ( (setup.sistDB[setup.sistType.transformSelf].isSuccessful(this.charKey,chosenTransformer)[0]) ) {
+							choice = setup.sistType.transformSelf;
+							target = chosenTransformer;
+						}
+					}
+					// Transform sub
+					else if ( gC(this.charKey).mission == "transformSub" ) {
+						var tfTarget = gC(this.charKey).missionExtra;
+						if ( tfTarget != undefined ) {
+							if ( sis.charList.includes(tfTarget) && gC(this.charKey).followedBy.includes(tfTarget) ) {
+								if ( (setup.sistDB[setup.sistType.transformSub].isSuccessful(this.charKey,chosenTransformer,tfTarget)[0]) ) {
+									choice = setup.sistType.transformSub;
+									target = chosenTransformer;
+									extra = tfTarget;
+								}
+							}
+						}
+					}
+				}
 			}
 			// Check if demanding sex from sub is possible
 			else if ( gC(this.charKey).subChars.length > 0 && gC(this.charKey).sexScenesToday < 1 && (gC(this.charKey).mission == "haveSex" || gC(this.charKey).mission == "haveDomSex") ) {
@@ -107,7 +160,7 @@ NpcSocialAi.prototype.getInterRoundBehavior = function(sis) {
 					target = randomFromList(potentialSubs);
 				}
 			}
-			if ( choice == "none" ) {
+			if ( choice == "none" && flagSkipSexAttempts == false ) {
 				// Standard sex checks
 					// Sub-missions: any sex, egal sex, dominating sex
 				var sexWantScore = 0;
@@ -196,7 +249,7 @@ NpcSocialAi.prototype.getInterRoundBehavior = function(sis) {
 			}
 		}
 		
-		return [choice,target];
+		return [choice,target,extra];
 	}
 
 	// SIS

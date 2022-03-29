@@ -18,7 +18,6 @@ window.initStandardTrainingGrounds = function() {
 
 	// Passion Temple
 window.initTrainingPeriodPassionTemple = function() {
-	
 	// Place Candidates on map
 	State.variables.compass.initializeMap("mapTrainingGrounds","grandHall");
 	var chars = getRandomizedActiveSimulationCharactersArray();
@@ -93,15 +92,15 @@ window.initTrainingPeriodPassionTempleTests = function() {
 	State.variables.mapTrainingGrounds.placeCharacters(chars,"westLibrary");
 	
 	// Stablish period type
-	State.variables.simCycPar.templeDayPeriod = "training";
+	State.variables.simCycPar.templeDayPeriod = "socialization";
 	
 	// Extra
-	State.variables.chVal.willpower.current = 20;
-	State.variables.chNash.willpower.current = 20;
-	State.variables.chNash.energy.current = 20;
-	State.variables.chNash.socialdrive.current = 20;
+	//State.variables.chVal.willpower.current = 20;
+	//State.variables.chNash.willpower.current = 20;
+	//State.variables.chNash.energy.current = 20;
+	//State.variables.chNash.socialdrive.current = 20;
 	
-	State.variables.compass.moveCharsToRoom(["chVal"],"publicBaths");
+	//State.variables.compass.moveCharsToRoom(["chVal"],"publicBaths");
 	
 	// Assign AIs
 	for ( var charKey of chars ) {
@@ -113,10 +112,25 @@ window.initTrainingPeriodPassionTempleTests = function() {
 		}
 	}
 	
-	State.variables.compass.allCharsCheckMapAi();
-	
 	// Set period variables
-	State.variables.simCycPar.trainingResultsBase = 3.0; // Training is 3 times as effective
+	//State.variables.simCycPar.trainingResultsBase = 3.0; // Training is 3 times as effective
+	
+	gC("chPlayerCharacter").relations.chVal.sexualTension.level = 3;
+	gC("chPlayerCharacter").relations.chVal.romance.level = 3;
+	gC("chPlayerCharacter").relations.chNash.sexualTension.level = 3;
+	gC("chPlayerCharacter").relations.chNash.romance.level = 3;
+	gC("chVal").relations.chPlayerCharacter.sexualTension.level = 3;
+	gC("chVal").relations.chPlayerCharacter.romance.level = 3;
+	gC("chVal").relations.chNash.sexualTension.level = 3;
+	gC("chVal").relations.chNash.romance.level = 3;
+	gC("chNash").relations.chPlayerCharacter.sexualTension.level = 3;
+	gC("chNash").relations.chPlayerCharacter.romance.level = 3;
+	gC("chNash").relations.chVal.sexualTension.level = 3;
+	gC("chNash").relations.chVal.romance.level = 3;
+	createRelTypeServitudeDom("chNash","chPlayerCharacter",3);
+	createRelTypeServitudeSub("chPlayerCharacter","chNash",3);
+	
+	State.variables.compass.allCharsCheckMapAi();
 	
 	// Stablish period duration
 	var periodMins = State.variables.simCycPar.templeTrainingHours * 60;

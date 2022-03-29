@@ -1330,7 +1330,7 @@ window.dldPlyEgaNashHasDildo = function() {
 window.dldPlyEgaPlayerHasDildo = function() {
 	State.variables.sc.startScene(
 	"ss","dynamic",["chPlayerCharacter"],["chNash"],"Piles of materials, resources and crafts surround you, blocking the vision of any intruder. Of any new intruder, at least. Probably.",playerNnashTwoOrgasmsEndCondition,gSettings().stdSxScDur,
-	"FASE DldPly EgaPlayerDld End End");
+	"FASE DldPly EgaPlayerDld End");
 	// Assign choices
 	State.variables.chNash.aiAlgorythm = createAiWeightedMissionsByTaste();
 	State.variables.chNash.aiAlgorythm.fixedTarget = "chPlayerCharacter";

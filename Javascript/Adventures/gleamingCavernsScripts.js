@@ -2,6 +2,9 @@
 
 	// Init First Adventure
 window.initializeGleamingCavernsAdventure = function() {
+	// Cleaning
+	cleanFirstLoopLeftoverData();
+	
 	// Init config
 	finishAllRelationships();
 	takeOffAllBondage();
@@ -115,6 +118,13 @@ window.initializeGleamingCavernsAdventure = function() {
 	initRelsSillanMesquelles();
 	initRelsNersmiasMesquelles();
 	
+	// Special experiences
+	addCharsSpecialExperience("chMir","pntExp",15);
+	addCharsSpecialExperience("chVal","pntExp",3);
+	addCharsSpecialExperience("chVal","crfExp",3);
+	addCharsSpecialExperience("chVal","impExp",25);
+	addCharsSpecialExperience("chNash","crfExp",5);
+	
 	// Maps
 	deinitMapTrainingGrounds();
 	initMapGleamingCaverns();
@@ -162,6 +172,82 @@ window.checkForGleamingCavernsUpdates = function() {
 	initRelsSillanNersmias();
 	initRelsSillanMesquelles();
 	initRelsNersmiasMesquelles();
+	
+	// Other patches
+	applyRequiredPatches();
+}
+
+window.cleanFirstLoopLeftoverData = function() {
+	if ( State.variables.StVars.temp != undefined ) {
+		delete State.variables.StVars.temp;
+	}
+	if ( State.variables.StVars.temp2 != undefined ) {
+		delete State.variables.StVars.temp2;
+	}
+	if ( State.variables.StVars.seMagicClassClawCheck != undefined ) {
+		delete State.variables.StVars.seMagicClassClawCheck;
+	}
+	if ( State.variables.StVars.futaNash != undefined ) {
+		delete State.variables.StVars.futaNash;
+	}
+	if ( State.variables.StVars.seshFlirty != undefined ) {
+		delete State.variables.StVars.seshFlirty;
+	}
+	if ( State.variables.StVars.StretchingHelpResult != undefined ) {
+		delete State.variables.StVars.StretchingHelpResult;
+	}
+	if ( State.variables.StVars.StretchingHelpGroped != undefined ) {
+		delete State.variables.StVars.StretchingHelpGroped;
+	}
+	if ( State.variables.StVars.seHummingCopyCheck != undefined ) {
+		delete State.variables.StVars.seHummingCopyCheck;
+	}
+	if ( State.variables.StVars.seHummingCopyCheck != undefined ) {
+		delete State.variables.StVars.seHummingCopyCheck;
+	}
+	if ( State.variables.StVars.seHummingHarmonyCheck != undefined ) {
+		delete State.variables.StVars.seHummingHarmonyCheck;
+	}
+	if ( State.variables.StVars.seHummingImproviseCheck != undefined ) {
+		delete State.variables.StVars.seHummingImproviseCheck;
+	}
+	if ( State.variables.StVars.temp2 != undefined ) {
+		delete State.variables.StVars.temp2;
+	}
+	if ( State.variables.StVars.seEthicsOfPowMUcheck != undefined ) { delete State.variables.StVars.seEthicsOfPowMUcheck; }
+	if ( State.variables.StVars.SeFbahHowsSill != undefined ) { delete State.variables.StVars.SeFbahHowsSill; }
+	if ( State.variables.StVars.SeFbahWhatsSill != undefined ) { delete State.variables.StVars.SeFbahWhatsSill; }
+	if ( State.variables.StVars.SeFbahWhyTakePlaceSill != undefined ) { delete State.variables.StVars.SeFbahWhyTakePlaceSill; }
+	if ( State.variables.StVars.SeFbahRegretSill != undefined ) { delete State.variables.StVars.SeFbahRegretSill; }
+	if ( State.variables.StVars.SeFbahAnyQuestions != undefined ) { delete State.variables.StVars.SeFbahAnyQuestions; }
+	if ( State.variables.StVars.seStHeIINashInvites != undefined ) { delete State.variables.StVars.seStHeIINashInvites; }
+	if ( State.variables.StVars.seStHeIIMayRejectSex != undefined ) { delete State.variables.StVars.seStHeIIMayRejectSex; }
+	if ( State.variables.StVars.seStHeIIwillpowerHit != undefined ) { delete State.variables.StVars.seStHeIIwillpowerHit; }
+	if ( State.variables.StVars.flirtingAdviceChecks != undefined ) { delete State.variables.StVars.flirtingAdviceChecks; }
+	if ( State.variables.StVars.DrishtyaTutorLifeAsCandidate != undefined ) { delete State.variables.StVars.DrishtyaTutorLifeAsCandidate; }
+	if ( State.variables.StVars.DrishtyaTutorThoughtsOnPeers != undefined ) { delete State.variables.StVars.DrishtyaTutorThoughtsOnPeers; }
+	if ( State.variables.StVars.DrishtyaTutorReachedQuestions != undefined ) { delete State.variables.StVars.DrishtyaTutorReachedQuestions; }
+	if ( State.variables.StVars.DrishtyaTutorBehindTheRest != undefined ) { delete State.variables.StVars.DrishtyaTutorBehindTheRest; }
+	if ( State.variables.StVars.DrishtyaTutorStrengthenBonds != undefined ) { delete State.variables.StVars.DrishtyaTutorStrengthenBonds; }
+	if ( State.variables.StVars.DrishtyaTutorDominatingOthers != undefined ) { delete State.variables.StVars.DrishtyaTutorDominatingOthers; }
+	if ( State.variables.StVars.DrishtyaTutorLeaveTheTemple != undefined ) { delete State.variables.StVars.DrishtyaTutorLeaveTheTemple; }
+	if ( State.variables.StVars.DrishtyaTutorEmpathyCheck != undefined ) { delete State.variables.StVars.DrishtyaTutorEmpathyCheck; }
+	if ( State.variables.StVars.VaryonteTutorHasDick != undefined ) { delete State.variables.StVars.VaryonteTutorHasDick; }
+	if ( State.variables.StVars.check2 != undefined ) { delete State.variables.StVars.check2; }
+	if ( State.variables.StVars.check3 != undefined ) { delete State.variables.StVars.check3; }
+	if ( State.variables.StVars.check4 != undefined ) { delete State.variables.StVars.check4; }
+	if ( State.variables.StVars.check10 != undefined ) { delete State.variables.StVars.check10; }
+	if ( State.variables.StVars.check1 != undefined ) { delete State.variables.StVars.check1; }
+	if ( State.variables.StVars.check5 != undefined ) { delete State.variables.StVars.check5; }
+	if ( State.variables.StVars.check6 != undefined ) { delete State.variables.StVars.check6; }
+	if ( State.variables.StVars.check7 != undefined ) { delete State.variables.StVars.check7; }
+	if ( State.variables.StVars.check8 != undefined ) { delete State.variables.StVars.check8; }
+	if ( State.variables.StVars.check9 != undefined ) { delete State.variables.StVars.check9; }
+	if ( State.variables.StVars.playerJoinedBkifBattle != undefined ) { delete State.variables.StVars.playerJoinedBkifBattle; }
+	if ( State.variables.StVars.drishtyaSawVaryonteMoves != undefined ) { delete State.variables.StVars.drishtyaSawVaryonteMoves; }
+	if ( State.variables.StVars.BkifNashRelScore != undefined ) { delete State.variables.StVars.BkifNashRelScore; }
+	if ( State.variables.StVars.BkifStakes != undefined ) { delete State.variables.StVars.BkifStakes; }
+	if ( State.variables.StVars.clawLostBkif != undefined ) { delete State.variables.StVars.clawLostBkif; }
 }
 
 window.finishGleamingCavernsAdventure = function() {
@@ -201,9 +287,29 @@ window.finishGleamingCavernsAdventure = function() {
 	State.variables.settings.talkingAllowed = true;
 	
 	// Remove FA-specific story variables
+	removeFromStVarsList("alwSct");
 	removeFromStVarsList("blmClaw");
 	removeFromStVarsList("dldCrf");
 	removeFromStVarsList("dldPly");
+	removeFromStVarsList("mphInit");
+	removeFromStVarsList("mphFsTf");
+	removeFromStVarsList("mphFnTf");
+	removeFromStVarsList("hddHut");
+	removeFromStVarsList("drMlCon");
+	removeFromStVarsList("drMlVal");
+	removeFromStVarsList("vlSfsh");	
+	removeFromStVarsList("vlTlk1");	
+	removeFromStVarsList("vlTlk2");	
+	removeFromStVarsList("vlTlk3");	
+	removeFromStVarsList("vlTlk3");	
+	removeFromStVarsList("vlNoCv");	
+	
+	if ( State.variables.morphMerit != undefined ) {
+		delete State.variables.morphMerit;
+	}
+	
+	// Cleaning
+	cleanFirstLoopLeftoverData();
 }
 
 	// Battle scenes

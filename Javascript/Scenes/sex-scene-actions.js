@@ -1491,7 +1491,7 @@ window.createSaLustfulGlance = function() {
 		results.description += randomFromList( [
 										(ktn(actorKey) + " enraptured " + ktn(target) + "'s eyes, and " + gC(target).perPr
 										+ " felt " + gC(target).posPr + " groin heating up."),
-										(ktn(actorKey) + "'s eyes captured " + ktn(target) + "'s , and " + gC(target).perPr
+										(ktn(actorKey) + "'s eyes captured " + ktn(target) + "'s, and " + gC(target).perPr
 										+ " found " + gC(target).posPr + " own mind fantasizing.") ] );
 		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ".";
 		
@@ -2606,6 +2606,7 @@ window.createSaSlimeHug = function() {
 	sa.tags.push("cAct");
 	sa.reqTags.push("diffTarget");
 	sa.caRank = 1;
+	sa.strategyTags.push("tfHalfPlus");
 	
 	sa.requiredRace = [ "shapeshifter" ];
 	sa.willpowerCost = 3;
@@ -2663,6 +2664,25 @@ window.createSaSlimeHug = function() {
 	}
 	
 	return sa;
+}
+
+window.getCharsSlimedIntensity = function(charKey) {
+	var slimedStatusAmount = 0;
+	var slimeHugIntensity = 0;
+	for ( var as of gC(charKey).alteredStates ) {
+		if ( as.acr == "Slmd" ) {
+			slimedStatusAmount++;
+		}
+	}
+	for ( var cA of State.variables.sc.continuedActions ) {
+		if ( cA.key == "slimeHug" && cA.targetsList[0] == charKey ) {
+			if ( cA.intensity != undefined ) {
+				slimeHugIntensity = cA.intensity;
+			}
+		}
+	}
+	var result = (slimedStatusAmount * 2) + slimeHugIntensity;
+	return result;
 }
 
 	// Draining
@@ -2779,6 +2799,8 @@ window.createSaMountFromBehind = function() {
 	
 	sa.flavorTags.push("position");
 	
+	sa.strategyTags.push("tfMinus");
+	
 	sa.description = "The character bends their target over, and positions themselves behind them.\n\nSingle target positional action.\n";
 	
 	sa.execute = function(actorKey,targetActors) {
@@ -2810,6 +2832,8 @@ window.createSaMountFaceToFace = function() {
 	sa.reqTags.push("diffTarget");
 	
 	sa.flavorTags.push("position");
+	
+	sa.strategyTags.push("tfPos");
 	
 	sa.description = "The character embraces their target looking face to face.\n\nSingle target positional action.\n";
 	
@@ -2845,6 +2869,8 @@ window.createSaKneel = function() {
 	
 	sa.flavorTags.push("position");
 	
+	sa.strategyTags.push("tfMinus");
+	
 	sa.description = "The character kneels in front of their target.\n\nSingle target positional action.\n\nOral.";
 	
 	sa.execute = function(actorKey,targetActors) {
@@ -2875,6 +2901,8 @@ window.createSaMakeKneel = function() {
 	sa.reqTags.push("diffTarget");
 	
 	sa.flavorTags.push("position");
+	
+	sa.strategyTags.push("tfMinus");
 	
 	sa.description = "The character makes their target kneel before themselves.\n\nSingle target positional action.\n\nOral.";
 	
@@ -3272,5 +3300,465 @@ window.createSaTeaseLockedDick = function() {
 	return sa;
 }	
 
-
+	// Transformation
+window.createSaSculptingKiss = function() {
+	var sa = new sceneAction();
+	sa.name = "Sculpting Kiss";
+	sa.key = "sculptingKiss";
+	sa.targetType = "single";
+	sa.tags.push("ss");
+	sa.tags.push("sUse");
+	sa.tags.push("tf");
+	sa.actorBpReqs.push("mouth");
+	sa.tfGoals = ["rebuildFace"];
+	sa.strategyTags.push("tfPlus");
 	
+	sa.unvalidRelationalPositions.push(["kneeling","standing"],["takenFromBehind","takingFromBehind"],["spitroastBehind","spitroastTarget"],
+									   ["spitroastTarget","spitroastBehind"]);
+	sa.unvalidRelationalPositions.push(["mountingFromBehind","mountingAndMounted"],["mountingAndMounted","mountingFromBehind"],["mountingAndMounted","mountedFromBehind"],["mountedFromBehind","mountingAndMounted"]);
+	
+	sa.flavorTags.push("useMouth");
+	
+	sa.description = "The character uses their mouth and tongue to cast transformation magic on their target's face.\n\nSingle target action.\n"
+				   + "Actor requires free mouth.\n\n__Influences__:\nDamage: Actor's agility x3, will x2, intelligence x1, perception x2, luck x1, target's slimed intensity.";
+	sa.execute = function(actorKey,targetActors) {
+		var results = new saResults;
+		var actor = actorKey;
+		
+		for (var target of targetActors) {
+			var multAr = getSexDamageMult(actorKey,target,this.key);
+			var slimedIntensity = 1 + (getCharsSlimedIntensity(target) * 0.1);
+			var lustDamage = ((gCstat(actor,"agility") * 3 + gCstat(actor,"will") * 2 + gCstat(actor,"intelligence") * 1 + gCstat(actor,"perception") * 2 + gCstat(actor,"luck") * 1) / 30);
+			var lustDamage2 = lustDamage * (0.3 + limitedRandomInt(20) * 0.01);
+			lustDamage *= slimedIntensity * multAr[0];
+			var multAr2 = getSexDamageMult(actorKey,actorKey,this.key);
+			lustDamage2 *= multAr2[0];
+			getChar(target).lust.changeValue(-lustDamage);
+			gC(actorKey).lust.changeValue(-lustDamage2);
+			
+			advanceTfGoalsPoints(this.tfGoals);
+			
+			results.value += lustDamage;
+			
+			results.description += randomFromList( [
+											(ktn(actorKey) + "'s tongue runs all over " + ktn(target) + "'s face, stirring up lines of aether and flesh and leaving a soft tingling behind."),
+											(ktn(actorKey) + "'s lips kiss and massage " + ktn(target) + "'s cheeks and chin, molding them to a new figure."),
+											(ktn(actorKey) + "'s mouth plays with " + ktn(target) + "'s face as if it was candy, softly pushing and pulling its lines back and forth.") ] );
+			results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1] + " " + ktn(actorKey) + " received " + textLustDamage(lustDamage2) + ". " + multAr2[1];
+		}
+		
+		return results;
+	}
+	return sa;
+}	
+window.createSaSculptChest = function() {
+	var sa = new sceneAction();
+	sa.name = "Sculpt Chest";
+	sa.key = "sculptChest";
+	sa.targetType = "single";
+	sa.tags.push("ss");
+	sa.tags.push("sUse");
+	sa.actorBpReqs.push("arms");
+	sa.targetBpReqs.push("breasts");
+	sa.tags.push("tf");
+	sa.tfGoals = ["removeBreasts","addBreasts"];
+	sa.strategyTags.push("tfPlus");
+	
+	sa.unvalidRelationalPositions.push(["standing","kneeling"]);
+	sa.unvalidRelationalPositions.push(["spitroastTarget","spitroastFront"]);
+	sa.unvalidRelationalPositions.push(["spitroastTarget","spitroastBehind"]);
+	sa.unvalidRelationalPositions.push(["spitroastFront","spitroastBehind"],["spitroastBehind","spitroastFront"]);
+	sa.unvalidRelationalPositions.push(["mountedFromBehind","mountingFromBehind"],["mountedFromBehind","mountingAndMounted"]);
+	
+	sa.flavorTags.push("foreplay","useHands","targetBreasts");
+	
+	sa.description = "The character will give a new form to their target's chest.\nThis action may sensitize the target's breasts.\n\n"
+				   + "Single target action.\nActor requires free hands, target requires free breasts.\n\nForeplay.\n\n__Influences__:\n"
+				   + "Damage: Actor's physique x1, agility x2, resilience x2, will x2, perception x1, luck x1, target's slimed intensity.";
+				   
+	sa.execute = function(actorKey,targetActors) {
+		var results = new saResults;
+		var target = targetActors[0];
+		var actor = actorKey;
+		
+		if ( doesCharHaveAlteredState(target,"Bre+") == false ) {
+			// Sensitized breasts
+			var intensity = 0.05 + gCstat(actorKey,"agility") * 0.005 + limitedRandomInt(5) * 0.01;
+			var turns = 4 + limitedRandomInt(4) + (gCstat(actorKey,"agility") * 0.04) - ((gCstat(actorKey,"agility") * 0.04) % 1);
+			var as = createSensitizedTag(intensity,"useBreasts","Sensitized breasts","Bre+",turns,"The breasts of this character will receive extra damage.");
+			applyAlteredState([target],as); 
+		}
+		
+		var multAr = getSexDamageMult(actorKey,target,this.key);
+		var slimedIntensity = 1 + (getCharsSlimedIntensity(target) * 0.1);
+		var lustDamage = ((gCstat(actor,"physique") * 1 + gCstat(actor,"agility") * 2 + gCstat(actor,"resilience") * 2 + gCstat(actor,"will") * 2 + gCstat(actor,"perception") * 1 + gCstat(actor,"luck") * 1) / 30);
+		var lustDamage2 = lustDamage * (0.3 + limitedRandomInt(20) * 0.01);
+		lustDamage *= slimedIntensity * multAr[0];
+		var multAr2 = getSexDamageMult(actorKey,actorKey,this.key);
+		lustDamage2 *= multAr2[0];
+		getChar(targetActors[0]).lust.changeValue(-lustDamage);
+		gC(actorKey).lust.changeValue(-lustDamage2);
+		results.value += lustDamage;
+		
+		advanceTfGoalsPoints(this.tfGoals);
+		
+		if ( State.variables.sc.genderChange == "feminine" ) {
+			results.description += randomFromList( [
+				(ktn(actorKey) + " kneaded " + ktn(target) + "'s chest, slowly giving form to two new mounds."),
+				(ktn(actorKey) + " is forming " + boobsWord() + " over " + ktn(target) + "'s chest."),
+				(ktn(actorKey) + " massages and kneads " + ktn(target) + "'s body, turning " + gC(target).posPr + " chest into " + boobsWord() + ".") ] );
+		} else if ( State.variables.sc.genderChange == "masculine" ) {
+			results.description += randomFromList( [
+				(ktn(target) + "'s " + boobsWord() + " are slowly returned to " + gC(target).posPr + " chest, " + ktn(actorKey) + " flattening " + gC(target).posPr + "."),
+				(ktn(actorKey) + " massages " + ktn(target) + "'s chest, calmly but surely pushing it back and giving it a more masculine form."),
+				(ktn(actorKey) + "'s hands run all over " + ktn(target) + ", giving " + gC(target).comPr + " a more compact front.") ] );
+		} else if ( gC(target).perPr == "she" ) {
+			results.description += randomFromList( [
+				(ktn(actorKey) + " massages " + ktn(target) + "'s " + boobsWord() + ", kneading them into a different form."),
+				(ktn(target) + " feels " + gC(target).posPr + " " + boobsWord() + " being played with, shrunk and enlarged, as " + ktn(actorKey) + " playfully creates a new shape.") ] );	
+		} else {
+			results.description += randomFromList( [
+				(ktn(actorKey) + " bathes " + gC(actorKey).posPr + " hands in " + ktn(target) + "'s chest, giving a new form."),
+				(ktn(target) + " feels " + ktn(actorKey) + "'s hands push, pull and play with " + gC(target).posPr + " torso.") ] );	
+		}
+		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1] + " " + ktn(actorKey) + " received " + textLustDamage(lustDamage2) + ". " + multAr2[1];
+							   
+		return results;
+	}
+	return sa;
+}
+window.createSaSculptBody = function() {
+	var sa = new sceneAction();
+	sa.name = "Sculpt Body";
+	sa.key = "sculptBody";
+	sa.targetType = "single";
+	sa.tags.push("ss");
+	sa.tags.push("sUse");
+	sa.actorBpReqs.push("arms");
+	sa.tags.push("tf");
+	sa.tfGoals = ["rebuildFigure"];
+	sa.strategyTags.push("tfPlus");
+	
+	sa.unvalidRelationalPositions.push(["standing","kneeling"]);
+	sa.unvalidRelationalPositions.push(["spitroastTarget","spitroastFront"]);
+	sa.unvalidRelationalPositions.push(["spitroastTarget","spitroastBehind"]);
+	sa.unvalidRelationalPositions.push(["spitroastFront","spitroastBehind"],["spitroastBehind","spitroastFront"]);
+	sa.unvalidRelationalPositions.push(["mountedFromBehind","mountingFromBehind"],["mountedFromBehind","mountingAndMounted"]);
+	
+	sa.flavorTags.push("foreplay","useHands");
+	
+	sa.description = "The character will remould the target's body, changing its form, lines and constitution.\n\n"
+				   + "Single targe action.\nActor requires free hands.\n\nForeplay.\n\n__Influences__:\n"
+				   + "Damage: Actor's physique x2, agility x3, resilience x2, will x2, perception x1, luck x1, target's slimed intensity.";
+				   
+	sa.execute = function(actorKey,targetActors) {
+		var results = new saResults;
+		var target = targetActors[0];
+		var actor = actorKey;
+		
+		var multAr = getSexDamageMult(actorKey,target,this.key);
+		var slimedIntensity = 1 + (getCharsSlimedIntensity(target) * 0.1);
+		var lustDamage = ((gCstat(actor,"physique") * 2 + gCstat(actor,"agility") * 3 + gCstat(actor,"resilience") * 2 + gCstat(actor,"will") * 2 + gCstat(actor,"perception") * 1 + gCstat(actor,"luck") * 1) / 30);
+		var lustDamage2 = lustDamage * (0.3 + limitedRandomInt(20) * 0.01);
+		lustDamage *= slimedIntensity * multAr[0];
+		var multAr2 = getSexDamageMult(actorKey,actorKey,this.key);
+		lustDamage2 *= multAr2[0];
+		getChar(targetActors[0]).lust.changeValue(-lustDamage);
+		gC(actorKey).lust.changeValue(-lustDamage2);
+		results.value += lustDamage;
+		
+		advanceTfGoalsPoints(this.tfGoals);
+		
+		if ( State.variables.sc.genderChange == "feminine" ) {
+			results.description += randomFromList( [
+				(ktn(actorKey) + " hugs " + ktn(target) + "'s waist, tightening and squeezing it until revealing the form of an hourglass."),
+				(ktn(actorKey) + " fondles " + ktn(target) + "'s hips up and down, stretching their limits until they become savory to the palate of " + gC(actorKey).posPr + " palms."),
+				(ktn(actorKey) + " throughly rubs " + gC(actorKey).posPr + " body up and down against the flesh of " + ktn(target) + ", " + gC(target).posPr + " curves moving along with the embrace."),
+				(ktn(target) + "'s skin feels soft and flexible, adjusting itself to the movements of " + ktn(actorKey) + "'s hands like silk accepts the form granted by its weaver.")				] );
+		} else if ( State.variables.sc.genderChange == "masculine" ) {
+			results.description += randomFromList( [
+				(ktn(target) + "'s skin feels soft and flexible, adjusting itself to the movements of " + ktn(actorKey) + "'s hands like silk accepts the form granted by its weaver."),
+				(ktn(actorKey) + " expands " + ktn(target) + "'s shoulders until they appear ample and robust."),
+				(ktn(actorKey) + " softens the lines in " + ktn(target) + "'s waist.") ] );
+		} else {
+			results.description += randomFromList( [
+				(ktn(target) + "'s skin feels soft and flexible, adjusting itself to the movements of " + ktn(actorKey) + "'s hands like silk accepts the form granted by its weaver."),
+				(ktn(actorKey) + " plays with " + ktn(target) + "'s body, enlarging and relaxing tendons and muscles as " + gC(actorKey).perPr + " sees fit."),
+				(ktn(actorKey) + " works " + ktn(target) + "'s body, highlighting some features and concealing others."),
+				(ktn(actorKey) + " pulls and twists the strings of aether that keep " + ktn(target) + "'s body together, turning it into something new.") ] );	
+		}
+		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1] + " " + ktn(actorKey) + " received " + textLustDamage(lustDamage2) + ". " + multAr2[1];
+							   
+		return results;
+	}
+	return sa;
+}
+
+window.createSaFormDick = function() {
+	var sa = new sceneAction();
+	sa.name = "Form Dick";
+	sa.key = "formDick";
+	sa.targetType = "single";
+	sa.tags.push("ss");
+	sa.tags.push("sUse");
+	sa.tags.push("tf");
+	sa.tfGoals = ["addDick"];
+	sa.strategyTags.push("tfPlus");
+	
+	sa.unvalidRelationalPositions.push(["standing","kneeling"]);
+	sa.unvalidRelationalPositions.push(["spitroastTarget","spitroastFront"]);
+	sa.unvalidRelationalPositions.push(["spitroastTarget","spitroastBehind"]);
+	sa.unvalidRelationalPositions.push(["spitroastFront","spitroastBehind"],["spitroastBehind","spitroastFront"]);
+	sa.unvalidRelationalPositions.push(["mountedFromBehind","mountingFromBehind"],["mountedFromBehind","mountingAndMounted"]);
+	
+	sa.flavorTags.push("foreplay","targetDick");
+	
+	sa.description = "The character will manipulate their target's aether to form a dick in their groin.\n\n"
+				   + "Single target action.\n\nForeplay.\n\n__Influences__:\n"
+				   + "Damage: Actor's agility x3, intelligence x3, will x2, perception x2, luck x1, target's slimed intensity.";
+				   
+	sa.execute = function(actorKey,targetActors) {
+		var results = new saResults;
+		var target = targetActors[0];
+		var actor = actorKey;
+		
+		var flavorTags = this.flavorTags;
+		
+		if ( doesCharHaveAlteredState(target,"Dic+") == false ) {
+			// Sensitized dick
+			var intensity = 0.05 + gCstat(actorKey,"agility") * 0.005 + limitedRandomInt(5) * 0.01;
+			var turns = 4 + limitedRandomInt(4) + (gCstat(actorKey,"agility") * 0.04) - ((gCstat(actorKey,"agility") * 0.04) % 1);
+			var as = createSensitizedTag(intensity,"useDick","Sensitized dick","Dic+",turns,"The dick of this character will receive extra damage.");
+			applyAlteredState([target],as);
+		}
+		
+		var descriptionsString = [ (ktn(actorKey) + " rides " + ktn(target) + "'s groin, pulling strings of aether on " + gC(actorKey).posPr + " way up."),
+						(ktn(actorKey) + "'s hips move back and forth, forming a cylindrical shape between them with " + ktn(target) + "'s essence."),
+						(ktn(target) + " feels " + gC(target).posPr + " groin between pulled as " + ktn(actorKey) + " forms a new member between " + gC(target).posPr + " legs.") ];
+		if ( gC(actorKey).body.hasOwnProperty("pussy") ) {
+			if ( gC(actorKey).body.pussy.state != "locked" ) {
+				flavorTags.push("usePussy");
+				descriptionsString.push( (ktn(actorKey) + "'s movements are giving form to a new " + dickWord() + " between " + ktn(target) + "'s legs, which constantly caresses " + gC(actorKey).posPr + " own " + pussyWord() + ".") );
+			}
+		}
+		results.description += randomFromList(descriptionsString);
+		
+		var multAr = getSexDamageMultAlt(actorKey,target,flavorTags);
+		var slimedIntensity = 1 + (getCharsSlimedIntensity(target) * 0.1);
+		var lustDamage = ((gCstat(actor,"agility") * 3 + gCstat(actor,"intelligence") * 3 + gCstat(actor,"will") * 2 + gCstat(actor,"perception") * 2 + gCstat(actor,"luck") * 1) / 30);
+		var lustDamage2 = lustDamage * (0.3 + limitedRandomInt(20) * 0.01);
+		lustDamage *= slimedIntensity * multAr[0];
+		var multAr2 = getSexDamageMultAlt(actorKey,actorKey,flavorTags);
+		lustDamage2 *= multAr2[0];
+		getChar(targetActors[0]).lust.changeValue(-lustDamage);
+		gC(actorKey).lust.changeValue(-lustDamage2);
+		results.value += lustDamage;
+		
+		advanceTfGoalsPoints(this.tfGoals);
+		
+		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1] + " " + ktn(actorKey) + " received " + textLustDamage(lustDamage2) + ". " + multAr2[1];
+							   
+		return results;
+	}
+	return sa;
+}
+window.createSaFormPussy = function() {
+	var sa = new sceneAction();
+	sa.name = "Form Pussy";
+	sa.key = "formPussy";
+	sa.targetType = "single";
+	sa.tags.push("ss");
+	sa.tags.push("sUse");
+	sa.tags.push("tf");
+	sa.tfGoals = ["addPussy"];
+	sa.strategyTags.push("tfPlus");
+	
+	sa.unvalidRelationalPositions.push(["standing","kneeling"]);
+	sa.unvalidRelationalPositions.push(["spitroastTarget","spitroastFront"]);
+	sa.unvalidRelationalPositions.push(["spitroastTarget","spitroastBehind"]);
+	sa.unvalidRelationalPositions.push(["spitroastFront","spitroastBehind"],["spitroastBehind","spitroastFront"]);
+	sa.unvalidRelationalPositions.push(["mountedFromBehind","mountingFromBehind"],["mountedFromBehind","mountingAndMounted"]);
+	
+	sa.flavorTags.push("foreplay","targetPussy");
+	
+	sa.description = "The character will manipulate their target's aether to form a pussy in their groin.\n\n"
+				   + "Single target action.\n\nForeplay.\n\n__Influences__:\n"
+				   + "Damage: Actor's agility x3, intelligence x3, will x2, perception x2, luck x1, target's slimed intensity.";
+				   
+	sa.execute = function(actorKey,targetActors) {
+		var results = new saResults;
+		var target = targetActors[0];
+		var actor = actorKey;
+		
+		var flavorTags = this.flavorTags;
+		
+		if ( doesCharHaveAlteredState(target,"Pus+") == false ) {
+			// Sensitized pussy
+			var intensity = 0.05 + gCstat(actorKey,"agility") * 0.005 + limitedRandomInt(5) * 0.01;
+			var turns = 4 + limitedRandomInt(4) + (gCstat(actorKey,"agility") * 0.04) - ((gCstat(actorKey,"agility") * 0.04) % 1);
+			var as = createSensitizedTag(intensity,"usePussy","Sensitized pussy","Pus+",turns,"The pussy of this character will receive extra damage.");
+			applyAlteredState([target],as);
+		}
+		
+		var descriptionsString = [ (ktn(actorKey) + " pushes against " + ktn(target) + "'s groin, drilling new folds."),
+						(ktn(target) + " feels " + gC(target).posPr + " groin unfolding apart as " + ktn(actorKey) + " gives form to " + ktn(target) + "'s new " + pussyWord() + "."),
+						(ktn(actorKey) + " makes room between " + ktn(target) + "'s legs for new genitalia.") ];
+		if ( gC(actorKey).body.hasOwnProperty("dick") ) {
+			if ( gC(actorKey).body.dick.state != "locked" ) {
+				flavorTags.push("useDick");
+				descriptionsString.push( (ktn(actorKey) + "'s " + dickWord() + " penetrates between " + ktn(target) + "'s legs, giving form to " + ktn(target) + "'s new " + pussyWord() + ".") );
+			}
+		}
+		results.description += randomFromList(descriptionsString);
+		
+		var multAr = getSexDamageMultAlt(actorKey,target,flavorTags);
+		var slimedIntensity = 1 + (getCharsSlimedIntensity(target) * 0.1);
+		var lustDamage = ((gCstat(actor,"agility") * 3 + gCstat(actor,"intelligence") * 3 + gCstat(actor,"will") * 2 + gCstat(actor,"perception") * 2 + gCstat(actor,"luck") * 1) / 30);
+		var lustDamage2 = lustDamage * (0.3 + limitedRandomInt(20) * 0.01);
+		lustDamage *= slimedIntensity * multAr[0];
+		var multAr2 = getSexDamageMultAlt(actorKey,actorKey,flavorTags);
+		lustDamage2 *= multAr2[0];
+		getChar(targetActors[0]).lust.changeValue(-lustDamage);
+		gC(actorKey).lust.changeValue(-lustDamage2);
+		results.value += lustDamage;
+		
+		advanceTfGoalsPoints(this.tfGoals);
+		
+		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1] + " " + ktn(actorKey) + " received " + textLustDamage(lustDamage2) + ". " + multAr2[1];
+							   
+		return results;
+	}
+	return sa;
+}
+window.createSaBuryDick = function() {
+	var sa = new sceneAction();
+	sa.name = "Bury Dick";
+	sa.key = "buryDick";
+	sa.targetType = "single";
+	sa.tags.push("ss");
+	sa.tags.push("sUse");
+	sa.targetBpReqs.push("dick");
+	sa.tags.push("tf");
+	sa.tfGoals = ["removeDick"];
+	sa.strategyTags.push("tfPlus");
+	
+	sa.unvalidRelationalPositions.push(["standing","kneeling"]);
+	sa.unvalidRelationalPositions.push(["spitroastTarget","spitroastFront"]);
+	sa.unvalidRelationalPositions.push(["spitroastTarget","spitroastBehind"]);
+	sa.unvalidRelationalPositions.push(["spitroastFront","spitroastBehind"],["spitroastBehind","spitroastFront"]);
+	sa.unvalidRelationalPositions.push(["mountedFromBehind","mountingFromBehind"],["mountedFromBehind","mountingAndMounted"]);
+	
+	sa.flavorTags.push("foreplay","targetDick");
+	
+	sa.description = "The character will merge their target's dick with their abdomen and groin.\n\n"
+				   + "Single target action.\nTarget requires free dick.\n\nForeplay.\n\n__Influences__:\n"
+				   + "Damage: Actor's physique x1, agility x2, resilience x1, intelligence x1, will x2, perception x1, luck x1, target's slimed intensity.";
+				   
+	sa.execute = function(actorKey,targetActors) {
+		var results = new saResults;
+		var target = targetActors[0];
+		var actor = actorKey;
+		
+		var flavorTags = this.flavorTags;
+		
+		var extraMult = 1;
+		var descriptionsString = [ (ktn(actorKey) + " rubs " + gC(actorKey).posPr + " groin against " + ktn(target) + "'s " + dickWord() + ", pushing " + 
+						"it inside " + gC(target).comPr + "."),
+						(ktn(target) + "'s " + dickWord() + " feels the pressure of " + ktn(actorKey) + "'s body, slowly but surely burying it inside " + ktn(target) + "'s own abdomen."),
+						(ktn(target) + " feels " + gC(target).posPr + " own " + dickWord() + " being pushed back by " + ktn(actorKey) + "'s abdomen, gradually submerging into " + gC(target).posPr + " own skin.") ];
+		if ( gC(actorKey).body.hasOwnProperty("pussy") ) {
+			if ( gC(actorKey).body.pussy.state != "locked" ) {
+				flavorTags.push("usePussy");
+				extraMult += 0.1;
+				descriptionsString.push( (ktn(target) + "'s " + dickWord() + " feels " + ktn(actorKey) + "'s " + pussyWord() + " kiss it goodbye as it merges within " + ktn(target) + "'s body.") );
+			}
+		}
+		if ( gC(actorKey).body.hasOwnProperty("dick") ) {
+			if ( gC(actorKey).body.dick.state != "locked" ) {
+				flavorTags.push("useDick");
+				extraMult += 0.1;
+				descriptionsString.push( (ktn(target) + "'s " + dickWord() + " feels the friction with " + ktn(actorKey) + "'s own " + dickWord() + ", as the latter pushes the former into " + ktn(target) + "'s own body.") );
+			}
+		}
+		results.description += randomFromList(descriptionsString);
+		
+		var multAr = getSexDamageMultAlt(actorKey,target,flavorTags);
+		var slimedIntensity = 1 + (getCharsSlimedIntensity(target) * 0.1);
+		var lustDamage = ((gCstat(actor,"physique") * 1 + gCstat(actor,"agility") * 2 + gCstat(actor,"resilience") * 1 + gCstat(actor,"intelligence") * 1 + gCstat(actor,"will") * 2 + gCstat(actor,"perception") * 1 + gCstat(actor,"luck") * 1) / 33) * extraMult;
+		var lustDamage2 = lustDamage * (0.3 + limitedRandomInt(20) * 0.01);
+		lustDamage *= slimedIntensity * multAr[0];
+		var multAr2 = getSexDamageMultAlt(actorKey,actorKey,flavorTags);
+		lustDamage2 *= multAr2[0];
+		getChar(targetActors[0]).lust.changeValue(-lustDamage);
+		gC(actorKey).lust.changeValue(-lustDamage2);
+		results.value += lustDamage;
+		
+		advanceTfGoalsPoints(this.tfGoals);
+		
+		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1] + " " + ktn(actorKey) + " received " + textLustDamage(lustDamage2) + ". " + multAr2[1];
+							   
+		return results;
+	}
+	return sa;
+}
+window.createSaFoldPussy = function() {
+	var sa = new sceneAction();
+	sa.name = "Fold Pussy";
+	sa.key = "foldPussy";
+	sa.targetType = "single";
+	sa.tags.push("ss");
+	sa.tags.push("sUse");
+	sa.targetBpReqs.push("pussy");
+	sa.tags.push("tf");
+	sa.tfGoals = ["removePussy"];
+	sa.strategyTags.push("tfPlus");
+	
+	sa.unvalidRelationalPositions.push(["standing","kneeling"]);
+	sa.unvalidRelationalPositions.push(["spitroastTarget","spitroastFront"]);
+	sa.unvalidRelationalPositions.push(["spitroastTarget","spitroastBehind"]);
+	sa.unvalidRelationalPositions.push(["spitroastFront","spitroastBehind"],["spitroastBehind","spitroastFront"]);
+	sa.unvalidRelationalPositions.push(["mountedFromBehind","mountingFromBehind"],["mountedFromBehind","mountingAndMounted"]);
+	
+	sa.flavorTags.push("foreplay","targetPussy");
+	
+	sa.description = "The character will manipulate their target's aether to fold their pussy away.\n\n"
+				   + "Single target action.\nTarget requires free pussy.\n\nForeplay.\n\n__Influences__:\n"
+				   + "Damage: Actor's physique x1, agility x2, resilience x1, intelligence x1, will x2, perception x1, luck x1, target's slimed intensity.";
+				   
+	sa.execute = function(actorKey,targetActors) {
+		var results = new saResults;
+		var target = targetActors[0];
+		var actor = actorKey;
+		
+		var flavorTags = this.flavorTags;
+		
+		var extraMult = 1;
+		var descriptionsString = [ (ktn(actorKey) + " manipulates the aether around " + ktn(target) + "'s " + pussyWord() + ", carefully folding it closed."),
+						(ktn(actorKey) + " rubs against " + ktn(target) + "'s " + pussyWord() + ", melding its lips into one."),
+						(ktn(target) + " feels " + gC(target).posPr + " " + pussyWord() + " being slowly shut by " + ktn(actorKey) + "'s magical manipulation.") ];
+		results.description += randomFromList(descriptionsString);
+		
+		var multAr = getSexDamageMultAlt(actorKey,target,flavorTags);
+		var slimedIntensity = 1 + (getCharsSlimedIntensity(target) * 0.1);
+		var lustDamage = ((gCstat(actor,"physique") * 1 + gCstat(actor,"agility") * 2 + gCstat(actor,"resilience") * 1 + gCstat(actor,"intelligence") * 1 + gCstat(actor,"will") * 2 + gCstat(actor,"perception") * 1 + gCstat(actor,"luck") * 1) / 30) * extraMult;
+		var lustDamage2 = lustDamage * (0.3 + limitedRandomInt(20) * 0.01);
+		lustDamage *= slimedIntensity * multAr[0];
+		var multAr2 = getSexDamageMultAlt(actorKey,actorKey,flavorTags);
+		lustDamage2 *= multAr2[0];
+		getChar(targetActors[0]).lust.changeValue(-lustDamage);
+		gC(actorKey).lust.changeValue(-lustDamage2);
+		results.value += lustDamage;
+		
+		advanceTfGoalsPoints(this.tfGoals);
+		
+		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1] + " " + ktn(actorKey) + " received " + textLustDamage(lustDamage2) + ". " + multAr2[1];
+							   
+		return results;
+	}
+	return sa;
+}
+
+
+
+
+

@@ -234,15 +234,27 @@ Character.prototype.cleanStates = function() {
 		this.alteredStates = newAlteredStates;
 	}
 Character.prototype.removeSpecificState = function(stateAcr) {
+	var anyStateRemoved = false; // The function returns true if any altered state gets finished.
 	var newAlteredStates = [];
 	for ( var as of this.alteredStates ) {
 		if ( as.acr != stateAcr ) {
 			newAlteredStates.push(as);
 		} else {
 			as.cancelEffect(this.varName);
+			anyStateRemoved = true;
 		}
 	}
 	this.alteredStates = newAlteredStates;
+	return anyStateRemoved;
+}
+window.doesCharHaveState = function(cK,stateAcr) {
+	var hasState = false;
+	for ( var as of gC(cK).alteredStates ) {
+		if ( as.acr == stateAcr ) {
+			hasState = true;
+		}
+	}
+	return hasState;
 }
 
 Character.prototype.addBodypart = function(key,name) {
@@ -572,15 +584,22 @@ Character.prototype.textControlBar = function() {
 Character.prototype.textAlteredStates = function() {
 		var text = '<span style="color:darkgray">';
 		var i = 0;
+		var bpAs = null;
 		for ( var as of this.alteredStates ) {
 			if ( i > 0 ) { text += ", "; }
-			var tooltip = as.title + ": " + as.description; // + "\nRemaining turns: " + as.remainingTurns;
-			if ( as.scope == "scene" ) {
-				tooltip += "\nRemaining turns: " + as.remainingTurns;
-			} else if ( as.scope == "days" ) {
-				tooltip += "\nRemaining days: " + as.remainingDays;
+			if ( as.acr != "BdPt" ) {
+				var tooltip = as.title + ": " + as.description; // + "\nRemaining turns: " + as.remainingTurns;
+				if ( as.scope == "scene" ) {
+					tooltip += "\nRemaining turns: " + as.remainingTurns.toFixed(1);
+				} else if ( as.scope == "days" ) {
+					tooltip += "\nRemaining days: " + as.remainingDays.toFixed(1);
+				}
+				var asText = "<span title='" + tooltip + "'>" + as.acr + "</" + "span>";
+			} else {
+				asText = getTextWithTooltipAlt("BdPt",("Body Painting: " + bdPntData(as.tag).name + "\n"
+								 + bdPntData(as.tag).getDescription(as.actor,as.target)
+								 + "\nLevel: " + as.level + "\nResistance: " + as.resistance) + "\nDrawn by: " + gC(as.actor).getName());
 			}
-			var asText = "<span title='" + tooltip + "'>" + as.acr + "</" + "span>";
 			text += asText;
 			i++;
 		}
@@ -747,11 +766,6 @@ Character.prototype.getCharacterUIbarInfo = function() { // Returns a string tha
 	}
 Character.prototype.getCharacterScreenInfo = function() { // Returns a string that generates the character's stats screen when displayed on Sugarcube 2
 		var string = "__" + this.formattedName + "__\n";
-		// TODO: Divide textBars to textBars and textStats, divided by a vertical line
-		//string += '<div class="split left"><div class="centered"><p>' + this.textBars() + '</p></div></div>';
-		//string += '<div class="split right"><div class="centered"><p>' + this.textStats() + "</p></div></div> \n";
-		//string += '<html><table style="width:100%">' + '<tr><td>' + this.textBars() + '</td></tr>'
-		//string += '<tr><td>' + this.textStats() + '</td></tr>' + '</table></html> \n'
 		string += this.textBars() + "\n";
 		string += this.textStats() + "\n\n";
 		string += "__Bodyparts__:\n";
@@ -1298,6 +1312,22 @@ window.returnCharsUnlockedGenitals = function(charKey) {
 		unlockedGenitals.push("pussy");
 	}
 	return unlockedGenitals;
+}
+
+	// Gender
+window.isCharFemale = function(cK) {
+	if ( gC(cK).perPr == "she" ) {
+		return true;
+	} else {
+		return false;
+	}
+}
+window.isCharMale = function(cK) {
+	if ( gC(cK).perPr == "he" ) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 	// States

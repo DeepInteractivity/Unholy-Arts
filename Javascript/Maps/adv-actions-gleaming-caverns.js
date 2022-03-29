@@ -13,6 +13,9 @@ window.createCreateSEtunnelMovement = function(roomKey,energy) {
 						applyBarDamageWithoutOverflow(cK,"energy",-energy);
 					}
 				}
+				if ( getRoomInfoA(roomKey).getEventPrompt ) {
+					getRoomInfoA(roomKey).getEventPrompt(cList);
+				}
 				State.variables.compass.setMapMessage(eventMsg);
 				return eventMsg;
 			}
@@ -23,21 +26,7 @@ window.createCreateSEtunnelMovement = function(roomKey,energy) {
 		return sEvent;
 	} )
 } 
-/*
-window.createSEtunnelMovement = function(minutes, characters, roomKey, energy) {
-	var sEvent = new systemEvent(minutes,characters,"movement","Moving",function(cList) {
-			State.variables.compass.moveCharsToRoom(cList,roomKey);
-			
-			var eventMsg = "Characters moved.";
-			return eventMsg;
-		}
-	);
-	sEvent.applyEffectIfForcedToEnd = false;
-	sEvent.roomKey = roomKey;
-	sEvent.priority = -1;
-	return sEvent;
-}
-*/
+
 window.createActionMovingWildTunnel = function(goalKey,goalName,energy,mins) {
 	var actName = "Move to " + goalName + " (" + colorText(mins,"khaki") + ") ";
 	if ( energy > 0 ) {
@@ -75,10 +64,32 @@ window.createWaitingActionCaverns = function() {
 	action.getPassage = function() { return "Map" };
 	return action;
 }
+window.createSystemEventCheapNoWait = function(minutes,characters) {
+	var sEvent = new systemEvent(0,characters,"cavernWait","Wait for a few minutes",function(cList) {
+			
+			var eventMsg = "";
+			State.variables.compass.setMapMessage(eventMsg);
+			return eventMsg;
+		}
+	);
+	sEvent.priority = -1;
+	return sEvent;
+}
 window.createSystemEventCheapWait = function(minutes,characters) {
 	var sEvent = new systemEvent(5,characters,"cavernWait","Wait for a few minutes",function(cList) {
 			
-			var eventMsg = "You rest for a few minutes, your eyes focused on the the occasional, tiny waves taking form at the lake below.. ";
+			var eventMsg = "You rest for a few minutes, your eyes focused on the the occasional, tiny waves taking form at the lake below...";
+			State.variables.compass.setMapMessage(eventMsg);
+			return eventMsg;
+		}
+	);
+	sEvent.priority = -1;
+	return sEvent;
+}
+window.createSystemEventCheapWaitNoDesc = function(minutes,characters) {
+	var sEvent = new systemEvent(5,characters,"cavernWait","Wait for a few minutes",function(cList) {
+			
+			var eventMsg = "";
 			State.variables.compass.setMapMessage(eventMsg);
 			return eventMsg;
 		}
@@ -148,6 +159,7 @@ window.createTrainingActionSecludedMeditation = function() {
 window.createSeHeatedBath = function(minutes,characters) {
 	var sEvent = new systemEvent(30,characters,"heatedBath","Take a heated bath",function(cList) {
 			for ( var cK of characters ) {
+				washCharsBodyPainting(cK);
 				applyBarDamageWithoutOverflow(cK,"energy",-10);
 				if ( doesCharHaveAlteredState(cK,"HeBa") == false ) {
 					applyAlteredState([cK],createHeatedBath());
@@ -171,6 +183,7 @@ window.createHeatedBathAction = function() {
 window.createSeFrozenBath = function(minutes,characters) {
 	var sEvent = new systemEvent(30,characters,"frozenBath","Take a frozen bath",function(cList) {
 			for ( var cK of characters ) {
+				washCharsBodyPainting(cK);
 				applyBarDamageWithoutOverflow(cK,"willpower",-10);
 				if ( doesCharHaveAlteredState(cK,"FrBa") == false ) {
 					applyAlteredState([cK],createFrozenBath());
@@ -194,6 +207,7 @@ window.createFrozenBathAction = function() {
 window.createSePublicBath = function(minutes,characters) {
 	var sEvent = new systemEvent(30,characters,"publicBath","Take a public bath",function(cList) {
 			for ( var cK of characters ) {
+				washCharsBodyPainting(cK);
 				applyBarDamageWithoutOverflow(cK,"socialdrive",-10);
 				if ( doesCharHaveAlteredState(cK,"PuBa") == false ) {
 					applyAlteredState([cK],createPublicBath());
@@ -370,6 +384,32 @@ window.createSysEvWorkshopPainting = function(minutes,characters) {
 				eventMsg += rspMsg;
 				eventMsg += createCharSpentBarMessage(character,barType,barConsumption) + "\n";
 			}
+			// Body Painting map event
+			if ( isStVarOn("bdPtSc") == false && cList[0] == "chPlayerCharacter" ) {
+				// Base requirements
+				var pcSkill = getCharsBdPntSkill("chPlayerCharacter");
+				var hour = State.variables.daycycle.hours;
+				var mapEventMsg = "";
+				if ( pcSkill >= 10 ) {
+					var skillFlag = true;
+					mapEventMsg += colorText("Painting skill check (" + pcSkill.toFixed(1) + ">=10): Passed\n","green");
+				} else {
+					var skillFlag = false;
+					mapEventMsg += colorText("Painting skill check (" + pcSkill.toFixed(1) + "<10): Failed\n","red");
+				}
+				if ( hour >= 16 ) {
+					var hourFlag = true;
+					mapEventMsg += colorText("Hour check (" + hour + ">=16): Passed\n","green");
+				} else {
+					var hourFlag = false;
+					mapEventMsg += colorText("Hour check (" + hour + "<16): Failed\n","red");
+				}
+				if ( skillFlag && hourFlag ) {
+					mapEventMsg += "\n<<l" + "ink [[What are the others painting?|FASE PntWthMir Start]]>><<s" + "cript>>\n"
+								 + "initializeFaSePaintingPadmiri();\n<</s" + "cript>><</l" + "ink>>\n";
+				}
+				eventMsg += mapEventMsg + "\n";
+			}
 			eventMsg += sharedTrainingRelationshipEvents(characters);
 			return eventMsg;
 		}
@@ -544,4 +584,62 @@ window.createGleamingCavernsDildoPlayAction = function() {
 	action.getPassage = function() { return "FASE Dildo Play 1"; };
 	return action;
 }
+
+// Morph Artist Hut
+window.createGleamingCavernsMorphHutInit = function() {
+	var action = new mapAction("morphHutConv","Inquiry about transformations",createSystemEventCheapWaitNoDesc,false);
+	action.description = "Ask Mesquelles and the Transformation Master about their art.";
+	action.recMins = 5;
+	action.getPassage = function() { return "FASE MorphHut Init"; };
+	return action;
+}
+window.createGleamingCavernsMorphHutMedInit = function() {
+	var action = new mapAction("morphHutConv","Inquiry about transformations",createSystemEventCheapNoWait,false);
+	action.description = "Ask Mesquelles and the Transformation Master about their art.";
+	action.recMins = 0;
+	action.getPassage = function() { return "FASE MorphHut Main"; };
+	return action;
+}
+
+// Temple Storage
+window.createGleamingCavernsDrishtyaConv = function() {
+	var action = new mapAction("drishtyaFASEconv","Talk to Drishtya",createSystemEventDrMlConv,false);
+	action.description = "Discuss the current situation with Drishtya and Melesh.";
+	action.recMins = 0;
+	action.getPassage = function() { return "FASE DrishtyaMelesh Conv Init"; };
+	return action;
+}
+window.createSystemEventDrMlConv = function(minutes,characters) {
+	var sEvent = new systemEvent(0,characters,"drMlConv","Wait for a few minutes",function(cList) {
+			initFaSeDrishtyaMeleshConv();
+			var eventMsg = "";
+			State.variables.compass.setMapMessage(eventMsg);
+			return eventMsg;
+		}
+	);
+	sEvent.priority = 1;
+	return sEvent;
+}
+
+// Talk to Valtan
+window.createGleamingCavernsValtanConv = function() {
+	var action = new mapAction("valtanFASEconv","Talk to Valtan",createSystemEventDrMlConv,false);
+	action.description = "Talk to Valtan.";
+	action.recMins = 0;
+	action.getPassage = function() { return "FASE ValtanIllumination GeneralOptions"; };
+	return action;
+}
+window.createSystemEventDrMlConv = function(minutes,characters) {
+	var sEvent = new systemEvent(0,characters,"valtanFASEconv","Wait for a few minutes",function(cList) {
+			initValtanAtIlluminationPond();
+			var eventMsg = "";
+			State.variables.compass.setMapMessage(eventMsg);
+			return eventMsg;
+		}
+	);
+	sEvent.priority = 1;
+	return sEvent;
+}
+
+//
 

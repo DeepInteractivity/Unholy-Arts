@@ -385,6 +385,32 @@ window.getRelationshipStatProportionBetweenCharAndGroup = function(statsA,statsB
 	return result;
 }
 
+window.getTextRelationIncrease = function(charA,charB,type,intensity) {
+	// Intensity = 1/2/3/4/5
+	// If type is sexual tension, it must be inputed as "sexual tension", rather than the usual variable name
+	var color = "purple";
+	if ( type == "friendship" ) { color = "khaki"; }
+	else if ( type == "sexual tension" || type == "romance" || type == "sexualTension" ) { color = "lightcoral"; }
+	else if ( type == "rivalry" || type == "enmity" ) { color = "darkred"; }
+	
+	var msg = gC(charA).getName() + "'s ";
+	if ( type == "sexualTension" ) {
+		msg += "sexual tension ";
+	} else {
+		msg += type + " ";
+	}
+	if ( type == "domination" || type == "submission" ) { msg += "towards"; }
+	else { msg += " with"; }
+	msg += " " + gC(charB).getName() + " has ";
+	if ( intensity == 1 ) { msg += "minimally increased."; }
+	else if ( intensity == 2 ) { msg += "slightly increased."; }
+	else if ( intensity == 3 ) { msg += " increased."; }
+	else if ( intensity == 4 ) { msg += " increased a lot."; }
+	else { msg += " dramatically increased."; }
+	msg = colorText(msg,color);
+	return msg;
+}
+
 ////////// RELATIONSHIPTYPE CLASS  //////////
 // A relationship type is a specific form or relationship that follows specific rules
 

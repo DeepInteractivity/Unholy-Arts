@@ -180,9 +180,11 @@ window.createCandidateGlobalAi = function(charKey) {
 		return mChoice;
 	}
 	globalAi.generateTrainingChoices = function(charKey) {
-		return [cTrainAgilityMissionChoice(charKey),cTrainCharismaMissionChoice(charKey),cTrainEmpathyMissionChoice(charKey),
-				cTrainIntelligenceMissionChoice(charKey),cTrainLuckMissionChoice(charKey),cTrainPerceptionMissionChoice(charKey),
-				cTrainPhysiqueMissionChoice(charKey),cTrainResilienceMissionChoice(charKey),cTrainWillMissionChoice(charKey)];
+		var tChoices = [];
+		for ( var stat of getStatNamesArray() ) {
+			tChoices.push(cTrainStatMissionChoice(charKey,stat));
+		}
+		return tChoices;
 	}
 	globalAi.generateScrollsChoices = function() {
 		var choices = [];
@@ -585,7 +587,7 @@ window.createCandidateGlobalAi = function(charKey) {
 						var weight = 1 + gC(this.charKey).dAmbition.level + gC(this.charKey).dPleasure.level + gC(this.charKey).dDomination.level; 
 						if ( gC(this.charKey).infamy == 0 ) { weight += 13; }
 						if ( State.variables.simCycPar.templeDayPeriod != "training" ) { weight *= 2; }
-						fdChoice.weight = weight;
+						fdChoice.weight = weight; 
 						if ( fdChoice.weight > 0 && canActorAttackTarget(this.charKey,selectedChar) ) { mChoices.push(fdChoice); }
 					}
 				}
@@ -666,6 +668,57 @@ window.createCandidateGlobalAi = function(charKey) {
 		return choices;
 	}
 	
+	globalAi.generateTransformationChoices = function() {
+		var mChoices = [];
+		if ( gSettings().tfGeneral == tfSetExtra.random ) {
+			var anyTransformerPresent = false;
+			var presentTransformers = [];
+			for ( var cK of getValidTfActors() ) {
+				if ( getCurrentMap().characters.includes(cK) && cK != this.charKey ) {
+					if ( gC(cK).followingTo == "" || gC(cK).followingTo == this.charKey ) {
+						presentTransformers.push(cK);
+					}
+				}
+			}
+			if ( presentTransformers.length > 0 ) {
+				// Transform self mission
+				if ( doesCharHaveState(this.charKey,"UnBp") == false ) {
+					if ( npcDecidesTransformationsOnSelf(this.charKey).length > 0 ) {
+						// Create mission
+						var tfSelfMis = cAdvancedScialGoalMissionChoice(this.charKey,randomFromList(presentTransformers),"transformSelf");
+						tfSelfMis.weight = 10 * ( 1 + ( 0.1 * ( gC(this.charKey).dPleasure.level - (gC(this.charKey).dImprovement.level - gC(this.charKey).dAmbition.level) ) ) );
+						if ( tfSelfMis.weight > 0 ) {
+							mChoices.push(tfSelfMis);
+						}
+					}
+				}
+				// Transform sub mission
+				var transformableSubs = [];
+				for ( var cK of gC(this.charKey).followedBy ) {
+					if ( gC(this.charKey).subChars.includes(cK) ) {
+						if ( gRelTypeAb(this.charKey,cK).type == "servitude" ) {
+							if ( doesCharHaveState(cK,"UnBp") == false ) {
+								if ( npcDecidesTransformationsOnTarget(this.charKey,cK).length > 0 ) {
+									transformableSubs.push(cK);
+								}
+							}
+						}
+					}
+				}
+				for ( var sub of transformableSubs ) {
+					// Create mission for each transformable sub
+					var tfSelfMis = cAdvancedScialGoalMissionChoiceExtra(this.charKey,randomFromList(presentTransformers),"transformSub",sub);
+					tfSelfMis.weight = 25 * ( 1 + ( 0.1 * ( gC(this.charKey).dPleasure.level - (gC(this.charKey).dImprovement.level - gC(this.charKey).dAmbition.level) ) ) );
+					if ( tfSelfMis.weight > 0 ) {
+						mChoices.push(tfSelfMis);
+					}
+				}
+			}
+		}
+		
+		return mChoices;
+	}
+	
 	globalAi.generateMissionChoices = function() {
 		// this->Generate stat goals
 		var mChoices = [];
@@ -696,6 +749,11 @@ window.createCandidateGlobalAi = function(charKey) {
 			for ( var choice of this.generateCombatChoices(this.charKey) ) {
 				mChoices.push(choice);
 			}*/
+		}
+		
+		// Transformations
+		for ( var choice of this.generateTransformationChoices() ) {
+			mChoices.push(choice);
 		}
 		
 		return mChoices;
@@ -732,9 +790,15 @@ window.createCandidateGlobalAi = function(charKey) {
 	}
 	globalAi.getMission = function() {
 		var choices = this.generateMissionChoices();
+		
 		choices = this.purgeChoicesAtLowBars(choices);
 		var choice = this.getWeightedRandomMissionChoices(choices);
 		gC(this.charKey).mission = choice.title;
+		if ( choice.extra != undefined ) {
+			gC(this.charKey).missionExtra = choice.extra;
+		} else if ( gC(this.charKey).missionExtra != undefined ) {
+			delete gC(this.charKey).missionExtra;
+		}
 		// Logging //
 		if ( State.variables.log[choice.title] == undefined ) {
 			State.variables.log[choice.title] = 1;
@@ -815,7 +879,7 @@ window.createValGcAi = function(charKey) {
 		return mChoice;
 	}
 	globalAi.generateTrainingChoices = function(charKey) {
-		return [cTrainLuckMissionChoice(charKey)];
+		return [cTrainStatMissionChoice(charKey,"luck")];
 	}
 	
 	globalAi.generateMissionChoices = function() {
@@ -913,6 +977,7 @@ window.missionChoice = function(title) {
 };
 
 	// Training
+			// OBSOLETE
 window.cTrainPhysiqueMissionChoice = function(character) {
 	var mChoice = new missionChoice("trainPhysique");
 	mChoice.reqBars.push("energy");
@@ -1065,6 +1130,44 @@ window.cTrainLuckMissionChoice = function(character) {
 	}
 	return mChoice;
 }
+			// END OF OBSOLETE
+
+window.cTrainStatMissionChoice = function(character,stat) {
+	var cappedStat = firstToCap(stat);
+	var mChoice = new missionChoice("train" + cappedStat);
+	
+	if ( stat == "physique" || stat == "agility" || stat == "resilience" ) {
+		mChoice.reqBars.push("energy");
+	} else if ( stat == "intelligence" || stat == "willpower" || stat == "perception" ) {
+		mChoice.reqBars.push("willpower");
+	} else if ( stat == "charisma" || stat == "empathy" ) {
+		mChoice.reqBars.push("socialdrive");
+	}
+	mChoice.tags = [stat];
+	
+	mChoice.isValid = function() {
+		var isValid = false;
+		// Either current map room has action that allows to train stat, or
+		if ( doesRoomHaveActionForCharsWithValidTag(gC(character).currentRoom,getCharGroup(character),stat) ) {
+			isValid = true;
+		} else { // Pathfinder finds route to room where training stat is possible
+			var route = getRouteToClosestTaggedActivity(getCurrentMap().key,getCharGroup(character),stat);
+			if ( route.length > 0 ) {
+				isValid = true;
+			}
+		}
+		// Return valid if at least one reachable action in map allows training of physique
+		return isValid;	
+	}
+	mChoice.getCommandsList = function() {
+		return cMissionActionTag(getCurrentMap(),getCharGroup(character),stat);
+	}
+	mChoice.weight = 4 + gC(character).dImprovement.level * 5 + gC(character).dAmbition.level * 2;
+	if ( gC(character).globalAi.statGoals != undefined ) {
+		mChoice.weight += gC(character).globalAi.statGoals[8] - gC(character)[stat].value;
+	}
+	return mChoice;
+}
 
 	// Rest
 window.cRestMissionChoice = function(character) {
@@ -1137,6 +1240,11 @@ window.cAdvancedScialGoalMissionChoice = function(actor,target,missionName) {
 	mChoice.getCommandsList = function() {
 		return cMissionPursueAndTalkTo(getCurrentMap(),getCharGroup(actor),target);
 	}
+	return mChoice;
+}
+window.cAdvancedScialGoalMissionChoiceExtra = function(actor,target,missionName,extra) {
+	var mChoice = cAdvancedScialGoalMissionChoice(actor,target,missionName);
+	mChoice.extra = extra;
 	return mChoice;
 }
 

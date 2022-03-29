@@ -340,7 +340,7 @@ window.createAiRandomActionRandomOpponent = function() {
 	}
 	return ai;
 }
-window.createAiEarlyStrategic = function() { // November 2020 - Last checked April 2021
+window.createAiEarlyStrategic = function() { 
 	var ai = new aiAlgorithm();
 	ai.key = "earlyStrategy";
 	ai. callAction = function(character,allyCharacters,enemyCharacters,currentTurn) {
@@ -706,7 +706,7 @@ window.createAiWeightedMissionsByTasteOld = function() {
 	return ai;
 }
 
-// NEW GENERIC AI ALGORITHM - SEX SCENES - 06-2021
+// NEW GENERIC AI ALGORITHM - SEX SCENES - 06-2021 - Last updated: 01-2021
 window.createAiWeightedMissionsByTaste = function() {
 	var ai = new aiAlgorithm();
 	ai.key = "weightedMissions";
@@ -715,7 +715,13 @@ window.createAiWeightedMissionsByTaste = function() {
 	ai.callAction = function(character,allyCharacters,enemyCharacters,currentTurn) {
 		var results = new aiResults();
 		
-		if ( gC(character).hasLead && State.variables.sc.sceneConditions.includes("cantChangePositions") == false && State.variables.sc.sceneConditions.includes("cantCancelPositions") == false ) {
+		var tfScAlMs = true; // Shortcut to reduce frequency of choosing missions during tf scenes
+		if ( gC(character).hasLead && State.variables.sc.hasOwnProperty("tfFlag") ) {
+			if ( limitedRandomInt(64) > 48 ) {
+				tfScAlMs = false;
+			}
+		}
+		if ( gC(character).hasLead && State.variables.sc.sceneConditions.includes("cantChangePositions") == false && State.variables.sc.sceneConditions.includes("cantCancelPositions") == false && tfScAlMs == true ) {
 			if ( this.missionCommands.length > 0 ) {
 				// At this point "cancel" and "stay" commands shouldn't remain
 				results.actionKey = this.missionCommands[0][0];
@@ -727,6 +733,9 @@ window.createAiWeightedMissionsByTaste = function() {
 					cancelAllCharActionsAndPositions(character);
 				} else {
 					charEvaluatesContinuedActionsToCancel(character);
+					if ( State.variables.sc.hasOwnProperty("tfFlag") ) {
+						cancelActionsConflictingWithTf(character);
+					}
 				}
 				if ( isCharInPrimaryContinuedAction(character) ) {
 					results = chooseValidBasicAction(character,allyCharacters,enemyCharacters);
@@ -959,6 +968,15 @@ window.assignWeightToActionFromActorToTargetWithDesires = function(action,actor,
 		}
 		weight *= (newMult + desiresMultiplier + mult);
 	}
+	if ( weight > 0 && State.variables.sc.hasOwnProperty("tfFlag") ) {
+		if ( setup.saList[action].strategyTags.includes("tfPlus") ) {
+			weight *= 4.5 + (State.variables.sc.currentTurn * 0.5);
+		} else if ( setup.saList[action].strategyTags.includes("tfHalfPlus") ) {
+			weight *= 2.2 + (State.variables.sc.currentTurn * 0.3);
+		} else if ( setup.saList[action].strategyTags.includes("tfMinus") ) {
+			weight /= 5;
+		}
+	}
 	
 	return weight;
 }
@@ -1063,9 +1081,10 @@ window.charEvaluatesContinuedActionsToCancel = function(actor) {
 	// Finish CAs in reverse order
 	for ( var id of casToRemove ) {
 		State.variables.sc.removeContinuedAction(id);
+	}
+	if ( flagCancelPosition ) {
 		State.variables.sc.cancelPosition(actor);
 	}
-	
 }
 window.cancelAllCharActionsAndPositions = function(actor) {
 	var casToRemove = [];
@@ -1081,6 +1100,60 @@ window.cancelAllCharActionsAndPositions = function(actor) {
 		State.variables.sc.removeContinuedAction(id);
 	}
 	State.variables.sc.cancelPosition(actor);
+}
+
+window.cancelActionsConflictingWithTf = function(actor) {
+	if ( actor != State.variables.sc.tfTarget ) {
+		var tfActions = [];
+		var requiredTargetBps = [];
+		var requiredActorBps = [];
+		var conflictingContinuedActions = []; // Reverse position iterators
+		
+		// Get all tfActions from a tfActor
+		for ( var sa of gC(State.variables.sc.tfActors[0]).saList ) {
+			if ( setup.saList[sa].tags.includes("tf") ) {
+				tfActions.push(sa);
+				// Get all requiredBps
+				for ( var bp of setup.saList[sa].targetBpReqs ) {
+					if ( requiredTargetBps.includes(bp) == false ) {
+						requiredTargetBps.push(bp);
+					}
+				}
+				for ( var bp of setup.saList[sa].actorBpReqs ) {
+					if ( requiredActorBps.includes(bp) == false ) {
+						requiredActorBps.push(bp);
+					}
+				}
+			}
+		}
+		// Get all conflictingContinuedActions
+		var i = 0;
+		for ( var cA of State.variables.sc.continuedActions ) {
+			var selectedCa = false;
+			if ( cA.initiator == actor ) {
+				if ( cA.targetsList.includes(State.variables.sc.tfTarget) ) {
+					for ( var tBp of cA.targetsBodyparts ) {
+						if ( requiredTargetBps.includes(tBp) ) {
+							conflictingContinuedActions = [i].concat(conflictingContinuedActions);
+							selectedCa = true;
+						}
+					}
+				}
+				if ( selectedCa == false ) {
+					for ( var aBp of cA.initiatorBodyparts ) {
+						if ( requiredActorBps.includes(aBp) ) {
+							conflictingContinuedActions = [i].concat(conflictingContinuedActions);
+						}
+					}
+				}
+				i++;
+			}
+		}
+		// Cancel all conflictingContinuedActions in reverse order
+		for ( var id of conflictingContinuedActions ) {
+			State.variables.sc.removeContinuedAction(id);
+		}
+	}
 }
 
 	// Continued actions pathfinder
@@ -1139,6 +1212,11 @@ window.chooseCaMission = function(actor,allyCharacters,enemyCharacters) {
 	// Example of caUnweightedList:
 	// Array(2) [Array(3) ["penetratePussy", "chVal", "mountFromBehind"], Array(3) ["penetratePussy", "chPlayerCharacter", "mountFaceToFace"]]
 	
+	// Exception: if valid conditions, remove cAs conflicting with transformation
+	if ( State.variables.sc.hasOwnProperty("tfFlag") ) {
+		caUnweightedList = purgeCAsConflictingWithTransformationGoals(caUnweightedList,actor);
+	}
+	
 	// Generate weighted list
 	var wL = createWeightedListOfCaChoices(actor,caUnweightedList);
 	// Choose mission and translate it into instructions
@@ -1161,10 +1239,12 @@ window.findAllPotentialPositions = function(actor,target) {
 	var usablePositionActions = [];
 	if ( gC(actor).aiAlgorythm.disablePositions == false ) {
 		for ( var pA of positionActions ) {
-			if ( isActionUsable(pA,actor,[target],false).isUsable ) {
-				usablePositionActions.push(pA);
-			} else if ( areCharactersLinked(actor,target) && isActionUsableOnPos(pA,actor,[target],"free",["free"]).isUsable ) {
-			//	usablePositionActions.push(pA);
+			if ( State.variables.sc.hasOwnProperty("tfFlag") == false || setup.saList[pA].strategyTags.includes("tfPos") ) {
+				if ( isActionUsable(pA,actor,[target],false).isUsable ) {
+					usablePositionActions.push(pA);
+				} else if ( areCharactersLinked(actor,target) && isActionUsableOnPos(pA,actor,[target],"free",["free"]).isUsable ) {
+				//	usablePositionActions.push(pA);
+				}
 			}
 		}
 	}
@@ -1357,6 +1437,54 @@ window.purgeInvalidActionsFromListActorOnTarget = function(list,actor,target) {
 		}
 	}
 	return newList;
+}
+
+window.purgeCAsConflictingWithTransformationGoals = function(caUnweightedList,actor) {
+	// Example of caUnweightedList:
+	// Array(2) [Array(3) ["penetratePussy", "chVal", "mountFromBehind"], Array(3) ["penetratePussy", "chPlayerCharacter", "mountFaceToFace"]]
+	var newCaUnweightedList = [];
+	
+	var tfActions = [];
+	var requiredTargetBps = [];
+	var requiredActorBps = [];
+	
+	// Get all tfActions from a tfActor
+	for ( var sa of gC(State.variables.sc.tfActors[0]).saList ) {
+		if ( setup.saList[sa].tags.includes("tf") ) {
+			tfActions.push(sa);
+			// Get all requiredBps
+			for ( var bp of setup.saList[sa].targetBpReqs ) {
+				if ( requiredTargetBps.includes(bp) == false ) {
+					requiredTargetBps.push(bp);
+				}
+			}
+			for ( var bp of setup.saList[sa].actorBpReqs ) {
+				if ( requiredActorBps.includes(bp) == false ) {
+					requiredActorBps.push(bp);
+				}
+			}
+		}
+	}
+	
+	for ( var cAs of caUnweightedList ) {
+		var flagKeep = true;
+		if ( cAs[1] == State.variables.sc.tfTarget ) {
+			for ( bp of setup.saList[cAs[0]].targetBpReqs ) {
+				if ( requiredTargetBps.includes(bp) ) {
+					flagKeep = false;
+				}
+			}
+			for ( bp of setup.saList[cAs[0]].actorBpReqs ) {
+				if ( requiredActorBps.includes(bp) ) {
+					flagKeep = false;
+				}
+			}
+		}
+		if ( flagKeep ) {
+			newCaUnweightedList.push(cAs);
+		}
+	}
+	return newCaUnweightedList;
 }
 
 	// Altered states

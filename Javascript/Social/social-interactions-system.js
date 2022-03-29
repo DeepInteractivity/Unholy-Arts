@@ -485,7 +485,7 @@ window.SocIntSys = function(key,charList) {
 						}
 						if ( action[1] != "leave" ) {
 							if ( allowOtherCostlyDecisions ) {
-								this.executeStandardSistEffects(action[1],actor,target);
+								this.executeStandardSistEffects(action[1],actor,target,action[3]);
 								allowOtherCostlyDecisions = false;
 							}
 						}
@@ -496,26 +496,26 @@ window.SocIntSys = function(key,charList) {
 			gC(character).wasPromptedInCurrentSisRound = false;
 		}
 	}
-	this.executeStandardSistEffects = function(sistId,actor,target) {
+	this.executeStandardSistEffects = function(sistId,actor,target,extra) {
 		// This gets executed when a character other than the player's executes a sist. For player, check processTopicResult()
 		// var sist = State.variables.sistDB[sistId];
 		var sist = setup.sistDB[sistId];
-		if ( sist.isPossible(actor,target) ) { // Is it possible
-			if ( gC(actor).socialdrive.current >= sist.getSocialdriveOfferCost(actor,target) ) {
-				gC(actor).socialdrive.current -= sist.getSocialdriveOfferCost(actor,target);
+		if ( sist.isPossible(actor,target,extra) ) { // Is it possible
+			if ( gC(actor).socialdrive.current >= sist.getSocialdriveOfferCost(actor,target,extra) ) {
+				gC(actor).socialdrive.current -= sist.getSocialdriveOfferCost(actor,target,extra);
 				if ( target == "chPlayerCharacter" ) {
-					sist.askToPlayer(actor,target,this.key);
+					sist.askToPlayer(actor,target,this.key,extra);
 				}
 				else { // Is it successful
-					var isSuccessful = sist.isSuccessful(actor,target);
+					var isSuccessful = sist.isSuccessful(actor,target,extra,extra);
 					this.importantMessages += isSuccessful[2] + "\n";
 					if ( isSuccessful[0] ) {
 						gC(actor).wasPromptedInCurrentSisRound = true;
 						gC(target).wasPromptedInCurrentSisRound = true;
-						sist.getSuccessEffect(actor,target);
+						sist.getSuccessEffect(actor,target,extra);
 					}
 					else {
-						sist.getFailEffect(actor,target);
+						sist.getFailEffect(actor,target,extra);
 					}
 				}
 			}
@@ -625,34 +625,6 @@ window.SocIntSys = function(key,charList) {
 				}
 			}
 			else {
-				// TO DO: AI
-				// Temporary: AI characters use a random weighted action
-				/*
-				var target = randomFromList(arrayMinusA(this.charList,character));			// Target is chosen at random
-				
-				if ( target != undefined && target != null ) {
-					// TO DO
-					var offeredInteractions = this.getOfferedInteractionsToChar(character,getCharsNumberInteractions(character));	// Character is offered interactions
-					
-					var usableInteractions = [];
-					for ( var interaction of offeredInteractions ) {							// Unusable interactions are purged
-						if ( interaction != "errorWList" ) {
-							if ( getSiByKey(interaction).isUsable(this,character,target,[],null) ) {
-								usableInteractions.push(interaction);
-							}
-						}
-					}
-					
-					if ( usableInteractions.length > 0 ) {										// A command for the character to use interaction on target
-																								// is pushed to results
-						results.push([character,target,gC(character).socialAi.chooseSISinteraction(target,usableInteractions)]);
-						// randomFromList(usableInteractions)]);
-													   // Edit this randomFromList -> Function that receives actor,target and possible interactions,
-													   // and chooses the most appropiate one
-					}
-				}
-				*/
-				
 				var offeredInteractions = this.getOfferedInteractionsToChar(character,getCharsNumberInteractions(character));	// Character is offered interactions
 				
 				var usableInteractions = [];
@@ -1021,6 +993,9 @@ window.SocIntSys = function(key,charList) {
 	this.getButtonTakenToScene = function() {
 		var bText = "<<l" + "ink [[Continue to scene|Scene]]>><<s" + "cript>>\n";
 		bText	 += "State.variables.compass.sisList[" + this.key + "].flagPlayerTakenToScene = 'false';\n";
+		if ( gC("chPlayerCharacter").hasOwnProperty("sisWillSkipTimeFlag") ) {
+			bText += "sisSkippingTime();\n"
+		}
 		bText	 += "State.variables.sc.formatScenePassage();\n";
 		bText	 += "<</s" + "cript>><</l" + "ink>>";
 		return bText;
@@ -1042,12 +1017,14 @@ window.SocIntSys = function(key,charList) {
 
 window.playerLeavesSis = function() {
 	var sisId = State.variables.compass.findFirstSisIdInvolvingCharacter("chPlayerCharacter");
-	var playerFollowsTo = gC("chPlayerCharacter").followingTo;
-	if ( playerFollowsTo == "" ) {
-		State.variables.compass.sisList[sisId].charsLeaveSis(getCharGroup('chPlayerCharacter'));
-	} else {
-		charUnfollowsChar("chPlayerCharacter",playerFollowsTo);
-		State.variables.compass.sisList[sisId].charsLeaveSis(['chPlayerCharacter']);
+	if ( sisId != -1 ) {
+		var playerFollowsTo = gC("chPlayerCharacter").followingTo;
+		if ( playerFollowsTo == "" ) {
+			State.variables.compass.sisList[sisId].charsLeaveSis(getCharGroup('chPlayerCharacter'));
+		} else {
+			charUnfollowsChar("chPlayerCharacter",playerFollowsTo);
+			State.variables.compass.sisList[sisId].charsLeaveSis(['chPlayerCharacter']);
+		}
 	}
 }
 
@@ -1107,6 +1084,15 @@ window.scoreIntoInteractions = function(score) {
 	else if ( score >= 30 ) { n = 5; }
 	else if ( score >= 20 ) { n = 4; }
 	return n;
+}
+
+// Ad-hoc solution to scene skipping
+window.setFlagSisExitButtonSkipsTime = function() {
+	gC("chPlayerCharacter").sisWillSkipTimeFlag = true;
+}
+window.sisSkippingTime = function() {
+	delete gC("chPlayerCharacter").sisWillSkipTimeFlag;
+	State.variables.compass.pushAllTimeToAdvance();
 }
 
 

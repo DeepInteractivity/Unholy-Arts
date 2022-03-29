@@ -508,7 +508,7 @@ setup.mapTrainingGrounds.publicBaths = new RoomInfo(
 	"Termal waters similar to those you found at your room. There is, however, a chill in the air.", // description
 	[ new RoomConnection('fulfillmentCorridor',2) ], // Connections
 	function(characters) {
-		var actions = [ createRestingActionStandard() ];
+		var actions = [ createRestingActionBathing() ];
 		return actions;
 	}, // getActions
 	[166,131]
