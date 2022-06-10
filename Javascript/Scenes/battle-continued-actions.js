@@ -245,6 +245,52 @@ window.createBposP2DfrontalPounce = function(initiator, targetsList) {
 	gC(target).position.description = ktn(initiator) + " is holding " + ktn(target) + " below " + gC(initiator).posPr + " legs.";
 }
 
+		// Magic pounces
+
+window.createBcaOppressiveEmbrace = function(initiator, targetsList, targetedBodyPartsLists) {
+	var ca = new continuedAction();
+	ca.key = "oppressiveEmbracing";
+	ca.name = "Oppressive Embrace";
+	ca.initiator = initiator;
+	ca.targetsList = targetsList;
+	ca.affinities = [];
+	
+	ca.tornTargetsBodyparts = targetedBodyPartsLists;
+	ca.occupyBodyparts();
+	
+	ca.execute = function() {
+		var results = saResults;
+		var actor = this.initiator;
+		var target = this.targetsList[0];
+		
+		results.value = 0;
+		
+		results.description = randomFromList( [
+								(ktn(target) + " is tightly held by " + ktn(initiator) + " and " + gC(initiator).posPr + " chains."),
+								(ktn(target) + " struggles helplessly to escape from " + ktn(initiator) + " hold."),
+								(ktn(initiator) + " keeps a strong grip on " + ktn(target) + "'s limbs, locking " + gC(target).comPr + " in place.")
+									] );
+		return results;
+	}
+	return ca;
+}
+
+window.createBposOppressiveEmbrace = function(initiator, targetsList, targetedBodyPartsLists) {
+	var target = targetsList[0];
+	
+	gC(initiator).position.makeActive(targetsList);
+	gC(initiator).position.key = "oppressiveEmbracing";
+	gC(initiator).position.name = "Oppressive Embrace";
+	gC(initiator).position.description = ktn(initiator) + " is keeping " + ktn(target) + "'s limbs locked tight.";
+	
+	gC(initiator).position.cAction = createBcaOppressiveEmbrace(initiator,targetsList,targetedBodyPartsLists);
+	
+	gC(target).position.makePassive(initiator);
+	gC(target).position.key = "oppressiveEmbraced";
+	gC(target).position.name = "Oppressively Embraced";
+	gC(target).position.description = ktn(initiator) + " is keeping " + ktn(target) + "'s limbs locked tight.";
+}
+
 	// Weapons
 	
 		// Secondary continued actions

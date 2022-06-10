@@ -452,6 +452,7 @@ window.createAiEarlyStrategic = function() {
 				}
 				if ( results.actionKey == "doNothing" ) {
 					validActionsList = State.variables.sc.listUsableActionsOnTarget(character,directEnemy);
+					validActionsList = fixActorsActionListDependingOnTargetBeingMonster(character,validActionsList,directEnemy); // Monster fix
 					damageActions = purgeActionsWithoutStrategyTag(validActionsList,"damageControl").concat(purgeActionsWithoutStrategyTag(validActionsList,"damageControl")).concat(purgeActionsWithoutStrategyTag(validActionsList,"debuff"));
 					if ( damageActions.length > 0 ) {
 						results.actionKey = randomFromList(damageActions);
@@ -465,6 +466,7 @@ window.createAiEarlyStrategic = function() {
 				// Pounce check
 				directEnemy = randomFromList(downingEnemies);
 				validActionsList = State.variables.sc.listUsableActionsOnTarget(character,directEnemy);
+				validActionsList = fixActorsActionListDependingOnTargetBeingMonster(character,validActionsList,directEnemy); // Monster fix
 				damageActions = purgeActionsWithoutStrategyTag(validActionsList,"pounce");
 				var betterActions = purgeActionsWithStrategyTag(damageActions,"subpar");
 				if ( damageActions.length > betterActions.length ) { damageActions = betterActions; }
@@ -503,6 +505,7 @@ window.createAiEarlyStrategic = function() {
 				break;
 			case "desperateAttack":
 				var validActionsList = State.variables.sc.listUsableActionsOnTarget(character,directEnemy);
+				validActionsList = fixActorsActionListDependingOnTargetBeingMonster(character,validActionsList,directEnemy); // Monster fix
 				var damageActions = purgeActionsWithoutStrategyTag(validActionsList,"damage");
 				if ( damageActions.length > 0 ) {
 					results.actionKey = randomFromList(damageActions);
@@ -524,6 +527,7 @@ window.createAiEarlyStrategic = function() {
 					}
 					if ( results.actionKey == "doNothing" ) {
 						validActionsList = State.variables.sc.listUsableActionsOnTarget(character,directEnemy);
+						validActionsList = fixActorsActionListDependingOnTargetBeingMonster(character,validActionsList,directEnemy); // Monster fix
 						var damageActions = purgeActionsWithoutStrategyTag(validActionsList,"damage").concat(purgeActionsWithoutStrategyTag(validActionsList,"debuff"));
 						results.actionKey = randomFromList(damageActions);
 						results.targetsIDs = [ directEnemy ];
@@ -820,8 +824,8 @@ window.chooseValidBasicAction = function(actor,allyCharacters,enemyCharacters) {
 		// No actions possible
 	} else if ( actionsOnSelf.length == 0 ) {
 		// Only actions on others possible
-		var wL = assignWeightsToTargetedWeightedActionList(actor,nwActionsOnOthers);
-		var wE = randomFromWeightedList(wL);
+		var wL = assignWeightsToTargetedWeightedActionList(actor,nwActionsOnOthers); // Weighted List
+		var wE = randomFromWeightedList(wL); // Weighted choice
 		results.targetsIDs = [wE[0]];
 		results.actionKey = wE[1];
 	} else if ( nwActionsOnOthers.length == 0 ) {
@@ -1501,6 +1505,35 @@ window.countCharactersDebuffs = function(charKey) {
 		if ( as.type == "debuff" ) { count++; }
 	}
 	return count;
+}
+
+	// Monsters
+window.fixActorsActionListDependingOnTargetBeingMonster = function(actor,actionsList,target) {
+	var newList = [];
+	
+	for ( var action of actionsList ) {
+		if ( setup.saList[action].strategyTags.includes("holy") == true ) {
+			if ( gC(target).race == "monster" ) {
+				newList.push(action,action,action);
+			}
+		} else if ( setup.saList[action].strategyTags.includes("captureMonster") == true ) {
+			if ( gC(target).race == "monster" ) { // TO DO: Condition, monster should only be captured if the actor wants the monster 
+				newList.push(action);
+				if ( gC(actor).hasOwnProperty("mapAi") ) {
+					if ( gC(actor).mapAi.goalsList.length > 0 ) {
+						if ( gC(actor).mapAi.goalsList[0].hasOwnProperty("targetMonster") ) {
+							if ( gC(target).monsterType == gC(actor).mapAi.goalsList[0].targetMonster ) {
+								newList.push(action,action,action,action,action,action,action,action,action);
+							}								
+						}
+					}
+				}
+			}
+		} else {
+			newList.push(action);
+		}
+	}
+	return newList;
 }
 
 // Constructors, serializers, etc.

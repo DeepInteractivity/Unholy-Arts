@@ -368,6 +368,21 @@ PersonalRoom.prototype.getCharacterInfo = function(character) {
 			}
 		}
 		
+		// Tribes
+		if ( getCandidatesKeysArray().includes(character) ) { // Character is a Candidate
+			var sText = "";
+			for ( var rsp of ["ssRsp"] ) {
+				if ( gC(character).hasOwnProperty(rsp) ) {
+					sText += "\n";
+					if ( rsp == "ssRsp" ) { sText += "Shapeshifter Respect: " }
+					sText += gC(character)[rsp].toFixed(1);
+				}
+			}
+			if ( sText != "" ) {
+				iText += "\n<div class='standardBox'>__Tribes respect__:" + sText + "</div>";
+			}
+		}
+		
 		iText += "</p></div>";
 		
 		
@@ -409,6 +424,22 @@ PersonalRoom.prototype.getCandidatesComparisonPassage = function() {
 			}
 		}
 		passageText += '</table>\n';
+		
+		if ( gC("chPlayerCharacter").hasOwnProperty("ssRsp") ) { // Respect tables if respect enabled
+			var columns = ["ssRsp"];
+			passageText += "\n__Tribes Respect__:\n";
+			passageText += '<table><tr><td>Tribe</td><td>__Shapeshifters__</td></tr>';
+			passageText += '<tr><td>' + colorText('Passion Temple','darkorchid') + '</td><td>' + State.variables.tribes.ssRpt.toFixed(1) + '</td>' + '</tr>';
+			for ( var cK of getCandidatesKeysArray() ) {
+				passageText += '<tr><td>' + gC(cK).getFormattedName() + '</td>';
+				for ( var cl of columns ) {
+					passageText += '<td>' + gC(cK)[cl].toFixed(1) + '</td>';
+				}
+				passageText += '</tr>';
+			}
+			passageText += '</table>\n';
+		}
+		
 		passageText += this.getButtonBackToMain();
 		return passageText;
 	}
@@ -771,7 +802,7 @@ window.getActionsWindow = function() {
 	// Display actions list
 	for ( var act of actionsList ) {
 		var actDesc = setup.saList[act].description;
-		wText += "\- <span title=" + '"' + actDesc + '">' + setup.saList[act].name + "</span>^^(?)^^" ;
+		wText += "\- " + setup.saList[act].name + getTextWithTooltipAlt("^^(?)^^",actDesc) ;
 		// Sex/Battle scene icons
 		if ( setup.saList[act].tags.includes("ss") ) {
 			wText += colorText(" Sex","lightpink");

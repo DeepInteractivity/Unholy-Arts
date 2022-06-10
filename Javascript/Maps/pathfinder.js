@@ -162,6 +162,32 @@ window.Pathfinder = function(mapKey,charGroup,startingRoomKey,isNodeValidTarget)
 		return routesList;
 	}
 
+	// Other functions
+	this.getAllRoomsWithinNdistance = function(distance) {
+		var rooms = [];
+		for ( var nodeI in this.nodesList ) {
+			var node = this.nodesList[nodeI];
+			if ( node.currentRoute != null ) {
+				if ( node.currentRouteDistance <= distance ) {
+					rooms.push([node.key,node.currentRouteDistance]);
+				}
+			}
+		}
+		return rooms;
+	}
+	this.getAllRoomsWithinNmoves = function(moves) {
+		var rooms = [];
+		for ( var nodeI in this.nodesList ) {
+			var node = this.nodesList[nodeI];
+			if ( node.currentRoute != null ) {
+				if ( node.currentRoute.length <= moves ) {
+					rooms.push([node.key,node.currentRoute.length]);
+				}
+			}
+		}
+		return rooms;
+	}
+	
 	// Debug functions
 	this.formatNodeInfoToLine = function(nodeKey) {
 		var text = "";
@@ -187,5 +213,21 @@ window.pfNode = function(roomKey) {
 	this.hasBeenChecked = false;
 	this.currentRoute = null;
 	this.currentRouteDistance = 0;
+}
+
+// Auxiliar functions
+window.transformRoomsDistanceListIntoRoomsDistance = function(roomsDistanceList) {
+	var roomsList = [];
+	for ( var roomDistance of roomsDistanceList ) {
+		roomsList.push(roomDistance[0]);
+	}
+	return roomsList;
+}
+window.getCharactersInRoomsList = function(roomsList) {
+	var charsList = [];
+	for ( var room of roomsList ) {
+		charsList = charsList.concat(getRoomA(room).characters);
+	}
+	return charsList;
 }
 

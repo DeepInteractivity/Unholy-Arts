@@ -231,18 +231,18 @@ window.initCommandTestsPeriodPassionTemple = function() {
 	gC("chNash").mapAi.goalsList = [ createMapAiGoalMoveTo("chNash","mainLibrary") , createMapAiGoalMoveTo("chVal","westLibrary") , createMapAiGoalPursueAndTalkTo("chNash","chMir",1) ];
 */
 	
-	gC("chNash").lust.current = 5;
+	gC("chNash").lust.current = 100;
 	gC("chNash").mapAi.state = "idle";
 	gC("chNash").mapAi.type = "balancedTraining";
 	// gC("chNash").mapAi.createNewMission = cMissionPursueAndTalkTo("chNash","chMir");
 	//gC("chNash").mapAi.goalsList = [ cMissionPursueAndTalkTo("chNash","chMir",1) ];
 	
 	gC("chMir").mapAi.goalsList = [ createMapAiGoalMoveTo("chMir","mainLibrary") , createMapAiGoalMoveTo("chMir","westLibrary") ];
-	gC("chVal").mapAi.goalsList = [ createMapAiGoalMoveTo("chVal","mainLibrary") , createMapAiGoalMoveTo("chVal","westLibrary") , createMapAiGoalPursueAndAssault("chVal","chMir") ];
+	gC("chVal").mapAi.goalsList = [ createMapAiGoalMoveTo("chVal","mainLibrary") , createMapAiGoalMoveTo("chVal","westLibrary") , createMapAiGoalPursueAndTalkTo("chVal","chMir") ];
 	// gC("chVal").mapAi.goalsList = [ createMapAiGoalMoveTo("chVal","mainLibrary") , createMapAiGoalMoveTo("chVal","westLibrary") , createMapAiGoalPursueAndChallenge("chVal","chMir") ];
 	gC("chNash").mapAi.goalsList = [ createMapAiGoalMoveTo("chNash","mainLibrary") , createMapAiGoalMoveTo("chNash","eastLibrary") ,
-									 createMapAiGoalMoveTo("chNash","westLibrary") , createMapAiGoalMoveTo("chNash","eastLibrary") ];
-	
+									 createMapAiGoalMoveTo("chNash","westLibrary") , createMapAiGoalPursueAndAssault("chNash","chPlayerCharacter") ];
+	gC("chNash").lust.current = 0;
 	//charFollowsChar("chPlayerCharacter","chMir",false);
 	
 	/*
@@ -256,7 +256,7 @@ window.initCommandTestsPeriodPassionTemple = function() {
 	//getRelation("chPlayerCharacter","chVal").favor = 5;
 	//npcProposalFollowMe("chVal","chPlayerCharacter");
 		
-	// State.variables.compass.allCharsCheckMapAi();
+	State.variables.compass.allCharsCheckMapAi();
 	
 	// Set period variables
 	State.variables.simCycPar.trainingResultsBase = 1.0; // Training has usual effectiveness
@@ -428,9 +428,9 @@ window.testGleamingCaverns = function() {
 	deinitMapTrainingGrounds();
 	initMapGleamingCaverns();
 	// Place characters on map
-	State.variables.compass.initializeMap("mapGleamingCaverns","cavernMP2");
-	var chars = ["chPlayerCharacter"]
-	State.variables.mapGleamingCaverns.placeCharacters(chars,"cavernMP2");
+	State.variables.compass.initializeMap("mapGleamingCaverns","hiddenCamp");
+	var chars = ["chPlayerCharacter","chNash","chClaw"]
+	State.variables.mapGleamingCaverns.placeCharacters(chars,"hiddenCamp");
 	
 	// Assign AIs
 	for ( var charKey of chars ) {
@@ -439,6 +439,15 @@ window.testGleamingCaverns = function() {
 			gC(charKey).mapAi.createNewMission = cMissionBalancedRandomTrain;
 			gC(charKey).mapAi.state = "idle";
 			gC(charKey).mapAi.goalsList = [];
+		}
+	}
+	
+	for ( var cK of ["chNash","chClaw"] ) {
+		gC(cK).mapAi.goalsList = [ createMapAiGoalMoveTo(cK,"marshNP2") ];
+		var i = 0;
+		while ( i < 20 ) {
+			gC(cK).mapAi.goalsList.push(createMapAiGoalMoveTo(cK,"marshNElake"),createMapAiGoalMoveTo(cK,"marshNWlake"));
+			i++;
 		}
 	}
 	

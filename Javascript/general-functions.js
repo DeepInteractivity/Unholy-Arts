@@ -11,21 +11,21 @@ window.presentCharInfo = function(title,img) {
 
 window.getPresentCharByKey = function(key) {
 	var title = gC(key).formattedName;
-	var img = gC(key).avatar();
+	var img = gCavatar(key); // gC(key).avatar();
 	var cInfo = new presentCharInfo(title,img);
 	return cInfo;
 }
 
 window.getPresentCharCustomName = function(key,customName) {
 	var title = '<span style="color:' + gC(key).nameColor + '">' + customName + '</span>';
-	var img = gC(key).avatar();
+	var img = gCavatar(key); // gC(key).avatar();
 	var cInfo = new presentCharInfo(title,img);
 	return cInfo;
 	// '<span style="color:'+this.nameColor+'">'+this.name+'</span>';
 }
 
 window.getPresentCharCustomTitle = function(key,customTitle) {
-	var img = gC(key).avatar();
+	var img = gCavatar(key); // gC(key).avatar();
 	var cInfo = new presentCharInfo(customTitle,img);
 	return cInfo;
 }

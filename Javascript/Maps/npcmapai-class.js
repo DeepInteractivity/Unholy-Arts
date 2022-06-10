@@ -68,7 +68,7 @@ window.NpcMapAi = function(charKey) {
 						}
 					}
 				}
-			} else if ( gC(this.charKey).followingTo != "" && State.variables.compass.findFirstEventInvolvingCharacter(this.charKey) == null ) {
+			} else if ( gC(this.charKey).followingTo != "" && State.variables.compass.findFirstEventInvolvingCharacter(this.charKey) == null && sisKey == -1 ) {
 				var fT = gC(this.charKey).followingTo;
 				var rT = gRelTypeAb(this.charKey,fT);
 				if ( rT != null ) {
@@ -149,6 +149,54 @@ window.createMapAiGoalAction = function(charKey,goalRoom,goalAction,minutes) {
 	goal.type = "action";
 	goal.goalRoom = goalRoom;
 	goal.goalAction = goalAction;
+	goal.minutes = minutes;
+	goal.isValid = function() { // Checks if the goal may be executed
+		 return checkMapAction(getCharGroup(charKey),goal.goalRoom,goal.goalAction);
+	}
+	goal.createEvent = function() { // Adds an event to the events pile
+		 var mapAction = null;
+		 var charsGroup = getCharGroup(this.charKey);
+		 for ( var mapA of getRoomInfoA(this.goalRoom).getActions(charsGroup) ) {
+			 if ( this.goalAction == mapA.key ) {
+				 mapAction = mapA;
+			 }
+		 }
+		 if ( mapAction != null ) {
+			 mapAction.eventToPile(minutes,charsGroup);
+		 }
+	}
+	
+	return goal;
+}
+window.createMapAiGoalActionInSelfRoom = function(charKey,goalAction,minutes) {
+	var goal = new MapAiGoal(charKey);
+	goal.type = "action";
+	goal.goalAction = goalAction;
+	goal.goalRoom = gC(charKey).currentRoom;
+	goal.minutes = minutes;
+	goal.isValid = function() { // Checks if the goal may be executed
+		 return checkMapAction(getCharGroup(this.charKey),goal.goalRoom,goal.goalAction);
+	}
+	goal.createEvent = function() { // Adds an event to the events pile
+		 var mapAction = null;
+		 var charsGroup = getCharGroup(this.charKey);
+		 for ( var mapA of getRoomInfoA(this.goalRoom).getActions(charsGroup) ) {
+			 if ( this.goalAction == mapA.key ) {
+				 mapAction = mapA;
+			 }
+		 }
+		 if ( mapAction != null ) {
+			 mapAction.eventToPile(minutes,charsGroup);
+		 }
+	}
+	
+	return goal;
+}
+window.createMapAiGoalActionInGoalRoom = function(charKey,goalAction,goalRoom,minutes) {
+	var goal = new MapAiGoal(charKey);
+	goal.type = "action";
+	goal.goalAction = goalAction;
+	goal.goalRoom = goalRoom;
 	goal.minutes = minutes;
 	goal.isValid = function() { // Checks if the goal may be executed
 		 return checkMapAction(getCharGroup(charKey),goal.goalRoom,goal.goalAction);
@@ -317,14 +365,20 @@ window.createMapAiGoalAssault = function(charKey,targetCharKey) {
 		} else {							   // Assaulting Player
 			if ( State.variables.compass.flagPlayerIsPrompted == false ) {
 				var playerEvent = State.variables.compass.findFirstEventInvolvingPlayer();
-				initiateNpcAssault(charKey,targetCharKey);
+				var sisId = State.variables.compass.findFirstSisIdInvolvingCharacter("chPlayerCharacter");
 				var gD = chooseDialogFromList(setup.dialogDB.icDialogs,charKey,targetCharKey,"","");
 				var p = gD + "\n" + gC(charKey).getFormattedName() + " is assaulting you!\n\n";
-				p += getButtonBeingAssaulted(charKey);
-				if ( playerEvent == null ) {
-					State.variables.compass.setPlayerPrompt(p,this.charKey,true);
-				} else {
+				if ( sisId != -1 ) {
+					p += getButtonBeingAssaultedPlus(charKey);
 					State.variables.compass.interruptPlayer(p,this.charKey,true);
+				} else {
+					p += getButtonBeingAssaulted(charKey);
+					initiateNpcAssault(charKey,targetCharKey);
+					if ( playerEvent == null ) {
+						State.variables.compass.setPlayerPrompt(p,this.charKey,true);
+					} else {
+						State.variables.compass.interruptPlayer(p,this.charKey,true);
+					}
 				}
 			}
 		}
@@ -502,6 +556,132 @@ window.createMapAiGoalPursueAndChallenge = function(charKey,targetCharKey,stakes
 	return goal;
 }
 
+window.createMapAiGoalPursueHuntingRecruitAndNextGoals = function(charKey,targetCharKey,targetMonster) {
+	var goal = new MapAiGoal(charKey);
+	goal.type = "pursueRecruitNextGoals";
+	goal.targetChar = targetCharKey;
+	goal.targetMonster = targetMonster;
+	
+	goal.initialDistance = -1;
+	goal.walkedDistance = 0;
+	
+	goal.isValid = function() {
+		var flagIsValid = true;
+		if ( getCurrentMap().characters.includes(this.targetChar) == false ) {
+			flagIsValid = false;
+		}
+		else if ( ( this.initialDistance != -1 ) && ( this.advancedDistance > this.initialDistance * 2 ) ) {
+			flagIsValid = false;
+		}
+		return flagIsValid;
+	}
+	goal.createEvent = function() {		
+		if ( gC(this.charKey).currentRoom == gC(this.targetChar).currentRoom ) { // Target in same room
+			// Can target be interrupted
+			if ( checkMayHunterCompanionBeRecruited(getCharGroup(this.charKey),this.targetChar) ) { // Target may be recruited
+				// Stop what target is doing and recruit
+				charLeavesAnySis(this.targetChar);
+				State.variables.compass.characterEventEndsPrematurely(this.targetChar);
+				charFollowsChar(this.targetChar,this.charKey,false);
+				
+				var charsGroup = getCharGroup(this.charKey);
+				if ( gC(this.charKey).mapAi.goalsList == undefined ) { gC(this.charKey).mapAi.goalsList = []; }
+				var route = getRouteToClosestTaggedActivity(getCurrentMap().key,charsGroup,"captureNet");
+				gC(this.charKey).mapAi.goalsList = gC(this.charKey).mapAi.goalsList.concat(createRouteMovementCommands(route,charsGroup));
+				gC(this.charKey).mapAi.goalsList.push(createMapAiGoalActionInGoalRoom(charsGroup[0],"gtCpNt",getLastRoomInRoute(route),5));
+				gC(this.charKey).mapAi.goalsList = gC(this.charKey).mapAi.goalsList.concat(createMapAiGoalHuntGcMonster(charsGroup[0],this.targetMonster));
+			} else { // Target may not be asked to follow
+				// Abort mission
+			}
+		} else { // Target not in same room
+			// Check if initial distance exists
+			if ( this.initialDistance == -1 ) {
+				var initialRoute = getRouteToCharacter(getCurrentMap().key,getCharGroup(this.charKey),this.targetChar);
+				this.initialDistance = initialRoute.length;
+			}
+			if ( this.walkedDistance < this.initialDistance * 2 ) {
+				// Create route towards NPC
+				var currentRoute = getRouteToCharacter(getCurrentMap().key,getCharGroup(this.charKey),this.targetChar);
+				if ( currentRoute.length > 0 ) {
+					// Create event to move towards next room
+					createMapAiGoalMoveTo(this.charKey,currentRoute[0]).createEvent();
+					this.walkedDistance++;
+					// Create new goal on this character's mapAi with an extra advanced distance and set initial distance
+					var goal = createMapAiGoalPursueHuntingRecruitAndNextGoals(this.charKey,this.targetCharKey,this.nextGoals);
+					goal.initialDistance = this.initialDistance;
+					goal.walkedDistance = this.walkedDistance;
+					if ( gC(this.charKey).mapAi.goalsList == undefined ) {
+						gC(this.charKey).mapAi.goalsList = [goal];
+					} else {
+						gC(this.charKey).mapAi.goalsList.push(goal);
+					}
+				}
+			}
+		}
+	}
+	return goal;
+}
+
+	// Monster hunting goals
+	
+window.createMapAiGoalHuntGcMonster = function(charKey,targetMonster) {
+	var goal = new MapAiGoal(charKey);
+	goal.type = "huntGcMonster";
+	goal.targetMonster = targetMonster;
+	
+	goal.initialDistance = -1;
+	goal.walkedDistance = 0;
+	
+	goal.isValid = function() {
+		var flagIsValid = true;
+		if ( quantifyCharactersGroupStrength(this.charKey) < 120 && doesCharHaveState(this.charKey,"CaMn") == false ) {
+			flagIsValid = false;
+		}
+		return flagIsValid;
+	}
+	
+	goal.createEvent = function() {	
+		if ( doesCharHaveState(this.charKey,"CaMn") == true ) { //  Final stage: Delivering Monster
+			var currentRoute = getRouteToClosestTaggedActivity(getCurrentMap().key,getCharGroup(this.charKey),"deliverMonster");
+			if ( currentRoute.length > 1 ) {
+				createMapAiGoalMoveTo(this.charKey,currentRoute[0]).createEvent();
+				var goal = createMapAiGoalHuntGcMonster(this.charKey,this.targetMonster);
+				if ( gC(this.charKey).mapAi.goalsList == undefined ) {
+					gC(this.charKey).mapAi.goalsList = [goal];
+				} else {
+					gC(this.charKey).mapAi.goalsList.push(goal);
+				}
+			} else if ( gC(this.charKey).currentRoom != getLastRoomInRoute(currentRoute) ) {
+				createMapAiGoalMoveTo(this.charKey,getLastRoomInRoute(currentRoute)).createEvent();
+				var goal = createMapAiGoalHuntGcMonster(this.charKey,this.targetMonster);
+				gC(this.charKey).mapAi.goalsList.push(goal);
+			} else {
+				createMapAiGoalActionInSelfRoom(getCharGroup(this.charKey)[0],"delMon",120).createEvent();
+			}	
+		} else if ( doesCharHaveState(this.charKey,"CaNt") == true ) { //  Second stage: Hunting for Monster
+			var tempCk = this.charKey;
+			var currentRoute = getRouteToRoomWithCustomIsValid(getCurrentMap().key,getCharGroup(this.charKey),function(roomKey) {
+				var flagValid = (setup.mapGleamingCaverns.monsterRooms.includes(roomKey) && gC(tempCk).currentRoom != roomKey);
+				return flagValid;
+			});
+			createMapAiGoalMoveTo(this.charKey,currentRoute[0]).createEvent();
+			var goal = createMapAiGoalHuntGcMonster(this.charKey,this.targetMonster);
+			if ( gC(this.charKey).mapAi.goalsList == undefined ) {
+				gC(this.charKey).mapAi.goalsList = [goal];
+			} else {
+				gC(this.charKey).mapAi.goalsList.push(goal);
+			}
+		} else { //  First stage: Gaining Capture Net // Deprecated
+		
+		}
+	
+	// setup.mapGleamingCaverns.captureNetRooms = [ "hiddenCamp" ];
+	//setup.mapGleamingCaverns.monsterRooms = [];
+	}
+	
+	return goal;
+}
+
 window.MapAiGoal = function(charKey) {
 	this.charKey = charKey;
 	this.type = "none";
@@ -540,6 +720,7 @@ window.checkMoveTo = function(charGroup,currentRoomKey,goalRoomKey) {
 
 window.checkMapAction = function(charGroup,roomKey,mapActionKey) {
 	var flagAllowed = false;
+	
 	for ( var mapAction of getRoomInfoA(roomKey).getActions(charGroup) ) {
 		if ( mapActionKey == mapAction.key ) {
 			flagAllowed = true; // Current room allows to initiate goal action
@@ -604,6 +785,25 @@ window.checkMayChallenge = function(charGroup,targetChar) {
 	}
 	return flagAllowed;
 }
+window.checkMayHunterCompanionBeRecruited = function(charGroup,targetChar) {
+	var flagAllowed = false;
+	
+	var flagSameRoom = ( gC(targetChar).currentRoom == gC(charGroup[0]).currentRoom ); // True if they're at the same room
+	var targetEvent = State.variables.compass.findFirstEventInvolvingCharacter(targetChar);
+	var flagMayBeInterrupted = true; // True if the character's event may be interrupted or there's no event
+	if ( targetEvent != null ) {
+		flagMayBeInterrupted = State.variables.compass.findFirstEventInvolvingCharacter(targetChar).flagMayBeInterrupted;
+	}
+	var isTargetAlone = false;
+	if ( gC(targetChar).followedBy.length == 0 && gC(targetChar).followingTo == "" ) {
+		isTargetAlone = true;
+	}
+	
+	if ( flagSameRoom && flagMayBeInterrupted && isTargetAlone ) {
+		flagAllowed = true;
+	}
+	return flagAllowed;
+}
 
 ////////// MISSIONS //////////
 
@@ -653,14 +853,11 @@ window.getRouteToClosestTrainingActivity = function(mapKey,charsGroup) {
 		return flagValid;
 	}
 	
-	var pathfinder = new Pathfinder(mapKey,charsGroup,gC(charsGroup[0]).currentRoom,isValid);
+	var pathfinder = new Pathfinder(mapKey,charsGroup,gC(charsGroup[0]).currentRoom	);
 	var route = pathfinder.getShortestValidRoute();
 	return route;
 }
 window.getRouteToClosestTaggedActivity = function(mapKey,charsGroup,tag) {
-	if ( tag == "charisma" || tag == "empathy" ) {
-		State.variables.logL2.push("!!");
-	}
 	// Assumes the position of first character in charsGroup
 	
 	var isValid = function(roomKey) {
@@ -671,23 +868,21 @@ window.getRouteToClosestTaggedActivity = function(mapKey,charsGroup,tag) {
 		}
 		return flagValid;
 	}
-	if ( tag == "charisma" || tag == "empathy" ) {
-		State.variables.logL2.push("!2");
-	}
 	
 	var pathfinder = new Pathfinder(mapKey,charsGroup,gC(charsGroup[0]).currentRoom,isValid);
 	var route = pathfinder.getShortestValidRoute();
 	
-	if ( tag == "charisma" || tag == "empathy" ) {
-		State.variables.logL2.push("!3 ROUTE: ",route);
-	}
-	
 	return route;
 }
-window.getRouteToClosestAltTaggedActivity = function(mapKey,charsGroup,tagsList) {
-	if ( tagsList.includes("charisma") || tagsList.includes("empathy") ) {
-		State.variables.logL2.push(23);
+window.getLastRoomInRoute = function(route) {
+	var goalRoom = route[0];
+	for ( var room of route ) {
+		goalRoom = room;
 	}
+	return goalRoom;
+}
+
+window.getRouteToClosestAltTaggedActivity = function(mapKey,charsGroup,tagsList) {
 	// Assumes the position of first character in charsGroup
 	
 	var isValid = function(roomKey) {
@@ -703,9 +898,18 @@ window.getRouteToClosestAltTaggedActivity = function(mapKey,charsGroup,tagsList)
 	
 	var pathfinder = new Pathfinder(mapKey,charsGroup,gC(charsGroup[0]).currentRoom,isValid);
 	var route = pathfinder.getShortestValidRoute();
-	if ( tagsList.includes("charisma") || tagsList.includes("empathy") ) {
-		State.variables.logL2.push(24);
+	return route;
+}
+window.getRouteToRoomInList = function(mapKey,charsGroup,roomsList) {
+		// Assumes there's a valid room in roomsList reachable for the charsGroup
+	var isValid = function(roomKey) {
+		var flagValid = roomsList.includes(roomKey);
+		//var room = getRoomInMap(mapKey,roomKey);
+		return flagValid;
 	}
+	
+	var pathfinder = new Pathfinder(mapKey,charsGroup,gC(charsGroup[0]).currentRoom,isValid);
+	var route = pathfinder.getShortestValidRoute();
 	return route;
 }
 window.getRouteToCharacter = function(mapKey,charsGroup,character) {
@@ -731,8 +935,13 @@ window.getRouteToRoom = function(mapKey,charsGroup,room) {
 		var pathfinder = new Pathfinder(mapKey,charsGroup,gC(charsGroup[0]).currentRoom,isValid);
 		var route = pathfinder.getShortestValidRoute();
 	} else {
-		var route = [ gC(character).currentRoom ];
+		var route = [ gC(charsGroup[0]).currentRoom ];
 	}
+	return route;
+}
+window.getRouteToRoomWithCustomIsValid = function(mapKey,charsGroup,isValid) {
+	var pathfinder = new Pathfinder(mapKey,charsGroup,gC(charsGroup[0]).currentRoom,isValid);
+	var route = pathfinder.getShortestValidRoute();
 	return route;
 }
 
@@ -894,6 +1103,25 @@ window.cMissionPursueAndAssault = function(charsGroup,targetChar) {
 
 window.cMissionPursueAndChallenge = function(charsGroup,targetChar) {
 	return [ createMapAiGoalPursueAndChallenge(charsGroup[0],targetChar) ];
+}
+
+window.cMissionPursueRecruitAndContinue = function(charsGroup,targetChar,nextGoals) {
+	
+}
+
+		// Hunting Missions //
+		
+window.cMissionHuntGleamingCavernsMonsters = function(charsGroup,targetMonster,companion) {	
+	var commandsList = [];
+	if ( companion ) {
+		commandsList.push(createMapAiGoalPursueHuntingRecruitAndNextGoals(charsGroup[0],companion,targetMonster));
+	} else {
+		var route = getRouteToClosestTaggedActivity(getCurrentMap().key,charsGroup,"captureNet");
+		var commandsList = [].concat(createRouteMovementCommands(route,charsGroup)).concat([createMapAiGoalActionInGoalRoom(charsGroup[0],"gtCpNt","hiddenCamp",5)]); // Add get capture net, add hunting mission
+		commandsList.push(createMapAiGoalHuntGcMonster(charsGroup[0],targetMonster));
+	}
+	
+	return commandsList;
 }
 
 ////////// PROPOSALS //////////
@@ -1193,7 +1421,7 @@ window.aAsksBtoUnfollowB = function(charA,charB) {
 	if ( flagAccepted ) {
 		if ( ( rFavor(charA,charB) > 0 ) && ( gC(charA).followingForDebt ) ) {
 			flagAccepted = false;
-			message = gC(charB).name + " does not allow to leave, since you're indebted to " + gC(charB).comPr + ".";
+			message = gC(charB).name + " does not allow you to leave, since you're indebted to " + gC(charB).comPr + ".";
 		}
 	}
 	

@@ -10,7 +10,7 @@ window.createPlayerCharacter = function() {
 	character.setColors("Red","Crimson");
 	// Moves
 	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","mountDick");
-	character.saList.push("baKissLips","baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","taunt","baTease");
+	character.saList.push("baKissLips","baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","taunt","baTease","runAway");
 		// Don't push ("strokePussy","strokeBreasts","kissLips","frottage","frenchKiss","kneel","makeKneel","lickGroin","legHoldHead","mountFromBehind",
 	//"penetratePussy","thrust","piston","finalPush",	"mountFaceToFace","getBlowjob","suckDick","lickPussy","interlockLegs","scissor");
 	// Body
@@ -92,7 +92,7 @@ window.createNashillbyir = function() {
 	character.setColors("coral","coral");
 	
 	// Moves
-	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","mountDick");
+	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","mountDick","runAway");
 	/* ["embers","freezeFeet","sparkingRubbing"]
 	character.saList.push("baKissLips","baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","coldGuts","taunt","baTease");
 	*/
@@ -113,9 +113,6 @@ window.createNashillbyir = function() {
 	// Images
 	character.fullPortrait = function() {
 		return "[img[img/portraits/nash-full.png]]";
-	}
-	character.avatar = function() {
-		return "[img[img/portraits/nash-avatar.png]]";
 	}
 	character.icon = function() {
 		return "[img[img/charIcons/nashIcon.png]]";
@@ -187,7 +184,7 @@ window.createPadmiri = function() {
 	/* ["embers","freezeFeet","sparkingRubbing"]
 	character.saList.push("baKissLips","baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","coldGuts","taunt","baTease");
 	*/
-	character.saList.push("baKissLips","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","freezeFeet","taunt","baTease","baVineArmLock","baRelaxingScent");
+	character.saList.push("baKissLips","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","freezeFeet","taunt","baTease","baVineArmLock","baRelaxingScent","runAway");
 	
 	character.extraSocIntList.push("relaxingScent");
 	
@@ -205,9 +202,6 @@ window.createPadmiri = function() {
 	// Images
 	character.fullPortrait = function() {
 		return "[img[img/portraits/mir-full.png]]";
-	}
-	character.avatar = function() {
-		return "[img[img/portraits/mir-avatar.png]]";
 	}
 	
 	character.icon = function() {
@@ -288,7 +282,7 @@ window.createCarine = function() {
 	/* ["embers","freezeFeet","sparkingRubbing"]
 	character.saList.push("baKissLips","baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","coldGuts","taunt","baTease");
 	*/
-	character.saList.push("baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","taunt","catAspect","baScratch"); // 
+	character.saList.push("baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","taunt","catAspect","baScratch","runAway"); // 
 	
 	// Body
 	character.addFemaleParts();
@@ -305,9 +299,6 @@ window.createCarine = function() {
 	// Images
 	character.fullPortrait = function() {
 		return "[img[img/portraits/claw-full.png]]";
-	}
-	character.avatar = function() {
-		return "[img[img/portraits/claw-avatar.png]]";
 	}
 	character.icon = function() {
 		return "[img[img/charIcons/clawIcon.png]]";
@@ -385,7 +376,7 @@ window.createValtan = function() {
 	/* ["embers","freezeFeet","sparkingRubbing"]
 	character.saList.push("baKissLips","baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","coldGuts","taunt","baTease");
 	*/
-	character.saList.push("baKissLips","baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","coldGuts","baTease","embers","freezeFeet","sparkingRubbing");
+	character.saList.push("baKissLips","baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","coldGuts","baTease","embers","freezeFeet","sparkingRubbing","runAway");
 	// Body
 	character.addFemaleParts();
 	// Others
@@ -479,7 +470,7 @@ window.createMaaterasu = function() {
 	/* ["embers","freezeFeet","sparkingRubbing"]
 	character.saList.push("baKissLips","baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","coldGuts","taunt","baTease");
 	*/
-	character.saList.push("baKissLips","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","embers","freezeFeet","sparkingRubbing","lightningDarts");
+	character.saList.push("baKissLips","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","embers","freezeFeet","sparkingRubbing","lightningDarts","runAway");
 	// Body
 	character.addFemaleParts();
 	// Others
@@ -574,7 +565,7 @@ window.createArtume = function() {
 	// Moves
 	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","mountDick");
 	
-	character.saList.push("baKissLips","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","taunt","embers","freezeFeet");
+	character.saList.push("baKissLips","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","taunt","embers","freezeFeet","runAway");
 	
 	
 	// Body
@@ -666,7 +657,7 @@ window.createWarmestHope = function() {
 	/* ["embers","freezeFeet","sparkingRubbing"]
 	character.saList.push("baKissLips","baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","coldGuts","taunt","baTease");
 	*/
-	character.saList.push("baKissLips","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","embers","freezeFeet","sparkingRubbing","coldGuts","taunt","baTease","kick","flamingFan","flaringFeint");
+	character.saList.push("baKissLips","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","embers","freezeFeet","sparkingRubbing","coldGuts","taunt","baTease","kick","flamingFan","flaringFeint","runAway");
 	// Body
 	character.addFemaleParts();
 	// Others
@@ -761,7 +752,7 @@ window.createSturdiestRock = function() {
 	// Moves
 	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","biteNeck","mountDick");
 	
-	character.saList.push("baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","taunt","baScratch","freezeFeet","earthWall","quake"); // 
+	character.saList.push("baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","taunt","baScratch","freezeFeet","earthWall","quake","runAway"); // 
 	
 	// Body
 	character.addMaleParts();
@@ -834,8 +825,8 @@ window.createSturdiestRock = function() {
 	setDriveValues(character.dAmbition,600,2);
 	
 	// Attributes
-	character.setBaseAttributes(16,14,10,14,12,10,8,12,12);
-	character.setAffinities(1.1,1,1.2,0.9,0.9,1,1.1,0.8,1);
+	character.setBaseAttributes(14,12,16,14,12,10,12,8,10);
+	character.setAffinities(1.1,1,1.2,1.1,0.9,1,1,0.8,0.9);
 	
 	character.refugeRooms = [["mapTrainingGrounds","storage"]];
 	
@@ -852,7 +843,7 @@ window.createNersmias = function() {
 	// Moves
 	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","biteNeck","mountDick");
 	
-	character.saList.push("baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","taunt","freezeFeet","sparkingRubbing","embers","realHypnoticGlance","slimeHug","baHypnoticGlance","baOrderKneeling","baOrderMasturbation","baCorrodeMind"); // 
+	character.saList.push("baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","taunt","freezeFeet","sparkingRubbing","embers","realHypnoticGlance","slimeHug","baHypnoticGlance","baOrderKneeling","baOrderMasturbation","baCorrodeMind","runAway"); // 
 	
 	// Body
 	character.addMaleParts();
@@ -942,7 +933,7 @@ window.createMesquelles = function() {
 	// Moves
 	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","slimeHug","mountDick");
 	
-	character.saList.push("baKissLips","baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","coldGuts","baTease","taunt","embers","freezeFeet","sparkingRubbing");
+	character.saList.push("baKissLips","baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","coldGuts","baTease","taunt","embers","freezeFeet","sparkingRubbing","runAway");
 	// Body
 	character.addFemaleParts();
 	// Others
@@ -1031,7 +1022,7 @@ window.createSillan = function() {
 	// Moves
 	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","slimeHug","mountDick");
 	
-	character.saList.push("baKissLips","baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","coldGuts","baTease","taunt","embers","freezeFeet","sparkingRubbing");
+	character.saList.push("baKissLips","baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","coldGuts","baTease","taunt","embers","freezeFeet","sparkingRubbing","runAway");
 	// Body
 	character.addFemaleParts();
 	// Others

@@ -160,14 +160,14 @@ window.createASteased = function(intensity, type) {
 	var provokeEffect = function(charKey) {
 		gC(charKey).combatAffinities.sex.weakness += esw;
 		gC(charKey).combatAffinities.sex.strength += ess;
-		if ( type != "targetNone" ) {
+		if ( sType != "targetNone" ) {
 			gC(charKey).combatAffinities[sType].weakness += etw;
 		}
 	}
 	var cancelEffect = function(charKey) {
 		gC(charKey).combatAffinities.sex.weakness -= esw;
 		gC(charKey).combatAffinities.sex.strength -= ess;
-		if ( type != "targetNone" ) {
+		if ( sType != "targetNone" ) {
 			gC(charKey).combatAffinities[sType].weakness -= etw;
 		}
 	}
@@ -849,6 +849,66 @@ window.createFinishedTransformationAs = function(days,tfTypes) {
 }
 	// Valid tfTypes: addDick, addPussy, removeDick, removePussy, rebuildFigure, changedGender
 
+
+// Monster Capture
+window.createHasCaptureNetAs = function() {
+	// Teaches monster capture action
+	var provokeEffect = function(charKey) {
+		charactersLearnSceneActions([charKey],["monsterCapture"]);
+	}
+	var cancelEffect = function(charKey) {
+		charactersForgetSceneActions([charKey],["monsterCapture"]);
+	}
+	var description = "This character has a especial net for capturing monsters.\nCan only be used against a monster target close to being defeated.";
+	var as = new alteredState("Has Capturing Net","CaNt","days",turns,provokeEffect,cancelEffect,description);
+	as.type = "action";
+	as.remainingDays = 1;
+	return as;
+}
+window.createCapturedMonsterAs = function(monsterType) {
+	// Teaches monster capture action
+	var provokeEffect = function(charKey) {
+		gC(charKey).physique.multModifier -= 0.2;
+		gC(charKey).agility.multModifier -= 0.2;
+		gC(charKey).resilience.multModifier -= 0.2;
+		gC(charKey).perception.multModifier -= 0.2;
+	}
+	var cancelEffect = function(charKey) {
+		gC(charKey).physique.multModifier += 0.2;
+		gC(charKey).agility.multModifier += 0.2;
+		gC(charKey).resilience.multModifier += 0.2;
+		gC(charKey).perception.multModifier += 0.2;
+	}
+	var description = "This character is dragging a captured, weakened monster, losing physical capabilities.\n"
+					+ "They should take their capture to an interested hunter, and avoid the tribes for the time being.\n"
+					+ "Monster type: " + monsterType;
+	var as = new alteredState("Captured Monster","CaMn","days",turns,provokeEffect,cancelEffect,description);
+	as.type = "other";
+	as.monsterType = monsterType;
+	as.remainingDays = 1;
+	return as;
+}
+window.createBeingCapturedAs = function(intensity) {
+	// Teaches monster capture action
+	var provokeEffect = function(charKey) {
+		for ( var st of setup.baseStats ) {
+			gC(charKey)[st].multModifier -= (0.1 + 0.025 * intensity);
+		}
+	}
+	var cancelEffect = function(charKey) {
+		for ( var st of setup.baseStats ) {
+			gC(charKey)[st].multModifier += (0.1 + 0.025 * intensity);
+		}
+	}
+	var description = "This character has fallen under some kind of trap that severely limits its capabilities.\n"
+					+ "They will be captured if their team loses the battle.";
+	var as = new alteredState("Being Captured","BnCa","days",turns,provokeEffect,cancelEffect,description);
+	as.intensity = intensity;
+	as.type = "debuff";
+	as.remainingDays = 1;
+	return as;
+}
+
 // Body Paintings
 window.createBodyPainting = function(bdPntTag,actor,target,levels,resistance) {
 	var as = new alteredState("Body Painting","BdPt","bdPnt",3,function(){return null;},function(){return null;},"");
@@ -903,6 +963,7 @@ window.createInjury = function() {
 	var description = "Physical damage has injured the body of this character, and it needs some time to get recovered.";
 	var as = new alteredState("Injury","Injr","days",1,provokeEffect,cancelEffect,description);
 	as.type = "other";
+	as.remainingDays = 1;
 	return as;
 }
 
@@ -921,6 +982,58 @@ window.createHypnosisResistanceBoon = function() {
 	var as = new alteredState("Hypnosis Resistance","HyRe","days",5,provokeEffect,cancelEffect,description);
 	as.remainingDays = 5;
 	as.type = "other";
+	return as;
+}
+
+window.createSociallyExhausted = function(intensity,remainingDays) {
+	var provokeEffect = function(charKey) {
+		gC(charKey).socialdrive.tainted += 20 * this.intensity;
+		gC(charKey).charisma.sumModifier -= 2 * this.intensity;
+		gC(charKey).charisma.multModifier -= 0.2 * this.intensity;
+		gC(charKey).empathy.sumModifier -= 1 * this.intensity;
+		gC(charKey).empathy.multModifier -= 0.1 * this.intensity;
+		gC(charKey).will.sumModifier -= 1 * this.intensity;
+		gC(charKey).will.multModifier -= 0.1 * this.intensity;
+	}
+	var cancelEffect = function(charKey) {
+		gC(charKey).socialdrive.tainted -= 20 * this.intensity;
+		gC(charKey).charisma.sumModifier += 2 * this.intensity;
+		gC(charKey).charisma.multModifier += 0.2 * this.intensity;
+		gC(charKey).empathy.sumModifier += 1 * this.intensity;
+		gC(charKey).empathy.multModifier += 0.1 * this.intensity;
+		gC(charKey).will.sumModifier += 1 * this.intensity;
+		gC(charKey).will.multModifier += 0.1 * this.intensity;
+	}
+	var description = "This character has gone through fatiguing social situations, and may need some time to recover.";
+	var as = new alteredState("Socially exhausted","SoEx","days",remainingDays,provokeEffect,cancelEffect,description);
+	as.type = "other";
+	as.intensity = intensity;
+	as.remainingDays = remainingDays;
+	return as;
+}
+
+window.createTatteredBody = function(intensity,remainingDays) {
+	var provokeEffect = function(charKey) {
+		for ( var st of ["physique","agility","resilience","will","intelligence","perception"] ) {
+			gC(charKey)[st].sumModifier -= 1 * this.intensity;
+			gC(charKey)[st].multModifier -= 0.1 * this.intensity;
+		}
+		gC(charKey).energy.tainted += 10 * this.intensity;
+		gC(charKey).energy.weakness += 10 * this.intensity;
+	}
+	var cancelEffect = function(charKey) {
+		for ( var st of ["physique","agility","resilience","will","intelligence","perception"] ) {
+			gC(charKey)[st].sumModifier += 1 * this.intensity;
+			gC(charKey)[st].multModifier += 0.1 * this.intensity;
+		}
+		gC(charKey).energy.tainted -= 10 * this.intensity;
+		gC(charKey).energy.weakness -= 10 * this.intensity;
+	}
+	var description = "This character has pushed their body to its absolute limits, and requires several days of rest.";
+	var as = new alteredState("Tattered Body","TaBo","days",remainingDays,provokeEffect,cancelEffect,description);
+	as.type = "other";
+	as.intensity = intensity;
+	as.remainingDays = remainingDays;
 	return as;
 }
 

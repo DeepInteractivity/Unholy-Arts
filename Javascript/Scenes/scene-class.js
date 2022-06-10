@@ -71,6 +71,8 @@ window.scene = function() {
 	this.flagFullAvatar = false;
 	this.selectedFullAvatar = "chPlayerCharacter";
 	
+	// this.tempData // This parameter may be manually set by an external function, and is always removed upon cleaning the scene
+	
 	this.endSceneMessage = "The scene is finished.";
 	this.endScenePassage = "";
 	this.endScenePassageScript = "";
@@ -450,7 +452,6 @@ window.scene = function() {
 		}
 		
 		// this.logAccumulatedDamage();
-		
 		this.enabledLead = "none";
 		this.cleanAccumulatedDamages();
 		this.cleanLeadPoints();
@@ -543,9 +544,25 @@ window.scene = function() {
 			}
 			delete this.genericCharacters;
 		}
+		if ( this.extraJoinedCharacters != undefined ) {
+			delete this.extraJoinedCharacters;
+		}
+		if ( this.initialCharacters != undefined ) {
+			delete this.initialCharacters;
+		}
 		
 		if ( this.tfFlag != undefined ) {
 			this.cleanTfSceneData();
+		}
+		if ( this.flightFlag != undefined ) {
+			delete this.flightFlag; // Run Away flag
+			if ( this.charactersHaveFledFlag != undefined ) {
+				delete this.charactersHaveFledFlag;
+			}
+		}
+		
+		if ( this.hasOwnProperty("tempData") ) {
+			delete this.tempData;
 		}
 	}
 	
@@ -1473,9 +1490,9 @@ window.scene = function() {
 			if ( type == "ruined" ) {
 				orgasmText = colorText((gC(charKey).name + " almost reached climax for " + (getChar(charKey).lust.max + overflow).toFixed(2) + " total lust damage, but... "),"red") + description + " " + gC(charKey).name + " feels " + gC(charKey).posPr + " strength flowing away.";
 			} else if ( type == "mindblowing" ) {
-				orgasmText = colorText((getChar(charKey).name + " reached a most powerful climax for " + (getChar(charKey).lust.max + overflow).toFixed(2) + " lust damage and " + (gC(charKey).willpower.max * 0.2).toFixed(2) + " willpower damage."),"red") + description;
+				orgasmText = colorText((getChar(charKey).name + " reached a most powerful climax for " + (getChar(charKey).lust.max + overflow).toFixed(2) + " lust damage and " + (gC(charKey).willpower.max * 0.2).toFixed(2) + " willpower damage. "),"red") + description;
 			} else {
-				orgasmText = colorText((getChar(charKey).name + " reached climax for " + (getChar(charKey).lust.max + overflow).toFixed(2) + " total lust damage."),"red") + description;
+				orgasmText = colorText((getChar(charKey).name + " reached climax for " + (getChar(charKey).lust.max + overflow).toFixed(2) + " total lust damage. "),"red") + description;
 			}
 		} else {
 			orgasmText += colorText(gC(charKey).name + " stops moving as energy expires out of its body.","red");
@@ -1887,6 +1904,77 @@ window.createEndConditionStoryBattleWithDraw = function(passageVictoryTeamA,pass
 		return flagEndScene;
 	}
 	return customScript;
+}
+
+window.endConditionStandardMonsterBattle = function(turns) {
+	// teamAwin -> Characters win ; teamBwin -> Monsters win
+	var flagEndScene = false;
+	var sceneResult = "none";
+	var charKeys = State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys);
+	var ckL = charKeys.length;
+	var i = 0;
+	
+	// Check stalemate
+	var posStalemate = true;
+	while ( posStalemate && i < ckL ) {
+		if ( gC(charKeys[i]).koed == false ) {
+			posStalemate = false;
+		}
+		i++;
+	}
+	if ( posStalemate ) {
+		flagEndScene = true;
+		// sceneResult = "stalemate"; // Averted
+		sceneResult = "teamAwin";
+	}
+	
+	// Check Team A victory
+	if ( flagEndScene == false ) {
+		var posTeamAwin = true;
+		i = 0;
+		while ( posTeamAwin && i < State.variables.sc.teamBcharKeys.length ) {
+			if ( gC(State.variables.sc.teamBcharKeys[i]).koed == false ) {
+				posTeamAwin = false;
+			}
+			i++;
+		}
+		if ( posTeamAwin ) {
+			flagEndScene = true;
+			sceneResult = "teamAwin";
+		}
+	}
+	
+	// Check Team B victory
+	if ( flagEndScene == false ) {
+		var posTeamBwin = true;
+		i = 0;
+		while ( posTeamBwin && i < State.variables.sc.teamAcharKeys.length ) {
+			if ( gC(State.variables.sc.teamAcharKeys[i]).koed == false ) {
+				posTeamBwin = false;
+			}
+			i++;
+		}
+		if ( posTeamBwin ) {
+			flagEndScene = true;
+			sceneResult = "teamBwin";
+		}
+	}
+	
+	if ( sceneResult == "teamAwin" ) {
+		for ( var cK of State.variables.sc.teamBcharKeys ) {
+			if ( doesCharHaveState(cK,"BnCa") == true ) {
+				sceneResult = "monsterCapture";
+			}
+		}
+	}
+	
+	if ( State.variables.sc.hasOwnProperty("charactersHaveFledFlag") ) { // Flight
+		flagEndScene = true;
+		sceneResult = "flight";
+	}
+	
+	if ( flagEndScene ) { State.variables.sc.extraEndInfo = sceneResult; }
+	return flagEndScene;
 }
 
 //////// OTHER FUNCTIONS ////////

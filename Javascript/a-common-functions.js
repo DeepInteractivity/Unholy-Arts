@@ -243,6 +243,17 @@ window.getCharKtns = function(charKeysList) {
 	}
 	return text;
 }
+window.charKeysIntoArrayString = function(charKeysList) {
+	var string = "[";
+	var i = 0;
+	for ( var cK of charKeysList ) {
+		if ( i != 0 ) { string += ","; }
+		string += "'" + cK + "'";
+		i++;
+	}
+	string += "]";
+	return string;
+}
 
 window.stringArrayToText = function(stringArray) {
 	var text = "";

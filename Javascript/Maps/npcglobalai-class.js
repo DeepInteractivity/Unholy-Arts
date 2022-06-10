@@ -836,16 +836,28 @@ window.createCandidateGcAi = function(charKey) {
 				cTrainIntelligenceMissionChoice(charKey),cTrainPerceptionMissionChoice(charKey),
 				cTrainPhysiqueMissionChoice(charKey),cTrainResilienceMissionChoice(charKey)];
 	}
+	globalAi.generateHuntingChoices = function(charKey) {
+		var remainingTimeInPeriod = 120;
+		for ( var sEvent of State.variables.compass.ongoingEvents ) {
+			if ( sEvent.title == "scenarioEnd" ) {
+				remainingTimeInPeriod = sEvent.timeRemaining;
+			}
+		}
+		var missions = [];
+		if ( remainingTimeInPeriod > 120 ) {
+			missions = [cMonsterHuntingGcEssenceSucker(charKey),cMonsterHuntingGcFlyingLookout(charKey),cMonsterHuntingGcOppressiveYoke(charKey)];
+		}
+		return missions;
+	}
 	
 	globalAi.generateMissionChoices = function() {
 		// this->Generate stat goals
 		var mChoices = [];
 		
 		// Training
-		for ( var choice of this.generateTrainingChoices(this.charKey) ) {
-			mChoices.push(choice);
-		}
-		mChoices.push(this.generateRestMissionChoice());
+		mChoices = this.generateTrainingChoices(this.charKey); // Training
+		mChoices.push(this.generateRestMissionChoice()); // Rest
+		mChoices = mChoices.concat(this.generateHuntingChoices(charKey)); // Monster Hunting
 		
 		return mChoices;
 	}
@@ -1355,6 +1367,239 @@ window.assignValueToCharInAssault = function(consideringChar,consideredChar) {
 	return result;
 }
 
+	// Hunting
+		// Main Gc Hunting Missions
+window.findBestHuntingPartner = function(actor,maximumDistance,validCharsList,targetMonster,scenario) {
+	var closeCharacters = getCloseCharactersMinusSelfAndPlayerWithinDistance(actor,maximumDistance);
+	var potentialPartners = [];
+	for ( var character of closeCharacters ) {
+		if ( validCharsList.includes(character) && gC(character).followedBy.length == 0 && gC(character).followingTo == "" ) {
+			var wouldJoin = npcConsidersWillingnessToJoinHuntingMission(character,actor,targetMonster,scenario)[0];
+			if ( wouldJoin ) {
+				potentialPartners.push([character,quantifyCharacterStrength(character)]);
+			}
+		}
+	}
+	var bestPartner = null;
+	var bestPartnerStrength = -1;
+	if ( potentialPartners.length > 0 ) {
+		for ( var potPart of potentialPartners ) {
+			if ( potPart[1] > bestPartnerStrength ) {
+				bestPartner = potPart[0];
+				bestPartnerStrength = potPart[1];
+			}
+		}
+	}
+	return bestPartner;
+}
+		
+setup.huntingStrengthGleamingCavernsTs = 280;
+window.cMonsterHuntingGcEssenceSucker = function(character) {
+	var mChoice = new missionChoice("huntEssenceSucker");
+	
+	// Find best partner
+	var validPartners = arrayMinusA(arrayMinusA(getCandidatesKeysArray(),character),"chPlayerCharacter");
+	var bestPartner = findBestHuntingPartner(character,8,validPartners,"EssenceSucker","GleamingCaverns");
+	
+	// Weight adjustments
+	mChoice.weight = 20;
+	if ( gC(character).saList.includes("baDrainingKiss") == true ) {
+		mChoice.weight *= 0.05;
+	}
+	var ongoingTimeInPeriod = 1;
+	for ( var sEvent of State.variables.compass.ongoingEvents ) {
+		if ( sEvent.title == "scenarioEnd" ) {
+			ongoingTimeInPeriod = sEvent.ongoingTime;
+		}
+	}
+	if ( ongoingTimeInPeriod == 0 ) { mChoice.weight *= 5; }
+	else if ( ongoingTimeInPeriod >= 360 ) { mChoice.weight *= 2; }
+	
+	mChoice.isValid = function() {
+		var isValid = true;
+		// Does character want draining skills?
+		if ( character != "chNash" && character != "chMir" ) {
+			isValid = false;
+		}
+		// Does character have enough strength?
+		var strength = quantifyCharactersGroupStrength(character);
+		if ( this.bestPartner ) {
+			strength += quantifyCharactersGroupStrength(this.bestPartner);
+		}
+		if ( strength < setup.huntingStrengthGleamingCavernsTs ) {
+			isValid = false;
+		}
+		return isValid;
+	}
+	mChoice.getCommandsList = function() {
+		return cMissionHuntGleamingCavernsMonsters(getCharGroup(character),"Essence-Sucker",this.bestPartner); 
+	}
+	mChoice.bestPartner = bestPartner;
+	return mChoice;
+}
+window.cMonsterHuntingGcFlyingLookout = function(character) {
+	var mChoice = new missionChoice("huntFlyingLookout");
+	
+	// Find best partner
+	var validPartners = arrayMinusA(arrayMinusA(getCandidatesKeysArray(),character),"chPlayerCharacter");
+	var bestPartner = findBestHuntingPartner(character,8,validPartners,"FlyingLookout","GleamingCaverns");
+	
+	// Weight adjustments
+	mChoice.weight = 20;
+	if ( gC(character).saList.includes("baHypnoticGlance") == true ) {
+		mChoice.weight *= 0.05;
+	}
+	var ongoingTimeInPeriod = 1;
+	for ( var sEvent of State.variables.compass.ongoingEvents ) {
+		if ( sEvent.title == "scenarioEnd" ) {
+			ongoingTimeInPeriod = sEvent.ongoingTime;
+		}
+	}
+	if ( ongoingTimeInPeriod == 0 ) { mChoice.weight *= 5; }
+	else if ( ongoingTimeInPeriod >= 360 ) { mChoice.weight *= 2; }
+	
+	mChoice.isValid = function() {
+		var isValid = true;
+		// Does character want hypnosis skills?
+		if ( character != "chVal" ) {
+			isValid = false;
+		}
+		// Does character have enough strength?
+		var strength = quantifyCharactersGroupStrength(character);
+		if ( this.bestPartner ) {
+			strength += quantifyCharactersGroupStrength(this.bestPartner);
+		}
+		if ( strength < setup.huntingStrengthGleamingCavernsTs ) {
+			isValid = false;
+		}
+		return isValid;
+	}
+	mChoice.getCommandsList = function() {
+		return cMissionHuntGleamingCavernsMonsters(getCharGroup(character),"Flying Lookout",this.bestPartner); 
+	}
+	mChoice.bestPartner = bestPartner;
+	return mChoice;
+}
+window.cMonsterHuntingGcOppressiveYoke = function(character) {
+	var mChoice = new missionChoice("huntOppressiveYoke");
+	
+	// Find best partner
+	var validPartners = arrayMinusA(arrayMinusA(getCandidatesKeysArray(),character),"chPlayerCharacter");
+	var bestPartner = findBestHuntingPartner(character,8,validPartners,"OppressiveYoke","GleamingCaverns");
+	
+	// Weight adjustments
+	mChoice.weight = 20;
+	if ( gC(character).saList.includes("baEtherealChains") == true ) {
+		mChoice.weight *= 0.05;
+	}
+	var ongoingTimeInPeriod = 1;
+	for ( var sEvent of State.variables.compass.ongoingEvents ) {
+		if ( sEvent.title == "scenarioEnd" ) {
+			ongoingTimeInPeriod = sEvent.ongoingTime;
+		}
+	}
+	if ( ongoingTimeInPeriod == 0 ) { mChoice.weight *= 5; }
+	else if ( ongoingTimeInPeriod >= 360 ) { mChoice.weight *= 2; }
+	
+	mChoice.isValid = function() {
+		var isValid = true;
+		// Does character want bondage skills?
+		if ( character != "chAte" && character != "chClaw" ) {
+			isValid = false;
+		}
+		// Does character have enough strength?
+		var strength = quantifyCharactersGroupStrength(character);
+		if ( this.bestPartner ) {
+			strength += quantifyCharactersGroupStrength(this.bestPartner);
+		}
+		if ( strength < setup.huntingStrengthGleamingCavernsTs ) {
+			isValid = false;
+		}
+		return isValid;
+	}
+	mChoice.getCommandsList = function() {
+		return cMissionHuntGleamingCavernsMonsters(getCharGroup(character),"Oppressive Yoke",this.bestPartner); 
+	}
+	mChoice.bestPartner = bestPartner;
+	return mChoice;
+}
+
+window.npcConsidersWillingnessToJoinHuntingMission = function(targetKey,actorKey,targetMonster,scenario) {
+	var result = [true,"Reason"]; // [0] -> Bool result, [1] -> String explanation, display to player if they ask to NPC
+	// Is target really available
+	var hasInvalidGoal = false;
+	for ( var goal of gC(targetKey).mapAi.goalsList ) {
+		if ( goal.hasOwnProperty("targetMonster") ) {
+			hasInvalidGoal = true; // Else result[0] will be declared false
+		}
+	}
+	if ( hasInvalidGoal == false ) {
+		var acceptsFactor = 0;
+		// Is strength enough
+		var expectedStrength = quantifyCharactersGroupStrength(actorKey) + quantifyCharacterStrength(targetKey) - setup.huntingStrengthGleamingCavernsTs;
+		if ( expectedStrength <= 0 ) {
+			acceptsFactor = -10000;
+		} else {
+			expectedStrength *= 0.3;
+			acceptsFactor += expectedStrength;
+		}
+		// Does target like actor
+		var relationValue = ((rLvlAbt(targetKey,actorKey,"friendship") - rLvlAbt(targetKey,actorKey,"rivalry")) * 1
+						  + (rLvlAbt(targetKey,actorKey,"romance") - rLvlAbt(targetKey,actorKey,"enmity")) * 2) * 5;
+		if ( relationValue < 0 ) {
+			relationValue = -10000;
+			acceptsFactor += relationValue;
+		} else if ( relationValue < 40 ) {
+			relationValue = (relationValue * 5) - 200;
+			acceptsFactor += relationValue;
+		} else {
+			relationValue = relationValue * 2 - 80;
+			acceptsFactor += relationValue;
+		}
+		// Does target want to hunt target monster
+		var wantsToHuntMonsterFactor = 50;
+		switch(targetMonster) {
+			case "EssenceSucker":
+				if ( (targetKey != "chNash" && targetKey != "chMir") || gC(targetKey).saList.includes("baDrainingKiss") ) {
+					wantsToHuntMonsterFactor = -50;
+				}
+				break;
+			case "FlyingLookout":
+				if ( (targetKey != "chVal") || gC(targetKey).saList.includes("baHypnoticGlance") ) {
+					wantsToHuntMonsterFactor = -50;
+				}
+				break;
+			case "OppressiveYoke":
+				if ( (targetKey != "chClaw" && targetKey != "chAte") || gC(targetKey).saList.includes("baEtherealChains") ) {
+					wantsToHuntMonsterFactor = -50;
+				}
+				break;
+		}
+		acceptsFactor += wantsToHuntMonsterFactor;
+		// Does target owe favor
+		var owedFavor = rFavor(targetKey,actorKey) * 10;
+		if ( owedFavor < 0 ) { owedFavor = 0; }
+		acceptsFactor += owedFavor;
+		if ( acceptsFactor <= 0 ) {
+			result[0] = false;
+			result[1] = gC(targetKey).getName() + " would not accept."
+		} else {
+			result[1] = gC(targetKey).getName() + " would accept."
+		}
+		result[1] += "\nExpected group strength: " + expectedStrength.toFixed(1) + ". Your combined strength must be high enough to triumph against the monsters."
+				   + "\nRelationship: " + relationValue.toFixed(1) + ". The character must trust you with their life to accept."
+				   + "\nWants to hunt: " + wantsToHuntMonsterFactor.toFixed(1) + ". The character may or may not see the need to hunt this kind of monster.";
+		if ( owedFavor > 0 ) {
+			result[1] += "\nOwed favor: " + owedFavor.toFixed(1) + ". Being indebted to you makes others more willing to accept helping you."
+		}
+		result[1] += "\nTotal score: " + acceptsFactor.toFixed(1);
+	} else {
+		result[0] = false;
+		result[1] = gC(targetKey).getName() + " already has an important goal in mind.";
+	}
+	return result;
+}
+
 // Constructors, serializers, etc.
 missionChoice.prototype._init = function (obj) {
 	Object.keys(obj).forEach(function (pn) {
@@ -1462,6 +1707,28 @@ window.canActorAttackTarget = function(actor,target) { // Checks if the actor ma
 	var flag = false;
 	if ( simulateListValidBasicActionsOnTargetDuringCombat(actor,target).length > 0 ) { flag = true;}
 	return flag;
+}
+
+window.getCloseCharactersMinusSelfWithinDistance = function(actor,distance) {
+	var pathfinder = new Pathfinder(State.variables.compass.currentMap,getCharGroup(actor),gC(actor).currentRoom,function() { return true; });
+	pathfinder.mainFinder();
+	var chars = getCharactersInRoomsList(transformRoomsDistanceListIntoRoomsDistance(pathfinder.getAllRoomsWithinNdistance(distance)));
+	chars = arrayMinusA(chars,actor);
+	return chars;
+}
+window.getCloseCharactersMinusSelfAndPlayerWithinDistance = function(actor,distance) {
+	var chars = getCloseCharactersMinusSelfWithinDistance(actor,distance);
+	chars = arrayMinusA(chars,"chPlayerCharacter");
+	return chars;
+}
+window.removeNonCandidateCharsFromCharList = function(charList) {
+	var newCharList = [];
+	for ( var cK of charList ) {
+		if ( getCandidatesKeysArray().includes(cK) ) {
+			newCharList.push(cK);
+		}
+	}
+	return newCharList;
 }
 
 // General evaluations auxiliar functions

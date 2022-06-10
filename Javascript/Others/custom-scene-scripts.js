@@ -1128,6 +1128,7 @@ window.playerMirTwoOrgasms = function(none) {
 	return flagEndScene;
 }
 
+		// GLEAMING CAVERNS //
 // Blackmailed by Claw
 	// Dommed by Claw
 window.bbCdommedByClaw = function(newPassage) {
@@ -1363,4 +1364,20 @@ window.dldPlyPlayerTopsNash = function() {
 	setRefreshLustScript();
 }
 
+// Caverns Rescue
+window.valtanPleasuresPlayerCaRe = function() {
+	State.variables.sc.startScene(
+	"ss","dynamic",["chPlayerCharacter"],["chVal"],"A sequence of slim lights and warm shadows mirror your movements.",playerOrgasmEndCondition,gSettings().stdSxScDur,
+	"FASE CaRe ValtanComes Failure2");
+	State.variables.chVal.hasLead = true;
+	State.variables.chPlayerCharacter.hasLead = false;
+	// Assign choices
+	State.variables.chVal.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chVal.aiAlgorythm.fixedTarget = "chPlayerCharacter";
+	State.variables.chVal.aiAlgorythm.setRoleDomination();
+	//
+	State.variables.sc.continuedActions.push(createCaFrenchKiss("chVal",["chPlayerCharacter"]));
+	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
+}	
 

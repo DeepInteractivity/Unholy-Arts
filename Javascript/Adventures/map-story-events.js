@@ -24,6 +24,7 @@ window.initializeFaSeCraftingADildo = function() {
 	State.variables.StVars.check1 = createEquipment("w5","chPlayerCharacter");
 }
 
+// Dildo Play
 window.initializeFaSeDildoPlay = function() {
 	// Global event variable
 	addToStVarsList("dldPly");
@@ -61,6 +62,7 @@ window.finishFaSeDildoPlay = function() {
 	}
 }
 
+// Painting
 window.initializeFaSePaintingPadmiri = function() {
 	// Global event variable
 	addToStVarsList("bdPtSc");
@@ -97,6 +99,25 @@ window.initFaSeDrishtyaMeleshConv = function() {
 	}
 }
 
+// Trial Improvisation
+window.initFaSeTrialImprovisation = function() {
+	// Global event variable
+	addToStVarsList("trImpr");
+	// Init Story UI
+	setPasChars([]);
+	setRoomIntro("mapGleamingCaverns","assembly");	
+	
+	State.variables.compass.characterEventEndsPrematurely("chAte");
+	State.variables.compass.moveCharsToRoom(["chAte"],"assembly");
+	// setPasChars([getPresentCharByKey("chAte"),getPresentCharByKey("chHope"),getPresentCharByKey("chRock")]);
+	setPasChars([getPresentCharByKey("chAte")]);
+	State.variables.eventsCalendar.activeEvent = true;
+}
+window.finishFaSeTrialImprovisation = function() {
+	gC("chAte").socialdrive.current = 0;
+	State.variables.eventsCalendar.activeEvent = false;
+}
+
 // Valtan at Illumination Pond
 window.initValtanAtIlluminationPond = function() {
 	// Initial Valtan disposition
@@ -118,6 +139,51 @@ window.initValtanAtIlluminationPond = function() {
 	}
 }
 window.finishValtanAtIlluminationPond = function() {
+	State.variables.eventsCalendar.activeEvent = false;
+}
+
+window.initFaSeVoicesFromTheCaverns = function() {
+	// Global event variable
+	addToStVarsList("GcVcCv");
+	// Init Story UI
+	setPasChars([]);
+	setRoomIntro("mapGleamingCaverns","labyrinthEntrance");	
+	
+	// Initial passage , check1
+	var initialPassage = "FASE VFtC InitB"; // Start variant B
+	if ( isStVarOn("diVcAt") == true ) { initialPassage = "FASE VFtC InitA"; }
+	else if ( isStVarOn("diAcFf") == true || isStVarOn("diDfWn") == true ) { initialPassage = "FASE VFtC InitC"; }
+	
+	// Relationship check , check2
+	State.variables.StVars.check2 = rLvlAbt("chAte","chPlayerCharacter","friendship") * 2 + rLvlAbt("chAte","chPlayerCharacter","romance") * 1.5 - rLvlAbt("chAte","chPlayerCharacter","sexualTension") * 0.5 - rLvlAbt("chAte","chPlayerCharacter","rivalry") * 2 - rLvlAbt("chAte","chPlayerCharacter","enmity") * 3;
+	// Perception check , check3
+	State.variables.StVars.check3 = gCstat("chPlayerCharacter","perception");
+	// Empathy check , check4
+	State.variables.StVars.check4 = gCstat("chPlayerCharacter","empathy");
+	
+	setPasChars([getPresentCharByKey("chAte")]);
+	State.variables.eventsCalendar.activeEvent = true;
+	
+	return initialPassage;
+}
+window.finishFaSeVoicesFromTheCaverns = function() {
+	State.variables.eventsCalendar.activeEvent = false;
+}
+
+window.initFaSeCavernsRescue = function() {
+	// Global event variables:
+		// Player rescues Glien alone -> CaRePl
+		// Valtan helps the player -> CaReVl
+	// Init Story UI
+	setPasChars([]);
+	setRoomIntro("mapGleamingCaverns","tortuousEnd");	
+	
+	// Variables
+	State.variables.StVars.check1 = -100; // +1 at each round, gets set at zero the first time help is called. If it reaches 4, Valtan comes
+	State.variables.StVars.check2 = 0; // +1 at each round, if it reaches 10, Valtan doesn't come.
+	State.variables.StVars.check3 = (gCstat("chPlayerCharacter","intelligence") + gCstat("chPlayerCharacter","will")) * getBarPercentage("chPlayerCharacter","willpower") + (gCstat("chVal","intelligence") + gCstat("chVal","will")) * getBarPercentage("chVal","willpower"); // Must reach 40 to pass.
+}
+window.finishFaSeCavernsRescue = function() {
 	State.variables.eventsCalendar.activeEvent = false;
 }
 

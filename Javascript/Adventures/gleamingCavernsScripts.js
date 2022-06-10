@@ -73,6 +73,7 @@ window.initializeGleamingCavernsAdventure = function() {
 	recalculateMaxBars("chMes");
 		// Actions
 	charactersLearnSceneActions(["chArt","chHope","chRock","chSil","chNer","chMes"],returnFirstScrollGroupActionsList());
+	charactersLearnSceneActions(["chPlayerCharacter","chNash","chClaw","chVal","chMir","chAte","chArt","chHope","chRock","chSil","chNer","chMes"],["runAway"]);
 	
 	// Relationships
 	initRelationshipDataAmongAllActiveCharacters();
@@ -303,6 +304,10 @@ window.finishGleamingCavernsAdventure = function() {
 	removeFromStVarsList("vlTlk3");	
 	removeFromStVarsList("vlTlk3");	
 	removeFromStVarsList("vlNoCv");	
+	for ( var vr of ["diVcAt","diHeAt","diSwAt","diAcWn","diAcLs","diAcFf","diDfWn","diDfLs",
+					 "knHnNt","brMnAr","GcVcCv" ] ) {
+		removeFromStVarsList(vr);
+	}
 	
 	if ( State.variables.morphMerit != undefined ) {
 		delete State.variables.morphMerit;
@@ -532,7 +537,5 @@ window.initRelsNersmiasMesquelles = function() {
 	getRelation("chMes","chNer").friendship.ltv = 250;
 	getRelation("chMes","chNer").enmity.ltv = 200;
 }
-
-
 
 

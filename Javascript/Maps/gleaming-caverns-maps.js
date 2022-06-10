@@ -362,6 +362,46 @@ setup.mapGleamingCaverns.marshSP1 = new RoomInfo(
 	null, // getActions
 	[228,170]
 );
+setup.mapGleamingCaverns.marshSP1.getConnections = function(characters) {
+	var connections = [ new RoomConnection('marshSP2',2) ,
+						new RoomConnection('marshELlake',5) ];
+	  
+	var flagCapturedMonster = false;
+	for ( var cK of characters ) {
+		if ( doesCharHaveState(cK,"CaMn") == true ) {
+			flagCapturedMonster = true;
+		}
+	}
+	if ( flagCapturedMonster == false ) {
+		connections.push( new RoomConnection('marshCentrance',2) );
+	}
+	  
+	return connections;
+}
+setup.mapGleamingCaverns.marshSP1.displayConnections = function(characters) {
+	var string = "";
+	
+	var flagCapturedMonster = false;
+	var playerGroup = getCharGroup("chPlayerCharacter");
+	for ( var cK of playerGroup ) {
+		if ( doesCharHaveState(cK,"CaMn") == true ) {
+			flagCapturedMonster = true;
+		}
+	}
+	if ( flagCapturedMonster == false ) {
+		string += getLinkToRoom('marshCentrance',"Go to " + getCurrentMap().rooms['marshCentrance'].title,2)
+			    + " (" + colorText(2,"khaki") + ") " + displayCharIconsInRoom('marshCentrance') + "\n";
+	} else {
+		string += colorText("It isn't a wise idea to bring monsters into the Caverns, as subdued as they may be.\n","red");
+	}
+	
+	string += getLinkToRoom('marshSP2',"Go to " + getCurrentMap().rooms['marshSP2'].title,2)
+			    + " (" + colorText(2,"khaki") + ") " + displayCharIconsInRoom('marshSP2') + "\n";
+	string += getLinkToRoom('marshELlake',"Go to " + getCurrentMap().rooms['marshELlake'].title,5)
+			    + " (" + colorText(2,"khaki") + ") " + displayCharIconsInRoom('marshELlake') + "\n";
+	
+	return string;
+}
 setup.mapGleamingCaverns.marshELlake = new RoomInfo(
 	"marshELlake", // Key
 	"Swamp ~ Eastern Lower Lake", // Title
@@ -500,6 +540,41 @@ setup.mapGleamingCaverns.hiddenCamp = new RoomInfo(
 	[ new RoomConnection('marshNP2',3) ], // Connections
 	function(characters) {
 		var actions = [ createRestingActionStandard() ];
+		// Get Capture Net -> Only available if no character has the altered state
+		var flagHasCaptureNet = true;
+		for ( var cK of characters) {
+			if ( doesCharHaveAlteredState(cK,"CaNt") == false ) {
+				flagHasCaptureNet = false;
+			}
+		}
+		if ( flagHasCaptureNet == false ) {
+			actions.push(createGetHuntingNetAction());
+		}
+		// Deliver monster -> Only available if first character in group is dragging monsters
+		var flagHasCapturedMonsters = false;
+		for ( var as of gC(characters[0]).alteredStates ) {
+			if ( as.acr == "CaMn" ) {
+				flagHasCapturedMonsters = true;
+			}
+		}
+		if ( flagHasCapturedMonsters == true ) {
+			actions.push(createDeliverMonstersAction());
+		}
+		return actions;
+	}, // getActions
+	[160,84]
+);
+
+// Trap room - Characters who have been defeated for the rest of the day are kept here
+setup.mapGleamingCaverns.trapRoom = new RoomInfo(
+	"trapRoom", // Key
+	"Secluded Place", // Title
+	"GleCav/mountain-path-forested.png", // Med Icon
+	"GleCav/mountain-path-forested-sm.png", // Icon
+	"You have been captured by monsters. Try and lay low and you will find your chance to escape.", // Description
+	[ ], // Connections
+	function(characters) {
+		var actions = [ createRestingActionStandard() ];
 		return actions;
 	}, // getActions
 	[160,84]
@@ -568,6 +643,18 @@ setup.mapGleamingCaverns.labyrinthEntrance = new RoomInfo(
 	}, // getActions
 	[93,48]
 );
+setup.mapGleamingCaverns.labyrinthEntrance.getEventPrompt = function(characters) {
+	if ( characters.includes("chPlayerCharacter") && isStVarOn("trImpr") == true && isStVarOn("GcVcCv") == false ) {
+		var initialPassage = initFaSeVoicesFromTheCaverns();
+		State.variables.compass.interludePassage = "Behind the corner...\n\n"
+			+ "<<l" + "ink [[Continue|" + initialPassage + "]]>><<s" + "cript>>\n"
+			+ "State.variables.compass.finishPlayerPrompt();\n"
+			+ "<</s" + "cript>><</l" + "ink>>";
+		State.variables.compass.setPlayerPrompt(State.variables.compass.interludePassage,"chPlayerCharacter",false);
+	}
+	// No need to initiate an event. An event might break the event chain.
+}
+
 setup.mapGleamingCaverns.cavernMP1 = new RoomInfo(
 	"cavernMP1", // Key
 	"Caverns ~ Main Path 1", // Title
@@ -1166,12 +1253,12 @@ setup.mapGleamingCaverns.wildTunnel11 = new RoomInfo(
 			var act0 = createActionMovingWildTunnel("pondIllumination","Tight tunnel",0,2);
 			if ( (baseChance + dice200) >= difficulty ) {
 				if ( characters[0] == "chPlayerCharacter" ) {
-					State.variables.compass.setMapActionsMessage("Access to tight tunnel: " + colorText("Check PASSED","green") + ": Stats (" + baseChance + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") => Difficulty (" + difficulty + ")");
+					State.variables.compass.setMapActionsMessage("Access to tight tunnel: " + colorText("Check PASSED","green") + ": Stats (" + baseChance.toFixed(1) + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") => Difficulty (" + difficulty + ")");
 				}
 			} else {
 				act0.requirements = function(cG) { return false; }
 				if ( characters[0] == "chPlayerCharacter" ) {
-					State.variables.compass.setMapActionsMessage("Access to tight tunnel: " + colorText("Check FAILED","red") + ": Stats (" + baseChance + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
+					State.variables.compass.setMapActionsMessage("Access to tight tunnel: " + colorText("Check FAILED","red") + ": Stats (" + baseChance.toFixed(1) + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
 				}
 			}
 			actions.push(act0);
@@ -1429,16 +1516,16 @@ setup.mapGleamingCaverns.wildTunnel22 = new RoomInfo(
 			// Path to Tortuous End
 			var baseChance = gCstat(characters[0],"perception") + gCstat(characters[0],"agility") + gCstat(characters[0],"resilience") + gCstat(characters[0],"will") + gCstat(characters[0],"luck");
 			var dice1000 = limitedRandomInt(1000);
-			var difficulty = 1060;
+			var difficulty = 1040;
 			var act0 = createActionMovingWildTunnel("tortuousEnd","Unreachable Tunnel",0,2);
 			if ( (baseChance + dice1000) >= difficulty ) {
 				if ( characters[0] == "chPlayerCharacter" ) {
-					State.variables.compass.setMapActionsMessage("Access to Unreachable Tunnel: " + colorText("Check PASSED","green") + ": Stats (" + baseChance + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 1000 (" + dice1000 + ") => Difficulty (" + difficulty + ")");
+					State.variables.compass.setMapActionsMessage("Access to Unreachable Tunnel: " + colorText("Check PASSED","green") + ": Stats (" + baseChance.toFixed(1) + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 1000 (" + dice1000 + ") => Difficulty (" + difficulty + ")");
 				}
 			} else {
 				act0.requirements = function(cG) { return false; }
 				if ( characters[0] == "chPlayerCharacter" ) {
-					State.variables.compass.setMapActionsMessage("Access to Unreachable Tunnel: " + colorText("Check FAILED","red") + ": Stats (" + baseChance + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 1000 (" + dice1000 + ") < Difficulty (" + difficulty + ")");
+					State.variables.compass.setMapActionsMessage("Access to Unreachable Tunnel: " + colorText("Check FAILED","red") + ": Stats (" + baseChance.toFixed(1) + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 1000 (" + dice1000 + ") < Difficulty (" + difficulty + ")");
 				}
 			}
 			actions.push(act0);
@@ -1458,16 +1545,16 @@ setup.mapGleamingCaverns.wildTunnel23 = new RoomInfo(
 			// Path to Tortuous End
 			var baseChance = gCstat(characters[0],"perception") + gCstat(characters[0],"agility") + gCstat(characters[0],"resilience") + gCstat(characters[0],"will") + gCstat(characters[0],"luck");
 			var dice1000 = limitedRandomInt(1000);
-			var difficulty = 1060;
+			var difficulty = 1040;
 			var act0 = createActionMovingWildTunnel("tortuousEnd","Unreachable Tunnel",0,2);
 			if ( (baseChance + dice1000) >= difficulty ) {
 				if ( characters[0] == "chPlayerCharacter" ) {
-					State.variables.compass.setMapActionsMessage("Access to Unreachable Tunnel: " + colorText("Check PASSED","green") + ": Stats (" + baseChance + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 1000 (" + dice1000 + ") => Difficulty (" + difficulty + ")");
+					State.variables.compass.setMapActionsMessage("Access to Unreachable Tunnel: " + colorText("Check PASSED","green") + ": Stats (" + baseChance.toFixed(1) + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 1000 (" + dice1000 + ") => Difficulty (" + difficulty + ")");
 				}
 			} else {
 				act0.requirements = function(cG) { return false; }
 				if ( characters[0] == "chPlayerCharacter" ) {
-					State.variables.compass.setMapActionsMessage("Access to Unreachable Tunnel: " + colorText("Check FAILED","red") + ": Stats (" + baseChance + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 1000 (" + dice1000 + ") < Difficulty (" + difficulty + ")");
+					State.variables.compass.setMapActionsMessage("Access to Unreachable Tunnel: " + colorText("Check FAILED","red") + ": Stats (" + baseChance.toFixed(1) + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 1000 (" + dice1000 + ") < Difficulty (" + difficulty + ")");
 				}
 			}
 			actions.push(act0);
@@ -1512,9 +1599,21 @@ setup.mapGleamingCaverns.pondIllumination = new RoomInfo(
 	[170,53]
 );
 setup.mapGleamingCaverns.pondIllumination.getEventPrompt = function(characters) {
+	// State.variables.StVars.check9 = isStVarOn("CaReVl");
+	/*
+	<<if $StVars.check9 is true>> \
+<span style="color:green">Story check: passed.</span>
+[[Why did you leave when we were carrying Glien?|FASE ValtanIllumination WhyDidYouLeave]]
+[[You were telling me about the time you were trapped|FASE ValtanIllumination WhenTrapped]]
+<</if>> \
+*/
+	var passageInit = "FASE ValtanIllumination InitAlt";
+	if ( isStVarOn("CaReVl") == false ) {
+		passageInit = "FASE ValtanIllumination Init";
+	}
 	if ( characters.includes("chPlayerCharacter") && isStVarOn("vlIlIn") == false ) {
 		State.variables.compass.interludePassage = "You find a familiar face...\n\n"
-			+ "<<l" + "ink [[Continue|FASE ValtanIllumination Init]]>><<s" + "cript>>\n"
+			+ "<<l" + "ink [[Continue|" + passageInit + "]]>><<s" + "cript>>\n"
 			+ "initValtanAtIlluminationPond();\n"
 			+ "State.variables.compass.finishPlayerPrompt();\n"
 			+ "addToStVarsList('vlIlIn');\n"
@@ -1544,7 +1643,7 @@ setup.mapGleamingCaverns.tortuousEnd = new RoomInfo(
 	"Wild Tunnels ~ Tortuous End", // Title
 	"GleCav/caverns-flooded-path-r-ext.png", // Med Icon
 	"GleCav/caverns-flooded-path-r-ext-sm.png", // Icon
-	"", // Description
+	"The light is as dim as it gets. Darkness becomes all-envolving at times.", // Description
 	[], // Connections
 	function(characters) {
 		var actions = [ createActionMovingWildTunnel("wildTunnel22","Section 22",0,2),
@@ -1553,7 +1652,15 @@ setup.mapGleamingCaverns.tortuousEnd = new RoomInfo(
 	}, // getActions
 	[258,45]
 );
-
+setup.mapGleamingCaverns.tortuousEnd.getEventPrompt = function(characters) {
+	if ( characters.includes("chPlayerCharacter") && isStVarOn("CaRePl") == false && isStVarOn("CaReVl") == false ) {
+		initFaSeCavernsRescue();
+		State.variables.compass.interludePassage = "<<l" + "ink [[Continue|FASE CaRe Init1]]>><<s" + "cript>>\n"
+			+ "State.variables.compass.finishPlayerPrompt();\n"
+			+ "<</s" + "cript>><</l" + "ink>>";
+		State.variables.compass.setPlayerPrompt(State.variables.compass.interludePassage,"chPlayerCharacter",false);
+	}
+}
 
 // Functions
 
@@ -1601,7 +1708,29 @@ window.getGleamingCavernStreetConvs = function() {
 	} else if ( isStVarOn('mphFnTf') ) {
 		posConvs.push(colorText('//"You aren\'t going to believe this! One of the humans from the Passion Temple went to Veshmren\'s hut, and Mesquelles transformed her!"//',"gray") + "\n" + colorText('//"She actually did it!? Her hard training must have paid off..."//',"gray"));
 	}
-	
+		// On Pushed to the Stage/Improvised Trial
+	posConvs.push(colorText('//"You haven\'t performed at the theatre in a long time. You really should practice for some time if you want to participate in the Twisted Festival."//','gray'));
+		// On Caverns Rescue
+	if ( isStVarOn('CaReVl') == false && isStVarOn('CaRePl') == false ) {
+		if ( State.variables.daycycle == 29 ) {
+			posConvs.push(colorText('//"And she isn\'t home, either."\n' +
+						'"Oh, I remember now! She said she\'d be taking a stroll outside the tribe, and would come back later."\n' +
+						'"Hmm. That does sound like her."//','gray'));
+		} else if ( State.variables.daycycle == 30 || State.variables.daycycle == 1 ) {
+			posConvs.push(colorText('//"She didn\'t appear, not during the whole day."\n' +
+						'"Maybe she found the assembly closed and left again? You know she likes to disappear from time to time."\n' +
+						'"...Why aren\'t you more worried about this?"','gray'));
+		} else {
+			posConvs.push(colorText('//"Glien has been gone for several days now."\n' +
+						'"It\'s starting to get a bit concerning."\n' +
+						'"I\'m going to speak with the judges... We have to organize a search party, start at the deeper tunnels, continue through the swamps..."\n' +
+						'"When we\'re this close to the Festival, and the Candidates are in town? They\'ll just brush it off."//','gray'));
+		}
+	} else {
+		posConvs.push(colorText('//"Have you heard? Glien got lost in the deeper caverns!"\n' +
+						'"What? But then we have to hurry to..."\n' +
+						'"No, no, she got lost, but a human from the Temple rescued her! She\'s still resting though... She might not be recovered enough to participate in the Twisted Festival."//','gray'));
+	}
 	var chosenConv = "";
 	if ( posConvs.length > 0 ) {
 		if ( limitedRandomInt(100) >= 50 ) {
@@ -1644,4 +1773,53 @@ setup.mapGleamingCaverns.marshCentrance.getSpecialAreaCoordinates = function() {
 	}
 	return coords;
 }
+
+// Random Monster Encounters
+
+window.gCmonsterEncounterPrompt = function(characters) {
+	var rN = limitedRandomInt(100);
+	if ( rN > 80 ) {
+		var formattedChars = charKeysIntoArrayString(characters);
+		/*
+		if ( characters.length == 1 ) {
+			formattedChars = "['" + characters[0] + "']";
+		}
+		*/
+		if ( characters.includes("chPlayerCharacter") ) {
+			State.variables.compass.interludePassage = "Monsters are ambushing you!\n\n"
+				+ "<<l" + "ink [[Continue|Scene]]>><<s" + "cript>>\n"
+			+ "State.variables.compass.characterEventEndsPrematurely('" + characters[0] + "');\n"
+			+ "State.variables.compass.ongoingEvents.push(createGcRandomMonsterEncounterEvent(20," + formattedChars + "));\n"
+			+ "State.variables.compass.finishPlayerPrompt();\n"
+			+ "State.variables.compass.sortOnGoingEventsByTime();\n"
+			+ "State.variables.compass.pushAllTimeToAdvance();\n"
+			+ "<</s" + "cript>><</l" + "ink>>";
+			State.variables.compass.setPlayerPrompt(State.variables.compass.interludePassage,"chPlayerCharacter",false);
+		} else {
+			// NPCs get immediately put into event
+			State.variables.compass.characterEventEndsPrematurely(characters);
+			State.variables.compass.ongoingEvents.push(createGcRandomMonsterEncounterEvent(20,characters));
+			State.variables.compass.sortOnGoingEventsByTime();
+				// Do NPCs remember their mission?
+			if ( characters.includes("chPlayerCharacter") ) {
+				
+			}
+			// If player forms part of group, player gets prompted
+		}
+	} else {
+		// Message the player
+		if ( characters.includes("chPlayerCharacter") ) {
+			State.variables.compass.setMapMessage("Something lurks in the shadows...");
+		}
+	}
+}
+
+setup.mapGleamingCaverns.captureNetRooms = [ "hiddenCamp" ];
+setup.mapGleamingCaverns.monsterRooms = [];
+
+for ( var room of ["marshELlake","marshEUlake","marshELriver","marshEUriver","marshNEriver","marshNElake","marshNWlake","marshLriver1","marshLriver2","marshLPlake","marshLPpuddles","marshSriver","marshSWpuddles","marshSWlake","marshSElake","marshSEpuddles","marshMpuddles"] ) {
+	setup.mapGleamingCaverns[room].getEventPrompt = gCmonsterEncounterPrompt;
+	setup.mapGleamingCaverns.monsterRooms.push(room);
+}
+
 

@@ -143,6 +143,8 @@ window.isTfSceneFinished = function() {
 }
 
 window.tfStandardEndScript = function() {
+	State.variables.sc.cleanContinuedActions();
+	State.variables.sc.cleanAllPositions();
 	var tfAs = createFinishedTransformationAs(State.variables.sc.tfDays,State.variables.sc.tfGoals);
 	if ( tfAs.tfTypes.length > 0 ) {
 		applyAlteredState([State.variables.sc.tfTarget],tfAs);

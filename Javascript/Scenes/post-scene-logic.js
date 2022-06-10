@@ -564,14 +564,7 @@ window.getNpcDemandOnWinningBattle = function(actor,target,stakes,infamyMult) {
 	var decision = "doNothing";
 	var result = null;
 	var hostility = limitedRandomInt(20) - 10 + rLvlAbt(actor,target,"rivalry") * limitedRandomInt(30) + rLvlAbt(actor,target,"enmity") * limitedRandomInt(30) + rLvlAbt(actor,target,"sexualTension") * limitedRandomInt(20) - rLvlAbt(actor,target,"friendship") * limitedRandomInt(10) - rLvlAbt(actor,target,"romance") * limitedRandomInt(10) + gC(target).infamy;
-	// TO DO: REMOVE THIS LATER
-	if ( actor == "chClaw" ) {
-		hostility += 15;
-	} else if ( actor == "chVal" ) {
-		hostility += 5;
-	} else if ( actor == "chMir" ) {
-		hostility -= 15;
-	}
+	
 	if ( infamyMult < 1 ) {
 		hostility += 10;
 	}
@@ -600,6 +593,130 @@ window.getNpcDemandOnWinningBattle = function(actor,target,stakes,infamyMult) {
 	}
 	
 	return result;
+}
+
+window.processGenericMonsterBattleEffects = function() {
+	// teamAwin -> Characters win ; teamBwin -> Monsters win
+	var flagMonstersVictory = false;
+	var resultsMessage = "";
+	var extraJoinedChars = State.variables.sc.extraJoinedCharacters;
+	if ( extraJoinedChars != undefined ) {
+		var initialCharacters = State.variables.sc.initialCharacters;
+	}
+	
+	switch (State.variables.sc.extraEndInfo) {
+		case "teamAwin":
+			charsPercentOfInitialLust(State.variables.sc.teamAcharKeys,State.variables.sc.tempData[0],0.7);
+			resultsMessage = "You won! The monsters creep out of the battlefield, struggling to reach safety.";
+			if ( extraJoinedChars != undefined ) {
+				resultsMessage += "\n" + charsAthankCharsBforAssistingAgainstMonsters(initialCharacters,extraJoinedChars);
+			}
+			resultsMessage += "\nYou recover some energy after winning the battle."
+						   + "\n\n<<link[[Continue|Map]]>><<s" + "cript>>State.variables.compass.advanceTime(0);\nState.variables.compass.advanceTime(0);<</s" + "cript>><</l" + "ink>>";
+			break;
+		case "monsterCapture":
+			charsPercentOfInitialLust(State.variables.sc.teamAcharKeys,State.variables.sc.tempData[0],0.7);
+			// Find captured monsters, add them to the list and give opposite team leader altered states with captured monsters
+			var capturedMonsters = [];
+			var capturingChar = State.variables.sc.teamAcharKeys[0];
+			for ( var cK of State.variables.sc.teamBcharKeys ) {
+				if ( doesCharHaveState(cK,"BnCa") == true ) {
+					var monsterType = gC(cK).monsterType;
+					capturedMonsters.push(monsterType);
+					applyAlteredState([capturingChar],createCapturedMonsterAs(monsterType));
+				}
+			}
+			resultsMessage = "You won! ";
+			if ( capturedMonsters.length > 1 ) {
+				resultsMessage += stringArrayToText(capturedMonsters) + " have been captured by " + gC(capturingChar).getFormattedName() + ". They will be difficult to manage, so make sure to deliver them to an interested hunter soon.";
+			} else {
+				resultsMessage += stringArrayToText(capturedMonsters) + " has been captured by " + gC(capturingChar).getFormattedName() + ". It will be difficult to manage, so make sure to deliver them to an interested hunter soon.";
+			}
+			if ( capturedMonsters.length != State.variables.sc.teamBcharKeys.length ) {
+				resultsMessage += "\nThe remaining monsters creep out of the battlefield, struggling to reach safety.";
+			}
+			resultsMessage += "\nYou recover some energy after winning the battle.";
+			if ( extraJoinedChars != undefined ) {
+				resultsMessage += "\n" + charsAthankCharsBforAssistingAgainstMonsters(initialCharacters,extraJoinedChars);
+			}
+			resultsMessage += "\n\n<<link[[Continue|Map]]>><<s"
+							+ "cript>>State.variables.compass.advanceTime(0);\nState.variables.compass.advanceTime(0);<</s" + "cript>><</l" + "ink>>";
+			break;
+		case "teamBwin":
+			var defeatedChars = State.variables.sc.teamAcharKeys;
+			resultsMessage = getStandardMonsterDefeatMsgEffects(defeatedChars)
+						   + "\n\n<<link[[Continue|Map]]>><<s" + "cript>>State.variables.compass.pushAllTimeToAdvance();<</s" + "cript>><</l" + "ink>>";
+			// Chars from teamA are taken to locked room
+			var trapRoom = findTrapRoomInMap();
+			State.variables.compass.moveCharsToRoom(defeatedChars,trapRoom);
+			// Break defeated chars' Map AI
+			for ( var cK of defeatedChars ) {
+				if ( gC(cK).mapAi.hasOwnProperty("goalsList") ) {
+					gC(cK).mapAi.goalsList = [];
+				}
+			}
+			// Recovering from Exhaustion Event, add to queue
+			State.variables.compass.ongoingEvents.push(createSystemEventRecoverFromExhaustion(defeatedChars));
+			break;
+		case "flight":
+			resultsMessage = "You have managed to lose the monsters from sight."
+						   + "\n\n<<link[[Continue|Map]]>><<s" + "cript>>State.variables.compass.pushAllTimeToAdvance();<</s" + "cript>><</l" + "ink>>";
+			break;
+	}
+	
+	// Finish formatting
+	State.variables.compass.sceneResultsPassage = resultsMessage;
+}
+window.findTrapRoomInMap = function() {
+	var trapRoom = "";
+	if ( isCurrentStoryStateInMainLoop() ) {
+		trapRoom = "publicBaths";
+	} else if ( getCurrentStoryState() == storyState.firstAdventure ) {
+		trapRoom = "trapRoom";
+	}
+	return trapRoom;
+}
+window.getStandardMonsterDefeatMsgEffects = function(characters) {
+	var n = getCurrentStoryState() * 5;
+	for ( var cK of characters ) {
+		if ( gC(cK).hasOwnProperty("merit") ) {
+			gC(cK).changeMerit(-n);
+		}
+	}
+	var msg = "You lost! The monsters take you to a secluded place, where you are slowly robbed of your aether."
+			+ "\nThe Goddess' fortune smiles on you, and the monsters leave you alone when they feel satiated, allowing you to return to safety..."
+			+ "\nYou have lost " + n.toFixed(1) + " merit.";
+	
+	return msg;
+}
+window.charsAthankCharsBforAssistingAgainstMonsters = function(charsA,charsB) {
+	var pluralA = false;
+	var msg = "";
+	if ( charsA.length > 1 ) {
+		msg += getCharNames(charsA) + randomFromList([" profusely thank "," copiously thank "," show their gratitude to "]) + getCharNames(charsB) + " for assisting against the monsters. " + colorText("Their friendship moderately increases","khaki") + ", and they now owe some favor.";
+	} else {
+		msg += getCharNames(charsA) + randomFromList([" profusely thanks "," copiously thanks "," shows " + gC(charsA[0]).posPr + " gratitude to "]) + getCharNames(charsB) + " for assisting against the monsters." + colorText(firstToCap(gC(charsA[0]).posPr) + " friendship moderately increases","khaki") + ", and " + gC(charsA[0]).perPr + " now owes some favor.";
+	}
+	for ( var cKa of charsA ) {
+		for ( var cKb of charsB ) {
+			if ( gC(cKa).relations[cKb] != undefined ) {
+				gC(cKa).relations[cKb].friendship += 300;
+				payFavorDebt(cKa,cKb,3);
+			}
+		}
+	}
+	return msg;
+}
+
+window.charsPercentOfInitialLust = function(chars,initialLustArray,restoredPercent) {
+	var i = 0;
+	for ( var cK of chars ) {
+		if ( gC(cK).lust.current < initialLustArray[i] ) {
+			var lustToRestore = ( initialLustArray[i] - gC(cK).lust.current ) * restoredPercent;
+			gC(cK).lust.changeValue(lustToRestore);
+		}
+		i++;
+	}
 }
 
 

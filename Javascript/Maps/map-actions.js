@@ -531,3 +531,26 @@ window.createSystemEventRespec = function(characters) {
 	return sEvent;
 }
 
+	// Defeat events
+window.createSystemEventRecoverFromExhaustion = function(characters) {
+	// Characters have been defeated in battle and will spend the rest of the period recovering.
+	// Invoked after losing monster encounters
+	
+	// Find how many minutes until end of period
+	var mins = 0;
+	for ( var sEvent of State.variables.compass.ongoingEvents ) {
+		if ( sEvent.title == "scenarioEnd" ) {
+			mins = sEvent.timeRemaining;
+		}
+	}
+	
+	var sEvent = new systemEvent(mins,characters,"recoverExhaustion","Recovering from Exhaustion",function(cList) {
+			var eventMsg = "You are being slowly robbed of your aether. Gather your energies, however, and you will find the right moment to escape.";
+			State.variables.compass.setMapMessage(eventMsg);
+			return eventMsg;
+		}
+	);
+	sEvent.priority = -1;
+	return sEvent;
+}
+

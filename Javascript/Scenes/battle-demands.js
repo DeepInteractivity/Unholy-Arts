@@ -144,7 +144,7 @@ window.createBdemandHumillitation = function() {
 			gC(actor).tastes.domination.w += limitedRandomInt(6);
 		}
 		if ( limitedRandomInt(100) > 75 ) {
-			gC(actor).tastes.submission.w += limitedRandomInt(8);
+			gC(target).tastes.submission.w += limitedRandomInt(8);
 		}
 		return 1;
 	}
@@ -217,7 +217,7 @@ window.createBdemandForceSex = function() {
 			gC(actor).tastes.domination.w += limitedRandomInt(3);
 		}
 		if ( limitedRandomInt(100) > 75 ) {
-			gC(actor).tastes.submission.w += limitedRandomInt(5);
+			gC(target).tastes.submission.w += limitedRandomInt(5);
 		}
 		// Dominant sex event - Dismantle groups , event, scene, sceneConsequences, chPlayerCharacter check
 		for ( var charParticipant of [actor,target] ) {
@@ -311,7 +311,7 @@ window.createBdemandForceServitude = function() {
 			gC(actor).tastes.domination.w += limitedRandomInt(4);
 		}
 		if ( limitedRandomInt(100) > 75 ) {
-			gC(actor).tastes.submission.w += limitedRandomInt(6);
+			gC(target).tastes.submission.w += limitedRandomInt(6);
 		}
 		return 1;
 	}

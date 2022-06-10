@@ -1113,7 +1113,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Virgin dick caressing target 1
 		if ( 
 			 doesAnyActionContainTags(context.extra2,["foreplay","targetDick"]) &&
 			 anyOtherActorHasFreeBodypart(context.actor,"pussy") &&
-			 checkCharsVirginityExists(context.target,"dick")
+			 checkCharsVirginityExists(context.actor,"dick")
 			) { flagValid = true; }
 		return flagValid;
 	},

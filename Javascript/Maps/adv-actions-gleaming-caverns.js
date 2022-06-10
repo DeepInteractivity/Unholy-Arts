@@ -100,7 +100,7 @@ window.createSystemEventCheapWaitNoDesc = function(minutes,characters) {
 window.createSystemEventMedWait = function(minutes,characters) {
 	var sEvent = new systemEvent(20,characters,"cavernWait","Wait for a few minutes",function(cList) {
 			
-			var eventMsg = "You rest for a few minutes, your eyes focused on the the occasional, tiny waves taking form at the lake below.. ";
+			var eventMsg = "You rest for a few minutes, your eyes focused on the the occasional, tiny waves taking form at the lake below...";
 			State.variables.compass.setMapMessage(eventMsg);
 			return eventMsg;
 		}
@@ -253,6 +253,36 @@ window.createSysEvTheaterImprovisation = function(minutes,characters) {
 				eventMsg += rspMsg;
 				eventMsg += createCharSpentBarMessage(character,barType,barConsumption) + "\n";
 			}
+			// Trial improvisation map event
+			if ( isStVarOn("trImpr") == false && cList[0] == "chPlayerCharacter" ) {
+				// Base requirements
+				var baseSkillRequirement = 50;
+				var pcChaPoints = (gCstat("chPlayerCharacter","charisma") - 10) * 0.5; if ( pcChaPoints < 0 ) { pcChaPoints = 0; }
+				var pcEmpPoints = (gCstat("chPlayerCharacter","empathy") - 10) * 0.5; if ( pcEmpPoints < 0 ) { pcEmpPoints = 0; }
+				var pcWilPoints = (gCstat("chPlayerCharacter","will") - 10) * 0.5; if ( pcWilPoints < 0 ) { pcWilPoints = 0; }
+				var pcSkill = getCharsSpecialExperience("chPlayerCharacter","impExp") * 10 + pcChaPoints + pcEmpPoints + pcWilPoints;
+				var hour = State.variables.daycycle.hours;
+				var flagAllChecksPassed = true;
+				var mapEventMsg = "";
+				if ( pcSkill >= baseSkillRequirement ) {
+					eventMsg += colorText("Performance skill check PASSED","green") + ": Improvisation Skill (" + getCharsSpecialExperience("chPlayerCharacter","impExp").toFixed(1) * 10 + ") + Charisma points (" + pcChaPoints.toFixed(1) + ") + Empathy points (" + pcEmpPoints.toFixed(1) + ") + Will Points (" + pcWilPoints.toFixed(1) + ") = " + pcSkill.toFixed(1) + " >= Difficulty (50)\n";
+				} else {
+					flagAllChecksPassed = false;
+					eventMsg += colorText("Performance skill check FAILED","red") + ": Improvisation Skill (" + getCharsSpecialExperience("chPlayerCharacter","impExp").toFixed(1) * 10 + ") + Charisma points (" + pcChaPoints.toFixed(1) + ") + Empathy points (" + pcEmpPoints.toFixed(1) + ") + Will Points (" + pcWilPoints.toFixed(1) + ") = " + pcSkill.toFixed(1) + " < Difficulty (50)\n";
+				}
+				if ( hour < 18 ) {
+					mapEventMsg += colorText("Hour check (" + hour + " < 18): Passed\n","green");
+				} else {
+					flagAllChecksPassed = false;
+					mapEventMsg += colorText("Hour check (" + hour + " >= 18): Failed\n","red");
+				}
+				if ( flagAllChecksPassed ) {
+					mapEventMsg += "\n<<l" + "ink [[You overhear a conversation...|FASE ImprovTrial Start]]>><<s" + "cript>>\n"
+								 + "initFaSeTrialImprovisation();\n<</s" + "cript>><</l" + "ink>>\n";
+				}
+				eventMsg += mapEventMsg + "\n";
+			}
+			
 			eventMsg += sharedTrainingRelationshipEvents(characters);
 			return eventMsg;
 		}
@@ -641,5 +671,226 @@ window.createSystemEventDrMlConv = function(minutes,characters) {
 	return sEvent;
 }
 
-//
+// Gleaming Caverns - Random Monster Encounters
+
+window.createGcRandomMonsterEncounterEvent = function(minutes,initialCharacters) {
+	var sEvent = new systemEvent(20,initialCharacters,"battle","Monster encounter",function(cList) {
+			var desc = getRoomInfoA(gC(this.characters[0]).currentRoom).description;
+			var monGroup = createGcRandomMonsterGroup(initialCharacters);
+			this.charactersTeamB = monGroup;
+			
+			// Non-monsters starting lust
+			var charsStartingLust = [];
+			for ( var cK of this.charactersTeamA ) {
+				charsStartingLust.push(gC(cK).lust.current);
+			}
+			
+			State.variables.sc.flightFlag = true;
+			State.variables.sc.startScene("bs","none",this.charactersTeamA,this.charactersTeamB,desc,endConditionStandardMonsterBattle,0,"Scene Results"); // Start scene
+			State.variables.sc.tempData = [charsStartingLust]; // First element of array is an array with the starting lust of the characters in the team
+			State.variables.sc.genericCharacters = this.charactersTeamB; // Monster NPCs will be removed after battle
+			State.variables.sc.endSceneScript = processGenericMonsterBattleEffects; // Set custom battle effects
+			State.variables.sc.extraJoinedCharacters = this.extraJoinedChars;
+			State.variables.sc.initialCharacters = this.initialCharactersTeamA;
+			for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
+				if ( charKey != "chPlayerCharacter" ) {
+					gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+				}
+			}
+			for ( var extraMessage of this.extraMessages ) {
+				if ( State.variables.sc.importantMessages != "" ) { State.variables.sc.importantMessages += "\n"; }
+				State.variables.sc.importantMessages += extraMessage;
+			}
+			if ( this.characters.includes("chPlayerCharacter") == false ) {
+				State.variables.sc.autoResolveScene();
+			}
+		}
+	);
+	sEvent.charactersTeamA = initialCharacters;
+	sEvent.initialCharactersTeamA = initialCharacters;
+	sEvent.flagMayBeInterrupted = false;
+	sEvent.flagMayChangeGroups = false;
+	sEvent.label = "monsterEncounter";
+	sEvent.priority = 8;
+	sEvent.applyEffectIfForcedToEnd = false;
+	sEvent.priority = 5;
+	
+	return sEvent;
+}
+
+window.createGcRandomMonsterGroup = function(initialCharacters) {
+	var monGroup = [];
+	var firstChar = initialCharacters[0];
+	if ( gC(firstChar).hasOwnProperty("mapAi") ) {
+		if ( gC(firstChar).mapAi.goalsList.length > 0 ) {
+			if ( gC(firstChar).mapAi.goalsList[0].hasOwnProperty("targetMonster") ) {
+				if ( gC(firstChar).monsterType == gC(firstChar).mapAi.goalsList[0].targetMonster ) {
+					var targetMonster = gC(firstChar).monsterType;
+					var rN = limitedRandomInt(300);
+					if ( rN > 130 ) {
+						if ( targetMonster == "Flying Lookout" ) {
+							monGroup = [ createFlyingLookout(1,0,1) , createFlyingLookout(1,0,2) ];
+						} else if ( targetMonster == "Essence-Sucker" ) {
+							monGroup = [ createEssenceSucker(1,0,1) , createEssenceSucker(1,0,2) ];
+						} else if ( targetMonster == "Oppressive Yoke" ) {
+							monGroup = [ createOppressiveYoke(1,0,-1) ];
+						}
+					}
+				}								
+			}
+		}
+	}
+	if ( monGroup.length == 0 ) {
+		var rN = limitedRandomInt(300);
+		if ( rN > 200 ) { // Flying Lookouts
+			monGroup = [ createFlyingLookout(1,0,1) , createFlyingLookout(1,0,2) ];
+		} else if ( rN > 100 ) { // Essence-Suckers
+			monGroup = [ createEssenceSucker(1,0,1) , createEssenceSucker(1,0,2) ];
+		} else { // Oppressive Yoke
+			monGroup = [ createOppressiveYoke(1,0,-1) ];
+		}
+	}
+	return monGroup;
+}
+
+// Monster Hunting
+window.createGetHuntingNetAction = function() {
+	var action = new mapAction("gtCpNt","Ask Artume for Capturing Nets",createSystemEventGetHuntingNet,false);
+	action.description = "Artume would be thankful if you captured a monster and brought them to her. Ask her for hunting nets to subdue monsters in battle.";
+	action.recMins = 5;
+	action.getPassage = function() {
+		var passage = "Fa GetCaptureNets Std";
+		if ( isStVarOn("knHnNt") == false ) {
+			passage = "Fa GetCaptureNets Explain";
+		}
+		return passage;
+	};
+	action.tags.push("captureNet");
+	return action;
+}
+window.createSystemEventGetHuntingNet = function(minutes,characters) {
+	var sEvent = new systemEvent(5,characters,"gtCpNt","Getting Capturing Nets",function(cList) {
+			var receivingChars = [];
+			for ( var cK of characters ) {
+				if ( doesCharHaveAlteredState(cK,"CaNt") == false ) {
+					receivingChars.push(cK);
+				}
+			}
+			// Give characters capturing nets
+			applyAlteredState(receivingChars,createHasCaptureNetAs());
+			var eventMsg = getCharNames(characters) + " received capturing nets from Artume! It is now possible to capture monsters during battle.\n\n";
+			return eventMsg;
+		}
+	);
+	sEvent.priority = 1;
+	return sEvent;
+}
+
+window.createDeliverMonstersAction = function() {
+	var action = new mapAction("delMon","Deliver monsters to Artume",createSystemDeliverMonsters,false);
+	action.description = "Bring the monsters you've captured to Artume for experience and new actions.";
+	action.recMins = 120;
+	action.getPassage = function() {
+		var passage = "Interlude";
+		if ( isStVarOn("brMnAr") == false ) {
+			passage = "Fa FirstMonsterCapture";
+		}
+		return passage;
+	};
+	action.tags.push("deliverMonster");
+	return action;
+}
+window.createSystemDeliverMonsters = function(minutes,characters) {
+	// Fix time
+	var time = 120;
+	for ( var sEvent of State.variables.compass.ongoingEvents ) {
+		if ( sEvent.title == "scenarioEnd" ) {
+			if ( sEvent.remainingTime <= time ) {
+				time = sEvent.remainingTime - 1;
+				if ( time < 1 ) { time = 1; }
+			}
+		}
+	}
+	var sEvent = new systemEvent(time,characters,"delMon","Deliver Captured Monsters",function(cList) {
+			// Get list of all captured monsters
+			var capturedMonsters = [];
+			for ( var as of gC(characters[0]).alteredStates ) {
+				if ( as.hasOwnProperty("monsterType") ) {
+					capturedMonsters.push(as.monsterType);
+				}
+			}
+			var eventMsg = "Captured monsters: " + stringArrayToText(capturedMonsters) + ".";
+			// Grant experience
+			var expString = [0,0,0,0,0,0,0,0,0];
+			var anyGainedExp = false;
+			var i = 0;
+			for ( var m of capturedMonsters ) {
+				while ( i < 9 ) {
+					expString[i] += getMonRewards(m)[i];
+					if ( getMonRewards(m)[i] != 0 ) { anyGainedExp = true; }
+					i++;
+				}
+				i = 0;
+			}
+			for ( var cK of characters ) {
+				for ( var st of setup.baseStats ) {
+					gC(cK)[st].addExperience(expString[i]);
+					i++;
+				}
+				i = 0;
+			}
+			if ( anyGainedExp ) {
+				eventMsg += "\n\nGained experience (will be modified depending on the stat affinity of each character):";
+				for ( var st of setup.baseStats ) {
+					if ( expString[i] != 0 ) {
+						eventMsg += "\n" + firstToCap(st) + ": " + expString[i];
+					}
+					i++;
+				}
+			}
+			i = 0;
+			// Grant actions
+			var learnableActions = [];
+			var learnableSocialActions = [];
+			var learningCharacters = characters.concat(["chArt"]);
+			for ( var m of capturedMonsters ) {
+				for ( var act of getMonRewards(m)[9] ) {
+					if ( learnableActions.includes(act) == false ) {
+						learnableActions.push(act);
+					}
+				}
+				for ( var act of getMonRewards(m)[10] ) {
+					if ( learnableSocialActions.includes(act) == false ) {
+						learnableSocialActions.push(act);
+					}
+				}
+			}
+			var learnedActionsString = "" + charactersLearnSceneActions(learningCharacters,learnableActions);
+			if ( learnedActionsString != "" ) {
+				eventMsg += "\n\n" + learnedActionsString;
+			}
+			for ( var cK of learningCharacters ) {
+				for ( var act of learnableSocialActions ) {
+					if ( gC(cK).extraSocIntList.includes(act) == false ) {
+						gC(cK).extraSocIntList.push(act);
+					}
+				}
+			}
+			// Special functions
+			for ( var m of capturedMonsters ) {
+				if ( getMonRewards(m)[11] ) {
+					eventMsg += getMonRewards(m)[11](characters);
+				}
+			}
+			// Remove "Captured Monster" altered states
+			gC(characters[0]).removeSpecificState("CaMn");
+			eventMsg += "\n";
+			// Disband group
+			charLosesFollowers(characters[0]);
+			return eventMsg;
+		}
+	);
+	sEvent.priority = 1;
+	return sEvent;
+}
 

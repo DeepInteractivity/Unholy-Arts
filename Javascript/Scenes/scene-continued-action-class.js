@@ -25,6 +25,7 @@ window.continuedAction = function() {
 	this.targetsList = []; // Targetted characters' keys
 	this.initiatorBodyparts = []; // Involved bodyparts for the initiator
 	this.targetsBodyparts = [] ; // Involved bodyparts for the targets
+	this.tornTargetsBodyparts = []; // List of lists of involved bodyparts for each target
 	
 	this.tags = [];
 	this.validRelationalPositions = [] ; // List of sets of two positions.
@@ -49,6 +50,14 @@ window.continuedAction = function() {
 				getChar(this.targetsList[tg]).body[this.targetsBodyparts[bp]].state = "inUse";
 			}
 		}
+		var i = 0;
+		for ( var bpl of this.tornTargetsBodyparts ) {
+			var target = this.targetsList[i];
+			for ( var bp of bpl ) {
+				gC(target).body[bp].state = "inUse";
+			}
+			i++;
+		}
 	}
 	this.freeBodyparts = function() {
 		for ( var bp in this.initiatorBodyparts ) {
@@ -58,6 +67,14 @@ window.continuedAction = function() {
 			for ( var tg in this.targetsList ) {
 				getChar(this.targetsList[tg]).body[this.targetsBodyparts[bp]].state = "free";
 			}
+		}
+		var i = 0;
+		for ( var bpl of this.tornTargetsBodyparts ) {
+			var target = this.targetsList[i];
+			for ( var bp of bpl ) {
+				gC(target).body[bp].state = "free";
+			}
+			i++;
 		}
 	}
 	this.learnAssociatedActions = function() {

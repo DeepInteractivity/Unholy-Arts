@@ -857,10 +857,17 @@ window.saList = function() {
 	
 	this.baThrustDildo = createSaBaThrustDildo();
 	
+			// Special
+	this.monsterCapture = createBaMonsterCapture();
+	this.runAway = createBaRunAway();
+	
 	// Physical
 	
 	this.kick = createSaKick();
 	this.coldGuts = createSaColdGuts();
+	
+	this.tackle = createTackle();
+	this.savageCrush = createSavageCrush();
 	
 		// Pain
 		
@@ -889,7 +896,6 @@ window.saList = function() {
 	this.baOrderKneeling = createBaOrderKneeling();
 	this.baOrderMasturbation = createBaOrderMasturbation();
 	this.baCorrodeMind = createBaCorrodeMind();
-	this.tackle = createTackle();
 	
 		// Drain
 		
@@ -900,6 +906,7 @@ window.saList = function() {
 		// Bondage
 		
 	this.baEtherealChains = createSaBaEtherealChains();
+	this.baOppressiveEmbrace = createBaOppressiveEmbrace();
 			
 			// Vines
 			

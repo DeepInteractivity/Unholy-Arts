@@ -89,7 +89,7 @@ window.mayEventBeSpectated = function(sEvent) {
 	var flag = false;
 	if ( sEvent ) {
 		if ( sEvent.title == "battle" || sEvent.title == "scene" ) {
-			if ( sEvent.characters.includes("chPlayerCharacter") == false && gC("chPlayerCharacter").followingTo == "" ) {
+			if ( sEvent.characters.includes("chPlayerCharacter") == false && gC("chPlayerCharacter").followingTo == "" && sEvent.label != "monsterEncounter" ) {
 			// if ( sEvent.charactersTeamA.includes("chPlayerCharacter") == false && sEvent.charactersTeamB.includes("chPlayerCharacter") == false ) {
 				flag = true;
 			}
@@ -116,6 +116,19 @@ window.mayBattleBeJoinedByChar = function(sEvent,charKey) {
 		if ( sEvent.title == "battle" ) {
 			if ( sEvent.characters.includes(charKey) == false && gC(charKey).followingTo == "" && sEvent.hasOwnProperty("label") ) {
 				if ( sEvent.label == "assault" ) {
+					flag = true;
+				}
+			}
+		}
+	}
+	return flag;
+}
+window.mayMonsterBattleBeJoined = function(sEvent) {
+	var flag = false;
+	if ( sEvent ) {
+		if ( sEvent.title == "battle" ) {
+			if ( sEvent.characters.includes("chPlayerCharacter") == false && gC("chPlayerCharacter").followingTo == "" && sEvent.hasOwnProperty("label") ) {
+				if ( sEvent.label == "monsterEncounter" ) {
 					flag = true;
 				}
 			}
@@ -561,6 +574,30 @@ window.addCharsTeamToCharsBattle = function(joiningCharacter,joinedCharacter) {
 		}
 	}
 }
+window.addCharsTeamToCharsMonsterBattle = function(joiningCharacter,joinedCharacter) {
+	var sEvent = getCharsActiveEvent(joinedCharacter);
+	var notification = "";
+	if ( sEvent ) {
+		if ( sEvent.title == "battle" ) {
+			var targetTeamA = false;
+			if ( sEvent.charactersTeamA.includes(joinedCharacter) ) {
+				targetTeamA = true;
+			}
+			sEvent.extraJoinedChars = [];
+			for ( var charKey of gC(joiningCharacter).followedBy.concat([joiningCharacter]) ) {
+				sEvent.characters.push(charKey);
+				if ( targetTeamA ) {
+					sEvent.charactersTeamA.push(charKey);
+				} else {
+					sEvent.charactersTeamB.push(charKey);
+				}
+				sEvent.extraJoinedChars.push(charKey);
+			}
+			notification = gC(joiningCharacter).getFormattedName() + " came to the battle in support of " + gC(joinedCharacter).getFormattedName() + ".";
+			sEvent.extraMessages.push(notification);
+		}
+	}
+}
 
 ////////// COMPASS CLASS  //////////
 // Compass contains references to the current map in play and player's location.
@@ -787,7 +824,8 @@ window.Compass = function() {
 			if ( gC(character).mapAi.state == "active" ) {
 				if ( character != "chPlayerCharacter" ) {
 					var sEvent = this.findFirstEventInvolvingCharacter(character);
-					if ( sEvent == null ) {
+					var sisId = this.getCharacterSisId(character);
+					if ( sEvent == null && sisId == -1 && (gC(character).currentRoom != findTrapRoomInMap()) ) {
 						gC(character).mapAi.signIdle();
 						gC(character).mapAi.main();
 					}
@@ -1031,14 +1069,20 @@ window.Compass = function() {
 		var repeatedAdvances = 0;
 			// Infinite loop patch //
 			State.variables.repeatedAdvances = 0;
+		
 		while ( this.timeToAdvance > 0 && repeatedAdvances < 10 ) {
 			var timePush = this.ongoingEvents[0].timeRemaining;
-			this.advanceTime(timePush);
+			this.advanceTime(timePush); // Reduces timeToAdvance by timePush
 			// Infinite loop patch Part 2 //
-			if ( tempTimeToAdvance == this.timeToAdvance ) { repeatedAdvances++; }
-			else { State.variables.repeatedAdvances = -repeatedAdvances; repeatedAdvances = 0; }
+			if ( tempTimeToAdvance == this.timeToAdvance ) {
+				repeatedAdvances++;
+			}
+			else {
+				repeatedAdvances = 0;
+			}
 			// Infinite loop patch //
 		}
+		this.advanceTime(0);
 	}
 	
 	Compass.prototype.pushAllTimeToAdvanceAsFollower = function() {
@@ -1084,7 +1128,7 @@ window.Compass = function() {
 				i = 0;
 				for ( var ev of eList ) {
 					if ( i != eI ) {
-						ev.forceEnd();
+						ev.forceEnd("duplication");
 					}
 					i++;
 				}
@@ -1433,6 +1477,9 @@ window.Compass = function() {
 					}
 				}
 			}
+			if ( gC("chPlayerCharacter").followingTo == "") {
+				text += this.getButtonAdventureRequests(character);
+			}
 			
 			// Battle buttons
 			if ( character != "chPlayerCharacter" ) {
@@ -1453,9 +1500,12 @@ window.Compass = function() {
 			
 			if ( mayEventBeSpectated(tEvent) ) {
 				text += " (" + this.getButtonSpectateCombat(character) + ")";
-				if ( mayBattleBeJoined(tEvent) ) {
-					text += " (" + this.getButtonJoinCombatWillingly(character) + ")";
-				}
+			}
+			if ( mayBattleBeJoined(tEvent) ) {
+				text += " (" + this.getButtonJoinCombatWillingly(character) + ")";
+			}
+			if ( mayMonsterBattleBeJoined(tEvent) ) {
+				text += " (" + this.getButtonJoinMonsterCombatWillingly(character) + ") ";
 			}
 			
 			text += "\n";
@@ -1483,11 +1533,16 @@ window.Compass = function() {
 			text += "are chatting together. This may continue for at least " + sEvent.timeRemaining + " minutes.";
 		}
 		else if ( sEvent.title == "battle" ) {
-			text += "engaged in ";
-			if ( sEvent.label == "assault" ) {
-				text += "an assault initiated by " + gC(sEvent.charactersTeamA[0]).getFormattedName() + " against " + gC(sEvent.charactersTeamB[0]).getFormattedName() + ".";
-			} else { // "challenge"
-				text += "a challenge initiated by " + gC(sEvent.charactersTeamA[0]).getFormattedName() + " against " + gC(sEvent.charactersTeamB[0]).getFormattedName() + ".";
+			if ( sEvent.label == "monsterEncounter" ) {
+				text += " being assaulted by vicious monsters!"
+			}
+			else {
+				text += "engaged in ";
+				if ( sEvent.label == "assault" ) {
+					text += "an assault initiated by " + gC(sEvent.charactersTeamA[0]).getFormattedName() + " against " + gC(sEvent.charactersTeamB[0]).getFormattedName() + ".";
+				} else { // "challenge"
+					text += "a challenge initiated by " + gC(sEvent.charactersTeamA[0]).getFormattedName() + " against " + gC(sEvent.charactersTeamB[0]).getFormattedName() + ".";
+				}
 			}
 			text += " This may continue for at least " + sEvent.timeRemaining + " minutes.";
 		}
@@ -1548,6 +1603,19 @@ window.Compass = function() {
 		var bText = "<<l" + "ink [[Discuss topic|Social Interactions Specifics]]>><<s" + "cript>>\n";
 		bText 	 += "eitherCreateSisOrRejectSis('" + targetCharacter + "');\n";
 		bText	 += "<</s" + "cript>><</l" + "ink>>";
+		return bText;
+	}
+	Compass.prototype.getButtonAdventureRequests = function(targetCharacter) {
+		var bText = "";
+		if ( targetCharacter != "chPlayerCharacter" ) {
+			var validAdvRequests = getAllPossibleAdvRequests(targetCharacter);
+			if ( validAdvRequests.length > 0 ) {
+				bText = " ( <<l" + "ink [[Adventure Topics|Adventure Requests]]>><<s" + "cript>>\n";
+				bText 	 +=  "formatAdvReqsPassage('" + targetCharacter + "');\n";
+				bText	 += "<</s" + "cript>><</l" + "ink>> )";
+			}
+		}
+		
 		return bText;
 	}
 	Compass.prototype.getButtonJoinConversation = function(targetSIS) {
@@ -1637,6 +1705,14 @@ window.Compass = function() {
 	Compass.prototype.getButtonJoinCombatWillingly = function(joinedChar) {
 		var bText = "<<l" + "ink [[Join combat on their side|Scene]]>><<s" + "cript>>\n";
 		bText += 'addCharsTeamToCharsBattle("chPlayerCharacter","' + joinedChar + '");\n';
+		bText += "State.variables.compass.pushAllTimeToAdvance();\n";
+		bText += "State.variables.sc.formatScenePassage();\n";
+		bText	 += "<</s" + "cript>><</l" + "ink>>";
+		return bText;
+	}
+	Compass.prototype.getButtonJoinMonsterCombatWillingly = function(joinedChar) {
+		var bText = "<<l" + "ink [[Join combat against monsters|Scene]]>><<s" + "cript>>\n";
+		bText += 'addCharsTeamToCharsMonsterBattle("chPlayerCharacter","' + joinedChar + '");\n';
 		bText += "State.variables.compass.pushAllTimeToAdvance();\n";
 		bText += "State.variables.sc.formatScenePassage();\n";
 		bText	 += "<</s" + "cript>><</l" + "ink>>";
@@ -2136,7 +2212,7 @@ window.systemEvent = function(minutes,characters,title,name,effect) {
 		
 		return flagFinishedEvent;
 	}
-	this.forceEnd = function() {
+	this.forceEnd = function(motive) {
 		this.timeRemaining = 0;
 		
 		if ( this.title != "movement" && this.title != "sisRound" ) {
@@ -2154,6 +2230,9 @@ window.systemEvent = function(minutes,characters,title,name,effect) {
 		
 		if ( this.characters.includes("chPlayerCharacter") ) {
 			State.variables.compass.setInterludeInfo(effectMsg); // interludePassage = effectMsg;
+			if ( motive != "duplication" ) {
+				State.variables.compass.timeToAdvance = 0;
+			}
 		}
 		
 		

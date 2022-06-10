@@ -426,6 +426,18 @@ Character.prototype.adjustAttributes = function(statVariance,statBuff) {
 		this[st].value += limitedRandomInt(statVariance) + statBuff;
 	}
 }
+Character.prototype.statsDifficultyAdjustments = function(difficultyVariance) {
+	// Stats will be increased or decreased from their initial values depending on the distance of the current difficulty with normal
+	var vMult = 0; // Variance multiplier
+	if ( gSettings().difficulty == "easy" ) {
+		vMult = -1;
+	} else if ( gSettings().difficulty == "hard" ) {
+		vMult = 1;
+	}
+	for ( var st of setup.baseStats ) {
+		this[st].value += (difficultyVariance * vMult);
+	}
+}
 
 Character.prototype.cleanAccumulatedDamages = function() {
 		this.lust.cleanDamage();
@@ -755,10 +767,27 @@ Character.prototype.sortSaList = function() {
 	}
 
 	// Character stats screen view
+Character.prototype.avatar = function() {
+	var avStr = "";
+	if ( this.avatarL != null ) {
+		return ("[img[" + this.avatarL + "]]");
+	} else {
+		return "";
+	}
+}
+window.gCavatar = function(cK) {
+	var avStr = "";
+	if ( gC(cK).avatarL != null ) {
+		return ("[img[" + gC(cK).avatarL + "]]");
+	} else {
+		return "";
+	}
+}
+
 Character.prototype.getCharacterUIbarInfo = function() { // Returns a string that generates the character's basic info when displayed on Sugarcube 2
 		var string = "<div align='center'>\ " + generateTitledName(this.varName) + " (" + this.getCharScreenButton("Status") + ")\n";
-		if ( this.avatar != null ) {
-			string += this.avatar() + "\n";
+		if ( this.avatarL != null ) {
+			string += gCavatar(this.varName) + "\n";
 		}
 		string += "</div> \ ";
 		string += this.textBars() + "\n";
@@ -821,6 +850,15 @@ window.addCharsSpecialExperience = function(cK,spExp,amount) {
 	// Control
 window.attackControl = function(charKey,damage) {
 		gC(charKey).control -= damage;
+		if ( gC(charKey).control < 0 ) {
+			gC(charKey).control = 0;
+		} else if ( gC(charKey).control >= gC(charKey).maxControl ) {
+			gC(charKey).control = gC(charKey).maxControl;
+		}
+	}
+	
+window.consumeControl = function(charKey,amount) {
+		gC(charKey).control -= amount;
 		if ( gC(charKey).control < 0 ) {
 			gC(charKey).control = 0;
 		} else if ( gC(charKey).control >= gC(charKey).maxControl ) {
@@ -1144,7 +1182,9 @@ window.charactersLearnSceneActions = function(characters,sceneActions) {
 				movesLearned.push(setup.saList[currentAction].name);
 			}
 		}
-		resultsMsg += gC(currentChar).getFormattedName() + " learned " + stringArrayToText(movesLearned) + ".\n";
+		if ( movesLearned.length > 0 ) {
+			resultsMsg += gC(currentChar).getFormattedName() + " learned " + stringArrayToText(movesLearned) + ".\n";
+		}
 		gC(currentChar).sortSaList();
 	}
 	return resultsMsg;

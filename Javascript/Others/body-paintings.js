@@ -416,7 +416,7 @@ window.createBdPntHoneyMark = function() {
 			gC(target).relations[actor].sexualTension.levelMod -= 1;
 			gC(target).relations[actor].friendship.levelMod -= 1;
 			gC(target).tastes.usePussy.w -= 15;
-			gC(target).combatAffinities.usePussy.weakness += 10;
+			gC(target).combatAffinities.usePussy.weakness -= 10;
 		},
 		function(actor,target) { // Calculate level
 			return baseCalculateBdPntLevel(this.tag,actor,target);
