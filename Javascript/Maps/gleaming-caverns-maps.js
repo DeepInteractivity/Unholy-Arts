@@ -748,12 +748,12 @@ setup.mapGleamingCaverns.unionLakeUpper = new RoomInfo(
 				} else {
 					sceneDesc = "A man, mounting a woman.";
 				}
-				State.variables.compass.setMapActionsMessage("You spot a couple of shapes down below... " + sceneDesc + " " + colorText("Check PASSED","green") + ": Stats (" + baseChance + ")" + hoverText("^^(?)^^","Agility * 2 + + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
+				State.variables.compass.setMapActionsMessage("You spot a couple of shapes down below... " + sceneDesc + " " + colorText("Check PASSED","green") + ": Stats (" + baseChance.toFixed(1) + ")" + hoverText("^^(?)^^","Agility * 2 + + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
 			}
 		} else {
 			voyeurAction.requirements = function(cG) { return false; }
 			if ( characters[0] == "chPlayerCharacter" ) {
-				State.variables.compass.setMapActionsMessage("The caverns look lonely... " + colorText("Check FAILED","red") + ": Stats (" + baseChance + ")" + hoverText("^^(?)^^","Agility * 2 + + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
+				State.variables.compass.setMapActionsMessage("The caverns look lonely... " + colorText("Check FAILED","red") + ": Stats (" + baseChance.toFixed(1) + ")" + hoverText("^^(?)^^","Agility * 2 + + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
 			}
 		}
 		actions.push(voyeurAction);
@@ -846,7 +846,7 @@ setup.mapGleamingCaverns.mainStreet2 = new RoomInfo(
 
 // Conditions: Drishtya and the judges have concluded their reunion
 window.isJudgesReunionFinishedFA = function() {
-	if ( State.variables.daycycle.month > 1 || State.variables.daycycle.day > 29 || State.variables.daycycle.hours > 15 ) {
+	if ( State.variables.daycycle.month != 1 || State.variables.daycycle.day != 29 || State.variables.daycycle.hours > 15 ) {
 		return true;
 	} else {
 		return false;
@@ -984,10 +984,23 @@ setup.mapGleamingCaverns.templeShrine = new RoomInfo(
 		new RoomConnection('templeStorage',2)
 //		,new RoomConnection('templeSanctum',1)
 		], // Connections
-	null, // getActions
+	function(characters) {
+		var actions = [];
+		var nersmiasIsBusy = false;
+		for ( var ev of State.variables.compass.ongoingEvents ) {
+			if ( ev.title == "npcNerConv" || ev.title == "nersmiasFASEconv" ) {
+				nersmiasIsBusy = true;
+			}
+		}
+		if ( isJudgesReunionFinishedFA() && isStVarOn("neSBin") == false && characters.includes("chPlayerCharacter") && nersmiasIsBusy == false ) {
+			actions.push(createGleamingCavernsNersmiasConv());
+		} else if ( characters.includes("chPlayerCharacter") == false && isJudgesReunionFinishedFA() && gC(characters[0]).hasOwnProperty("flagSpokeWithNersmias") == false && nersmiasIsBusy == false ) {
+			actions.push(createGleamingCavernsNPCNersmiasConv());
+		}
+		return actions;
+	}, // getActions
 	[147,196]
 );
-
 setup.mapGleamingCaverns.templeShrine.displayConnections = function() {
 	var string = "";
 	for ( var connection of this.connections ) {
@@ -1003,11 +1016,16 @@ setup.mapGleamingCaverns.templeShrine.displayConnections = function() {
 		string += getLinkToRoom("templeSanctum","Go to " + getCurrentMap().rooms["templeSanctum"].title,2)
 			    + " (" + colorText(2,"khaki") + ") " + displayCharIconsInRoom("templeSanctum") + "\n";
 	} else {
-		string += colorText("Nersmias blocks the entrance to the Temple Sanctum.\n","red");
+		if ( getRoomA("templeShrine").characters.includes("chNer") ) {
+			string += colorText("Nersmias blocks the entrance to the Temple Sanctum.\n","red");
+		} else {
+			string += colorText("The doors to the Temple Sanctum won't budge.\n","red");
+		}
 	}
 	
 	return string;
 }
+
 setup.mapGleamingCaverns.templeSanctum = new RoomInfo(
 	"templeSanctum", // Key
 	"Shapeshifters ~ Temple's Sanctum", // Title
@@ -1051,12 +1069,12 @@ setup.mapGleamingCaverns.wildTunnel2 = new RoomInfo(
 			var act0 = createActionMovingWildTunnel("wildTunnel6","Section 6",0,2);
 			if ( (baseChance + dice200) >= difficulty ) {
 				if ( characters[0] == "chPlayerCharacter" ) {
-					State.variables.compass.setMapActionsMessage("Access to Section 6: " + colorText("Check PASSED","green") + ": Stats (" + baseChance + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") => Difficulty (" + difficulty + ")");
+					State.variables.compass.setMapActionsMessage("Access to Section 6: " + colorText("Check PASSED","green") + ": Stats (" + baseChance.toFixed(1) + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") => Difficulty (" + difficulty + ")");
 				}
 			} else {
 				act0.requirements = function(cG) { return false; }
 				if ( characters[0] == "chPlayerCharacter" ) {
-					State.variables.compass.setMapActionsMessage("Access to Section 6: " + colorText("Check FAILED","red") + ": Stats (" + baseChance + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
+					State.variables.compass.setMapActionsMessage("Access to Section 6: " + colorText("Check FAILED","red") + ": Stats (" + baseChance.toFixed(1) + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
 				}
 			}
 			actions.push(act0);
@@ -1080,12 +1098,12 @@ setup.mapGleamingCaverns.wildTunnel3 = new RoomInfo(
 			var act0 = createActionMovingWildTunnel("wildTunnel9","Section 9",0,2);
 			if ( (baseChance + dice200) >= difficulty ) {
 				if ( characters[0] == "chPlayerCharacter" ) {
-					State.variables.compass.setMapActionsMessage("Access to Section 9: " + colorText("Check PASSED","green") + ": Stats (" + baseChance + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") => Difficulty (" + difficulty + ")");
+					State.variables.compass.setMapActionsMessage("Access to Section 9: " + colorText("Check PASSED","green") + ": Stats (" + baseChance.toFixed(1) + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") => Difficulty (" + difficulty + ")");
 				}
 			} else {
 				act0.requirements = function(cG) { return false; }
 				if ( characters[0] == "chPlayerCharacter" ) {
-					State.variables.compass.setMapActionsMessage("Access to Section 9: " + colorText("Check FAILED","red") + ": Stats (" + baseChance + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
+					State.variables.compass.setMapActionsMessage("Access to Section 9: " + colorText("Check FAILED","red") + ": Stats (" + baseChance.toFixed(1) + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
 				}
 			}
 			actions.push(act0);
@@ -1123,12 +1141,12 @@ setup.mapGleamingCaverns.wildTunnel5 = new RoomInfo(
 			var act0 = createActionMovingWildTunnel("wildTunnel9","Section 9",0,2);
 			if ( (baseChance + dice200) >= difficulty ) {
 				if ( characters[0] == "chPlayerCharacter" ) {
-					State.variables.compass.setMapActionsMessage("Access to Section 9: " + colorText("Check PASSED","green") + ": Stats (" + baseChance + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") => Difficulty (" + difficulty + ")");
+					State.variables.compass.setMapActionsMessage("Access to Section 9: " + colorText("Check PASSED","green") + ": Stats (" + baseChance.toFixed(1) + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") => Difficulty (" + difficulty + ")");
 				}
 			} else {
 				act0.requirements = function(cG) { return false; }
 				if ( characters[0] == "chPlayerCharacter" ) {
-					State.variables.compass.setMapActionsMessage("Access to Section 9: " + colorText("Check FAILED","red") + ": Stats (" + baseChance + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
+					State.variables.compass.setMapActionsMessage("Access to Section 9: " + colorText("Check FAILED","red") + ": Stats (" + baseChance.toFixed(1) + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
 				}
 			}
 			actions.push(act0);
@@ -1166,12 +1184,12 @@ setup.mapGleamingCaverns.wildTunnel7 = new RoomInfo(
 			var act0 = createActionMovingWildTunnel("wildTunnel11","Section 11",10,2);
 			if ( (baseChance + dice200) >= difficulty ) {
 				if ( characters[0] == "chPlayerCharacter" ) {
-					State.variables.compass.setMapActionsMessage("Access to Section 11: " + colorText("Check PASSED","green") + ": Stats (" + baseChance + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") => Difficulty (" + difficulty + ")");
+					State.variables.compass.setMapActionsMessage("Access to Section 11: " + colorText("Check PASSED","green") + ": Stats (" + baseChance.toFixed(1) + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") => Difficulty (" + difficulty + ")");
 				}
 			} else {
 				act0.requirements = function(cG) { return false; }
 				if ( characters[0] == "chPlayerCharacter" ) {
-					State.variables.compass.setMapActionsMessage("Access to Section 11: " + colorText("Check FAILED","red") + ": Stats (" + baseChance + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
+					State.variables.compass.setMapActionsMessage("Access to Section 11: " + colorText("Check FAILED","red") + ": Stats (" + baseChance.toFixed(1) + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
 				}
 			}
 			actions.push(act0);
@@ -1223,12 +1241,12 @@ setup.mapGleamingCaverns.wildTunnel10 = new RoomInfo(
 			var act0 = createActionMovingWildTunnel("wildTunnel11","Section 11",0,2);
 			if ( (baseChance + dice200) >= difficulty ) {
 				if ( characters[0] == "chPlayerCharacter" ) {
-					State.variables.compass.setMapActionsMessage("Access to Section 11: " + colorText("Check PASSED","green") + ": Stats (" + baseChance + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") => Difficulty (" + difficulty + ")");
+					State.variables.compass.setMapActionsMessage("Access to Section 11: " + colorText("Check PASSED","green") + ": Stats (" + baseChance.toFixed(1) + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") => Difficulty (" + difficulty + ")");
 				}
 			} else {
 				act0.requirements = function(cG) { return false; }
 				if ( characters[0] == "chPlayerCharacter" ) {
-					State.variables.compass.setMapActionsMessage("Access to Section 11: " + colorText("Check FAILED","red") + ": Stats (" + baseChance + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
+					State.variables.compass.setMapActionsMessage("Access to Section 11: " + colorText("Check FAILED","red") + ": Stats (" + baseChance.toFixed(1) + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
 				}
 			}
 			actions.push(act0);
@@ -1282,12 +1300,12 @@ setup.mapGleamingCaverns.wildTunnel12 = new RoomInfo(
 			var act0 = createActionMovingWildTunnel("wildTunnel17","Section 17",0,2);
 			if ( (baseChance + dice200) >= difficulty ) {
 				if ( characters[0] == "chPlayerCharacter" ) {
-					State.variables.compass.setMapActionsMessage("Access to Section 17: " + colorText("Check PASSED","green") + ": Stats (" + baseChance + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") => Difficulty (" + difficulty + ")");
+					State.variables.compass.setMapActionsMessage("Access to Section 17: " + colorText("Check PASSED","green") + ": Stats (" + baseChance.toFixed(1) + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") => Difficulty (" + difficulty + ")");
 				}
 			} else {
 				act0.requirements = function(cG) { return false; }
 				if ( characters[0] == "chPlayerCharacter" ) {
-					State.variables.compass.setMapActionsMessage("Access to Section 17: " + colorText("Check FAILED","red") + ": Stats (" + baseChance + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
+					State.variables.compass.setMapActionsMessage("Access to Section 17: " + colorText("Check FAILED","red") + ": Stats (" + baseChance.toFixed(1) + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
 				}
 			}
 			actions.push(act0);
@@ -1373,12 +1391,12 @@ setup.mapGleamingCaverns.wildTunnel16 = new RoomInfo(
 			var act0 = createActionMovingWildTunnel("pondIllumination","Tight tunnel",0,2);
 			if ( (baseChance + dice200) >= difficulty ) {
 				if ( characters[0] == "chPlayerCharacter" ) {
-					State.variables.compass.setMapActionsMessage("Access to tight tunnel: " + colorText("Check PASSED","green") + ": Stats (" + baseChance + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") => Difficulty (" + difficulty + ")");
+					State.variables.compass.setMapActionsMessage("Access to tight tunnel: " + colorText("Check PASSED","green") + ": Stats (" + baseChance.toFixed(1) + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") => Difficulty (" + difficulty + ")");
 				}
 			} else {
 				act0.requirements = function(cG) { return false; }
 				if ( characters[0] == "chPlayerCharacter" ) {
-					State.variables.compass.setMapActionsMessage("Access to tight tunnel: " + colorText("Check FAILED","red") + ": Stats (" + baseChance + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
+					State.variables.compass.setMapActionsMessage("Access to tight tunnel: " + colorText("Check FAILED","red") + ": Stats (" + baseChance.toFixed(1) + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
 				}
 			}
 			actions.push(act0);
@@ -1460,12 +1478,12 @@ setup.mapGleamingCaverns.wildTunnel20 = new RoomInfo(
 			var act0 = createActionMovingWildTunnel("wildTunnel21","Section 21",0,2);
 			if ( (baseChance + dice200) >= difficulty ) {
 				if ( characters[0] == "chPlayerCharacter" ) {
-					State.variables.compass.setMapActionsMessage("Access to Section 21: " + colorText("Check PASSED","green") + ": Stats (" + baseChance + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") => Difficulty (" + difficulty + ")");
+					State.variables.compass.setMapActionsMessage("Access to Section 21: " + colorText("Check PASSED","green") + ": Stats (" + baseChance.toFixed(1) + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") => Difficulty (" + difficulty + ")");
 				}
 			} else {
 				act0.requirements = function(cG) { return false; }
 				if ( characters[0] == "chPlayerCharacter" ) {
-					State.variables.compass.setMapActionsMessage("Access to Section 21: " + colorText("Check FAILED","red") + ": Stats (" + baseChance + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
+					State.variables.compass.setMapActionsMessage("Access to Section 21: " + colorText("Check FAILED","red") + ": Stats (" + baseChance.toFixed(1) + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
 				}
 			}
 			actions.push(act0);
@@ -1490,12 +1508,12 @@ setup.mapGleamingCaverns.wildTunnel21 = new RoomInfo(
 			var act0 = createActionMovingWildTunnel("wildTunnel22","Section 22",0,2);
 			if ( (baseChance + dice200) >= difficulty ) {
 				if ( characters[0] == "chPlayerCharacter" ) {
-					State.variables.compass.setMapActionsMessage("Access to Section 22: " + colorText("Check PASSED","green") + ": Stats (" + baseChance + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") => Difficulty (" + difficulty + ")");
+					State.variables.compass.setMapActionsMessage("Access to Section 22: " + colorText("Check PASSED","green") + ": Stats (" + baseChance.toFixed(1) + ") " + hoverText("(?)","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") => Difficulty (" + difficulty + ")");
 				}
 			} else {
 				act0.requirements = function(cG) { return false; }
 				if ( characters[0] == "chPlayerCharacter" ) {
-					State.variables.compass.setMapActionsMessage("Access to Section 22: " + colorText("Check FAILED","red") + ": Stats (" + baseChance + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
+					State.variables.compass.setMapActionsMessage("Access to Section 22: " + colorText("Check FAILED","red") + ": Stats (" + baseChance.toFixed(1) + ")" + hoverText("^^(?)^^","Agility + Resilience + Will + Perception + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
 				}
 			}
 			actions.push(act0);
@@ -1742,7 +1760,7 @@ window.getGleamingCavernStreetConvs = function() {
 window.getGCtribeRoomDescPlusGossip = function() {
 	var desc = this.description;
 	var conv = getGleamingCavernStreetConvs();
-	if ( conv != "" ) {
+	if ( conv != "" && State.variables.daycycle != 4 && State.variables.daycycle != 3 ) {
 		desc += "\n" + conv;
 	}
 	return desc;
@@ -1788,7 +1806,8 @@ window.gCmonsterEncounterPrompt = function(characters) {
 		if ( characters.includes("chPlayerCharacter") ) {
 			State.variables.compass.interludePassage = "Monsters are ambushing you!\n\n"
 				+ "<<l" + "ink [[Continue|Scene]]>><<s" + "cript>>\n"
-			+ "State.variables.compass.characterEventEndsPrematurely('" + characters[0] + "');\n"
+			+ "State.variables.compass.characterEventEndsPrematurelyFinishMovement('" + characters[0] + "');\n"
+			//+ "State.variables.compass.characterEventGetsNewRemainingTime('" + characters[0] + "',20);\n"
 			+ "State.variables.compass.ongoingEvents.push(createGcRandomMonsterEncounterEvent(20," + formattedChars + "));\n"
 			+ "State.variables.compass.finishPlayerPrompt();\n"
 			+ "State.variables.compass.sortOnGoingEventsByTime();\n"
@@ -1797,7 +1816,8 @@ window.gCmonsterEncounterPrompt = function(characters) {
 			State.variables.compass.setPlayerPrompt(State.variables.compass.interludePassage,"chPlayerCharacter",false);
 		} else {
 			// NPCs get immediately put into event
-			State.variables.compass.characterEventEndsPrematurely(characters);
+			State.variables.compass.characterEventEndsPrematurelyFinishMovement(characters);
+			//State.variables.compass.characterEventGetsNewRemainingTime(characters[0],20);
 			State.variables.compass.ongoingEvents.push(createGcRandomMonsterEncounterEvent(20,characters));
 			State.variables.compass.sortOnGoingEventsByTime();
 				// Do NPCs remember their mission?

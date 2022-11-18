@@ -48,8 +48,8 @@ window.NpcMapAi = function(charKey) {
 	
 	/////////// PROVISIONAL ///////////
 	this.main = function() { // General function for the AI to regulate itself. It must be executed regularly.
+		var sisKey = State.variables.compass.getCharacterSisId(this.charKey);
 		if ( this.type != "static" ) {
-			var sisKey = State.variables.compass.findFirstSisIdInvolvingCharacter(this.charKey);
 			if ( this.state == "idle" && sisKey == -1 ) {
 				if ( State.variables.compass.flagEndedScenario == false ) {
 					gC(this.charKey).globalAi.generalEvaluations();

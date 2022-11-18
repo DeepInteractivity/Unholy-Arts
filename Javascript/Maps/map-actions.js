@@ -52,7 +52,7 @@ window.createSystemEventSearchForScrolls = function(minutes,characters) {
 		}
 	);
 	sEvent.flagMayBeInterrupted = false;
-	sEvent.applyEffectIfForcedToEnd = false;
+	sEvent.applyEffectIfForcedToEnd = true;
 	sEvent.priority = 2;
 	return sEvent;
 }
@@ -199,7 +199,7 @@ window.createSystemEventScene = function(characters,minutes,label) {
 	sEvent.flagMayChangeGroups = false;
 	sEvent.label = label;
 	sEvent.priority = 5;
-	sEvent.applyEffectIfForcedToEnd = false;
+	sEvent.applyEffectIfForcedToEnd = true;
 	return sEvent;
 }
 window.createSystemEventStandardSexScene = function(characters) {
@@ -210,7 +210,7 @@ window.createSystemEventStandardSexScene = function(characters) {
 	sEvent.flagMayChangeGroups = false;
 	sEvent.label = "sexScene";
 	sEvent.priority = 5;
-	sEvent.applyEffectIfForcedToEnd = false;
+	sEvent.applyEffectIfForcedToEnd = true;
 	return sEvent;
 }
 
@@ -248,7 +248,7 @@ window.createSystemEventDominantSexEffects = function(characters) {
 	sEvent.flagMayChangeGroups = false;
 	sEvent.label = "sexScene";
 	sEvent.priority = 5;
-	sEvent.applyEffectIfForcedToEnd = false;
+	sEvent.applyEffectIfForcedToEnd = true;
 	return sEvent;
 }
 
@@ -289,7 +289,7 @@ window.createSystemEventAltDominantSexEffects = function(charsA,charsB) {
 	sEvent.flagMayChangeGroups = false;
 	sEvent.label = "sexScene";
 	sEvent.priority = 5;
-	sEvent.applyEffectIfForcedToEnd = false;
+	sEvent.applyEffectIfForcedToEnd = true;
 	return sEvent;
 }
 
@@ -334,7 +334,7 @@ window.createSystemEventStandardTransformationScene = function(charsA,charsB,des
 	sEvent.tfMenuPassage = tfMenuPassage;
 	sEvent.label = "sexScene";
 	sEvent.priority = 5;
-	sEvent.applyEffectIfForcedToEnd = false;
+	sEvent.applyEffectIfForcedToEnd = true;
 	// Relocate actor and target
 	var actor = allChars[0]
 	if ( gC(actor).getRefugeRoomInMap() != "none" && State.variables.storyState != storyState.firstAdventure ) {
@@ -371,7 +371,7 @@ window.createSystemEventBattle = function(charactersTeamA,charactersTeamB,specta
 	sEvent.flagMayChangeGroups = false;
 	sEvent.label = label;
 	sEvent.priority = 5;
-	sEvent.applyEffectIfForcedToEnd = false;
+	sEvent.applyEffectIfForcedToEnd = true;
 	return sEvent;
 }
 window.createSystemEventStandardAssault = function(charactersTeamA,charactersTeamB,spectators) {
@@ -403,7 +403,7 @@ window.createSystemEventStandardAssault = function(charactersTeamA,charactersTea
 	sEvent.flagMayChangeGroups = false;
 	sEvent.label = "assault";
 	sEvent.priority = 5;
-	sEvent.applyEffectIfForcedToEnd = false;
+	sEvent.applyEffectIfForcedToEnd = true;
 	return sEvent;
 }
 window.createSystemEventStandardChallenge = function(charactersTeamA,charactersTeamB,spectators,stakes) {
@@ -435,7 +435,7 @@ window.createSystemEventStandardChallenge = function(charactersTeamA,charactersT
 	sEvent.flagMayChangeGroups = false;
 	sEvent.label = "challenge";
 	sEvent.priority = 5;
-	sEvent.applyEffectIfForcedToEnd = false;
+	sEvent.applyEffectIfForcedToEnd = true;
 	return sEvent;
 }
 
@@ -464,7 +464,7 @@ window.createSystemEventLiberationChallenge = function(charactersTeamA,character
 	sEvent.flagMayChangeGroups = false;
 	sEvent.label = "liberationChallenge";
 	sEvent.priority = 5;
-	sEvent.applyEffectIfForcedToEnd = false;
+	sEvent.applyEffectIfForcedToEnd = true;
 	return sEvent;
 }
 

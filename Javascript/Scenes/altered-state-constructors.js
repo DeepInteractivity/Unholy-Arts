@@ -304,6 +304,68 @@ window.createAStaintedControlRecovery = function(intensity) {
 	return as;
 }
 
+window.createASgainingMomentum = function(intensity) {
+	// Stats loss , Extra physical strength eps // Turns
+	var sgs = 2;
+	var sgm = 0.2;
+	var turns = 2;
+	var provokeEffect = function(charKey) {
+		gC(charKey).physique.sumModifier += sgs;
+		gC(charKey).physique.multModifier += sgm;
+		gC(charKey).agility.sumModifier += sgs;
+		gC(charKey).agility.multModifier += sgm;
+	}
+	var cancelEffect = function(charKey) {
+		gC(charKey).physique.sumModifier -= sgs;
+		gC(charKey).physique.multModifier -= sgm;
+		gC(charKey).agility.sumModifier -= sgs;
+		gC(charKey).agility.multModifier -= sgm;
+	}
+	var description = "This character is gaining momentum.\n"
+					+ "Gain of physique and agility.";
+	var as = new alteredState("Gaining Momentum","GnMm","scene",turns,provokeEffect,cancelEffect,description);
+	as.type = "buff";
+	return as;
+}
+
+window.createASbleedingInjury = function(intensity) {
+	// Stats loss , Extra physical strength eps // Turns
+	var sls = 1 + intensity * 0.2; // 1 ~ 3
+	var slm = 0.05 + intensity * 0.01; // 0.05 ~ 0.15
+	var ipw = 5 + intensity * 0.5; // 5 ~ 10
+	var turns = 3 + limitedRandomInt(2); // 3 ~ 5
+	var provokeEffect = function(charKey) {
+		gC(charKey).physique.sumModifier -= sls;
+		gC(charKey).physique.multModifier -= slm;
+		gC(charKey).resilience.sumModifier -= sls;
+		gC(charKey).resilience.multModifier -= slm;
+		gC(charKey).agility.sumModifier -= sls;
+		gC(charKey).agility.multModifier -= slm;
+		gC(charKey).combatAffinities.physical.weakness += ipw;
+	}
+	var cancelEffect = function(charKey) {
+		gC(charKey).physique.sumModifier += sls;
+		gC(charKey).physique.multModifier += slm;
+		gC(charKey).resilience.sumModifier += sls;
+		gC(charKey).resilience.multModifier += slm;
+		gC(charKey).agility.sumModifier += sls;
+		gC(charKey).agility.multModifier += slm;
+		gC(charKey).combatAffinities.physical.weakness -= ipw;
+	}
+	var description = "This character is bleeding from an injury, yet healing rapidly.\n"
+					+ "Loss of physique, agility, resilience. Increased physical weakness.";
+	var as = new alteredState("Bleeding Injury","BlIj","scene",turns,provokeEffect,cancelEffect,description);
+	as.turnEffect = function(character) {
+		var description = "";
+		var damage = gC(character).lust.max * 0.01;
+		gC(character).lust.attack(-damage);
+		description = ktn(character) + "'s injury is closing, but in the meantime, it bleeds for " + textLustDamage(damage) + ".";
+		return description;
+	}
+	as.type = "debuff";
+	return as;
+}
+
 // Hypnosis
 
 window.createAShypnosisStroke = function(intensity) {
@@ -514,7 +576,7 @@ window.createASvinChainedLegs = function(intensity,days) {
 	}
 	var description = "Extremely resilient vines block the movement of their legs.\n"
 					+ "Arms locked, loss of resilience and agility.";
-	var as = new alteredState("Long-term vined legs","LVAr","days",days,provokeEffect,cancelEffect,description);
+	var as = new alteredState("Long-term vined legs","LVLg","days",days,provokeEffect,cancelEffect,description);
 	as.type = "debuff";
 	as.sls = sls;
 	as.slm = slm;

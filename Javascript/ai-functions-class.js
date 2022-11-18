@@ -719,6 +719,9 @@ window.createAiWeightedMissionsByTaste = function() {
 	ai.callAction = function(character,allyCharacters,enemyCharacters,currentTurn) {
 		var results = new aiResults();
 		
+		var fixedTarget = undefined;
+		if ( this.fixedTarget != undefined ) { fixedTarget = this.fixedTarget; }
+		
 		var tfScAlMs = true; // Shortcut to reduce frequency of choosing missions during tf scenes
 		if ( gC(character).hasLead && State.variables.sc.hasOwnProperty("tfFlag") ) {
 			if ( limitedRandomInt(64) > 48 ) {
@@ -972,6 +975,7 @@ window.assignWeightToActionFromActorToTargetWithDesires = function(action,actor,
 		}
 		weight *= (newMult + desiresMultiplier + mult);
 	}
+	if ( gC(actor).aiAlgorythm.fixedTarget == target ) { weight *= 1000; }
 	if ( weight > 0 && State.variables.sc.hasOwnProperty("tfFlag") ) {
 		if ( setup.saList[action].strategyTags.includes("tfPlus") ) {
 			weight *= 4.5 + (State.variables.sc.currentTurn * 0.5);
@@ -1282,6 +1286,9 @@ window.createWeightedListOfCaChoices = function(actor,caPosChoicesList) {
 	var targetsMultipliers = [];
 	var wL = new weightedList();
 	
+	var fixedTarget = "";
+	if ( gC(actor).aiAlgorythm.fixedTarget ) { fixedTarget = gC(actor).aiAlgorythm.fixedTarget; }
+	
 	var i = 0;
 	for ( var capCh of caPosChoicesList ) {
 		var mult = 1;
@@ -1295,6 +1302,7 @@ window.createWeightedListOfCaChoices = function(actor,caPosChoicesList) {
 			}
 			mult = targetsMultipliers[target];
 		}
+		if ( target == fixedTarget ) { mult *= 1000; }
 		wL[i] = new weightedElement(capCh,assignWeightToActionFromActorToTargetWithDesires(capCh[0],actor,target,desires,mult));
 		i++;
 	}

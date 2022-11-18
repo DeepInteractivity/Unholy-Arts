@@ -90,6 +90,8 @@ window.scene = function() {
 		return 1;
 	}
 	// This function is automatically called at the end of every turn. It may be manually changed to create special behavior for a specific scene.
+	this.customActionAllowed = null; // function(actionKey,actorKey,targetsKeys)
+	// When this function exists, checks if the actor can use the specified actionKey against the specified targets
 	
 };
 
@@ -564,6 +566,8 @@ window.scene = function() {
 		if ( this.hasOwnProperty("tempData") ) {
 			delete this.tempData;
 		}
+		
+		this.customActionAllowed = null;
 	}
 	
 	scene.prototype.getCharacterContext = function(charKey) {
@@ -1977,6 +1981,34 @@ window.endConditionStandardMonsterBattle = function(turns) {
 	return flagEndScene;
 }
 
+window.createEndConditionsTwistedFestivalSpecialBattle = function(passageNormalEnd,passageSpecialEnd) {
+	var customScript = function(turns) {
+		// Check for normal victory, defeat or stalemate
+		var flagEndScene = endConditionStandardBattle(turns);
+		var specialEndScene = false;
+		if ( flagEndScene == false ) {
+			// Check for special victory (all fakes are defeated first)
+			var specialVictory = true;
+			for ( var cK of ["ch0","ch1","ch2","ch3","ch4"] ) {
+				if ( gC(cK).koed == false ) {
+					specialVictory = false;
+				}
+			}
+			if ( specialVictory == true ) {
+				State.variables.sc.endScenePassage = passageSpecialEnd;
+			this.refreshEndScenePassageScript();
+				specialEndScene = true;
+			}
+		} else if ( flagEndScene == true ) {
+			State.variables.sc.endScenePassage = passageNormalEnd;
+			this.refreshEndScenePassageScript();
+		}
+		return ( flagEndScene || specialEndScene ); // Returns true if either of the end conditions have been achieved,
+													// in that case, the target passage will have been updated
+	}
+	return customScript;
+}
+
 //////// OTHER FUNCTIONS ////////
 
 window.getSexDamageMult = function(actor,target,action) {
@@ -2304,6 +2336,12 @@ window.endSceneScriptRefreshSomeLustIfOrgasmed = function() {
 window.setRefreshSomeLustBattleScript = function() {
 	State.variables.sc.endSceneScript = endSceneScriptRefreshSomeLustIfOrgasmed;
 }
+window.endSceneScriptUnconditionalCleanLust = function() {
+	var allChars = State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys);
+	for ( var cK of allChars ) {
+		gC(cK).lust.current = gC(cK).lust.max; 
+	}
+}
 
 	// Data
 window.getCharsEnemyTeam = function(cK) { // Checks if the "cK" character is in any team. If so, returns the opposite team
@@ -2316,4 +2354,16 @@ window.getCharsEnemyTeam = function(cK) { // Checks if the "cK" character is in 
 	}
 	return team;
 }
+
+// Custom action allowed functions
+window.disallowBeastkinLewdActionsOnFirstAdventure = function(actionKey,actorKey,targetsKeys) {
+		var actionAllowed = true;
+		var forbiddenActors = ["chRock","chHope"];
+		var action = setup.saList[actionKey];
+		if ( forbiddenActors.includes(actorKey) && ( action.affinities.includes("pounce") || action.affinities.includes("sex") ) ) {
+			actionAllowed = false;
+		}
+		return actionAllowed;
+	}
+
 

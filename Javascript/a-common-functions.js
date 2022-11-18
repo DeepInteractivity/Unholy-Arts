@@ -187,6 +187,15 @@ window.getTextWithTooltipAlt = function(txt,tooltip) {
 	return fTxt;
 }
 
+window.scriptStart = function() {
+	var t = `<<s` + `cript>>`;
+	return t;
+}
+window.scriptEnd = function() {
+	var t = `<</s` + `cript>>`;
+	return t;
+}
+
 // Engine
 window.getChar = function(charKey) {
 	return State.variables[charKey];
@@ -720,7 +729,7 @@ window.getHotfixButton = function() {
 	//var	bText	  = "\n\n<<l" + "ink [[Apply lag fix|Personal Room]]>><<s" + "cript>>\n";
 	//	bText 	 += "applyLagFix();\n";
 	//	bText	 += "<</s" + "cript>><</l" + "ink>>\n\n";
-	 var bText = "";
+	// var bText = "";
 	return bText;
 }
 

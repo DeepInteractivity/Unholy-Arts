@@ -26,6 +26,9 @@ window.initializeGleamingCavernsAdventure = function() {
 		gC(cK).ssRsp = 0; // Individual respect
 	}
 	gC("chVal").ssRsp = -500; // Valtan respect
+	// Other story variables
+	initNersmiasGlobalTrust();
+	initNersmiasGlobalConviction();
 	// Holy blast
 	charactersLearnSceneActions(getCandidatesKeysArray(),["holyBlast"]);
 	// Initialize secondary characters
@@ -263,6 +266,9 @@ window.finishGleamingCavernsAdventure = function() {
 		}
 		gC(cK).charisma.affinity -= 0.50;
 		gC(cK).empathy.affinity -= 0.40;
+		if ( gC(cK).hasOwnProperty("flagSpokeWithNersmias") ) {
+			delete gC(cK).flagSpokeWithNersmias;
+		}
 	}
 	
 	// Finish Hypnotic Resistance status effect
@@ -305,8 +311,15 @@ window.finishGleamingCavernsAdventure = function() {
 	removeFromStVarsList("vlTlk3");	
 	removeFromStVarsList("vlNoCv");	
 	for ( var vr of ["diVcAt","diHeAt","diSwAt","diAcWn","diAcLs","diAcFf","diDfWn","diDfLs",
-					 "knHnNt","brMnAr","GcVcCv" ] ) {
+					 "knHnNt","brMnAr","GcVcCv","nsbRea","noNeHy","gcSiTl","gcSiWT","gcSiSp",
+					 "tfWnSF","tfTfVl","plSgVF","tfNsSp","tfMrSp","tfClSp","tfPlSp","tfVlSP" ] ) {
 		removeFromStVarsList(vr);
+	}
+	
+	for ( var vr of ["nerTrust","nerConviction","nerLocTrust","nerLocConviction","nsbPlHeVl","nePtPc","nePtFP","nePtCo","shapeshiftersForgiveValtan"] ) {
+		if ( State.variables[vr] != undefined ) {
+			delete State.variables[vr];
+		}
 	}
 	
 	if ( State.variables.morphMerit != undefined ) {
@@ -314,6 +327,7 @@ window.finishGleamingCavernsAdventure = function() {
 	}
 	
 	// Cleaning
+	removeFromStVarsList("HdRlts");
 	cleanFirstLoopLeftoverData();
 }
 
@@ -536,6 +550,261 @@ window.initRelsNersmiasMesquelles = function() {
 	getRelation("chNer","chMes").enmity.ltv = 300;
 	getRelation("chMes","chNer").friendship.ltv = 250;
 	getRelation("chMes","chNer").enmity.ltv = 200;
+}
+
+// Nersmias story stats functions
+window.initNersmiasGlobalTrust = function() {
+	State.variables.nerTrust = 50;
+}
+window.initNersmiasGlobalConviction = function() {
+	State.variables.nerConviction = 100;
+}
+window.modifyNersmiasGlobalTrust = function(summedValue) {
+	if ( State.variables.nerTrust == undefined ) {
+		initNersmiasGlobalTrust();
+	}
+	State.variables.nerTrust += summedValue;
+}
+window.modifyNersmiasGlobalConviction = function(summedValue) {
+	if ( State.variables.nerConviction == undefined ) {
+		initNersmiasGlobalConviction();
+	}
+	State.variables.nerConviction += summedValue;
+}
+window.nsbLocalToGlobalTnC = function() {
+	State.variables.nerConviction += State.variables.nerLocConviction * 0.25 - 25;
+	State.variables.nerTrust += State.variables.nerLocTrust * 0.25 - 12;
+}
+
+window.initNersmiasLocalTrust = function() {
+	if ( State.variables.nerTrust == undefined ) {
+		initNersmiasGlobalTrust();
+	}
+	var addedTrust = State.variables.nerTrust * 0.35;
+	State.variables.nerLocTrust = 32.5 + addedTrust;
+}
+window.initNersmiasLocalConviction = function() {
+	if ( State.variables.nerConviction == undefined ) {
+		initNersmiasGlobalConviction();
+	}
+	var addedConviction = State.variables.nerConviction * 0.35;
+	State.variables.nerLocConviction = 65 + addedConviction;
+}
+window.modifyNersmiasLocalTrust = function(summedValue) {
+	if ( State.variables.nerLocTrust == undefined ) {
+		initNersmiasLocalTrust();
+	}
+	State.variables.nerLocTrust += summedValue;
+}
+window.modifyNersmiasLocalConviction = function(summedValue) {
+	if ( State.variables.nerLocConviction == undefined ) {
+		initNersmiasLocalConviction();
+	}
+	State.variables.nerLocConviction += summedValue;
+}
+window.IorPmodifiesNersmiasLocalTorC = function(summedValue,IorP,TorC) {
+	var mult = 1;
+	var qualityValue = 20;
+	// Get either inspiration or persuasion
+	if ( IorP == 'i' ) {
+		qualityValue = getPlayerInspirationPower();
+	} else {
+		qualityValue = getPlayerPersuasionPower();
+	}
+	// Get final change
+	if ( qualityValue >= 40 ) {
+		mult = 1.5;
+	} else {
+		mult = ((qualityValue - 20) / 40) + 1;
+	}
+	var changedValue = summedValue*mult;
+	// Apply changes
+	if ( TorC == 't' ) {
+		modifyNersmiasLocalTrust(changedValue);
+	} else {
+		modifyNersmiasLocalConviction(changedValue);
+	}
+}
+
+window.modifyPlayerHelpedValtan = function(valueChange) {
+	if ( State.variables.nsbPlHeVl == undefined ) {
+		State.variables.nsbPlHeVl = 0;
+	}
+	State.variables.nsbPlHeVl += valueChange;
+}
+
+window.getPlayerSocialEvaluationPower = function() {
+	var power = gCstat("chPlayerCharacter","empathy") * 1 + gCstat("chPlayerCharacter","perception") * 0.65 + gCstat("chPlayerCharacter","luck") * 0.35;
+	return power;
+}
+window.getEvaluationLevelInaccuracyNersmias = function () {
+	var psep = getPlayerSocialEvaluationPower();
+	var level = 3;
+	var inaccuracy = 0;
+	if ( psep <= 24 ) {
+		level = 1;
+		inaccuracy = 0.3;
+	} else if ( psep <= 30 ) {
+		level = 2;
+		inaccuracy = 0.15;
+	}
+	return [level,inaccuracy];
+}
+window.getNersmiasTrustDescription = function() {
+	var li = getEvaluationLevelInaccuracyNersmias();
+	var descLevel = li[0];
+	var inaccuracy = li[1] * 100;
+	if ( State.variables.nerLocTrust == undefined ) { initNersmiasLocalTrust(); }
+	var perceivedTrustQuantity = State.variables.nerLocTrust;
+	if ( inaccuracy != 0 ) {
+		perceivedTrustQuantity *= ((- inaccuracy + limitedRandomInt(inaccuracy * 2)) * 0.01 + 1);
+	}
+	
+	var description = ""
+	if ( descLevel < 2 ) {
+		if ( perceivedTrustQuantity >= 55 ) {
+			description = "Nersmias has a clear, calm voice.";
+		} else if ( perceivedTrustQuantity >= 40 ) {
+			description = "Nersmias is immodest and clear.";
+		} else if ( perceivedTrustQuantity >= 20 ) {
+			description = "Nersmias is brash and direct.";
+		} else {
+			description = "Nersmias looks at you with some contempt, even.";
+		}
+	} else {
+		if ( perceivedTrustQuantity >= 55 ) {
+			description = "Nersmias speaks clearly, without saving up in details. He wants to make sure to get his points across.";
+		} else if ( perceivedTrustQuantity >= 40 ) {
+			description = "Despite his reserves, Nersmias is making an effort to take your arguments at face value.";
+		} else if ( perceivedTrustQuantity >= 20 ) {
+			description = "Nersmias' gestures make it clear he's growing more cynical about your positions.";
+		} else {
+			description = "Nersmias is tense and barely containing his anger.";
+		}
+		if ( descLevel > 2 ) {
+			description += "\nTrust: " + State.variables.nerLocTrust.toFixed(1);
+		}
+	}
+	State.variables.nsbtDesc = description;
+	return description;
+}
+window.getNersmiasConvictionDescription = function() {
+	var li = getEvaluationLevelInaccuracyNersmias();
+	var descLevel = li[0];
+	var inaccuracy = li[1] * 100;
+	if ( State.variables.nerLocConviction == undefined ) { initNersmiasLocalConviction(); }
+	var perceivedConvictionQuantity = State.variables.nerLocConviction;
+	if ( inaccuracy != 0 ) {
+		perceivedConvictionQuantity *= ((- inaccuracy + limitedRandomInt(inaccuracy * 2)) * 0.01 + 1);
+	}
+	
+	var description = ""
+	if ( descLevel < 2 ) {
+		if ( perceivedConvictionQuantity >= 80 ) {
+			description = "Nersmias is decisive and resolute.";
+		} else if ( perceivedConvictionQuantity >= 55 ) {
+			description = "Nersmias speaks loud and clear.";
+		} else if ( perceivedConvictionQuantity >= 30 ) {
+			description = "Nersmias is willing to concede a point from time to time.";
+		} else {
+			description = "Nersmias seems tired.";
+		}
+	} else {
+		if ( perceivedConvictionQuantity >= 80 ) {
+			description = "Nersmias's voice sounds unshaken, strong as the sturdiest tree in a most ancient forest.";
+		} else if ( perceivedConvictionQuantity >= 55 ) {
+			description = "Nersmias' voice is clearly determined and full of conviction.";
+		} else if ( perceivedConvictionQuantity >= 30 ) {
+			description = "Nersmias is sometimes forced to act defensively, stopping to weight the value of your positions.";
+		} else {
+			description = "The priest is now more reflexive than combative, arguing not only with you, but also himself.";
+		}
+		if ( descLevel > 2 ) {
+			description += "\nConviction: " + State.variables.nerLocConviction.toFixed(1);
+		}
+	}
+	State.variables.nsbcDesc = description;
+	return description;
+}
+
+window.getPlayerInspirationPower = function() {
+	var ip = gCstat("chPlayerCharacter","charisma") * 0.9 + gCstat("chPlayerCharacter","will") * 0.6 + gCstat("chPlayerCharacter","empathy") * 0.3 + gCstat("chPlayerCharacter","luck") * 0.2;
+	return ip;
+}
+window.getPlayerPersuasionPower = function() {
+	var pp = gCstat("chPlayerCharacter","charisma") * 0.9 + gCstat("chPlayerCharacter","intelligence") * 0.6 + gCstat("chPlayerCharacter","empathy") * 0.3 + gCstat("chPlayerCharacter","luck") * 0.2;
+	return pp;
+}
+
+window.getCharsValtanJudgement = function(cK) {
+	var results = [0,0]; // Levels of judgement. [0]: Supports Valtan reuniting with Sillan, [1]: Supports Valtan being pardoned
+						// -2 , -1 , 0 , 1 , 2
+						
+	if ( gC(cK).hasOwnProperty("supsValLove") ) {
+		if ( gC(cK).supsValLove <= -5 ) {
+			results[0] = -2;
+		} else if ( gC(cK).supsValLove <= -2.5 ) {
+			results[0] = -1;
+		} else if ( gC(cK).supsValLove <= 2.5 ) {
+			results[0] = 0;
+		} else if ( gC(cK).supsValLove <= 5 ) {
+			results[0] = 1;
+		} else {
+			results[0] = 2;
+		}
+	}
+	
+	if ( gC(cK).hasOwnProperty("supsValPardon") ) {
+		if ( gC(cK).supsValPardon <= -5 ) {
+			results[1] = -2;
+		} else if ( gC(cK).supsValPardon <= -2.5 ) {
+			results[1] = -1;
+		} else if ( gC(cK).supsValPardon <= 2.5 ) {
+			results[1] = 0;
+		} else if ( gC(cK).supsValPardon <= 5 ) {
+			results[1] = 1;
+		} else {
+			results[1] = 2;
+		}
+	}
+	
+	return results;
+}
+window.getCharsValtanJudgementDescription = function(cK) {
+	var txt = colorText("//\"Could you tell me, in all honesty, what do you think the Shapeshifters should do with Valtan?\"//",gC("chPlayerCharacter").speechColor) + "\n";
+	var sndText = "";
+	var jgment = getCharsValtanJudgement(cK);
+	if ( jgment[1] < 0 ) {
+		sndText = "Valtan\'s actions don\'t really speak in her favor,";
+	} else if ( jgment[1] > 0 ) {
+		sndText = "I\'m sure she had strong reasons to act against her tribe\'s law,";
+	} else {
+		sndText = "I\'m not really sure what to think about her breaking her tribe\'s law,";
+	}
+	if ( (jgment[0] < 0 && jgment[1] > 1) || (jgment[0] > 0 && jgment[1] < 0) ) {
+		sndText += " but ";
+	} else {
+		sndText += " and ";
+	}
+	if ( jgment[0] < 0 ) {
+		sndText += "I wouldn\'t really speak in her favor if Sillan asked me";
+		if ( jgment[1] < 0 ) {
+			sndText += " either.";
+		} else {
+			sndText += ".";
+		}
+	} else if ( jgment[0] > 0 ) {
+		sndText += "Nersmias is definitely over-reacting by not letting her speak to Sillan.";
+	} else {
+		sndText += "I don\'t know what to think of Nersmias\' attitude";
+		if ( jgment[1] == 0 ) {
+			sndText += " either.";
+		} else {
+			sndText += ".";
+		}
+	}
+	txt += colorText("//\"" + sndText + "\"//",gC(cK).speechColor);
+	return txt;
 }
 
 

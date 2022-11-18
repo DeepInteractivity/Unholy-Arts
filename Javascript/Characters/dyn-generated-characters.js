@@ -1,4 +1,5 @@
 ///// DYNAMICALLY GENERATED CHARACTERS /////
+	// They must be added as a list to State.variables.sc.genericCharacters upon scene start
 
 window.findEarliestDynamicCharacterPosition = function() {
 	var i = 0;
@@ -126,7 +127,7 @@ window.generateFemaleAnonShapeshifter = function(usedNames) {
 	}
 	character.fullPortraitL = "img/portraits/RdFmSs-full.png";
 	character.avatarL = "img/portraits/RdFmSs-avatar.png";
-	character.saList = returnBaList().concat(returnFirstScrollGroupActionsList());
+	character.saList = ["strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","slimeHug","mountDick"].concat(returnGenericShapeshifterBaList().concat(returnFirstScrollGroupActionsList()));
 	var color = randomFromList(["salmon","hotpink","orchid","fuchsia","blueviolet","palegreen","mediumspringgreen"]);
 	character.setColors(color,color);
 	return chKey;
@@ -148,10 +149,94 @@ window.generateMaleAnonShapeshifter = function(usedNames) {
 	}
 	character.fullPortraitL = "img/portraits/RdMlSs-full.png";
 	character.avatarL = "img/portraits/RdMlSs-avatar.png";
-	character.saList = returnBaList().concat(returnFirstScrollGroupActionsList());
+	character.saList = ["strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","slimeHug","mountDick"].concat(returnBaList().concat(returnFirstScrollGroupActionsList()));
 	var color = randomFromList(["darksalmon","red","orchid","darkorchid","darkslateblue","greenyellow","springgreen"]);
 	character.setColors(color,color);
 	return chKey;
+}
+
+window.generateFemaleAnonLizardlin = function(statVariance,statBuff,number) {
+	var nKey = getFirstFreedDynCharVar();
+	var chKey = nKey;
+	var name = "Lizardlin " + number;
+	var character = generateBaseHumanoid(name,10);
+	character.addFemaleParts();
+	character.addBodypart("tail","tail");
+	character.assignFemeninePronouns();
+	State.variables[chKey] = character;
+	character.type = "lizardlin";
+	character.race = "lizardlin";
+	
+	character.fullPortraitL = "img/portraits/unknown-full.png";
+	character.avatarL = "img/portraits/unknown-avatar.png";
+	
+	// Attributes
+	character.setBaseAttributes(14,14,12,10,10,10,10,10,10);
+	character.adjustAttributes(statVariance,statBuff);
+	character.statsDifficultyAdjustments(1);
+	
+	// Affinities
+	character.combatAffinities.fire.resistance += 30;
+	character.combatAffinities.fire.strength += 15;
+	
+	character.saList = ["strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","mountDick"].concat(returnGenericLizardlinBaList());
+	var color = randomFromList(["darkkhaki","palegoldenrod","limegreen","yellowgreen","mediumseagreen","olive","lightsalmon"]);
+	character.setColors(color,color);
+	recalculateMaxBars(chKey);
+	gC(chKey).makeVirginitiesUnknown();
+	return chKey;
+}
+window.generateMaleAnonLizardlin = function(statVariance,statBuff,number) {
+	var nKey = getFirstFreedDynCharVar();
+	var chKey = nKey;
+	var name = "Lizardlin " + number;
+	var character = generateBaseHumanoid(name,10);
+	character.addMaleParts();
+	character.assignMasculinePronouns();
+	character.addBodypart("tail","tail");
+	State.variables[chKey] = character;
+	character.type = "lizardlin";
+	character.race = "lizardlin";
+	
+	character.fullPortraitL = "img/portraits/unknown-full.png";
+	character.avatarL = "img/portraits/unknown-avatar.png";
+	
+	// Attributes
+	character.setBaseAttributes(14,12,14,10,10,10,10,10,10);
+	character.adjustAttributes(statVariance,statBuff);
+	character.statsDifficultyAdjustments(1);
+	
+	// Affinities
+	character.combatAffinities.fire.resistance += 30;
+	character.combatAffinities.fire.strength += 15;
+	
+	character.saList = ["strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","mountDick"].concat(returnGenericLizardlinBaList());
+	var color = randomFromList(["darkkhaki","palegoldenrod","limegreen","yellowgreen","mediumseagreen","olive","lightsalmon"]);
+	character.setColors(color,color);
+	recalculateMaxBars(chKey);
+	gC(chKey).makeVirginitiesUnknown();
+	return chKey;
+}
+
+window.returnGenericShapeshifterBaList = function() {
+	return ["struggle","baKissLips","baStrokeDick","baStrokePussy","baTeaseLockedDick","baTeaseLockedPussy","pounceFrontal","pounceFrontalD2P","pounceFrontalP2D","pounceFrontalP2P","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","coldGuts","embers","freezeFeet","sparkingRubbing","taunt","baTease"];
+}
+window.returnGenericLizardlinBaList = function() {
+	return ["struggle","kick","daringAssault"];
+}
+
+	// Aux Dyn Char functions
+window.getFirstFreedDynCharVar = function() {
+	var i = 0;
+	var foundVar = false;
+	while ( foundVar == false ) {
+		if ( gC("ch" + i) == undefined ) {
+			foundVar = true;
+		} else {
+			i++;
+		}
+	}
+	return ("ch" + i);
 }
 
 // Names
@@ -169,5 +254,17 @@ window.generateRandomFemaleShapeshifterName = function() {
 window.generateRandomMaleShapeshifterName = function() {
 	var name = randomFromList(["Questian","Renesq","Maeso","Velsin","Parsque","Kullen","Guslen","Feness","Baste","Vursq","Fasian","Velos","Feisien","Tsellen"]);
 	return name;
+}
+
+	// Meant for Shapeshifter NPCs to be discarded soon after
+window.charAcopiesAppeareanceCharB = function(charA,charB) {
+	gC(charA).name = gC(charB).name;
+	gC(charA).nameColor = gC(charB).nameColor;
+	gC(charA).formattedName = gC(charB).formattedName;
+	gC(charA).names = gC(charB).names;
+	gC(charA).fullPortrait = gC(charB).fullPortrait;
+	gC(charA).avatar = gC(charB).avatar;
+	gC(charA).fullPortraitL = gC(charB).fullPortraitL;
+	gC(charA).avatarL = gC(charB).avatarL;
 }
 

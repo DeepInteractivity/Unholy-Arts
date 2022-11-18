@@ -190,6 +190,12 @@ window.createBdemandForceSex = function() {
 
 	bDemand.isPossible = function(actor,target,battleWeight) {
 		var isPossible = false;
+		var remainingTimeInPeriod = 60;
+		for ( var ev of State.variables.compass.ongoingEvents ) {
+			if ( ev.title == "scenarioEnd" ) {
+				remainingTimeInPeriod = ev.timeRemaining;
+			}
+		}
 		if ( isLewdingPossible(actor,target) && battleWeight >= 2 && gSettings().battleDefeatSex == "enable" ) {
 			isPossible = true;
 		}

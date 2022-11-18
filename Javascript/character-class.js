@@ -800,7 +800,9 @@ Character.prototype.getCharacterScreenInfo = function() { // Returns a string th
 		string += "__Bodyparts__:\n";
 		string += this.textBodyparts() + "\n";
 		string += textEquipment(this.varName);
-		string += this.textRelationshipWithPlayer();
+		if ( isStVarOn("HdRlts") == false ) {
+			string += this.textRelationshipWithPlayer();
+		}
 		return string;
 	}
 	
@@ -1013,6 +1015,7 @@ window.calculateFollowingDebt = function(charKey) {
 	return debt;
 }
 window.payFavorDebt = function(charA,charB,favor) {
+	// A gains favor points from B, B owes favor to A
 	if ( rFavor(charA,charB) <= 0 ) {
 		// B owes favor to A, extra favor debt will be applied to B
 		gC(charB).relations[charA].favor += favor;

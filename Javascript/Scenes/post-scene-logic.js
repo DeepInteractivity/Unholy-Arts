@@ -695,12 +695,12 @@ window.charsAthankCharsBforAssistingAgainstMonsters = function(charsA,charsB) {
 	if ( charsA.length > 1 ) {
 		msg += getCharNames(charsA) + randomFromList([" profusely thank "," copiously thank "," show their gratitude to "]) + getCharNames(charsB) + " for assisting against the monsters. " + colorText("Their friendship moderately increases","khaki") + ", and they now owe some favor.";
 	} else {
-		msg += getCharNames(charsA) + randomFromList([" profusely thanks "," copiously thanks "," shows " + gC(charsA[0]).posPr + " gratitude to "]) + getCharNames(charsB) + " for assisting against the monsters." + colorText(firstToCap(gC(charsA[0]).posPr) + " friendship moderately increases","khaki") + ", and " + gC(charsA[0]).perPr + " now owes some favor.";
+		msg += getCharNames(charsA) + randomFromList([" profusely thanks "," copiously thanks "," shows " + gC(charsA[0]).posPr + " gratitude to "]) + getCharNames(charsB) + " for assisting against the monsters. " + colorText(firstToCap(gC(charsA[0]).posPr) + " friendship moderately increases","khaki") + ", and " + gC(charsA[0]).perPr + " now owes some favor.";
 	}
 	for ( var cKa of charsA ) {
 		for ( var cKb of charsB ) {
 			if ( gC(cKa).relations[cKb] != undefined ) {
-				gC(cKa).relations[cKb].friendship += 300;
+				gC(cKa).relations[cKb].friendship.stv += 300;
 				payFavorDebt(cKa,cKb,3);
 			}
 		}

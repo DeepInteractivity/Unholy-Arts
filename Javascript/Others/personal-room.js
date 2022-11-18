@@ -18,7 +18,6 @@ window.PersonalRoom = function() {
 	this.prMessages = "";
 	
 	this.autosavePossible = true;
-	
 };
 
 // Methods
@@ -45,7 +44,7 @@ PersonalRoom.prototype.formatRoomText = function() {
 				}
 				this.roomText += "\n" + this.getButtonSettings() + '\n\n'; // Link to settings
 				this.roomText += setup.cheatMenuLinkText; // Cheats
-				this.roomText += getHotfixButton();
+				//this.roomText += getHotfixButton();
 				break;
 			case "charInfo": 																	// Char info screen
 				this.roomText  = "" + this.getButtonBackToMain() + "\n";
@@ -113,6 +112,23 @@ PersonalRoom.prototype.getButtonsCharInfo = function() {
 				}
 				if ( getCandidatesKeysArray().includes(character) == false ) {
 					bText += " " + colorText("Guest","limegreen");
+						if ( gC(character).hasOwnProperty("isAtTemple") ) {
+						if ( isCharAtTemple(character) ) {
+							bText += " Has been training at the Temple for ";
+							if ( gC(character).daysInTemple == 1 ) {
+								bText += "1 day.";
+							} else {
+								bText += gC(character).daysInTemple + " days.";
+							}
+						} else {
+							bText += " Has not been training at the Temple for ";
+							if ( gC(character).daysOutOfTemple == 1 ) {
+								bText += "1 day.";
+							} else {
+								bText += gC(character).daysOutOfTemple + " days.";
+							}
+						}
+					}
 				}
 				bText += "\n";
 			}
@@ -453,6 +469,7 @@ PersonalRoom.prototype.initPersonalRoom = function() {
 		spawnMerchants();
 		npcsBuyItems();
 		npcsEquipBondage();
+		npcsEquipBestTools();
 		
 		State.variables.sc.cleanScene();
 		refreshUIbars();
@@ -488,7 +505,6 @@ PersonalRoom.prototype.endDayEffects = function() {
 		
 		// Level up stats
 		for ( var character of getActiveSimulationCharactersArray() ) {
-			//			for ( var stat of State.variables.baseStats ) {
 			for ( var stat of setup.baseStats ) {
 				if ( gC(character)[stat].tryLevelUp() ) {
 					// Notify level up
@@ -559,6 +575,9 @@ PersonalRoom.prototype.endDayEffects = function() {
 		
 		// Despawn merchants
 		State.variables.currentMerchants = [];
+		
+		// Guests leave and enter Passion Temple
+		guestsEnterAndLeavePassionTemple();
 	}
 PersonalRoom.prototype.endDayRelationMoodEffects = function() {
 		var relTypesToFinish = [];
@@ -610,26 +629,61 @@ PersonalRoom.prototype.endDayRelationMoodEffects = function() {
 	}
 	
 PersonalRoom.prototype.initializeNewDay = function() {
+	// Which characters are at Temple?
 	
-		if ( isCurrentStoryStateInMainLoop() ) {
-			// Temple period
-			initTrainingPeriodPassionTemple();
-			
-			// AI social and training priorities
+	// Init or delete AIs
+	for ( var cK of arrayMinusA(getActiveSimulationCharactersArray(),"chPlayerCharacter") ) {
+		if ( isCharAtTemple(cK) ) {
+			gC(cK).mapAi = new NpcMapAi(cK);
+		} else {
+			if ( gC(cK).hasOwnProperty("mapAi") ) {
+				delete State.variables[cK].mapAi;
+			}
+		}
+	}
+	
+		// AI social and training priorities
 			for ( var character of arrayMinusA(getActiveSimulationCharactersArray(),"chPlayerCharacter") ) {
 				setSocialAiCandidateGoals(gC(character).socialAi);
 				setTrainingGoals(character);
 			}
+	
+		if ( isCurrentStoryStateInMainLoop() ) {
+			// Temple period
+			initTrainingPeriodPassionTemple();
 		} else if ( State.variables.storyState == storyState.firstAdventure ) {
 			// Gleaming Caverns Period
 			initAdventurePeriodGleamingCaverns();
 		}
-		
+	
 		// Clean compass
 		State.variables.compass.debugInfo = "";
 	}
-	
+/*
+// Bugs
 
+PersonalRoom.prototype.getButtonResetStatChanges = function() {
+		var bText = "<<l" + "ink [[Reset items, states and stats|Personal Room]]>><<s" + "cript>>";;
+		bText 	 += "resetItemsStatesAndStats();\n";
+		bText	 += "<</s" + "cript>><</l" + "ink>> Use this option only as a hotfix to solve a specific bug. In v0.3.13c, stats of NPCs grew out of control and this option will fix that.";
+		return bText;
+	}
+	
+window.resetItemsStatesAndStats = function() {
+	var i = 0;
+	for ( var it of State.variables.equipmentList ) {
+		unequipObject(i);
+		i++;
+	}
+	for ( var ch of getActiveSimulationCharactersArray() ) {
+		removeCharsStates(ch);
+		for ( var st of setup.baseStats ) {
+			gC(ch).sumModifier = 0;
+			gC(ch).multModifier = 1;
+		}
+	}
+}
+*/
 // Sex preferences
 
 window.checkCharListForSexTastesRebalance = function(charList) {
@@ -687,6 +741,150 @@ window.processSexPreferencesMenu = function() {
 	delete State.variables.chosenRankOneTastes;
 	rebalanceCharsSexTastes("chPlayerCharacter");
 	State.variables.StVarsList.push("chTts");
+}
+
+	// Guests
+window.getGuestsList = function() {
+	var guests = [];
+	if ( State.variables.personalRoom.hasOwnProperty("guests") ) {
+		guests = State.variables.personalRoom.guests;
+	} else {
+		State.variables.personalRoom.guests = guests;
+	}
+	return guests;
+}
+window.addGuest = function(guestKey) {
+	if ( State.variables.personalRoom.hasOwnProperty("guests") == false ) {
+		State.variables.personalRoom.guests = [];
+	}
+	State.variables.personalRoom.guests.push(guestKey);
+	gC(guestKey).isAtTemple = false;
+	gC(guestKey).daysInTemple = 0;
+	gC(guestKey).daysOutOfTemple = 0;
+}
+window.isCharGuest = function(charKey) {
+	var flagIsGuest = false;
+	if ( gC(charKey).hasOwnProperty("isAtTemple") ) {
+		flagIsGuest = true;
+	}
+	return flagIsGuest;
+}
+window.isCharAtTemple = function(charKey) {
+	var flagAtTemple = true;
+	if ( gC(charKey).hasOwnProperty("isAtTemple") ) {
+		if ( gC(charKey).isAtTemple ) {
+			// Is at Temple
+		} else {
+			flagAtTemple = false;
+		}
+	} else {
+		// Is at Temple
+	}
+	return flagAtTemple;
+}
+
+window.removeCharFromActiveChars = function(ch) {
+	State.variables.activeSimulationCharacters = arrayMinusA(State.variables.activeSimulationCharacters,ch);
+}
+window.removeCharFromGameCycle = function(ch) {
+	removeItemsFromChar(ch);
+	delete State.variables[ch];
+	removeCharFromActiveChars(ch);
+	
+	removeRelationshipDataWithRemovedCharacters();
+}
+
+window.guestEntersTemple = function(ch) {
+	gC(ch).isAtTemple = true;
+	gC(ch).daysOutOfTemple = 0;
+}
+window.guestLeavesTemple = function(ch) {
+	gC(ch).isAtTemple = false;
+	gC(ch).daysInTemple = 0;
+}
+
+window.guestsEnterAndLeavePassionTemple = function() {
+	for ( var ch of getActiveSimulationCharactersArray() ) {
+		if ( isCharGuest(ch) ) {
+				if ( isCharAtTemple(ch) ) {
+					gC(ch).daysInTemple++;
+				} else {
+					gC(ch).daysOutOfTemple++;
+				}
+			switch(ch) {
+				case "chArt":
+					// Always allowed
+					if ( isCharAtTemple(ch) ) {
+						if ( (-30 + gC(ch).daysInTemple * 30 + limitedRandomInt(100)) >= 100 ) {
+							guestLeavesTemple(ch);
+						}
+					} else {
+						if ( (-60 + gC(ch).daysOutOfTemple * 15 + limitedRandomInt(100)) >= 100 ) {
+							guestEntersTemple(ch);
+						}
+					}
+					break;
+				case "chHope": // And Rock
+					// Require/s a few days to come back to PT
+					var enabledByStory = true;
+					if ( State.variables.daycycle.month == 2 && State.variables.daycycle.day < 14 ) {
+						enabledByStory = false;
+					}
+					if ( isCharAtTemple(ch) ) {
+						if ( (-60 + gC(ch).daysInTemple * 20 + limitedRandomInt(100)) >= 100 ) {
+							guestLeavesTemple(ch);
+							if ( State.variables.chRock != null ) {
+								guestLeavesTemple("chRock");
+							}
+						}
+					} else {
+						if ( enabledByStory && (-100 + gC(ch).daysOutOfTemple * 20 + limitedRandomInt(100)) >= 100 ) {
+							guestEntersTemple(ch);
+							if ( State.variables.chRock != null ) {
+								guestEntersTemple("chRock");
+							}
+						}
+					}
+					break;
+				case "chMes":
+					// Always allowed
+					if ( isCharAtTemple(ch) ) {
+						if ( (-30 + gC(ch).daysInTemple * 30 + limitedRandomInt(100)) >= 100 ) {
+							guestLeavesTemple(ch);
+						}
+					} else {
+						if ( (-60 + gC(ch).daysOutOfTemple * 15 + limitedRandomInt(100)) >= 100 ) {
+							guestEntersTemple(ch);
+						}
+					}
+					break;
+				case "chSil":
+					// Always allowed
+					if ( isCharAtTemple(ch) ) {
+						if ( (-100 + gC(ch).daysInTemple * 50 + limitedRandomInt(100)) >= 100 ) {
+							guestLeavesTemple(ch);
+						}
+					} else {
+						if ( (-140 + gC(ch).daysOutOfTemple * 70 + limitedRandomInt(100)) >= 100 ) {
+							guestEntersTemple(ch);
+						}
+					}
+					break;
+				case "chNer":
+					// Always allowed
+					if ( isCharAtTemple(ch) ) {
+						if ( (-30 + gC(ch).daysInTemple * 30 + limitedRandomInt(100)) >= 100 ) {
+							guestLeavesTemple(ch);
+						}
+					} else {
+						if ( (-60 + gC(ch).daysOutOfTemple * 15 + limitedRandomInt(100)) >= 100 ) {
+							guestEntersTemple(ch);
+						}
+					}
+					break;
+			}
+		}
+	}
 }
 
 // Windows
@@ -1161,6 +1359,34 @@ window.npcsEquipBondage = function() {
 					}
 				}
 				activeSubChars = newActiveSubChars;
+			}
+		}
+	}
+}
+window.npcsEquipBestTools = function() {
+	for ( var character of getActiveSimulationCharactersArray() ) {
+		if ( character != "chPlayerCharacter" ) {
+			if ( gC(character).weaponID != -1 ) {
+				unequipObject(gC(character).weaponID);
+			}
+			// Weapons
+			var bestScore = -999;
+			var wpId = -1;
+			for ( var it of State.variables.equipmentList ) {
+				if ( it.owner == character ) {
+					if ( getEquipDataById(it.id).slot == "weapon" ) {
+						// Check Score
+						var currentWeaponScore = npcValuesWeapon(character,getEquipDataById(it.id));
+						// If Score is higher, update score and weapon Id
+						if ( currentWeaponScore > bestScore ) {
+							bestScore = currentWeaponScore;
+							wpId = it.id;
+						}
+					}
+				}
+			}
+			if ( bestScore > -1 ) {
+				equipObjectOnWearer(wpId,character,-1);
 			}
 		}
 	}

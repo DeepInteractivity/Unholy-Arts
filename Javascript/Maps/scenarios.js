@@ -21,6 +21,7 @@ window.initTrainingPeriodPassionTemple = function() {
 	// Place Candidates on map
 	State.variables.compass.initializeMap("mapTrainingGrounds","grandHall");
 	var chars = getRandomizedActiveSimulationCharactersArray();
+	chars = purgeGuestsNotAtTemple(chars);
 	State.variables.mapTrainingGrounds.placeCharacters(chars,"grandHall");
 	
 	// Stablish period type
@@ -55,6 +56,7 @@ window.initSocializationPeriodPassionTemple = function() {
 	// Place Candidates on map
 	State.variables.compass.initializeMap("mapTrainingGrounds","grandHall");
 	var chars = getRandomizedActiveSimulationCharactersArray();
+	chars = purgeGuestsNotAtTemple(chars);
 	State.variables.mapTrainingGrounds.placeCharacters(chars,"grandHall");
 	
 	// Stablish period type
@@ -89,6 +91,7 @@ window.initTrainingPeriodPassionTempleTests = function() {
 	// Place Candidates on map
 	State.variables.compass.initializeMap("mapTrainingGrounds","westLibrary");
 	var chars = ["chPlayerCharacter","chNash","chVal"];
+	chars = purgeGuestsNotAtTemple(chars);
 	State.variables.mapTrainingGrounds.placeCharacters(chars,"westLibrary");
 	
 	// Stablish period type
@@ -140,6 +143,16 @@ window.initTrainingPeriodPassionTempleTests = function() {
 	State.variables.compass.sortOnGoingEventsByTime();
 }
 
+window.purgeGuestsNotAtTemple = function(chars) {
+	var charsAtTemple = [];
+	for ( var ch of chars ) {
+		if ( isCharAtTemple(ch) ) {
+			charsAtTemple.push(ch);
+		}
+	}
+	return charsAtTemple;
+}
+
 	// Gleaming Caverns
 window.initAdventurePeriodGleamingCaverns = function() {
 	// Initial settings
@@ -152,12 +165,17 @@ window.initAdventurePeriodGleamingCaverns = function() {
 	// Place Characters on map
 	State.variables.compass.initializeMap("mapGleamingCaverns","templeStorage");
 	State.variables.mapGleamingCaverns.placeCharacters(["chHope","chRock","chArt"],"hiddenCamp");
-	State.variables.mapGleamingCaverns.placeCharacters(["chNer"],"templeShrine");
 	State.variables.mapGleamingCaverns.placeCharacters(["chMes"],"hiddenHut");	
 	State.variables.mapGleamingCaverns.placeCharacters(["chVal"],"pondIllumination");	
 	State.variables.mapGleamingCaverns.placeCharacters(["chSil"],"templeSanctum");	
 	State.variables.mapGleamingCaverns.placeCharacters(["chPlayerCharacter","chNash","chMir","chClaw","chAte"],"templeStorage");
 	setSubareaCaverns();
+	if ( State.variables.daycycle.day == 29 ) {
+		State.variables.mapGleamingCaverns.placeCharacters(["chNer"],"assembly");
+		State.variables.compass.ongoingEvents.push(createAssemblyDiscussion());
+	} else {
+		State.variables.mapGleamingCaverns.placeCharacters(["chNer"],"templeShrine");
+	}
 	
 	// Stablish period type
 	State.variables.simCycPar.templeDayPeriod = "adventure";
@@ -211,10 +229,10 @@ window.initCommandTestsPeriodPassionTemple = function() {
 			gC(charKey).mapAi.goalsList = [];
 		}
 	}
-/*
-	createRelTypeTutorshipSub("chPlayerCharacter","chMir",3);
-	createRelTypeTutorshipDom("chMir","chPlayerCharacter",3);
-	*/
+
+	createRelTypeTutorshipSub("chNash","chMir",3);
+	createRelTypeTutorshipDom("chMir","chNash",3);
+	
 	//State.variables.chVal.infamy = 15;
 	//State.variables.chMir.infamy = 15;
 /*	
@@ -237,12 +255,12 @@ window.initCommandTestsPeriodPassionTemple = function() {
 	// gC("chNash").mapAi.createNewMission = cMissionPursueAndTalkTo("chNash","chMir");
 	//gC("chNash").mapAi.goalsList = [ cMissionPursueAndTalkTo("chNash","chMir",1) ];
 	
-	gC("chMir").mapAi.goalsList = [ createMapAiGoalMoveTo("chMir","mainLibrary") , createMapAiGoalMoveTo("chMir","westLibrary") ];
-	gC("chVal").mapAi.goalsList = [ createMapAiGoalMoveTo("chVal","mainLibrary") , createMapAiGoalMoveTo("chVal","westLibrary") , createMapAiGoalPursueAndTalkTo("chVal","chMir") ];
+	gC("chMir").mapAi.goalsList = [ createMapAiGoalMoveTo("chMir","mainLibrary") , createMapAiGoalMoveTo("chMir","westLibrary") , createMapAiGoalPursueAndTalkTo("chMir","chPlayerCharacter") ];
+	gC("chVal").mapAi.goalsList = [ createMapAiGoalMoveTo("chVal","mainLibrary") , createMapAiGoalMoveTo("chVal","eastLibrary") , createMapAiGoalMoveTo("chVal","westLibrary") , createMapAiGoalPursueAndTalkTo("chVal","chMir") ];
 	// gC("chVal").mapAi.goalsList = [ createMapAiGoalMoveTo("chVal","mainLibrary") , createMapAiGoalMoveTo("chVal","westLibrary") , createMapAiGoalPursueAndChallenge("chVal","chMir") ];
-	gC("chNash").mapAi.goalsList = [ createMapAiGoalMoveTo("chNash","mainLibrary") , createMapAiGoalMoveTo("chNash","eastLibrary") ,
-									 createMapAiGoalMoveTo("chNash","westLibrary") , createMapAiGoalPursueAndAssault("chNash","chPlayerCharacter") ];
-	gC("chNash").lust.current = 0;
+	//gC("chNash").mapAi.goalsList = [ createMapAiGoalMoveTo("chNash","mainLibrary") , createMapAiGoalMoveTo("chNash","eastLibrary") ,
+	//								 createMapAiGoalMoveTo("chNash","westLibrary") , createMapAiGoalPursueAndAssault("chNash","chPlayerCharacter") ];
+	//gC("chNash").lust.current = 0;
 	//charFollowsChar("chPlayerCharacter","chMir",false);
 	
 	/*
@@ -276,8 +294,14 @@ window.initCommandTestsPeriodPassionTemple = function() {
 	gC("chNash").mood["aroused"] = 80;
 	gC("chNash").mood["flirty"] = 80;
 	
-	createRelTypeCompanionship("chPlayerCharacter","chMir");
-	createRelTypeCompanionship("chMir","chPlayerCharacter");
+	createRelTypeTutorshipSub("chPlayerCharacter","chMir");
+	createRelTypeTutorshipDom("chMir","chPlayerCharacter");
+	
+	for ( var sEvent of State.variables.compass.ongoingEvents ) {
+		if ( sEvent.title == "scenarioEnd" ) {
+			sEvent.timeRemaining = 11;
+		}
+	}
 }
 
 

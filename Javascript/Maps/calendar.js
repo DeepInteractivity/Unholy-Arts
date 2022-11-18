@@ -155,44 +155,26 @@ window.EventsCalendar = function() {
 							return this.getButtonToEvent("FA VaryontesOffer1");
 						}
 						break;
-					case 29:
-						this.customEventScript = initGleamingCavernsDayPlaceholder;
-						this.getEndDayButton = function() {
-							return this.getButtonToEvent("FA 0.3.3 Placeholder Story Event");
-						}
-						break;
-					case 30:
-						this.customEventScript = initGleamingCavernsDayPlaceholder;
-						this.getEndDayButton = function() {
-							return this.getButtonToEvent("FA 0.3.3 Placeholder Story Event");
-						}
-						break;
 				}
 				break;
 			case 2:
 				switch (State.variables.daycycle.day) {
-					case 1:
-						this.customEventScript = initGleamingCavernsDayPlaceholder;
-						this.getEndDayButton = function() {
-							return this.getButtonToEvent("FA 0.3.3 Placeholder Story Event");
-						}
-						break;
 					case 2:
-						this.customEventScript = initGleamingCavernsDayPlaceholder;
+						this.customEventScript = initGleamingCavernsTwistedFestival;
 						this.getEndDayButton = function() {
-							return this.getButtonToEvent("FA 0.3.3 Placeholder Story Event");
+							return this.getButtonToEvent("TwistFest Init");
 						}
 						break;
 					case 3:
-						this.customEventScript = finishGleamingCavernsAdventure;
+						this.customEventScript = initGleamingCavernsEpilogue;
 						this.getEndDayButton = function() {
-							return this.getButtonToEvent("FA 0.3.3 Placeholder Story Event");
+							return this.getButtonToEvent("FaEpil Start");
 						}
 						break;
 				}
 		}
 		
-		if ( this.customEventScript == blankFunction ) {
+		if ( this.customEventScript == blankFunction && isCurrentStoryStateInMainLoop() == true ) {
 			// Attempt to initiate random event
 			var selectedEvent = chooseRandomStoryEvent();
 			

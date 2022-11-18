@@ -397,7 +397,7 @@ window.setUpMultiBattleTest = function() {
 									"taunt","baTease"
 									,"baHypnoticGlance"
 									,"baEnergyDrainingKiss","baDrainingKiss","baEtherealChains",
-									"baBorrowedIdentity"
+									"baBorrowedIdentity","fireBreath","daringAssault"
 		]);
 	charactersLearnSceneActions(["chNash","chClaw"],[
 									"kick","coldGuts",
@@ -416,8 +416,8 @@ window.setUpMultiBattleTest = function() {
 		gC(character).restoreBars();
 	}
 		
-	var dilID = createEquipment("w5","chPlayerCharacter");
-	equipObjectOnWearer(dilID,"chPlayerCharacter",-1);
+	var speID = createEquipment("w6","chPlayerCharacter");
+	equipObjectOnWearer(speID,"chPlayerCharacter",-1);
 	
 	// Start scene
 	State.variables.sc.startScene("bs", "none",

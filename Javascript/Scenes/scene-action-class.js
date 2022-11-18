@@ -443,6 +443,16 @@ window.isActionUsable = function(actionKey,actorKey,targetsKeys,skipLinkedCheck)
 		}
 	}
 	
+	// Custom Scene Checks
+	if ( State.variables.sc.customActionAllowed ) { // Does a custom check exist?
+		if ( State.variables.sc.customActionAllowed(actionKey,actorKey,targetsKeys) == false ) {
+			iAU.isUsable = false;
+			if ( State.variables.settings.debugFunctions ) {
+				iAU.explanation += "Disallowed by custom scene check.\n";
+			}
+		}
+	}
+	
 	return iAU;
 };
 window.isActionUsableOnPos = function(actionKey,actorKey,targetKeys,actorPos,targetsPos) {
@@ -868,6 +878,7 @@ window.saList = function() {
 	
 	this.tackle = createTackle();
 	this.savageCrush = createSavageCrush();
+	this.daringAssault = createDaringAssault();
 	
 		// Pain
 		
@@ -886,6 +897,7 @@ window.saList = function() {
 	this.lightningDarts = createSaLightningDarts();
 	this.earthWall = createEarthWall();
 	this.quake = createSaQuake();
+	this.fireBreath = createSaFireBreath();
 	
 	this.taunt = createSaTaunt();
 	this.baTease = createSaBaTease();
@@ -926,6 +938,7 @@ window.saList = function() {
 	this.channelAether = createSaChannelAether();
 	this.flaunt = createSaFlaunt();
 	this.disablingShot = createDisablingShot();
+	this.weaponPlunge = createWeaponPlunge();
 };
 
 window.returnBaList = function() {

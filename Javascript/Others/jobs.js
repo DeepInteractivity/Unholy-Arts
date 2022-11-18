@@ -45,6 +45,7 @@ JobsAssigner.prototype.createRandomWorkloads = function(workloads) {
 JobsAssigner.prototype.sortCandidates = function() { // Randomly decides the order in which Candidates will pick their jobs, and adds them to candidatesInfo
 		this.candidatesInfo = [];
 		var sortedCandidates = getRandomizedActiveSimulationCharactersArray();
+		sortedCandidates = purgeGuestsNotAtTemple(sortedCandidates);
 		for ( var candidate of sortedCandidates ) {
 			this.candidatesInfo.push([candidate,""]);
 		}
@@ -400,7 +401,7 @@ JobsAssigner.prototype.initJobsAssigner = function() {
 		// Management
 		this.cleanWorkloads();
 		this.cleanWorkHours();
-		var workloads = State.variables.activeSimulationCharacters.length;
+		var workloads = purgeGuestsNotAtTemple(State.variables.activeSimulationCharacters).length;
 		workloads = workloads * 1.2 - 1;
 		this.createRandomWorkloads(workloads);
 		

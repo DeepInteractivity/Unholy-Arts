@@ -264,6 +264,17 @@ window.reachTurnLimitEndCondition = function(turnLimit) {
 	
 	return flagEndScene;
 }
+window.teamBcharsReachedOrgasmEndCondition = function() {
+	var flagEndScene = true;
+	
+	for ( var cK of State.variables.sc.teamBcharKeys ) {
+		if ( gC(cK).getAllSceneOrgasms() < 1 ) {
+			flagEndScene = false;
+		}
+	}
+	
+	return flagEndScene;
+}
 
 // Staying hydrated
 window.stHyInitMirToVal = function() {
@@ -1380,4 +1391,590 @@ window.valtanPleasuresPlayerCaRe = function() {
 	State.variables.sc.formatScenePassage();
 	setRefreshLustScript();
 }	
+
+// Gift for the Shapeshifters
+window.startSceneGfs1 = function() {
+	var charPsKeys = ["charA","charB"];
+	var charKeys = [];
+	var usedNames = [];
+	for ( var ch of charPsKeys ) {
+		// Choose NPC's sex and gender
+		var type = "fem";
+		if ( gSettings().lewdMales == "enable" && limitedRandomInt(100) < 30 ) {
+			type = "mal";
+		} else if ( gSettings().futa != "disableAll" && limitedRandomInt(100) < 40 ) {
+			type = "fut";
+		}
+		     //var type = State.variables.mapGleamingCaverns[ch];
+		// Generate NPC
+		var chK = "";
+		if ( type == "fem" ) {
+			chK = generateFemaleAnonShapeshifter(usedNames);
+		} else if ( type == "mal" ) {
+			chK = generateMaleAnonShapeshifter(usedNames);
+		} else {
+			chK = generateFemaleAnonShapeshifter(usedNames);
+			gC(chK).addBodypart("dick","dick");
+		}
+		charKeys.push(chK);
+		usedNames.push(gC(chK).name);
+		destroyCharsVirginitiesNoFlavor(chK);
+		recalculateMaxBars(chK);
+	}
+	var description = "A crowd gets formed bit by bit...";
+	State.variables.sc.startScene("ss","dynamic",["chPlayerCharacter"],charKeys,description,teamBcharsReachedOrgasmEndCondition,gSettings().stdSxScDur,"FaSe GFS Stroll1"); // Start scene
+	gC("chPlayerCharacter").hasLead = false;
+	State.variables.sc.endSceneScript = cleanGfsScenes;
+	State.variables.sc.customScript = ccsGfsScenes;
+			
+	// Set lead
+	addSceneTagToChar("noLead","chPlayerCharacter");
+	  
+	// Set AIs
+	for ( var chK of charKeys ) {
+		gC(chK).aiAlgorythm = createAiWeightedMissionsByTaste();
+		if ( limitedRandomInt(100) < 50 ) {
+			gC(chK).aiAlgorythm.setRoleActive();
+		} else {
+			gC(chK).aiAlgorythm.setRoleDomination();
+		}
+		State.variables[chK].aiAlgorythm.fixedTarget = "chPlayerCharacter";
+		gC(chK).lust.current = 50;
+	}
+	State.variables.sc.genericCharacters = charKeys;
+	State.variables.sc.formatScenePassage();
+}
+window.startSceneGfs2 = function() {
+	var charPsKeys = ["charA","charB","charC"];
+	var charKeys = [];
+	var usedNames = [];
+	for ( var ch of charPsKeys ) {
+		// Choose NPC's sex and gender
+		var type = "fem";
+		if ( gSettings().lewdMales == "enable" && limitedRandomInt(100) < 30 ) {
+			type = "mal";
+		} else if ( gSettings().futa != "disableAll" && limitedRandomInt(100) < 40 ) {
+			type = "fut";
+		}
+		     //var type = State.variables.mapGleamingCaverns[ch];
+		// Generate NPC
+		var chK = "";
+		if ( type == "fem" ) {
+			chK = generateFemaleAnonShapeshifter(usedNames);
+		} else if ( type == "mal" ) {
+			chK = generateMaleAnonShapeshifter(usedNames);
+		} else {
+			chK = generateFemaleAnonShapeshifter(usedNames);
+			gC(chK).addBodypart("dick","dick");
+		}
+		charKeys.push(chK);
+		usedNames.push(gC(chK).name);
+		destroyCharsVirginitiesNoFlavor(chK);
+		recalculateMaxBars(chK);
+	}
+	var description = "Nersmias sometimes pushes you all forward, making sure the crowd keeps moving.";
+	State.variables.sc.startScene("ss","dynamic",["chPlayerCharacter"],charKeys,description,teamBcharsReachedOrgasmEndCondition,gSettings().stdSxScDur,"FaSe GFS Stroll2"); // Start scene
+	gC("chPlayerCharacter").hasLead = false;
+	State.variables.sc.endSceneScript = cleanGfsScenes;
+	State.variables.sc.customScript = ccsGfsScenes;
+			
+	// Set lead
+	addSceneTagToChar("noLead","chPlayerCharacter");
+	  
+	// Set AIs
+	for ( var chK of charKeys ) {
+		gC(chK).aiAlgorythm = createAiWeightedMissionsByTaste();
+		if ( limitedRandomInt(100) < 50 ) {
+			gC(chK).aiAlgorythm.setRoleActive();
+		} else {
+			gC(chK).aiAlgorythm.setRoleDomination();
+		}
+		State.variables[chK].aiAlgorythm.fixedTarget = "chPlayerCharacter";
+		gC(chK).lust.current = 50;
+	}
+	State.variables.sc.genericCharacters = charKeys;
+	State.variables.sc.formatScenePassage();
+}
+window.startSceneGfs3 = function() {
+	var charPsKeys = ["charA","charB","charC","charD"];
+	var charKeys = [];
+	var usedNames = [];
+	for ( var ch of charPsKeys ) {
+		// Choose NPC's sex and gender
+		var type = "fem";
+		     //var type = State.variables.mapGleamingCaverns[ch];
+		// Generate NPC
+		var chK = generateFemaleAnonShapeshifter(usedNames);
+		if ( gSettings().futa != "disableAll" ) {
+			if ( limitedRandomInt(100) < 50 ) {
+				gC(chK).addBodypart("dick","dick");
+			}
+		}
+		
+		charKeys.push(chK);
+		usedNames.push(gC(chK).name);
+		destroyCharsVirginitiesNoFlavor(chK);
+		recalculateMaxBars(chK);
+		gC(chK).lust.current = 75;
+	}
+	
+	gC("ch0").name = "NotAte";
+	gC("ch0").fullPortrait = function() {
+		return "[img[img/portraits/ate-full.png]]";
+	}
+	gC("ch0").avatar = function() {
+		return "[img[img/portraits/ate-avatar.png]]";
+	}
+	gC("ch0").fullPortraitL = "img/portraits/ate-full.png";
+	gC("ch0").avatarL = "img/portraits/ate-avatar.png";
+	gC("ch0").setColors("palevioletred","palevioletred");
+	gC("ch0").names = gC("chAte").names;
+	
+	gC("ch1").name = "NotClaw";
+	gC("ch1").fullPortrait = function() {
+		return "[img[img/portraits/claw-full.png]]";
+	}
+	gC("ch1").avatar = function() {
+		return "[img[img/portraits/claw-avatar.png]]";
+	}
+	gC("ch1").fullPortraitL = "img/portraits/claw-full.png";
+	gC("ch1").avatarL = "img/portraits/claw-avatar.png";
+	gC("ch1").setColors("gold","gold");
+	gC("ch1").names = gC("chClaw").names;
+	
+	gC("ch2").name = "NotNash";
+	gC("ch2").fullPortrait = function() {
+		return "[img[img/portraits/nash-full.png]]";
+	}
+	gC("ch2").avatar = function() {
+		return "[img[img/portraits/nash-avatar.png]]";
+	}
+	gC("ch2").fullPortraitL = "img/portraits/nash-full.png";
+	gC("ch2").avatarL = "img/portraits/nash-avatar.png";
+	gC("ch2").setColors("coral","coral");
+	gC("ch2").names = gC("chNash").names;
+	
+	gC("ch3").name = "NotPadmiri";
+	gC("ch3").fullPortrait = function() {
+		return "[img[img/portraits/mir-full.png]]";
+	}
+	gC("ch3").avatar = function() {
+		return "[img[img/portraits/mir-avatar.png]]";
+	}
+	gC("ch3").fullPortraitL = "img/portraits/mir-full.png";
+	gC("ch3").avatarL = "img/portraits/mir-avatar.png";
+	gC("ch3").setColors("palegreen","palegreen");
+	gC("ch3").names = gC("chMir").names;
+	
+	var description = "Most of the Shapeshifter tribe is now at the assembly, either on the platform, or observing what's going on from afar.";
+	State.variables.sc.startScene("ss","dynamic",["chPlayerCharacter"],charKeys,description,teamBcharsReachedOrgasmEndCondition,gSettings().stdSxScDur,"FaSe GFS Stroll3"); // Start scene
+	gC("chPlayerCharacter").hasLead = false;
+	State.variables.sc.endSceneScript = cleanGfsScenes;
+	State.variables.sc.customScript = ccsGfsScenes;
+			
+	// Set lead
+	addSceneTagToChar("noLead","chPlayerCharacter");
+	  
+	// Set AIs
+	for ( var chK of charKeys ) {
+		gC(chK).aiAlgorythm = createAiWeightedMissionsByTaste();
+		if ( limitedRandomInt(100) < 50 ) {
+			gC(chK).aiAlgorythm.setRoleActive();
+		} else {
+			gC(chK).aiAlgorythm.setRoleDomination();
+		}
+		State.variables[chK].aiAlgorythm.fixedTarget = "chPlayerCharacter";
+	}
+	State.variables.sc.genericCharacters = charKeys;
+	State.variables.sc.formatScenePassage();
+}
+window.cleanGfsScenes = function() {
+	//delete State.variables.ch0;
+	//delete State.variables.ch1;
+	//delete State.variables.ch2;
+	//delete State.variables.ch3;
+}
+window.ccsGfsScenes = function() {
+	var npcChars = State.variables.sc.teamBcharKeys;
+	for ( var ch of npcChars ) {
+		if ( limitedRandomInt(100) >= 20 ) {
+			State.variables[ch].aiAlgorythm.fixedTarget = "chPlayerCharacter";
+		} else {
+			State.variables[ch].aiAlgorythm.fixedTarget = randomFromList(npcChars);
+		}
+	}
+}
+
+// Twisted Festival
+// Claw Spars With Nash
+window.tfClawNashSparInit = function() {
+	State.variables.sc.startScene(
+	"bs","fixed",["chClaw"],["chNash"],"__Assembly__\nClaw's movements are wild and excessive, almost begging for attention.",endConditionTurns,3,
+	"TwistedFest PlayMiddle3");
+		State.variables.chClaw.aiAlgorythm = createAiFixedAction();
+		State.variables.chClaw.aiAlgorythm.fixedAction = "kick";
+		State.variables.chClaw.aiAlgorythm.fixedTarget = "chNash";
+		State.variables.chNash.aiAlgorythm = createAiFixedAction();
+		State.variables.chNash.aiAlgorythm.fixedAction = "coldGuts";
+		State.variables.chNash.aiAlgorythm.fixedTarget = "chClaw";
+		
+	State.variables.sc.customScript = tfClawNashSparScript;
+	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
+}
+window.tfClawNashSparScript = function() {
+	switch (State.variables.sc.currentTurn) {
+		case 2:
+			State.variables.chClaw.aiAlgorythm.fixedAction = "baScratch";
+			State.variables.chNash.aiAlgorythm.fixedAction = "kick";
+			break;
+		case 3:
+			State.variables.chClaw.aiAlgorythm.fixedAction = "catAspect";
+			State.variables.chNash.aiAlgorythm.fixedAction = "kick";
+			break;
+	}
+}
+
+// Player and Valtan Grope Padmiri
+window.tfMirGetsDoubleGropedInit = function() {
+	// Create Fake Valtan character
+	var fakeValtan = generateFemaleAnonShapeshifter([]);
+	charAcopiesAppeareanceCharB(fakeValtan,"chVal");
+	gC(fakeValtan).adjustAttributes(1,2);
+	gC(fakeValtan).statsDifficultyAdjustments(-1);
+	recalculateMaxBars(fakeValtan);
+	// Scene
+	State.variables.sc.startScene(
+	"ss","fixed",["chPlayerCharacter",fakeValtan],["chMir"],"__Assembly__\nThe attention of the spectators gets gradually shifted towards the three of you.",endConditionTurns,10,
+	"TwistedFest PlayMiddleTakeAdvantage2");
+	State.variables.sc.sceneConditions.push("cantCancelPositions","cantInitiatePos");
+	State.variables.chPlayerCharacter.hasLead = true;
+	State.variables.chMir.hasLead = false;
+	State.variables[fakeValtan].hasLead = true;
+	
+	// Positions // No position ?
+	State.variables.sc.formatScenePassage();
+	
+	// AI
+	State.variables.chMir.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chMir.aiAlgorythm.setRoleSubmission();
+	State.variables[fakeValtan].aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables[fakeValtan].aiAlgorythm.setRoleActive();
+	State.variables.sc.endSceneScript = endSceneScriptUnconditionalCleanLust;
+	
+	State.variables.sc.genericCharacters = [fakeValtan];
+}
+window.tfHelpingMirAgainstValtan = function() {
+	// Create Fake Valtan character
+	var fakeValtan = generateFemaleAnonShapeshifter([]);
+	charAcopiesAppeareanceCharB(fakeValtan,"chVal");
+	gC(fakeValtan).adjustAttributes(1,2);
+	gC(fakeValtan).statsDifficultyAdjustments(1);
+	recalculateMaxBars(fakeValtan);
+	// Scene
+	State.variables.sc.startScene( 
+	"bs","fixed",["chPlayerCharacter","chMir"],[fakeValtan],"__Assembly__\nThe attention of the spectators gets gradually shifted towards the three of you.",endConditionTurns,10,
+	"TwistedFest PlayMiddleTurnTables2");
+	for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
+		if ( charKey != "chPlayerCharacter" ) {
+			gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+		}
+	}
+	State.variables.sc.formatScenePassage();
+	State.variables.sc.endSceneScript = endSceneScriptUnconditionalCleanLust;
+	
+	State.variables.sc.genericCharacters = [fakeValtan];
+}
+
+window.tfMultiBattleTenCandidates = function() {
+	// Fake Candidates
+	var fakeCandidates = [];
+	State.variables.fakeCandsItems = [];
+	for ( var ch of ["chPlayerCharacter","chNash","chMir","chClaw","chAte"] ) {
+		var currentFake = generateFemaleAnonShapeshifter([]);
+		fakeCandidates.push(currentFake);
+		charAcopiesAppeareanceCharB(currentFake,ch);
+		gC(currentFake).adjustAttributes(2,3);
+		gC(currentFake).statsDifficultyAdjustments(2);
+		recalculateMaxBars(currentFake);
+		// Do fakes have dicks?
+		if ( gSettings().futa == "enableAll" || gSettings().futa == "futaPartners" ) {
+			gC(currentFake).addBodypart("dick","dick");
+		}
+		
+		// Replicate weapon
+		for ( var wp of State.variables.equipmentList ) {
+			if ( getEquipById(wp.id).equippedOn == ch ) {
+				if ( getEquipDataById(wp.id).slot == "weapon" ) {
+					var wpId = createEquipment(getEquipById(wp.id).type,currentFake);
+					State.variables.fakeCandsItems.push(wpId);
+					equipObjectOnWearer(wpId,currentFake,-1);
+				}
+			}
+		}
+		
+	}
+	
+	gC("ch0").name = "Not " + gC("chPlayerCharacter").name + "?";
+	gC("ch0").formattedName = '<span style="color:'+gC("ch0").nameColor+'">'+gC("ch0").name+'</span>';
+	gC("ch0").names = [ gC("ch0").getName() , gC("ch0").getName() , gC("ch0").getName() ];
+	
+	// Scene
+	State.variables.sc.startScene( 
+	"bs","fixed",["chPlayerCharacter",fakeCandidates[1],fakeCandidates[2],fakeCandidates[3],"chAte"],[fakeCandidates[0],"chNash","chMir","chClaw",fakeCandidates[4]],"__Assembly__\nBlows, kicks and barrages of magic projectiles fly all across the stage. Some Shapeshifters are casting a magic barrier to protect the entranced spectators.",createEndConditionsTwistedFestivalSpecialBattle("TwistedFest FakesWin1","TwistedFest SecretVictory"),6,
+	"TwistedFest FakesWin1");
+	
+	// Scripts and conditions ~ Player starts pinned by her own fake
+	depleteControl("chPlayerCharacter");
+	createBposFrontalPounce("ch0",["chPlayerCharacter"]);
+	
+	State.variables.sc.customScript = tfMultiBattleTenCandidatesCustomScript;
+	State.variables.sc.endSceneScript = endSceneScriptTfMultiBattleCandidates;
+	
+	// AIs
+	for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
+		if ( charKey != "chPlayerCharacter" ) {
+			gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+		}
+	}
+	
+	State.variables.sc.genericCharacters = fakeCandidates;
+	State.variables.sc.formatScenePassage();
+}
+window.tfMultiBattleTenCandidatesCustomScript = function() {
+	// Claw is very likely to target her fake, Ate is moderately likely to target her fake
+	if ( gC("chClaw").koed == false ) {
+		gC("chClaw").aiAlgorythm.fixedTarget = undefined;
+		if ( gC("ch3").koed == false ) {
+			if ( limitedRandomInt(100) > 25 ) {
+				gC("chClaw").aiAlgorythm.fixedTarget = "ch3";
+			}
+		}
+	}
+	if ( gC("chAte").koed == false ) {
+		gC("chAte").aiAlgorythm.fixedTarget = undefined;
+		if ( gC("ch4").koed == false ) {
+			if ( limitedRandomInt(100) > 50 ) {
+				gC("chAte").aiAlgorythm.fixedTarget = "ch4";
+			}
+		}
+	}
+}
+window.endSceneScriptTfMultiBattleCandidates = function() {
+	var allChars = State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys);
+	for ( var cK of allChars ) {
+		gC(cK).lust.current = gC(cK).lust.max; 
+	}
+	var itemsToRemove = [];
+	for ( var it of State.variables.fakeCandsItems ) {
+		itemsToRemove = [it].concat(itemsToRemove);
+	}
+	for ( var wp of itemsToRemove ) {
+		removeItem(wp);
+	}
+	delete State.variables.fakeCandsItems;
+}
+
+// Gleaming Caverns Epilogue
+window.gCepFirstBattleLizardlins = function() {
+	// Create lizardlins chars
+		// Create spears
+	var lizardlins = [];
+	State.variables.StVars.check2 = []; // Weapons
+	var i = 0;
+	var difficultyBuff = -1;
+	if ( gSettings().difficulty == "normal" ) {
+		difficultyBuff = 0;
+	} else if ( gSettings().difficulty == "hard" ) {
+		difficultyBuff = 1;
+	}
+	while ( i < 4 ) {
+		i++;
+		if ( gSettings().lewdMales == "enable" && limitedRandomInt(100) > 49 ) {
+			lizardlins.push(generateMaleAnonLizardlin(1,2+difficultyBuff,i));
+		} else {
+			lizardlins.push(generateFemaleAnonLizardlin(1,2+difficultyBuff,i));
+		}
+		State.variables.StVars.check2 = [createEquipment(equipmentType.SPEAR,"chDummy")].concat(State.variables.StVars.check2);
+		equipObjectOnWearer(State.variables.StVars.check2[i-1],lizardlins[i-1],-1);
+	}
+	
+	State.variables.sc.startScene(
+	"bs","fixed",["chPlayerCharacter","chMir","chAte","chRock"],lizardlins,"__Mountain__\nDespite their fierce movements, the lizardlins are cautious enough to keep a prudent distance between them and your allies.",endConditionTurns,5,
+	"FaEpil LizIntro2");
+	
+	// AIs
+	for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
+		if ( charKey != "chPlayerCharacter" ) {
+			gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+		}
+	}
+	
+	// Custom script: Hope and Rock cannot use pounces or sex actions
+	State.variables.sc.customActionAllowed = disallowBeastkinLewdActionsOnFirstAdventure;
+	State.variables.sc.formatScenePassage();
+	// Rest lust script
+		// Remove spears
+	State.variables.sc.genericCharacters = lizardlins;
+	State.variables.sc.endSceneScript = function() {
+		for ( var it of State.variables.StVars.check2 ) {
+			removeItem(it);
+		}
+		// Restore bars
+		for ( var cK of ["chPlayerCharacter","chMir","chAte","chRock"] ) {		
+			for ( var bar of ["lust","energy","willpower","socialdrive"] ) {
+				gC(cK)[bar].current += (gC(cK)[bar].max - gC(cK)[bar].current) * 0.7;
+			}
+		}
+	}
+}
+window.gCepSecondBattleLizardlins = function() {
+	// Create lizardlins chars
+		// Create spears
+	var lizardlins = [];
+	State.variables.StVars.check2 = []; // Weapons
+	var i = 0;
+	var difficultyBuff = -1;
+	if ( gSettings().difficulty == "normal" ) {
+		difficultyBuff = 0;
+	} else if ( gSettings().difficulty == "hard" ) {
+		difficultyBuff = 1;
+	}
+	while ( i < 3 ) {
+		i++;
+		if ( gSettings().lewdMales == "enable" && limitedRandomInt(100) > 49 ) {
+			lizardlins.push(generateMaleAnonLizardlin(1,2+difficultyBuff,i));
+		} else {
+			lizardlins.push(generateFemaleAnonLizardlin(1,2+difficultyBuff,i));
+		}
+		State.variables.StVars.check2 = [createEquipment(equipmentType.SPEAR,"chDummy")].concat(State.variables.StVars.check2);
+		equipObjectOnWearer(State.variables.StVars.check2[i-1],lizardlins[i-1],-1);
+	}
+	
+	State.variables.sc.startScene(
+	"bs","fixed",["chPlayerCharacter","chClaw","chHope"],lizardlins,"__Mountain__\nTens of meters behind you, Nashillbyir and Rock keep another pair of lizardlins at bay.",createEndConditionStoryBattle("FaEpil LizIntro6A","FaEpil LizIntro6B"),6,
+	"FaEpil LizIntro6A");
+	
+	// AIs
+	for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
+		if ( charKey != "chPlayerCharacter" ) {
+			gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+		}
+	}
+	
+	// Custom script: Hope and Rock cannot use pounces or sex actions
+	State.variables.sc.customActionAllowed = disallowBeastkinLewdActionsOnFirstAdventure;
+	State.variables.sc.formatScenePassage();
+	// Rest lust script
+		// Remove spears
+	State.variables.sc.genericCharacters = lizardlins;
+	State.variables.sc.endSceneScript = function() {
+		for ( var it of State.variables.StVars.check2 ) {
+			removeItem(it);
+		}
+		// Restore bars
+		for ( var cK of ["chPlayerCharacter","chClaw","chHope"] ) {		
+			if ( gC(cK).orgasmSceneCounter > 0 ) { gC(cK).lust.current = 0; }
+			for ( var bar of ["lust","energy","willpower","socialdrive"] ) {
+				gC(cK)[bar].current += (gC(cK)[bar].max - gC(cK)[bar].current) * 0.7;
+			}
+		}
+	}
+}
+
+window.gCepBossBattleLizardlins = function() {
+	// Create lizardlins chars
+		// Create spears
+	var lizardlins = [];
+	State.variables.StVars.check2 = []; // Weapons
+	var i = 0;
+	var difficultyBuff = -1;
+	if ( gSettings().difficulty == "normal" ) {
+		difficultyBuff = 0;
+	} else if ( gSettings().difficulty == "hard" ) {
+		difficultyBuff = 1;
+	}
+	while ( i < 4 ) {
+		i++;
+		if ( gSettings().lewdMales == "enable" && limitedRandomInt(100) > 49 ) {
+			lizardlins.push(generateMaleAnonLizardlin(1,2+difficultyBuff,i));
+		} else {
+			lizardlins.push(generateFemaleAnonLizardlin(1,2+difficultyBuff,i));
+		}
+		State.variables.StVars.check2 = [createEquipment(equipmentType.SPEAR,"chDummy")].concat(State.variables.StVars.check2);
+		equipObjectOnWearer(State.variables.StVars.check2[i-1],lizardlins[i-1],-1);
+	}
+	lizardlins = ["chChin"].concat(lizardlins);
+	State.variables.StVars.check2 = [createEquipment(equipmentType.SPEAR,"chChin")].concat(State.variables.StVars.check2);
+	equipObjectOnWearer(State.variables.StVars.check2[4],"chChin",-1);
+	
+	gC("chChin").adjustAttributes(0,difficultyBuff);
+	recalculateMaxBars("chChin");
+	
+	State.variables.sc.startScene(
+	"bs","fixed",["chPlayerCharacter","chNash","chClaw","chHope","chRock"],lizardlins,"__Mountain__\nA storm of thrusts, blows and fire strikes in all directions. The cliff is dangerously close.",createEndConditionStoryBattle("FaEpil LizIntro9A","FaEpil LizIntro9B"),6,
+	"FaEpil LizIntro9A");
+	
+	// AIs
+	for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
+		if ( charKey != "chPlayerCharacter" ) {
+			gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+		}
+	}
+	
+	// Custom script: Hope and Rock cannot use pounces or sex actions
+	State.variables.sc.customActionAllowed = disallowBeastkinLewdActionsOnFirstAdventure;
+	State.variables.sc.customScript = cssGcAtenechinolDialogues;
+	State.variables.sc.formatScenePassage();
+	// Rest lust script
+		// Remove spears
+	State.variables.sc.genericCharacters = [lizardlins[1],lizardlins[2],lizardlins[3],lizardlins[4]];
+	State.variables.sc.endSceneScript = function() {
+		for ( var it of State.variables.StVars.check2 ) {
+			removeItem(it);
+		}
+		// Restore bars
+		for ( var cK of ["chPlayerCharacter"] ) {		
+			for ( var bar of ["lust","energy","willpower","socialdrive"] ) {
+				gC(cK)[bar].current += (gC(cK)[bar].max - gC(cK)[bar].current) * 0.7;
+			}
+		}
+	}
+}
+window.cssGcAtenechinolDialogues = function() {
+	var msg = "";
+	if ( State.variables.StVars.check6 == false ) { // Defeated
+		if ( gC("chChin").koed == true ) {
+			msg = `\n<span @style=$chChin.colorStyleKey>//"Wretched beasts... This doesn't end here!"//</span>`;
+			State.variables.StVars.check6 = true;
+		}
+		if ( msg == "" && State.variables.StVars.check3 == false ) { // Is mounted
+			if ( gC("chChin").position.type == "passive" ) {
+				msg = `\n<span @style=$chChin.colorStyleKey>//"Get off me, foul creature!"//</span>`;
+				State.variables.StVars.check3 = true;
+			}
+		}
+		if ( msg == "" && State.variables.StVars.check5 == false ) { // KOed ally
+			var anyKoedEnemy = false;
+			for ( var cK of State.variables.sc.teamAcharKeys ) {
+				if ( gC(cK).koed == true ) { anyKoedEnemy = true; }
+			}
+			if ( anyKoedEnemy ) {
+				msg = `\n<span @style=$chChin.colorStyleKey>//"Keep attacking! They will soon be at our feet!"//</span>`;
+				State.variables.StVars.check5 = true;
+			}
+		}
+		if ( msg == "" && State.variables.StVars.check4 == false ) { // Used fire breath
+			var usedFireBreath = false;
+			for ( var cA of State.variables.sc.teamBchosenActions ) {
+				if ( cA == "fireBreath" ) { usedFireBreath = true; }
+			}
+			if ( usedFireBreath ) {
+				msg = `\n<span @style=$chChin.colorStyleKey>//"FRGOAAAAAR!"//</span>` + "\n" + `<span @style=$chNash.colorStyleKey>//"Jump back! She's spitting fire!"//</span>`;
+				State.variables.StVars.check4 = true;
+			}
+		}	
+	}
+	State.variables.sc.headingDescription = "__Mountain__\nA storm of thrusts, blows and fire strikes in all directions. The cliff is dangerously close." + msg;
+}
 

@@ -60,4 +60,5 @@ Adventures\map-story-events.js
 Scenes\tf-scenes.js
 Others\body-paintings.js
 Adventures\adventure-requests.js
+Adventures\nersmiasSocialBattle.js
 Others\patches.js

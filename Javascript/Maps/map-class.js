@@ -396,6 +396,7 @@ window.initiateLiberationChallenge = function(actor,target) {
 	
 	State.variables.compass.ongoingEvents.push(createSystemEventLiberationChallenge([actor],[target],spectators));
 	State.variables.compass.sortOnGoingEventsByTime();
+	State.variables.compass.pushAllTimeToAdvance();
 	
 	if ( allChars.includes("chPlayerCharacter") && target != "chPlayerCharacter" ) {
 		State.variables.compass.timeToAdvance = 0;
@@ -453,13 +454,14 @@ window.processNpcChallengeResponse = function(target,stakes) {
 		}
 		signCharsActive(allChars);
 		// Scene
-		State.variables.compass.ongoingEvents.push(createSystemEventStandardChallenge(["chPlayerCharacter"],[target],spectators,stakes));
+		var ev = createSystemEventStandardChallenge(["chPlayerCharacter"],[target],spectators,stakes);
+		State.variables.compass.ongoingEvents.push(ev);
 		State.variables.compass.sortOnGoingEventsByTime();
 		State.variables.compass.pushAllTimeToAdvance();
 		// Message
 		msg = gC(target).getFormattedName() + " accepted the challenge!";
 		if ( gC("chPlayerCharacter").cbl.includes(target) == false ) {
-			msg += "\nYou gained 1 infamy.";
+			msg += "\nYou gained " + infamy + " infamy.";
 		}
 		msg += "\n\n"
 			+ "[[Continue|Scene]]";
@@ -469,7 +471,7 @@ window.processNpcChallengeResponse = function(target,stakes) {
 		// Message
 		msg = gC(target).getFormattedName() + " rejected the challenge.";
 		if ( gC("chPlayerCharacter").cbl.includes(target) == false ) {
-			msg += "\nYou gained 1 infamy.";
+			msg += "\nYou gained " + infamy + " infamy.";
 		}
 		msg += "\nYou took 1 merit from " + gC(target).comPr + ".\n\n[[Continue|Map]]";
 	}
@@ -742,7 +744,7 @@ window.Compass = function() {
 		// Finish events
 		for ( var sEvent of this.ongoingEvents ) {
 			 if ( sEvent.title != "scenarioEnd" ) { // scenarioEnd events call this event
-				 sEvent.forceEnd();
+				 sEvent.forceEnd("scenario end");
 			 }
 		}
 		
@@ -836,7 +838,9 @@ window.Compass = function() {
 	Compass.prototype.allCharsCheckMapAi = function() {
 		// Every character present in the map calls mapAi.main(), trying to reach new goals, creating new missions or staying quiet
 		for ( var character of getCurrentMap().characters ) {
-			gC(character).mapAi.main();
+			if ( gC(character).currentRoom != findTrapRoomInMap() ) {
+				gC(character).mapAi.main();
+			}
 		}
 	}
 	
@@ -953,6 +957,15 @@ window.Compass = function() {
 		}
 		return eventsList;
 	}
+	Compass.prototype.findAllNonEndingEventsInvolvingCharacter = function(character) {
+		var eventsList = [];
+		for ( var sEvent of this.ongoingEvents ) {
+			if ( sEvent.characters.includes(character) && sEvent.flagForcedToEnd != true ) {
+				eventsList.push(sEvent);
+			}
+		}
+		return eventsList;
+	}
 	Compass.prototype.findAllEventsIDsInvolvingCharacter = function(character) {
 		var eventsList = [];
 		var i = 0;
@@ -989,13 +1002,36 @@ window.Compass = function() {
 		
 		for ( var sEvent of this.ongoingEvents ) {
 			if ( sEvent.characters.includes(character) ) {
-				sEvent.forceEnd();
+				sEvent.forceEnd("event ends prematurely");
 			} else {
 				//newEventsList.push(sEvent);
 			}
 		}
 		
 		//this.ongoingEvents = newEventsList;
+	}
+	Compass.prototype.characterEventEndsPrematurelyFinishMovement = function(character) {
+		// Function called when external events force a character to leave their event
+		//var newEventsList = [];
+		
+		for ( var sEvent of this.ongoingEvents ) {
+			if ( sEvent.characters.includes(character) ) {
+				sEvent.forceEnd("finMov");
+			} else {
+				//newEventsList.push(sEvent);
+			}
+		}
+		
+		//this.ongoingEvents = newEventsList;
+	}
+	Compass.prototype.characterEventGetsNewRemainingTime = function(character,time) {
+		for ( var sEvent of this.ongoingEvents ) {
+			if ( sEvent.characters.includes(character) ) {
+				sEvent.timeRemaining = time;
+			} else {
+				
+			}
+		}
 	}
 	
 	// Logic
@@ -1105,7 +1141,7 @@ window.Compass = function() {
 	
 	Compass.prototype.purgeDuplicityEvents = function() {
 		for ( var cK of getCurrentMap().characters ) {
-			var eList = this.findAllEventsInvolvingCharacter(cK);
+			var eList = this.findAllNonEndingEventsInvolvingCharacter(cK);
 			if ( eList.length > 1 ) {
 				var i = 0;
 				var eI = 0;
@@ -1161,17 +1197,19 @@ window.Compass = function() {
 		// Solution: Find incompatible battle events and force them to end
 			// Liberation challenges, challenges, assaults
 		for ( var sEvent of this.ongoingEvents ) {
-			if ( sEvent.label == "liberationChallenge" ) {
-				if ( liberationChallengePreConditions(sEvent.charactersTeamA[0],sEvent.charactersTeamB[0]) == false ) {
-					sEvent.forceEnd();
-				}
-			} else if ( sEvent.label == "challenge" ) {
-				if ( challengePreConditions(sEvent.charactersTeamA[0],sEvent.charactersTeamB[0]) == false ) {
-					sEvent.forceEnd();
-				}
-			} else if ( sEvent.label == "assault" ) {
-				if ( assaultPreConditions(sEvent.charactersTeamA[0],sEvent.charactersTeamB[0]) == false ) {
-					sEvent.forceEnd();
+			if ( sEvent.characters.includes("chPlayerCharacter") == false ) {
+				if ( sEvent.label == "liberationChallenge" ) {
+					if ( isLiberationChallengePossible(sEvent.charactersTeamA[0],sEvent.charactersTeamB[0]) == false ) {
+						sEvent.forceEnd("Not valid liberation challenge");
+					}
+				} else if ( sEvent.label == "challenge" ) {
+					if ( isChallengePossible(sEvent.charactersTeamA[0],sEvent.charactersTeamB[0]) == false ) {
+						sEvent.forceEnd("Not valid challenge");
+					}
+				} else if ( sEvent.label == "assault" ) {
+					if ( isAssaultPossible(sEvent.charactersTeamA[0],sEvent.charactersTeamB[0]) == false ) {
+						sEvent.forceEnd("Not valid assault");
+					}
 				}
 			}
 		}
@@ -2171,7 +2209,7 @@ window.systemEvent = function(minutes,characters,title,name,effect) {
 			this.characters = arrayMinusA(this.characters,charKey);
 			if ( this.characters.length < 1 ) {
 				// Event ran out of characters, what to do
-				this.forceEnd();
+				this.forceEnd("Ran out of characters");
 			}
 		}
 	}
@@ -2215,7 +2253,9 @@ window.systemEvent = function(minutes,characters,title,name,effect) {
 	this.forceEnd = function(motive) {
 		this.timeRemaining = 0;
 		
-		if ( this.title != "movement" && this.title != "sisRound" ) {
+		if ( motive == "finMov" && this.title == "movement" ) {
+			this.effect(this.characters);
+		} else if ( this.title != "movement" && this.title != "sisRound" ) {
 			
 		} else {
 			var effectMsg = "The movement couldn't be completed."; // Event will not get executed

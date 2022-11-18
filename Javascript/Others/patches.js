@@ -23,4 +23,3 @@ window.v0310Patches = function() {
 	}
 	charactersLearnSceneActions(["chPlayerCharacter","chNash","chClaw","chVal","chMir","chAte"],["runAway"]);	
 }
-

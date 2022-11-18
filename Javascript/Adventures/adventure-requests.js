@@ -12,7 +12,9 @@ window.adventureRequest = function(name,key,description,requisiteToAppear,isItAc
 const advReqType = {
 	huntEssenceSucker: "h0",
 	huntFlyingLookout: "h1",
-	huntOppresiveYoke: "h2"
+	huntOppresiveYoke: "h2",
+	askValtansJudgement: "avjg",
+	discussWithNersmias: "nsb"
 }
 
 setup.advReqList = [];
@@ -22,7 +24,7 @@ setup.advReqList[advReqType.huntEssenceSucker] = new adventureRequest("Hunt Esse
 	function(target) { // Requisites to appear
 		var validRequest = false;
 		var interruptable = mayCharBeInterrupted(target);
-		if ( getCurrentStoryState() == storyState.firstAdventure && getCandidatesKeysArray().includes(target) && interruptable ) {
+		if ( getCurrentStoryState() == storyState.firstAdventure && getCandidatesKeysArray().includes(target) && interruptable && target != "chVal" && gC(target).followedBy.length == 0 && gC(target).followingTo == "" ) {
 			validRequest = true;
 		}
 		return validRequest;
@@ -43,7 +45,7 @@ setup.advReqList[advReqType.huntFlyingLookout] = new adventureRequest("Hunt Flyi
 	function(target) { // Requisites to appear
 		var validRequest = false;
 		var interruptable = mayCharBeInterrupted(target);
-		if ( getCurrentStoryState() == storyState.firstAdventure && getCandidatesKeysArray().includes(target) && interruptable ) {
+		if ( getCurrentStoryState() == storyState.firstAdventure && getCandidatesKeysArray().includes(target) && interruptable && target != "chVal" ) {
 			validRequest = true;
 		}
 		return validRequest;
@@ -63,7 +65,7 @@ setup.advReqList[advReqType.huntOppresiveYoke] = new adventureRequest("Hunt Oppr
 	function(target) { // Requisites to appear
 		var validRequest = false;
 		var interruptable = mayCharBeInterrupted(target);
-		if ( getCurrentStoryState() == storyState.firstAdventure && getCandidatesKeysArray().includes(target) && interruptable ) {
+		if ( getCurrentStoryState() == storyState.firstAdventure && getCandidatesKeysArray().includes(target) && interruptable && target != "chVal" ) {
 			validRequest = true;
 		}
 		return validRequest;
@@ -78,7 +80,69 @@ setup.advReqList[advReqType.huntOppresiveYoke] = new adventureRequest("Hunt Oppr
 		payFavorDebt("chPlayerCharacter",target,3);
 		State.variables.compass.setMapMessage(gC(target).getFormattedName() + " has accepted the request, and you will leave out to hunt. You now owe " + gC(target).comPr + " 3 favor.");
 	});
+setup.advReqList[advReqType.askValtansJudgement] = new adventureRequest("Ask opinion on Valtan's situation","avjg",
+	"Ask this character their opinion on the relationship of Valtan with her own tribe, at the cost of some social drive.",
+	function(target) { // Requisites to appear
+		var validRequest = false;
+		var interruptable = mayCharBeInterrupted(target);
+		if ( getCurrentStoryState() == storyState.firstAdventure && getCandidatesKeysArray().includes(target) && target != "chVal" && interruptable ) {
+			validRequest = true;
+		}
+		return validRequest;
+	},
+	function(target) { // Will request be accepted : [0] -> True/False , [1] -> Description
+		var result = [true,"Will accept."];
+		var relScore = rLvlAbt(target,"chPlayerCharacter","friendship") + rLvlAbt(target,"chPlayerCharacter","romance") - rLvlAbt(target,"chPlayerCharacter","enmity");
+		var subMinusDom = rLvlAbt(target,"chPlayerCharacter","submission") - rLvlAbt(target,"chPlayerCharacter","domination");
+		if ( subMinusDom < 0 ) { subMinusDom = 0; }
+		relScore += subMinusDom;
+		if ( relScore < 5 ) {
+			result[0] = false;
+			result[1] = "This character does not trust you enough. Relationship points: " + relScore + " < 5."
+		}
+		return result;
+	},
+	function(target) { // Effects: Player loses some social drive, returns to map with the conversation as a map message
+		gC("chPlayerCharacter").socialdrive.changeValue(-5);
+		State.variables.compass.setMapMessage(getCharsValtanJudgementDescription(target) + "\nYou have lost " + textSocialdrivePoints(5) + ".");
+	});
+setup.advReqList[advReqType.discussWithNersmias] = new adventureRequest("Discuss with Nersmias","nsb",
+	"Ask this character to speak with Nersmias about Valtan, defending their own opinions. You will owe 5 favor to this character.",
+	function(target) { // Requisites to appear
+		var validRequest = false;
+		var interruptable = mayCharBeInterrupted(target);
+		
+		var nersmiasIsFree = getAllActionsOnMapThat(getCurrentMap(),getCharGroup(target),function(action) { return action.tags.includes("npcNerConv"); }).length > 0;
+		var charDidntSpeakToNersmias = gC(target).hasOwnProperty("flagSpokeWithNersmias") == false;
+		var isValid = (nersmiasIsFree && charDidntSpeakToNersmias);
+		
+		if ( getCurrentStoryState() == storyState.firstAdventure && getCandidatesKeysArray().includes(target) && target != "chVal" && interruptable && isValid ) {
+			validRequest = true;
+		}
+		return validRequest;
+	},
+	function(target) { // Will request be accepted : [0] -> True/False , [1] -> Description
+		var result = [true,"Will accept."];
+		var relScore = rLvlAbt(target,"chPlayerCharacter","friendship") + rLvlAbt(target,"chPlayerCharacter","romance") - rLvlAbt(target,"chPlayerCharacter","enmity");
+		var subMinusDom = rLvlAbt(target,"chPlayerCharacter","submission") - rLvlAbt(target,"chPlayerCharacter","domination");
+		if ( subMinusDom < 0 ) { subMinusDom = 0; }
+		relScore += subMinusDom;
+		if ( relScore < 7 ) {
+			result[0] = false;
+			result[1] = "This character does not trust you enough. Relationship points: " + relScore + " < 5.";
+		} else {
+			result[1] = "This character values your relationship enough, and is willing to do this favor for you. Relationship points: " + relScore + " < 7.";
+		}
+		return result;
+	},
+	function(target) { // Effects: Player loses some social drive, returns to map with the conversation as a map message
+		State.variables.compass.characterEventEndsPrematurely(target);
+		gC(target).mapAi.goalsList = cMissionActionTag(getCurrentMap(),getCharGroup(target),"npcNerConv");
+		payFavorDebt("chPlayerCharacter",target,5);
+		State.variables.compass.setMapMessage(gC(target).getFormattedName() + " has accepted the request, and will go to speak with Nersmias. You now owe " + gC(target).comPr + " 5 favor.");
+	});
 	
+
 window.getAdvRequestByKey = function(key) {
 	return setup.advReqList[key];
 }

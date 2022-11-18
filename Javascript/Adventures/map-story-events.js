@@ -187,3 +187,107 @@ window.finishFaSeCavernsRescue = function() {
 	State.variables.eventsCalendar.activeEvent = false;
 }
 
+// Nersmias Social Battle
+window.initFaSeNSBfirst = function() {
+	// Init Story UI
+	setPasChars(["chNer"]);
+	setRoomIntro("mapGleamingCaverns","assembly");
+	
+	State.variables.StVars.check1 = false;
+	if ( isStVarOn("CaRePl") || isStVarOn("CaReVl") ) {
+		State.variables.StVars.check1 = false;
+	}
+	State.variables.StVars.check2 = isStVarOn("neSBrc");
+	
+	State.variables.StVars.check3 = gCstat("chPlayerCharacter","will") + gCstat("chPlayerCharacter","charisma");
+	State.variables.StVars.check4 = gCstat("chPlayerCharacter","perception") + gCstat("chPlayerCharacter","luck") * 0.3;
+	
+	initNersmiasLocalConviction();
+	initNersmiasLocalTrust();
+	
+	State.variables.eventsCalendar.activeEvent = true;
+}
+window.initFaSeNSBsecond = function() {
+	// Global event variable
+	addToStVarsList("neSBin");
+	State.variables.StVars.check5 = getPlayerPersuasionPower();
+	State.variables.StVars.check6 = getPlayerInspirationPower();
+	State.variables.StVars.check9 = false; // Was will gain achieved?
+	
+	State.variables.nerSocBattle = "";
+	State.variables.nerSocTopic = ""; // Topic to discuss next
+	State.variables.nerSocPlayerHypno = ""; // True/False Is player using hypnosis
+	State.variables.nerSocPlaHypnosUsed = 0; // Amount of times Player has used hypnosis
+	State.variables.nerSocNerHypnosUsed = 0; // Amount of times Nersmias has used hypnosis
+	
+	nsbInitConversationTagsVars();
+}
+window.finishFaSeNSB = function() {
+	nsbLocalToGlobalTnC();
+	
+	State.variables.compass.timeToAdvance = 60;
+	State.variables.compass.pushAllTimeToAdvance();
+	
+	delete State.variables.nerSocBattle;
+	delete State.variables.nerSocTopic;
+	delete State.variables.nerSocPlayerHypno;
+	delete State.variables.nerSocNerHypnosUsed;
+	
+	delete State.variables.nsbcDesc;
+	delete State.variables.nsbtDesc;
+	
+	State.variables.StVars.check1 = 0;
+	State.variables.StVars.check2 = 0;
+	State.variables.StVars.check3 = 0;
+	State.variables.StVars.check4 = 0;
+	State.variables.StVars.check5 = 0;
+	State.variables.StVars.check6 = 0;
+	State.variables.StVars.check7 = 0;
+	State.variables.StVars.check8 = 0;
+	State.variables.StVars.check9 = 0;
+	
+	State.variables.eventsCalendar.activeEvent = false;
+}
+
+// Gift for the Shapeshifters
+window.loadGfsTexts = function() {
+	// 1: Ate , 2: Claw , 3: Nash , 4: Padmiri
+	var relScores = [0,0,0,0];
+	var i = 0;
+	for ( var cK of ["chAte","chClaw","chNash","chMir"] ) {
+		relScores[i] = rLvlAbt(cK,"chPlayerCharacter","friendship") + rLvlAbt(cK,"chPlayerCharacter","romance") - rLvlAbt(cK,"chPlayerCharacter","enmity");
+		i++;
+	}
+	if ( relScores[0] < 6 ) {
+		State.variables.StVars.check2 = `<span @style=$chAte.colorStyleKey>//"Huh? Is that... $chPlayerCharacter.name? What is she doing?"//</span> Maaterasu asks in the distance, confused, and mildly intrigued.`;
+	} else {
+		State.variables.StVars.check2 = `<span @style=$chAte.colorStyleKey>//"That's... $chPlayerCharacter.name, what is she doing...? Hey, what are you doing to her?"//</span> Maaterasu asks in the distance, worried, but she is quickly reassured that everything is fine.`;
+	}
+	if ( relScores[1] < 6 ) {
+		State.variables.StVars.check3 = `<span @style=$chClaw.colorStyleKey>//"What a sight. Not one I expected to find today."//</span> Claw, on the other hand, is clearly amused.`;
+	} else {
+		State.variables.StVars.check3 = `<span @style=$chClaw.colorStyleKey>//"What the hell is going on with her...? Doesn't she know she is bringing us all shame?"//</span> Claw adds, clearly annoyed.`;
+	}
+	if ( relScores[2] < 6 ) {
+		State.variables.StVars.check4 = `<span @style=$chNash.colorStyleKey>//"Hey, let me in, I need to see..."//</span> you hear a familiar voice as someone pushes her way through the crowd. <span @style=$chNash.colorStyleKey>//"Huh!? What is going on...? Padmiri, come to see this."//</span>`;
+	} else {
+		State.variables.StVars.check4 = `<span @style=$chNash.colorStyleKey>//"Hey, let me in, I need to see..."//</span> you hear a familiar voice as someone pushes her way through the crowd. <span @style=$chNash.colorStyleKey>//"What is this...!? Stop it already! Padmiri, come help me!"//</span>`;
+	}
+	if ( relScores[3] < 6 ) {
+		State.variables.StVars.check5 = `<span @style=$chMir.colorStyleKey>//"This is not appropriate... But what should we do...? We ought to tell Drishtya, at least..."//</span> says Padmiri, soon after reaching Nashillbyir.`;
+	} else {
+		State.variables.StVars.check5 = `<span @style=$chMir.colorStyleKey>//"$chPlayerCharacter.name... But why...? Cease this, cease everything at once!"//</span> says Padmiri, soon after reaching Nashillbyir, only to meet the collective dismissal of the tribe.`;
+	}
+}
+
+/*
+Nersmias' greeting must be different if the save was acknowledged (check1)
+Nersmias must mention the save if it happened but wasn't acknowledged yet (check2)
+check1 -> true if Nersmias heard of the save but didn't mention it yet, checks old and new StVars
+check2 -> Set to true is a StVar at FaSe NSB Init was activated
+check3 -> Player's will + charisma
+check4 -> Player's perception + luck * 3
+*/
+
+
+

@@ -106,6 +106,14 @@ Bar.prototype.cleanDamage = function() {
 		this.accumulatedDamage = 0;
 	}
 
+window.fixCharsNegativeBars = function(cK) {
+	for ( var bar of ["lust","energy","willpower","socialdrive"] ) {
+		if ( gC(cK)[bar].current < 0 ) {
+			gC(cK)[bar].current = 0;
+		}
+	}
+}
+
 // Constructors, serializers, etc.
 Bar.prototype._init = function (obj) {
 	Object.keys(obj).forEach(function (pn) {

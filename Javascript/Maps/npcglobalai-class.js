@@ -207,7 +207,6 @@ window.createCandidateGlobalAi = function(charKey) {
 	globalAi.generateAdvancedSocializationChoices = function() {
 		var mChoices = [];
 		
-		// Generate targets
 		var allyTargets = [];
 		var loveTargets = [];
 		var covetTargets = [];
@@ -849,6 +848,10 @@ window.createCandidateGcAi = function(charKey) {
 		}
 		return missions;
 	}
+	globalAi.generateSpecialGcChoices = function(charKey) {
+		var missions = [ gCnersmiasDiscussion(charKey) ];
+		return missions;
+	}
 	
 	globalAi.generateMissionChoices = function() {
 		// this->Generate stat goals
@@ -858,6 +861,7 @@ window.createCandidateGcAi = function(charKey) {
 		mChoices = this.generateTrainingChoices(this.charKey); // Training
 		mChoices.push(this.generateRestMissionChoice()); // Rest
 		mChoices = mChoices.concat(this.generateHuntingChoices(charKey)); // Monster Hunting
+		mChoices = mChoices.concat(this.generateSpecialGcChoices(charKey));
 		
 		return mChoices;
 	}
@@ -1598,6 +1602,41 @@ window.npcConsidersWillingnessToJoinHuntingMission = function(targetKey,actorKey
 		result[1] = gC(targetKey).getName() + " already has an important goal in mind.";
 	}
 	return result;
+}
+
+	// Special Adventure Missions
+window.gCnersmiasDiscussion = function(character) {
+	var mChoice = new missionChoice("npcNerConv");
+	mChoice.tags = ["npcNerConv"];
+	mChoice.isValid = function() {
+		// Return valid if at least one action in map allows to rest
+		var nersmiasIsFree = getAllActionsOnMapThat(getCurrentMap(),getCharGroup(character),function(action) { return action.tags.includes("npcNerConv"); }).length > 0;
+		var charDidntSpeakToNersmias = gC(character).hasOwnProperty("flagSpokeWithNersmias") == false;
+		var isValid = (nersmiasIsFree && charDidntSpeakToNersmias);
+		return ( isValid );		
+	}
+	mChoice.getCommandsList = function() {
+		return cMissionActionTag(getCurrentMap(),getCharGroup(character),"npcNerConv");
+	}
+	mChoice.weight = 1;
+	
+	var charCaresAboutTopic = false;
+	var charsJgment = getCharsValtanJudgement(character);
+	
+	if ( charsJgment[0] < -1 || getCharsValtanJudgement[0] > 1 || getCharsValtanJudgement[1] < -1 || getCharsValtanJudgement[1] > 1 ) {
+		charCaresAboutTopic = true;
+		mChoice.weight = 10;
+	}
+	
+	// Remove weight if not possible
+	var nersmiasIsFree = getAllActionsOnMapThat(getCurrentMap(),getCharGroup(character),function(action) { return action.tags.includes("npcNerConv"); }).length > 0;
+	var charDidntSpeakToNersmias = gC(character).hasOwnProperty("flagSpokeWithNersmias") == false;
+	var isValid = (nersmiasIsFree && charDidntSpeakToNersmias);
+	if ( isValid == false ) {
+		mChoice.weight = 0;
+	}
+	
+	return mChoice;
 }
 
 // Constructors, serializers, etc.

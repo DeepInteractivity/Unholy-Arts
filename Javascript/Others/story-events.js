@@ -624,6 +624,560 @@ window.initGleamingCavernsDayPlaceholder = function() {
 	
 }
 
+	// Twisted Festival
 
+window.initGleamingCavernsTwistedFestival = function() {
+	if ( State.variables.tribes.ssRpt == undefined ) {
+		State.variables.tribes.ssRpt = -500;
+	}
+	State.variables.shapeshiftersForgiveValtan = -500;
+	addToStVarsList("HdRlts");
+	
+	var closestCandidate = "none";
+	var highestRelationship = -1;
+	for ( var cK of ["chNash","chClaw","chMir","chAte","chVal"] ) {
+		var currentRel = rLvlAbt(cK,"chPlayerCharacter","friendship") + rLvlAbt(cK,"chPlayerCharacter","romance") * 2 + rLvlAbt(cK,"chPlayerCharacter","sexualTension") - rLvlAbt(cK,"chPlayerCharacter","rivalry") - rLvlAbt(cK,"chPlayerCharacter","enmity") * 2;
+		if ( currentRel > 10 && currentRel > highestRelationship ) {
+			highestRelationship = currentRel;
+			closestCandidate = cK;
+		}
+	}
+	State.variables.StVars.check1 = "drishtya";
+	if ( closestCandidate != "none" && closestCandidate != "chVal" ) {
+		State.variables.StVars.check1 = closestCandidate;
+	}
+	
+	// One or Two Valtans
+	if ( State.variables.nerConviction == undefined ) {
+		initNersmiasGlobalConviction();
+	}
+	State.variables.StVars.check2 == false;
+	if ( isStVarOn("gcSiTl") == true || isStVarOn("gcSiSp") == true || State.variables.nerConviction < 50 ) {
+		if ( isStVarOn("gcSiWT") == false ) {
+			State.variables.StVars.check2 = true;
+		}
+	}
+	
+	// Went to talk to Mesquelles?
+	State.variables.StVars.check3 = false;
+	if ( isStVarOn("mphFsTf") == true ) {
+		State.variables.StVars.check3 = true;
+	}
+	
+	// Int check 
+	State.variables.StVars.check4 = false;
+	if ( gCstat("chPlayerCharacter","intelligence") >= 20 ) {
+		State.variables.StVars.check4 = true;
+	}
+	
+	// Empathy check
+	State.variables.StVars.check5 = false;
+	if ( gCstat("chPlayerCharacter","intelligence") >= 16 ) {
+		State.variables.StVars.check5 = true;
+	}
+}
+window.initGleamingCavernsTwistedFestivalPart2 = function() {
+	// Padmiri's position
+	State.variables.StVars.check6 = true;
+	if ( gC("chMir").supsValPardon < 0 ) { State.variables.StVars.check6 = false; }
+	// Nashillbyir's position
+	State.variables.StVars.check7 = true;
+	if ( gC("chNash").supsValPardon < 0 ) { State.variables.StVars.check7 = false; }
+	// Claw's position
+	State.variables.StVars.check8 = true;
+	if ( gC("chClaw").supsValPardon < 0 ) { State.variables.StVars.check8 = false; }
+	// Can Player Beg
+	State.variables.StVars.check9 = false;
+	if ( State.variables.StVars.check6 == false || State.variables.StVars.check7 == false || State.variables.StVars.check8 == false ) {
+		State.variables.StVars.check9 = true;
+	}
+}
 
+window.twistedFestivalProcessValtanDoesntDeserveIt = function() {
+	var tempText = "";
+	var affectedCandidates = [];
+	for ( var ch of ["chMir","chNash","chClaw","chAte"] ) {
+		if ( getCharsDrivePercent(ch,"dAmbition") > 0.16 ) {
+			affectedCandidates.push(ch);
+			State.variables[ch].relations.chPlayerCharacter.friendship.stv += 300;
+		}
+	}
+	if ( affectedCandidates.length > 0 ) {
+		var tText = "//Despite any disagreements, " + getCharNames(affectedCandidates);
+		if ( affectedCandidates.length > 1 ) { tText += " show " } else { tText += " shows " }
+		tText += "respect for your commitment with your duties as a Candidate. Your friendship improves.//\n\n"
+		tempText = colorText(tText,"khaki");
+	}
+	State.variables.temp = tempText;
+	return tempText;
+}
+window.twistedFestivalCandidatesShouldWorkTogether = function() {
+	var tempText = "";
+	var coopCandidates = [];
+	var domCandidates = [];
+	for ( var ch of ["chMir","chNash","chClaw","chAte"] ) {
+		if ( getCharsDrivePercent(ch,"dCooperation") > 0.20 ) {
+			coopCandidates.push(ch);
+			State.variables[ch].relations.chPlayerCharacter.friendship.stv += 300;
+		} else if ( getCharsDrivePercent(ch,"dDomination") > 0.20 ) {
+			domCandidates.push(ch);
+			State.variables[ch].relations.chPlayerCharacter.rivalry.stv += 300;
+		}
+	}
+	if ( coopCandidates.length > 0 ) {
+		var tText = "Due to views favoring cooperation, " + getCharNames(coopCandidates) + " liked your speech. Your friendship improves.\n";tempText = colorText(tText,"khaki");
+	}
+	if ( domCandidates.length > 0 ) {
+		var tText = "Due to views favoring competition, " + getCharNames(domCandidates) + " felt uncomfortable with your speech. Your rivalry increases.\n\n";
+		tempText += colorText(tText,"red");
+	}
+	State.variables.temp = tempText;
+	return tempText;
+}
+window.twistedFestivalWontHumilliateValtan = function() {
+	var tempText = "";
+	var affectedCandidates = [];
+	for ( var ch of ["chMir","chNash","chClaw","chAte"] ) {
+		var relScore = rLvlAbt(ch,"chVal","friendship") + rLvlAbt(ch,"chVal","romance") - rLvlAbt(ch,"chVal","rivalry") - rLvlAbt(ch,"chVal","enmity");
+		if ( relScore > 4 ) {
+			affectedCandidates.push(ch);
+			State.variables[ch].relations.chPlayerCharacter.friendship.stv += 300;
+		}
+	}
+	if ( affectedCandidates.length > 0 ) {
+		var tText = "//Due to having a positive opinion of Valtan, " + getCharNames(affectedCandidates);
+		tText += "felt moved by your words. Your friendship improves.//\n\n"
+		tempText = colorText(tText,"khaki");
+	}
+	State.variables.temp = tempText;
+	return tempText;
+}
+window.twistedFestivalBegForValtan = function() {
+	var tempText = "";
+	gC("chPlayerCharacter").merit -= 25;
+	if ( State.variables.StVars.check6 == false ) { // Convincing Padmiri
+		var playerRel = rLvlAbt("chMir","chPlayerCharacter","friendship") + rLvlAbt("chMir","chPlayerCharacter","romance") - rLvlAbt("chMir","chPlayerCharacter","rivalry") - rLvlAbt("chMir","chPlayerCharacter","enmity");
+		if ( playerRel > gC("chMir").supsValPardon ) {
+			tempText += colorText("Relationship check: passed. Padmiri will reconsider her position.\nYou now owe 20 extra favor to Padmiri.\n","green");
+			State.variables.StVars.check6 = true;
+			gC("chMir").supsValPardon = 1;
+			payFavorDebt("chMir","chPlayerCharacter",20);
+		} else {
+			tempText += colorText("Relationship check: failed. Padmiri will not change her position.\n","red");
+		}
+	}
+	if ( State.variables.StVars.check7 == false ) { // Convincing Nashillbyir
+		var playerRel = rLvlAbt("chNash","chPlayerCharacter","friendship") + rLvlAbt("chNash","chPlayerCharacter","romance") - rLvlAbt("chNash","chPlayerCharacter","rivalry") - rLvlAbt("chNash","chPlayerCharacter","enmity");
+		if ( playerRel > gC("chNash").supsValPardon ) {
+			tempText += colorText("Relationship check: passed. Nashillbyir will reconsider her position.\nYou now owe 20 extra favor to Nashillbyir.\n","green");
+			State.variables.StVars.check7 = true;
+			gC("chNash").supsValPardon = 1;
+			payFavorDebt("chNash","chPlayerCharacter",20);
+		} else {
+			tempText += colorText("Relationship check: failed. Nashillbyir will not change her position.\n","red");
+		}
+	}
+	if ( State.variables.StVars.check8 == false ) { // Convincing Claw
+		var playerRel = rLvlAbt("chClaw","chPlayerCharacter","friendship") + rLvlAbt("chClaw","chPlayerCharacter","romance") - rLvlAbt("chClaw","chPlayerCharacter","rivalry") - rLvlAbt("chClaw","chPlayerCharacter","enmity");
+		if ( playerRel > gC("chClaw").supsValPardon ) {
+			tempText += colorText("Relationship check: passed. Claw will reconsider her position.\nYou now owe 20 extra favor to Claw.\n","green");
+			State.variables.StVars.check8 = true;
+			gC("chClaw").supsValPardon = 1;
+			payFavorDebt("chClaw","chPlayerCharacter",20);
+		} else {
+			tempText += colorText("Relationship check: failed. Claw will not change her position.\n","red");
+		}
+	}
+	tempText += "\nOverwhelmed by your emotions, you're unable to focus on anyone, to take any clues, to see if you've made them feel anything. For now, there's nothing left for you to do but hope for the best.\n\n//You have lost 25 merit.//"
+	State.variables.temp = tempText;
+	return tempText;
+}
+window.twistedFestivalCandidateSpeechEffects = function(candidate) {
+	var tempText = "//";
+	// Logic
+	var changedSFV = 65; // Changed value of "shapeshiftersForgiveValtan"
+	var mainStat = gCstat(candidate,"charisma") * 3 + gCstat(candidate,"empathy") + gCstat(candidate,"will") + gC(candidate).impExp * 3;
+	var ssRsp = gC(candidate).ssRsp;
+	var firstMult = 1;
+	if ( mainStat < 100 ) { firstMult = 0.8; }
+	else if ( mainStat > 120 ) { firstMult = 1.3; }
+	var secMult = 1;
+	if ( ssRsp < 30 ) { secMult = 0.9; }
+	else if ( ssRsp > 50 ) { secMult = 1.2; }
+		// Execute logic
+	State.variables.shapeshiftersForgiveValtan += ( changedSFV * firstMult * secMult );
+	gC(candidate).ssRsp -= 50;
+	State.variables.tribes.ssRpt -= 100;
+	// Generate message
+	if ( firstMult > 1 ) {
+		tempText += colorText(gC(candidate).name + "'s charisma, empathy, will and improvisation skill produce a more compelling speech.\n","green");
+	} else if ( firstMult < 1 ) {
+		tempText += colorText(gC(candidate).name + "'s charisma, empathy, will and improvisation skill are mediocre, and the speech isn't as effective.\n","red");
+	}
+	if ( secMult > 1 ) {
+		tempText += colorText(gC(candidate).name + "'s respect in the tribe makes the Shapeshifters take her words more seriously.\n","green");
+	} else if ( secMult < 1 ) {
+		tempText += colorText(gC(candidate).name + "'s respect in the tribe is too low, and her words lose weight.\n","red");
+	}
+	tempText += gC(candidate).name + "'s speech shakes the Shapeshifter tribe's convictions.\n";
+	tempText += gC(candidate).name + " has lost considerable respect in the Shapeshifter tribe.\n";
+	tempText += "The relations between the Shapeshifter tribe and the Passion Temple have considerably deteriorated.//\n";
+	State.variables.temp = tempText;
+	return tempText;
+}
+window.twistedFestivalPlayerSpeechEffects = function(extraPoints) {
+	var tempText = "//";
+	// Logic
+	var changedSFV = 65 + extraPoints; // Changed value of "shapeshiftersForgiveValtan"
+	var mainStat = gCstat("chPlayerCharacter","charisma") * 3 + gCstat("chPlayerCharacter","empathy") + gCstat("chPlayerCharacter","will") + gC("chPlayerCharacter").impExp * 3;
+	var ssRsp = gC("chPlayerCharacter").ssRsp;
+	var firstMult = 1;
+	if ( mainStat < 100 ) { firstMult = 0.8; }
+	else if ( mainStat > 120 ) { firstMult = 1.3; }
+	var secMult = 1;
+	if ( ssRsp < 30 ) { secMult = 0.9; }
+	else if ( ssRsp > 50 ) { secMult = 1.2; }
+	if ( isStVarOn("neStSs") ) {
+		changedSFV *= 0.5;
+	}
+	if ( isStVarOn("CaReVl") ) {
+		changedSFV *= 1.6;
+	} else if ( isStVarOn("CaRePl") ) {
+		changedSFV *= 1.3;
+	}
+	if ( isStVarOn("tfTfVl") ) {
+		changedSFV *= 1.4;
+	}
+	
+		// Execute logic
+	State.variables.shapeshiftersForgiveValtan += ( changedSFV * firstMult * secMult );
+	gC("chPlayerCharacter").ssRsp -= 50;
+	State.variables.tribes.ssRpt -= 100;
+	// Generate message
+	if ( firstMult > 1 ) {
+		tempText += colorText("Your charisma, empathy, will and improvisation skill produce a more compelling speech.\n","green");
+	} else if ( firstMult < 1 ) {
+		tempText += colorText("Your charisma, empathy, will and improvisation skill are mediocre, and the speech isn't as effective.\n","red");
+	}
+	if ( secMult > 1 ) {
+		tempText += colorText("Your respect in the tribe makes the Shapeshifters take your words more seriously.\n","green");
+	} else if ( secMult < 1 ) {
+		tempText += colorText("Your respect in the tribe is too low, and your words lose weight.\n","red");
+	}
+	if ( isStVarOn("neStSs") ) {
+		tempText += colorText("The fact that you apologized in behalf of Valtan, naked and allowing everyone to use your body, makes your speech to become dramatically less effective.\n","red");
+	}
+	if ( isStVarOn("CaReVl") ) {
+		tempText += colorText("Glien's support makes the good deeds committed by you and Valtan earn you respect amongst the Shapeshifters, even if many remain skeptical.\n","green");
+	} else if ( isStVarOn("CaRePl") ) {
+		tempText += colorText("Glien's support and your good deeds earn you respect amongst the Shapeshifters, even if many remain skeptical.\n","green");
+	}
+	if ( isStVarOn("tfTfVl") ) {
+		tempText += colorText("Mesquelles' support isn't earned easily, impressing some Shapeshifters..\n","green");
+	}
+	tempText += gC("chPlayerCharacter").name + "'s speech shakes the Shapeshifter tribe's convictions.\n";
+	tempText += gC("chPlayerCharacter").name + " has lost considerable respect in the Shapeshifter tribe.\n";
+	tempText += "The relations between the Shapeshifter tribe and the Passion Temple have considerably deteriorated.//\n";
+	State.variables.temp = tempText;
+	return tempText;
+}
+window.twistedFestivalSpeechesGetNextPassage = function(currentPoint) {
+	// Points: Ate's sp: 0 ; Mir's sp: 1 ; Nash's sp: 2 ; Claw's sp: 3 ; Tfed Player Decisions: 4 ; Other Player Decisions: 5
+	var pasLink = "";
+	if ( currentPoint < 1 && State.variables.StVars.check6 == true ) {
+		pasLink = "[[Continue|TwistedFest TwistedTrialMir]]";
+	} else if ( currentPoint < 2 && State.variables.StVars.check7 == true ) {
+		pasLink = "[[Continue|TwistedFest TwistedTrialNash]]";
+	} else if ( currentPoint < 3 && State.variables.StVars.check8 == true ) {
+		pasLink = "[[Continue|TwistedFest TwistedTrialClaw]]";
+	} else if ( isStVarOn("tfTfVl") == true ) {
+		pasLink = "[[Continue|TwistedFest TwistedTrialTfedPlayerDecisions]]";
+	} else {
+		pasLink = "[[Continue|TwistedFest TwistedTrialStdPlayerDecisions]]";
+	}
+	return pasLink;
+}
+window.twistedFestivalPlayerDoesntDefendValtan = function() {
+	var tempText = "";
+	if ( isStVarOn("plSgVF") ) {
+		tempText = colorText("Story check: failed.","red") + "\n\nBecause you claimed you would support Valtan earlier, the other Candidates take note of your betrayal." + colorText("\nYour enmity with Maaterasu has hugely increased.","red");
+		State.variables["chAte"].relations.chPlayerCharacter.enmity.stv += 750;
+		if ( State.variables.StVars.check6 == true ) {
+			tempText += colorText("\nYour enmity with Padmiri has hugely increased.","red");
+			State.variables["chMir"].relations.chPlayerCharacter.enmity.stv += 750;
+		} else if ( State.variables.StVars.check7 == true ) {
+			tempText += colorText("\nYour enmity with Nashillbyir has hugely increased.","red");
+			State.variables["chNash"].relations.chPlayerCharacter.enmity.stv += 750;
+		} else if ( State.variables.StVars.check8 == true ) {
+			tempText += colorText("\nYour enmity with Claw has hugely increased.","red");
+			State.variables["chClaw"].relations.chPlayerCharacter.enmity.stv += 750;
+		}
+	} else {
+		tempText = colorText("Story check: passed.","green") + "\n\nBecause you didn't claim you would support Valtan earlier, the other Candidates respect your decision."
+	}
+	State.variables.temp = tempText;
+	return tempText;
+}
+window.twistedFestivalValtanCheck = function() {
+	var result = false;
+	if ( gCstat("chVal","charisma") * 2 + gCstat("chVal","will") * 2 + gCstat("chVal","empathy") > 90 ) {
+		result = true;
+	}
+	return result;
+}
+window.twistedFestivalValtanSpeechEffects = function(extraPoints) {
+	var tempText = "//";
+	// Logic
+	var changedSFV = 100 + extraPoints; // Changed value of "shapeshiftersForgiveValtan"
+	var mainStat = gCstat("chVal","charisma") * 3 + gCstat("chVal","empathy") + gCstat("chVal","will");
+	var ssRsp = gC("chVal").ssRsp;
+	var firstMult = 1;
+	if ( mainStat < 75 ) { firstMult = 0.8; }
+	else if ( mainStat > 85 ) { firstMult = 1.3; }
+		// Execute logic
+	State.variables.shapeshiftersForgiveValtan += ( changedSFV * firstMult );
+	State.variables.tribes.ssRpt -= 100;
+	// Generate message
+	if ( extraPoints > 0 ) {
+		tempText += colorText(gC("chVal").name + " has grown determined enough to be honest with her own feelings.\n","green");
+	}
+	if ( firstMult > 1 ) {
+		tempText += colorText(gC("chVal").name + "'s charisma, empathy, will and improvisation skill are top notch, and the audience is dazzled.\n","green");
+	} else if ( firstMult < 1 ) {
+		tempText += colorText(gC("chVal").name + "'s charisma, empathy, will and improvisation skill are mediocre, and the speech isn't as effective.\n","red");
+	}
+	tempText += gC("chVal").name + "'s speech shakes the Shapeshifter tribe's convictions.//";
+	State.variables.temp = tempText;
+	return tempText;
+}
+window.twistedFestivalChooseEnding = function() {
+	// Score Valtan forgiveness
+	var ssForgiveValtan = State.variables.shapeshiftersForgiveValtan;
+	// Sillan wanted to see Valtan
+	var isSillanDetermined = false;
+	if ( isStVarOn("gcSiTl") == true || isStVarOn("gcSiSp") == true || State.variables.nerConviction < 50 ) {
+		if ( isStVarOn("gcSiWT") == false ) {
+			isSillanDetermined = true;
+		}
+	}
+	var ending = "silPlusFor"; // Sillan Plus Forgiveness
+	var passage = "[[Valtan's fate will be decided|TwistedFest EndingA]]";
+	if ( ssForgiveValtan > 0 ) {
+	} else if ( ssForgiveValtan < -50 && isSillanDetermined ) {
+		ending = "silMinusFor"; // Sillan Minus Forgiveness
+		passage = "[[Valtan's fate will be decided|TwistedFest EndingB]]";
+	} else {
+		ending = "noSil"; // Neither Sillan Nor Forgiveness
+		passage = "[[Valtan's fate will be decided|TwistedFest EndingC]]";
+	}
+	return passage;
+}
+window.twistedFestivalEndingCeffects = function() {
+	var tempText = "";
+	addToStVarsList("GcEndC");
+	addPointsToDrive(gC("chVal").dPleasure,1000);
+	addPointsToDrive(gC("chVal").dDomination,500);
+	addPointsToDrive(gC("chVal").dAmbition,-500);
+	addPointsToDrive(gC("chVal").dImprovement,-500);
+	gC("chVal").dLove.value = 0;
+	gC("chVal").dLove.level = 0;
+	for ( var cK of ["chPlayerCharacter","chNash","chMir","chClaw","chAte"] ) {
+		State.variables.chVal.relations[cK].romance.stv = 0;
+		State.variables.chVal.relations[cK].romance.ltv = 0;
+		State.variables.chVal.relations[cK].friendship.stv *= 0.5;
+		State.variables.chVal.relations[cK].friendship.ltv *= 0.5;
+		State.variables.chVal.relations[cK].sexualTension.stv *= 0.5;
+		State.variables.chVal.relations[cK].sexualTension.ltv *= 0.5;
+	}
+	addPointsToDrive(gC("chAte").dAmbition,250);
+	tempText = "//This will have large consequences for Valtan.\nValtan's love drive has fallen to zero.\nValtan's ambition and self-improvement drives have decreased.\nValtan's pleasure and domination drives have increased."
+	tempText += "\n" + colorText("Valtan's romances have fallen to zero.","red");
+	tempText += "\n" + colorText("Valtan's friendships and sexual tensions have been cut in half.","red");
+	tempText += "\nMaaterasu's ambition drive has increased."
+	if ( State.variables.StVars.check6 ) {
+		addPointsToDrive(gC("chMir").dDomination,250);
+		addPointsToDrive(gC("chMir").dAmbition,250);
+		tempText += "\nPadmiri's domination and ambition drives have increased.";
+	}
+	if ( State.variables.StVars.check8 ) {
+		addPointsToDrive(gC("chClaw").dDomination,250);
+		addPointsToDrive(gC("chClaw").dAmbition,250);
+		tempText += "\nClaw's domination and ambition drives have increased.";
+	}
+	State.variables.temp = tempText + "//";
+	return tempText;
+}
+window.twistedFestivalEndingBeffects = function() {
+	var tempText = "";
+	addToStVarsList("GcEndB");
+	addPointsToDrive(gC("chVal").dLove,500);
+	addPointsToDrive(gC("chVal").dPleasure,500);
+	addPointsToDrive(gC("chVal").dAmbition,-500);
+	gC("chVal").charisma.affinity += 0.05;
+	gC("chVal").empathy.affinity += 0.05;
+	tempText = "//This will have large consequences for Valtan.\nValtan's love and pleasure drives have increased.\nValtan's ambition drive has decreased.\nValtan's charisma and empathy affinities have increased.//";
+	State.variables.temp = tempText;
+	return tempText;
+}
+window.twistedFestivalEndingAeffects = function() {
+	var tempText = "";
+	addToStVarsList("GcEndA");
+	addPointsToDrive(gC("chVal").dAmbition,1000);
+	addPointsToDrive(gC("chVal").dLove,1000);
+	gC("chVal").charisma.affinity += 0.05;
+	gC("chVal").empathy.affinity += 0.05;
+	gC("chVal").will.affinity += 0.1;
+	if ( isStVarOn("tfNsSp") ) {
+		State.variables.chVal.relations["chNash"].friendship.stv += 1000;
+		gC("chNash").ssRsp += 50;
+		State.variables.tribes.ssRpt += 100;
+	}
+	if ( isStVarOn("tfMrSp") ) {
+		State.variables.chVal.relations["chMir"].friendship.stv += 1000;
+		gC("chMir").ssRsp += 50;
+		State.variables.tribes.ssRpt += 100;
+	}
+	if ( isStVarOn("tfClSp") ) {
+		State.variables.chVal.relations["chClaw"].friendship.stv += 1000;
+		gC("chClaw").ssRsp += 50;
+		State.variables.tribes.ssRpt += 100;
+	}
+	if ( isStVarOn("tfPlSp") ) {
+		State.variables.chVal.relations["chPlayerCharacter"].friendship.stv += 1000;
+		gC("chPlayerCharacter").ssRsp += 50;
+		State.variables.tribes.ssRpt += 100;
+	}
+	State.variables.chVal.relations["chAte"].friendship.stv += 1000;
+	gC("chAte").ssRsp += 50;
+	State.variables.tribes.ssRpt += 1100;
+	addPointsToDrive(gC("chAte").dCooperation,250);
+	gC("chVal").ssRsp = 250;
+	
+	tempText = "//This will have large consequences for Valtan.\nValtan's love and ambition drives have increased.\nValtan's charisma and empathy affinities have increased, and her will affinity has largely increased.\nValtan has gained friendship with every Candidate that defended her.//";
+	tempText += "\n//Maaterasu's cooperation drive has increased."
+	if ( State.variables.StVars.check6 ) {
+		addPointsToDrive(gC("chMir").dCooperation,250);
+		tempText += "\nPadmiri's cooperation drive has increased.";
+	}
+	if ( State.variables.StVars.check8 ) {
+		addPointsToDrive(gC("chClaw").dCooperation,250);
+		tempText += "\nClaw's cooperation drive has increased.";
+	}
+	tempText += "\nThe respect lost for defending Valtan has been recovered.";
+	tempText += "\nThe relations with the Shapeshifter tribe have been restored.";
+	tempText += "\nValtan has gained the respect of her tribe.//";
+	State.variables.temp = tempText;
+	return tempText;
+}
+
+window.initGleamingCavernsEpilogue = function() {
+	if ( State.variables.StVars.temp ) {
+		delete State.variables.StVars.temp;
+	}
+	State.variables.chChin = createAtelechinol();
+	
+	if ( isStVarOn("GcEndA") ) {
+		State.variables.StVars.check1 = 1;
+	} else if ( isStVarOn("GcEndB") ) {
+		State.variables.StVars.check1 = 2;
+	} else {
+		State.variables.StVars.check1 = 3;
+	}
+	
+	State.variables.StVars.check3 = false; // Mounted Atenechinol
+	State.variables.StVars.check4 = false; // Used fire breath
+	State.variables.StVars.check5 = false; // KOed ally
+	State.variables.StVars.check6 = false; // Defeated Atenechinol
+	
+	State.variables.StVars.check7 = false; // Did Mesquelles transform the player?
+	if ( isStVarOn("mphFnTf") ) { State.variables.StVars.check7 = true; }
+	
+	var closestCandidate = -1;
+	var highestRelationship = -1;
+	for ( var cK of ["chNash","chMir","chAte","chVal"] ) {
+		var currentRel = rLvlAbt(cK,"chPlayerCharacter","friendship") + rLvlAbt(cK,"chPlayerCharacter","romance") * 2 + rLvlAbt(cK,"chPlayerCharacter","sexualTension") - rLvlAbt(cK,"chPlayerCharacter","rivalry") - rLvlAbt(cK,"chPlayerCharacter","enmity") * 2;
+		if ( currentRel > 10 && currentRel > highestRelationship ) {
+			highestRelationship = currentRel;
+			closestCandidate = cK;
+		}
+	}
+	State.variables.StVars.check8 = "none";
+	if ( closestCandidate != -1 ) {
+		State.variables.StVars.check8 = closestCandidate;
+	}
+}
+window.gCepigInitGuestsChecks = function() {
+	State.variables.StVars.check3 = true; // Artume
+	State.variables.StVars.check4 = true; // Hope
+	State.variables.StVars.check5 = true; // Rock
+	State.variables.StVars.check8 = isStVarOn("mphFsTf"); // Mesquelles allowed
+	State.variables.StVars.check9 = !isStVarOn("GcEndC"); // Sillan allowed
+	State.variables.StVars.check6 = State.variables.StVars.check8; // Mesquelles
+	State.variables.StVars.check7 = State.variables.StVars.check9; // Sillan
+	State.variables.StVars.check10 = isStVarOn("GcEndA"); // Nersmias tip
+}
+window.endGleamingCavernsEpilogue = function() {
+	var chars = ["chVal","chMir","chAte"];
+	if ( State.variables.StVars.check1 != 3 ) {
+		chars.push("chSil");
+	}
+	for ( var ch of chars ) {
+		for ( var stat of setup.baseStats ) {
+			gC(ch)[stat].experience += 700;
+		}
+		gC(ch).merit += 7;
+	}
+	chars.push("chNash","chRock");
+	for ( var ch of chars ) {
+		for ( var stat of setup.baseStats ) {
+			gC(ch)[stat].experience += 300;
+		}
+		gC(ch).merit += 2;
+	}
+	for ( var ch of ["chNash","chClaw","chMir","chVal","chAte","chRock","chHope" ] ) {
+		addPointsToDrive(gC(ch).dImprovement,100);
+		addPointsToDrive(gC(ch).dDomination,100);
+		addPointsToDrive(gC(ch).dAmbition,100);
+	}
+	addPointsToDrive(gC("chClaw").dImprovement,250);
+	
+	gCaddSelectedGuests();
+	finishGleamingCavernsAdventure();
+}
+window.gCaddSelectedGuests = function() {
+	if ( State.variables.StVars.check4 ) {
+		addGuest("chHope");
+		if ( State.variables.StVars.check5 ) {
+			addGuest("chRock");
+		} else {
+			removeCharFromGameCycle("chRock");
+		}
+	} else {
+		removeCharFromGameCycle("chHope");
+		removeCharFromGameCycle("chRock");
+	}
+	if ( State.variables.StVars.check3 ) {
+		addGuest("chArt");
+	} else {
+		removeCharFromGameCycle("chArt");
+	}
+	if ( State.variables.StVars.check6 ) {
+		addGuest("chMes");
+	} else {
+		removeCharFromGameCycle("chMes");
+	}
+	if ( State.variables.StVars.check7 ) {
+		addGuest("chSil");
+	} else {
+		removeCharFromGameCycle("chSil");
+	}
+	removeItemsFromChar("chNer");
+	delete State.variables.chNer;
+	removeCharFromActiveChars("chNer");
+	removeItemsFromChar("chChin");
+	delete State.variables.chChin;
+	removeCharFromActiveChars("chChin");
+	
+	removeRelationshipDataWithRemovedCharacters();
+}
 

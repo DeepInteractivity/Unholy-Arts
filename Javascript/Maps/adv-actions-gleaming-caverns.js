@@ -541,15 +541,15 @@ window.createGleamingCavernsVoyeurEvent = function(minutes,characters) {
 					gC(charB).aiAlgorythm.setRoleSubmission();
 				}
  			}
+			State.variables.sc.spectators = this.spectators;
 			if ( this.characters.includes("chPlayerCharacter") == false ) {
 				State.variables.sc.autoResolveScene();
 			}
+			State.variables.sc.genericCharacters = [charA,charB];
 		}
 	);
 	sEvent.charactersTeamA = [charA];
 	sEvent.charactersTeamB = [charB];
-	State.variables.sc.spectators = spectators;
-	State.variables.sc.genericCharacters = [charA,charB];
 	sEvent.spectators = spectators;
 	sEvent.flagMayBeInterrupted = false;
 	sEvent.flagMayChangeGroups = false;
@@ -890,6 +890,67 @@ window.createSystemDeliverMonsters = function(minutes,characters) {
 			return eventMsg;
 		}
 	);
+	sEvent.priority = 1;
+	return sEvent;
+}
+
+// Temple of Harmony
+
+window.createGleamingCavernsNersmiasConv = function() {
+	var action = new mapAction("nersmiasFASEconv","Discuss with Nersmias",createSystemEventNersmiasConv,false);
+	action.description = "Discuss with Nersmias about Valtan and Sillan. You should be cautious and make sure you're prepared.";
+	action.recMins = 0;
+	action.getPassage = function() { return "FaSe NSB Init"; };
+	return action;
+}
+window.createSystemEventNersmiasConv = function(minutes,characters) {
+	var sEvent = new systemEvent(0,characters,"nerConv","Discuss with Nersmias",function(cList) {
+			initFaSeNSBfirst();
+			var eventMsg = "";
+			State.variables.compass.setMapMessage(eventMsg);
+			return eventMsg;
+		}
+	);
+	sEvent.priority = 1;
+	return sEvent;
+}
+
+window.createGleamingCavernsNPCNersmiasConv = function() {
+	var action = new mapAction("npcNerConv","Discuss with Nersmias (NPC)",createSystemEventNPCNersmiasConv,false);
+	action.description = "ACTION FOR NPC, PLAYER SHOULDN'T READ THIS. Discuss with Nersmias about Valtan and Sillan. You should be cautious and make sure you're prepared.";
+	action.tags.push("npcNerConv");
+	action.recMins = 60;
+	return action;
+}
+window.createSystemEventNPCNersmiasConv = function(minutes,characters) {
+	var sEvent = new systemEvent(minutes,characters,"npcNerConv","Discussing with Nersmias",function(cList) {
+			var charsPositions = getCharsValtanJudgement(characters[0]); // Levels of support/opposition to [0] Valtan's relationship and [1] Valtan's pardon
+			//State.variables.nerTrust += charsPositions[0] * 5 - charsPositions[1] * 3;
+			//State.variables.nerConviction += (- charsPositions[0] * 5 - charsPositions[1] * 5);
+			modifyNersmiasGlobalConviction(- charsPositions[0] * 5 - charsPositions[1] * 5);
+			modifyNersmiasGlobalTrust(charsPositions[0] * 5 - charsPositions[1] * 3);
+			var increasedRespect = 0;
+			if ( charsPositions[1] < 0 ) {
+				increasedRespect += charsPositions[1] * (-100);
+			}
+			gC(characters[0]).ssRsp += increasedRespect;
+			gC(characters[0]).flagSpokeWithNersmias = true;
+			
+			var eventMsg = "The Player shouldn't read this message.";
+			return eventMsg;
+		}
+	);
+	sEvent.priority = 1;
+	return sEvent;
+}
+
+// Misc functionality
+
+window.createAssemblyDiscussion = function() {
+	var minutes = 540;
+	var sEvent = new systemEvent(minutes,["chNer"],"stAsDc","Deliberating",function(cList) {
+		State.variables.compass.moveCharsToRoom(["chNer"],"templeShrine");
+	});
 	sEvent.priority = 1;
 	return sEvent;
 }

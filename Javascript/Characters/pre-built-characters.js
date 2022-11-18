@@ -464,7 +464,7 @@ window.createMaaterasu = function() {
 	character.type = "candidate";
 	character.race = "aiishen";
 	
-	character.setColors("mediumvioletred","palevioletred");
+	character.setColors("palevioletred","palevioletred");
 	// Moves
 	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","mountDick");
 	/* ["embers","freezeFeet","sparkingRubbing"]
@@ -1098,6 +1098,70 @@ window.createSillan = function() {
 	return character;
 }
 
+// Atelechinol
+window.createAtelechinol = function() {
+	var character  = new Character("Atelechinol","chChin");
+	character.type = "candidate";
+	character.race = "beastkin";
+	
+	character.addBodypart("tail","tail");
+	
+	character.setColors("greenyellow","greenyellow");
+	// Moves
+	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","mountDick","biteNeck");
+	/* ["embers","freezeFeet","sparkingRubbing"]
+	character.saList.push("baKissLips","baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","coldGuts","taunt","baTease");
+	*/
+	character.saList.push("struggle","kick","daringAssault","fireBreath");
+	// Body
+	character.addFemaleParts();
+	// Others
+	character.names.push("Chinol");
+	character.names.push("the lizardlin leader");
+	character.names.push("the daring lizardlin");
+	character.assignFemeninePronouns();
+	
+	// Images
+	character.fullPortrait = function() {
+		return "[img[img/portraits/chinol-full.png]]";
+	}
+	character.avatar = function() {
+		return "[img[img/portraits/chinol-avatar.png]]";
+	}
+	
+	character.icon = function() {
+		return "[img[img/charIcons/npcIcon.png]]";
+	}
+	
+	character.fullPortraitL = "img/portraits/chinol-full.png";
+	character.avatarL = "img/portraits/chinol-avatar.png";
+	character.iconL = "img/charIcons/npcIcon.png";
+	
+	// AI
+	character.globalAi = createCandidateGlobalAi("chChin");
+	
+	// Affinities
+	character.combatAffinities.fire.strength += 15;
+	character.combatAffinities.fire.resistance += 30;
+	
+	// Drives
+	setDriveValues(character.dImprovement,1200,4);
+	setDriveValues(character.dPleasure,200,1);
+	setDriveValues(character.dLove,500,2);
+	setDriveValues(character.dCooperation,850,3);
+	setDriveValues(character.dDomination,650,3);
+	setDriveValues(character.dAmbition,1400,5);
+	
+	// Attributes
+	character.setBaseAttributes(19,19,17,21,17,15,15,17,13);
+	character.setAffinities(1.1,1.1,1,1.2,1,0.9,0.9,1,0.8);
+	
+	character.refugeRooms = [["mapTrainingGrounds","publicBaths"]];
+	
+	character.makeVirginitiesUnknown();
+	
+	return character;
+}
 
 // Support functions
 

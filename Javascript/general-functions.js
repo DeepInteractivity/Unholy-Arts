@@ -15,6 +15,12 @@ window.getPresentCharByKey = function(key) {
 	var cInfo = new presentCharInfo(title,img);
 	return cInfo;
 }
+window.presentCharTitleColorInfo = function(title,color,img) {
+	var title = '<span style="color:'+color+'">'+title+'</span>';
+	var img = img;
+	var cInfo = new presentCharInfo(title,img);
+	return cInfo;
+}
 
 window.getPresentCharCustomName = function(key,customName) {
 	var title = '<span style="color:' + gC(key).nameColor + '">' + customName + '</span>';

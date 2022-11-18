@@ -900,7 +900,11 @@ window.chooseRandomTransformationOnChar = function(npc) {
 			validTfGoals.push(tfGoalsSet);
 		}
 	}
-	var chosenSet = randomFromList(validTfGoals);
+	if ( validTfGoals.length > 0 ) {
+		var chosenSet = randomFromList(validTfGoals);
+	} else {
+		var chosenSet = [];
+	}
 	return chosenSet;
 }
 

@@ -171,6 +171,11 @@ window.removeLostItems = function() {
 	}
 	State.variables.equipmentList = newItemsList;
 }
+window.removeItemsFromChar = function(ch) {
+	for ( var id of gC(ch).ownedEquipment ) {
+		removeItem(id);
+	}
+}
 
 	// Extra
 window.isCharsWeaponInUse = function(charKey) {
@@ -241,8 +246,8 @@ Equipment.prototype.toJSON = function() {
 
 window.equipmentData = function(name,slotType,slot,putOnEffect,putOutEffect,description,price,infamy,strategyTags,learntActions,rank) {
 	this.name = name;
-	this.slotType = slotType;
-	this.slot = slot;
+	this.slotType = slotType; // bodypart , tool
+	this.slot = slot; // weapon ,
 	this.putOnEffect = putOnEffect;
 	this.putOutEffect = putOutEffect;
 	this.learntActions = [];
@@ -278,7 +283,8 @@ const equipmentType = {
 	WAND: "w2",
 	HANDFAN: "w3",
 	HUNTINGBOW: "w4",
-	DILDO: "w5"
+	DILDO: "w5",
+	SPEAR: "w6"
 }
 /*const equipmentType = {
 	COLLAR: 0,
@@ -617,6 +623,25 @@ setup.equipDataList[equipmentType.HUNTINGBOW] = new equipmentData("Hunting bow",
 		+ "\nIncreases agility and perception.",
 	2000,0,
 	[["perception",1],["agility",1]],["disablingShot"],1);
+setup.equipDataList[equipmentType.SPEAR] = new equipmentData("Spear","tool","weapon",
+	function(owner,wearer) { // Put on
+		gC(wearer).agility.sumModifier += 2;
+		gC(wearer).agility.multModifier += 0.1;
+		gC(wearer).resilience.sumModifier += 2;
+		gC(wearer).resilience.multModifier += 0.1;
+		gC(wearer).controlRecovery += 0.1;
+	},
+	function(owner,wearer) { // Put out
+		gC(wearer).agility.sumModifier -= 2;
+		gC(wearer).agility.multModifier -= 0.1;
+		gC(wearer).resilience.sumModifier -= 2;
+		gC(wearer).resilience.multModifier -= 0.1;
+		gC(wearer).controlRecovery -= 0.1;
+	}, "A large, pointed weapon, granting large control over distances to its user."
+		+ "\nIncreases agility, resilience and control recovery.",
+	2000,0,
+	[["agility",1],["resilience",1]],["weaponPlunge","staffSwipe"],1.5);
+
 
 setup.equipDataList[equipmentType.DILDO] = new equipmentData("Dildo","tool","weapon",
 	function(owner,wearer) { // Put on

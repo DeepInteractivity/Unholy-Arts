@@ -209,6 +209,19 @@ window.initRelationshipDataAmongAllActiveCharacters = function() {
 		}
 	}
 }
+window.removeRelationshipDataWithRemovedCharacters = function() {
+	var activeChars = getActiveSimulationCharactersArray();
+	for ( var charA of activeChars ) {
+		for ( var rel in gC(charA).relations ) {
+			var charB = gC(charA).relations[rel].target;
+			if ( gC(charB) instanceof Character ) {
+				
+			} else {
+				delete State.variables[charA].relations[charB];
+			}
+		}
+	}
+}
 
 // Constructors, serializers, etc.
 Relation.prototype._init = function (obj) {

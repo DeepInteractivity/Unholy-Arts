@@ -2924,7 +2924,7 @@ window.createSaExtraMountFromBehind = function() {
 	var sa = new sceneAction();
 	
 	sa.name = "Extra mount from behind (CPOS)";
-	sa.key = "extraMountFaceToFace";
+	sa.key = "extraMountFromBehind";
 	sa.targetType = "single";
 	sa.tags.push("ss","cpos");
 	sa.positionResults = ["mountingFromBehind","mountingAndMounted"];
