@@ -61,4 +61,6 @@ Scenes\tf-scenes.js
 Others\body-paintings.js
 Adventures\adventure-requests.js
 Adventures\nersmiasSocialBattle.js
+HTML\scSpritesFormatting.js
+HTML\scSpritesList.js
 Others\patches.js

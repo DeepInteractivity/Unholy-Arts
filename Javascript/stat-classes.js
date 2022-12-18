@@ -821,8 +821,12 @@ window.alteredState = function(title,acr,scope,turns,provokeEffect,cancelEffect,
 	this.provokeEffect = provokeEffect;
 	this.cancelEffect = cancelEffect;
 	this.description = description;
-	this.remainingDays = -1; // If something other than -1, modify outside of constructor
+	this.remainingDays = -1; // If something other than -1, modify outside of constructor // Am I dumb or what? Look below
 	// this.turnEffect = function(character) -> Property added outside of constructor
+	
+	if ( scope == "days") {
+		this.remainingDays = turns;
+	}
 	
 	this.flagRemove = false;
 }

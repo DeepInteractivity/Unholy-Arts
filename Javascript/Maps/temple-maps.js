@@ -547,8 +547,33 @@ setup.mapTrainingGrounds.starsTower = new RoomInfo(
 );
 setup.mapTrainingGrounds.starsTower.getCustomActionsText = function(characters) {
 	var cText = "";
-	if ( State.variables.StVarsList.includes("go0") && quantifyCharacterVacuumStrength("chPlayerCharacter") < (18*9) ) {
+	if ( State.variables.StVarsList.includes("go0") && quantifyCharacterVacuumStrength("chPlayerCharacter") < (16*9) ) {
 		cText = getButtonMapMenuRespec() + "<sup><span title='You will have a one-time opportunity to switch the values of three pairs of stats.'>(?)</span></sup> " + "\n";
+	}
+	
+	var eventCardsAvailable = false; // There are event info cards available for clairvoyance
+	for ( var se in setup.eventsMetaInfo ) {
+		if ( setup.eventsMetaInfo[se] instanceof eventMetaInfo ) { // Is an eventMetaInfo object
+			if ( setup.eventsMetaInfo[se].validClairvoyanceCard && setup.eventsMetaInfo[se].clairvoyanceData != null ) { // Has a valid clairvoyance card
+				if ( State.variables.eventsCalendar.playedStoryEvents.includes(setup.eventsMetaInfo[se].key) == false ) { // Event hasn't been played
+					if ( setup.eventsMetaInfo[se].clairvoyanceData.reqsToBeShown() ) {
+						eventCardsAvailable = true;
+					}
+				}
+			}
+		}
+	}
+	
+	if ( State.variables.daycycle.day > 9 || State.variables.daycycle.month > 1 ) {
+		if ( State.variables.simCycPar.templeDayPeriod != "socialization" ) {
+			cText += "Taototh isn't here during training hours, which prevents you from accessing the orb of clairvoyance.\n";
+		} else if ( eventCardsAvailable ) {
+			cText = getButtonClairvoyance() + "<sup><span title='The orb might contain hints about the challenges the future holds for you, if you are capable of clawing your way into them.'>(?)</span></sup> " + "\n";
+		} else {
+			cText += "The orb remains pitch-dark. It holds no secrets for you to untangle.\n";
+		}
+	} else {
+		cText += colorText("Locked:","firebrick") + " The orb remains pitch-dark. It holds no secrets to show you, yet.\n";
 	}
 	return cText;
 }

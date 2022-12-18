@@ -194,6 +194,7 @@ window.scene = function() {
 		
 		this.cancelActionButtons = [];
 		this.cabID = 0; 
+		this.endRoundEffects = [];
 		
 		this.checkEndConditions = checkEndConditions;
 		this.endConditionsVars = endConditionsVars;
@@ -463,6 +464,7 @@ window.scene = function() {
 		
 		this.cleanContinuedActions();
 		this.cleanAllPositions();
+		this.endRoundEffects = [];
 		
 		this.cleanAlteredStates();
 		this.cleanKoedFlags();		
@@ -1120,7 +1122,6 @@ window.scene = function() {
 		this.extraEffectsDescription = "";
 		this.otherMessages = [];	
 		
-		
 		for ( var charKey of this.teamAcharKeys ) {
 			gC(charKey).turnPrefTags = [];
 		}
@@ -1200,7 +1201,6 @@ window.scene = function() {
 		
 		// this.refreshCharacterDescriptions(); // Outdated		
 		this.refreshPositionsDescriptions();
-		
 		this.currentTurn += 1;
 		
 		// Post-action effects
@@ -1215,7 +1215,7 @@ window.scene = function() {
 		
 		// Control
 		this.controlTurnEffects();
-
+		
 		// Altered States
 		this.alteredStatesTurnEffects();
 
@@ -1231,7 +1231,6 @@ window.scene = function() {
 		
 		// Generate dialogs
 		this.generateGenericDialogs();
-		
 		// Check heading
 		if ( this.headingDescription != "" ) {
 			this.outHeadingDescription = this.headingDescription + "\n\n";
@@ -1248,7 +1247,6 @@ window.scene = function() {
 				this.extraEndInfo = "stalemate";
 			}
 		}
-		
 		// Remember player commands
 		var playerPosition = -1;
 		var j = 0;
@@ -1996,7 +1994,7 @@ window.createEndConditionsTwistedFestivalSpecialBattle = function(passageNormalE
 			}
 			if ( specialVictory == true ) {
 				State.variables.sc.endScenePassage = passageSpecialEnd;
-			this.refreshEndScenePassageScript();
+				this.refreshEndScenePassageScript();
 				specialEndScene = true;
 			}
 		} else if ( flagEndScene == true ) {
@@ -2007,6 +2005,19 @@ window.createEndConditionsTwistedFestivalSpecialBattle = function(passageNormalE
 													// in that case, the target passage will have been updated
 	}
 	return customScript;
+}
+
+window.endConditionEveryonesXOrgasms = function() {
+	// All characters present in the scene must have reached as many orgasms as defined in endConditionsVars
+	var flagEndScene = true;
+	
+	for ( var ch of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
+		if ( ( gC(ch).orgasmSceneCounter + gC(ch).mindblowingOrgasmSC + gC(ch).ruinedOrgasmSceneCounter ) < State.variables.sc.endConditionsVars ) {
+			flagEndScene = false;
+		}
+	}
+	
+	return flagEndScene;
 }
 
 //////// OTHER FUNCTIONS ////////

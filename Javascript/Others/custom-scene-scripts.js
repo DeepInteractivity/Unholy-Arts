@@ -1978,3 +1978,62 @@ window.cssGcAtenechinolDialogues = function() {
 	State.variables.sc.headingDescription = "__Mountain__\nA storm of thrusts, blows and fire strikes in all directions. The cliff is dangerously close." + msg;
 }
 
+// Tribute for the Goddess
+
+window.tftgCustomChar = function(candidate) {
+	// TftG RE chNash / TftG RE chMir / TftG RE chClaw / TftG RE chVal / TftG RE chAte
+	var endScene = "TftG RE " + candidate;
+	State.variables.sc.startScene(
+	"ss","dynamic",["chPlayerCharacter"],[candidate],"The mist thickens, everything beyond your bodies turning distant and blurry.",endConditionEveryonesXOrgasms,2,
+	endScene);
+	// Assign choices
+	State.variables[candidate].aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables[candidate].aiAlgorythm.setRoleActive();
+		//
+	State.variables.sc.customScript = tftgScriptOne;
+	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
+}
+window.tftgScriptOne = function() {
+	var description = randomFromList([
+		"The mist thickens, everything beyond your bodies turning distant and blurry.",
+		"You hear the moans of your peers, the sound of skin slapping against skin.",
+		"The purple flame is growing.",
+		"The Goddess' watchful gaze is upon you."
+	]);
+	State.variables.sc.headingDescription = description;;
+}
+window.tftgSolo = function() {
+	State.variables.sc.startScene(
+	"ss","fixed",["chPlayerCharacter"],[],"The mist thickens, everything beyond your body turning distant and blurry.",endConditionEveryonesXOrgasms,1,
+	"TftG RE Solo");
+	State.variables.sc.customScript = tftgScriptTwo;
+	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
+}
+window.tftgScriptTwo = function() {
+	var description = randomFromList([
+		"The mist thickens, everything beyond your body turning distant and blurry.",
+		"You hear the moans of your peers, the sound of skin slapping against skin.",
+		"The purple flame is growing.",
+		"The Goddess' watchful gaze is upon you."
+	]);
+	State.variables.sc.headingDescription = description;;
+}
+window.tftgOrgy = function() {
+	State.variables.sc.startScene(
+	"ss","dynamic",["chPlayerCharacter","chNash","chMir"],["chVal","chClaw","chAte"],"The mist thickens, everything beyond your bodies turning distant and blurry.",endConditionEveryonesXOrgasms,2,
+	"TftG RE Orgy");
+	// Assign choices
+	for ( var ch of getCandidatesKeysArray() ) {
+		if ( ch != "chPlayerCharacter" ) {
+			State.variables[ch].aiAlgorythm = createAiWeightedMissionsByTaste();
+			State.variables[ch].aiAlgorythm.setRoleActive();
+		}
+	}
+		//
+	State.variables.sc.customScript = tftgScriptOne;
+	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
+}
+

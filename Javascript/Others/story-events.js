@@ -660,7 +660,7 @@ window.initGleamingCavernsTwistedFestival = function() {
 	
 	// Went to talk to Mesquelles?
 	State.variables.StVars.check3 = false;
-	if ( isStVarOn("mphFsTf") == true ) {
+	if ( isStVarOn("mphFnTf") == true ) {
 		State.variables.StVars.check3 = true;
 	}
 	
@@ -1110,7 +1110,7 @@ window.gCepigInitGuestsChecks = function() {
 	State.variables.StVars.check3 = true; // Artume
 	State.variables.StVars.check4 = true; // Hope
 	State.variables.StVars.check5 = true; // Rock
-	State.variables.StVars.check8 = isStVarOn("mphFsTf"); // Mesquelles allowed
+	State.variables.StVars.check8 = isStVarOn("mphFnTf"); // Mesquelles allowed
 	State.variables.StVars.check9 = !isStVarOn("GcEndC"); // Sillan allowed
 	State.variables.StVars.check6 = State.variables.StVars.check8; // Mesquelles
 	State.variables.StVars.check7 = State.variables.StVars.check9; // Sillan
@@ -1179,5 +1179,112 @@ window.gCaddSelectedGuests = function() {
 	removeCharFromActiveChars("chChin");
 	
 	removeRelationshipDataWithRemovedCharacters();
+}
+
+	// Return from GC
+	
+window.initializeTributeForTheGoddess = function() {
+	setPasChars([getPresentCharByKey("chMir")]);
+	setRoomIntro("mapTrainingGrounds","grandHall");
+	
+	State.variables.StVars.check1 = [false,false,false,false,false,false]; // Ask Nash , Mir , Val , Claw , Ate , ([],) everyone
+	State.variables.StVars.check2 = [false,false,false,false,false,false]; // Checks for Nash , Mir , Val , Claw , Ate , ([],) everyone
+	var relScores = [0,0,0,0,0];
+	var i = 0;
+	for ( var ch of ["chNash","chMir","chVal","chClaw","chAte"] ) {
+		var rel = rLvlAbt(ch,"chPlayerCharacter","friendship") + rLvlAbt(ch,"chPlayerCharacter","romance") * 2 + rLvlAbt(ch,"chPlayerCharacter","sexualTension") * 2 - rLvlAbt(ch,"chPlayerCharacter","rivalry") * 2 - rLvlAbt(ch,"chPlayerCharacter","enmity") * 4;
+		if ( rLvlAbt(ch,"chPlayerCharacter","submission") > rLvlAbt(ch,"chPlayerCharacter","domination") ) {
+			rel += (rLvlAbt(ch,"chPlayerCharacter","submission") - rLvlAbt(ch,"chPlayerCharacter","domination")) * 2;
+		}
+		relScores[i] = rel;
+		State.variables.StVars.check2[i] = (rel > 5);
+		i++;
+	}
+	var lastChoiceAllowed = true;
+	var physicalStats = gCstat("chPlayerCharacter","physique") + gCstat("chPlayerCharacter","agility") + gCstat("chPlayerCharacter","resilience");
+	var socialStats = gCstat("chPlayerCharacter","charisma") * 1.6 + gCstat("chPlayerCharacter","empathy") * 1.4;
+	if ( physicalStats > socialStats ) {
+		var plStats = (physicalStats + gCstat("chPlayerCharacter","luck") * 0.5) / 10;
+	} else {
+		var plStats = (socialStats + gCstat("chPlayerCharacter","luck") * 0.5) / 10;
+	}
+	State.variables.StVars.check6 = plStats.toFixed(1);
+	for ( var i of relScores ) {
+		if ( (i + plStats) < 17 ) {
+			lastChoiceAllowed = false;
+		}
+	}
+	State.variables.StVars.check5 = relScores;
+	State.variables.StVars.check2[5] = lastChoiceAllowed;
+	State.variables.StVars.check3 = isStVarOn("GcEndC");
+	State.variables.StVars.check4 = isStVarOn("GcEndA");
+}
+window.tributeForTheGoddessMiddleScript = function(chosenCharacter) {
+	var otherCharacters = ["chNash","chClaw","chMir","chVal","chAte"];
+	var playerGroup = ["chPlayerCharacter"];
+	if ( otherCharacters.includes(chosenCharacter) ) {
+		otherCharacters = arrayMinusA(otherCharacters,chosenCharacter);
+		playerGroup.push(chosenCharacter);
+	}
+	if ( chosenCharacter == "all" ) {
+		otherCharacters.push("chPlayerCharacter");
+		playerGroup = null;
+	}
+	for ( var chA of otherCharacters ) {
+		for ( var chB of otherCharacters ) {
+			if ( chA != chB ) {
+				gC(chA).relations[chB].sexualTension.stv += 350;
+				gC(chA).relations[chB].romance.stv += 150;
+				gC(chA).relations[chB].friendship.stv += 150;
+			}
+		}
+	}	
+	if ( playerGroup ) {
+		if ( playerGroup.length > 1 ) {
+			for ( var chA of playerGroup ) {
+				for ( var chB of playerGroup ) {
+					if ( chA != chB ) {
+						gC(chA).relations[chB].sexualTension.stv += 350;
+						gC(chA).relations[chB].romance.stv += 150;
+						gC(chA).relations[chB].friendship.stv += 150;
+					}
+				}
+			}
+		}
+	}
+}
+window.finishTributeForTheGoddess = function() {
+	// If Sillan is a guest, create companionship relationship between Sillan and Valtan
+	if ( getGuestsList().includes("chSil") ) {
+		createRelTypeCompanionship("chSil","chVal",10);
+		createRelTypeCompanionship("chVal","chSil",10);
+	}
+	if ( isStVarOn("GcEndA") ) {
+		trainingResultsModifier += 1.5;
+	} else {
+		trainingResultsModifier += 1.4;
+	}
+}
+
+window.initializeSacrificeOfAether = function() {
+	State.variables.StVars.check1 = gSettings().lewdMales == "enable";
+	State.variables.StVars.check2 = ( gSettings().futa == "enableAll" || gSettings().futa == "playerFuta" || gSettings().futa == "futaPartners" );
+	State.variables.StVars.check3 = State.variables.chPlayerCharacter.name;
+	State.variables.StVars.check4 = State.variables.chPlayerCharacter.avatar;
+	State.variables.StVars.check5 = State.variables.chPlayerCharacter.avatarL;
+	State.variables.StVars.check6 = State.variables.chPlayerCharacter.nameColor;
+	
+	State.variables.chPlayerCharacter.name = "???";
+	State.variables.chPlayerCharacter.nameColor = "gray";
+	State.variables.chPlayerCharacter.avatar = function() {
+		return "[img[img/portraits/unknown-avatar.png]]";
+	};
+	State.variables.chPlayerCharacter.avatarL = "img/portraits/unknown-avatar.png";
+}
+window.finishSacrificeOfAether = function() {
+	State.variables.chPlayerCharacter.name = State.variables.StVars.check3;
+	State.variables.chPlayerCharacter.avatar = State.variables.StVars.check4;
+	State.variables.chPlayerCharacter.avatarL = State.variables.StVars.check5;
+	State.variables.chPlayerCharacter.nameColor = State.variables.StVars.check6;
 }
 

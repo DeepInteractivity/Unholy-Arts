@@ -468,7 +468,7 @@ window.createSystemEventLiberationChallenge = function(charactersTeamA,character
 	return sEvent;
 }
 
-// Special
+// Special ~ Stars Tower
 
 	// Respec
 window.createRespecAction = function() {
@@ -530,6 +530,89 @@ window.createSystemEventRespec = function(characters) {
 	sEvent.applyEffectIfForcedToEnd = false;
 	return sEvent;
 }
+
+	// Clairvoyancy
+
+window.initiateCVstat = function() {
+	State.variables.StVars.check1 = calculateInitialCVstat("chPlayerCharacter");
+}
+window.calculateInitialCVstat = function(charKey) {
+	var CVS = gCstat("chPlayerCharacter","perception") + limitedRandomInt(gCstat("chPlayerCharacter","luck")) + limitedRandomInt(gCstat("chPlayerCharacter","luck"));
+	return CVS;
+}
+window.empowerCVstat = function() {
+	var gainedCVstat = gCstat("chPlayerCharacter","perception") + gCstat("chPlayerCharacter","will") * 0.5 + gCstat("chPlayerCharacter","intelligence") * 0.5 + limitedRandomInt(gCstat("chPlayerCharacter","luck")) + limitedRandomInt(gCstat("chPlayerCharacter","luck"));
+	State.variables.StVars.check1 += gainedCVstat;
+	gC("chPlayerCharacter").willpower.current -= gC("chPlayerCharacter").willpower.max * 0.2;
+}
+
+window.createClairvoyanceAction = function() {
+	var action = new mapAction("clairvoyance","Search for wisdom in the orb",createSystemEventClairvoyance,false);
+	action.description = "The characters will attempt to discern occult facts about the future.";
+	action.tags.push("clairvoyance");
+	action.recMins = 10;
+	sEvent.priority = 9;
+	return action;
+}
+window.createSystemEventClairvoyance = function(characters) {
+	var sEvent = new systemEvent(10,characters,"clairvoyance","Looking for the occult",function(cList) {
+			var eventMsg = "This message shouln't be shown. Debug clairvoyance.\n\n";
+			return eventMsg;
+		}
+	);
+	sEvent.flagMayBeInterrupted = false;
+	sEvent.applyEffectIfForcedToEnd = false;
+	return sEvent;
+}
+window.getButtonClairvoyance = function() {
+	var bText = "<<l" + "ink [[Search for wisdom in the orb|Clairvoyance Menu]]>><<s" + "cript>>\n"
+				  + 'State.variables.compass.ongoingEvents.push(createSystemEventClairvoyance(getPlayerCharsGroup()));\n'
+				  + 'State.variables.compass.sortOnGoingEventsByTime();\n'
+				  + 'signCharsActive(getPlayerCharsGroup());\n'
+		bText 	 += "State.variables.compass.flagMenuInMap = true;\n";
+		bText    += "initiateCVstat();\n";
+		bText 	 += "formatPassageMenuClairvoyance(0);\n";
+		bText	 += 'State.variables.compass.pushAllTimeToAdvance();';
+		bText	 += "<</s" + "cript>><</l" + "ink>>";
+		return bText;
+}
+
+window.formatPassageMenuClairvoyance = function(mode) {
+	// Clairvoyance stat + Empower
+	var passage = "";
+	
+	if ( mode == 1 ) {
+		passage += colorText("Empowered Clairvoyance.\n","darkslateblue");
+	}
+	
+	passage += "__Claivoyance Stat__: " + State.variables.StVars.check1.toFixed(1) + getTextWithTooltip("^^(?)^^","Initial clairvoyance stat: Perception + 2 dices (%Luck).\nIt is recalculated each time you search in the orb.") + "\n"
+	
+	if ( gC("chPlayerCharacter").willpower.current >= gC("chPlayerCharacter").willpower.max * 0.1999 ) {
+		passage += "<<l" + "ink [[Empower Clairvoyance|Clairvoyance Menu]]>><<s" + "cript>>\n";
+		passage += "empowerCVstat();\n";
+		passage	+= "formatPassageMenuClairvoyance(1);\n";
+		passage += "<</s" + "cript>><</l" + "ink>>";
+		passage += getTextWithTooltip("^^(?)^^","Spend 10% of your maximum willpower in exchange for increasing your current clairvoyance stat.\n"
+				 + "The increase will scale with your perception and luck, and to a lesser degree, with your intelligence and will.");
+	} else {
+		passage += colorText("Locked:","firebrick") + " You need at least 20% of your maximum willpower to empower your clairvoyance stat.";
+	}
+	passage += "\n\n";
+	
+	// Events cards
+	passage += formatAllClairvoyance();
+	
+	// Button to leave
+	passage += "<<l" + "ink [[Leave|Map]]>><<s" + "cript>>\n";
+	passage += "State.variables.compass.flagMenuInMap = false;\n";
+	passage += "State.variables.compass.mapMenuPassage = '';\n"
+	passage += "<</s" + "cript>><</l" + "ink>>";
+	State.variables.compass.mapMenuPassage = passage;
+	
+	return passage;
+}
+
+// formatPassageMenuClairvoyance
 
 	// Defeat events
 window.createSystemEventRecoverFromExhaustion = function(characters) {

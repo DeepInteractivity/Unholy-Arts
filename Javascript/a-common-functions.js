@@ -23,6 +23,16 @@ window.isPosNegX1 = function(n) {
 	else { return -1; }
 }
 
+window.getPositionInBasicGeometricProgression = function(value) {
+	var modValue = value;
+	var pos = 0;
+	while (modValue > 0 ) {
+		pos++;
+		modValue -= pos;
+	}
+	return pos;
+}
+
 // Programming logic
 window.shuffleArray = function(array) {
 	var newArray = [];
@@ -761,7 +771,6 @@ window.applyHotfix = function() {
 		
 		// Level up stats
 		for ( var character of getActiveSimulationCharactersArray() ) {
-			//			for ( var stat of State.variables.baseStats ) {
 			for ( var stat of setup.baseStats ) {
 				if ( gC(character)[stat].tryLevelUp() ) {
 					// Notify level up

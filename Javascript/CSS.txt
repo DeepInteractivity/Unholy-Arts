@@ -1,15 +1,170 @@
 
 
-/* Complex images */
-
-.compImage200x200 {
-  position: relative; 
-  width: 200px;
-  height: 200px;
+/* Styling and Colours of the Right UI Bar. */
+#right-ui-bar {
+	background-color: #222;
+	border-right: 1px solid #444;
+	text-align: center;
+}
+#right-ui-bar-toggle {
+	font-size: 1.2em;
+	line-height: inherit;
+	color: #eee;
+	background-color: transparent;
+	border: 1px solid #444;
+}
+#right-ui-bar-toggle:before {
+	font-family: tme-fa-icons;
+	font-style: normal;
+	font-weight: 400;
+	font-variant: normal;
+	text-transform: none;
+	line-height: 1;
+	speak: none;
 }
 
-.compImage200x200 img {
+/* Layout and Positioning of the Right UI Bar. */
+#right-ui-bar {
+	position: fixed;
+	z-index: 50;
+	top: 0;
+	right: 0;
+	width: 17.5em;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	-webkit-transition: right .2s ease-in;
+	-o-transition: right .2s ease-in;
+	transition: right .2s ease-in;
+}
+#right-ui-bar-tray {
+	position: absolute;
+	top: .2em;
+	left: 0;
+	right: 0;
+}
+#right-ui-bar-toggle {
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 0;
+	border-left: none;
+	padding: .3em .45em .25em;
+	-webkit-user-select: none;
+}
+#right-ui-bar-toggle:before {
+	content: "\e81e";
+}
+#right-ui-bar-body {
+	height: 90%;
+	height: calc(100% - 2.5em);
+	margin: 2.5em 0;
+	padding: 0 1.5em;
+}
+#right-ui-bar-body {
+	line-height: 1.5;
+	overflow: auto;
+}
+
+#story {
+	margin-right: 20em;
+}
+
+/* Stowing of the Right UI Bar. */
+#right-ui-bar.stowed {
+	right: -15.5em;
+}
+#right-ui-bar.stowed #right-ui-bar-toggle {
+	padding: .3em .55em .25em .35em;
+}
+#right-ui-bar.stowed #right-ui-bar-toggle:before {
+	content: "\e81d";
+}
+#right-ui-bar.stowed #right-ui-bar-body {
+	visibility: hidden;
+	-webkit-transition: visibility .2s step-end;
+	-o-transition: visibility .2s step-end;
+	transition: visibility .2s step-end;
+}
+
+#right-ui-bar.stowed~#story {
+	margin-right: 4.5em;
+}
+
+
+/* Others */
+
+p.clear {
+	clear: both
+}
+
+.standardBox {
+  border: 2px solid white;
+  padding: 4px;
+  width:auto;
+  overflow:hidden;
+}
+
+.portraitBox {
+  width:350px;
+  float:right;
+}
+
+// Background
+
+body  {
+  background-image: url("img/background/background.png");
+  background-size: cover;
+}
+
+// Character Status Screen
+
+.split {
+  height: 100%;
+  width: 50%;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  overflow-x: hidden;
+  padding-top: 20px;
+}
+
+.left {
+  left: 0;
+}
+
+.right {
+  right: 0;
+}
+
+.centered {
   position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  // text-align: center;
+}
+
+// Overlapping images tests
+#mapDiagram {
+  position: absolute;
+}
+#mapImage {
+  position: relative;
   top: 0;
   left: 0;
+  z-index:0;
+}
+#mapCursor {
+  position: absolute;
+  z-index:3;
+  border: 2px khaki solid;
+}
+
+#scContainer {
+  position: absolute;
+}
+#scSprite {
+  position: absolute;
+  z-index:2;
 }

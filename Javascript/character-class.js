@@ -256,6 +256,15 @@ window.doesCharHaveState = function(cK,stateAcr) {
 	}
 	return hasState;
 }
+window.returnIntensityOfAlteredState = function(cK,stateAcr) {
+	var intensity = -1;
+	for ( var as of gC(cK).alteredStates ) {
+		if ( as.acr == stateAcr ) {
+			intensity = as.intensity;
+		}
+	}
+	return intensity;
+}
 
 Character.prototype.addBodypart = function(key,name) {
 		this.body[key] = new Bodypart(key,name);

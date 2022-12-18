@@ -171,6 +171,12 @@ window.EventsCalendar = function() {
 							return this.getButtonToEvent("FaEpil Start");
 						}
 						break;
+					case 6:
+						this.customEventScript = initializeTributeForTheGoddess;
+						this.getEndDayButton = function() {
+							return this.getButtonToEvent("TftG Init1");
+						}
+						break;
 				}
 		}
 		
@@ -240,17 +246,81 @@ EventsCalendar.prototype.toJSON = function() {
 //////// STORY EVENT META INFO ////////
 // These objects contain relevant information for story events, to be used by events calendar to dynamically select events
 
-window.eventMetaInfo = function(name,key,initializeFunction,initialPassage,checkRequirements,getWeight) {
+window.eventMetaInfo = function(validEvent,validClairvoyanceCard,name,key,initializeFunction,initialPassage,checkRequirements,getWeight) {
+	this.validEvent = validEvent;
+	this.validClairvoyanceCard = validClairvoyanceCard;
+	
+	// Event Management Data
 	this.name = name;
 	this.key = key;
 	this.initializeFunction = initializeFunction;
 	this.initialPassage = initialPassage;
 	this.checkRequirements = checkRequirements;
 	this.getWeight = getWeight;
+	
+	// Clairvoyance Data
+	this.clairvoyanceData = null;
+}
+window.emiClaivoyanceData = function(crypticName,reqsToBeShown,reqsToAppear,hints) {
+	this.crypticName = crypticName;
+	this.reqsToBeShown = reqsToBeShown; // Bool Function, logical requisites required for the event to be shown during clairvoyance
+	this.reqsToAppear = reqsToAppear; // Text Function, text that formats the requisites for the event to appear as text to be displayed
+	this.hints = hints; // List of Text Functions, text that formats potential hints that might be displayed as text to the player
+}
+
+window.formatClairvoyanceCheck = function(checkName,cvsRequired,revealedText) {
+	var cct = checkName + " - " + colorText("CVS check (" + cvsRequired + "): ","mediumpurple");
+	if ( State.variables.StVars.check1 >= cvsRequired ) {
+		cct += colorText("Passed.\n","green");
+		cct += revealedText;
+	} else {
+		cct += colorText("Failed.\n","firebrick");
+	}
+	return cct;
+}
+window.formatRequisiteForClairvoyance = function(reqName,reqFunc) {
+	var fText = "- " + reqName + ": ";
+	if ( reqFunc() ) {
+		fText += colorText("Passed.","greenyellow");
+	} else {
+		fText += colorText("Not passed.","red");
+	}
+	fText += "\n";
+	return fText;
+}
+
+window.formatAllClairvoyance = function() {
+	var eventsMetaInfo = gEMI
+	
+	var eventCardsList = []; // Event info cards
+	for ( var se in setup.eventsMetaInfo ) {
+		if ( setup.eventsMetaInfo[se] instanceof eventMetaInfo ) { // Is an eventMetaInfo object
+			if ( setup.eventsMetaInfo[se].validClairvoyanceCard && setup.eventsMetaInfo[se].clairvoyanceData != null ) { // Has a valid clairvoyance card
+				if ( State.variables.eventsCalendar.playedStoryEvents.includes(setup.eventsMetaInfo[se].key) == false ) { // Event hasn't been played
+					if ( setup.eventsMetaInfo[se].clairvoyanceData.reqsToBeShown() ) {
+						eventCardsList.push(setup.eventsMetaInfo[se].clairvoyanceData);
+					}
+				}
+			}
+		}
+	}
+	
+	var fInfo = "";
+	if ( eventCardsList.length < 1 ) {
+		fInfo = "The orb has no secrets for you.\n\n";
+	} else {
+		for ( var cd of eventCardsList ) {
+			fInfo += "· __" + cd.crypticName + "__\n" + cd.reqsToAppear() + "\n";
+			fInfo += "";
+		}
+	}
+	
+	return fInfo;
 }
 
 setup.eventsMetaInfo = [];
-setup.eventsMetaInfo["atc0"] = new eventMetaInfo(
+setup.eventsMetaInfo["atc0"] = new eventMetaInfo( // "Aspiring Tree Climber"
+	true,true,
 	"Aspiring Tree Climber",
 	"atc0",
 	initializeSeAspiringTreeClimber, // initFunc
@@ -278,43 +348,52 @@ setup.eventsMetaInfo["atc0"] = new eventMetaInfo(
 		return weight;
 	}
 );
-setup.eventsMetaInfo["lm0"] = new eventMetaInfo(
-	"Luring Masquerade",
-	"lm0",
-	initializeSeLuringMasquerade, // initFunc
-	"Luring Masquerade Start",
-	function() { // Reqs
-		var allowed = true;
-		if ( gC("chVal").body.hasOwnProperty("legs") && gC("chPlayerCharacter").body.hasOwnProperty("legs") ) {
-			if ( gC("chVal").body.legs.state != "free" || gC("chPlayerCharacter").body.legs.state != "free" ) {
-				allowed = false;
-			}
-		} else {
-			allowed = false;
-		}
-		if ( allowed ) {
-			if ( gC("chPlayerCharacter").subChars.includes("chVal") || gC("chPlayerCharacter").subChars.includes("chMir") ) {
-				allowed = false;
-			} else if ( gC("chVal").subChars.includes("chPlayerCharacter") || gC("chVal").subChars.includes("chMir") ) {
-				allowed = false;
-			} else if ( gC("chMir").subChars.includes("chVal") || gC("chMir").subChars.includes("chPlayerCharacter") ) {
-				allowed = false;
-			} 
-		}
-		if ( allowed ) {
-			if ( gC("chVal").egaChars.includes("chPlayerCharacter") || gC("chVal").egaChars.includes("chMir") ) {
-				allowed = false;
-			}
-		}
-		return allowed;
+setup.eventsMetaInfo["atc0"].clairvoyanceData = new emiClaivoyanceData(
+	"When the Beastkin practices her hunting skills", // Cryptic Name
+	function() { // Reqs to be shown
+		return true; // Might always be shown
 	},
-	function() { // Weight
-		var weight = 70;
-		weight += rLvlAbt("chVal","chPlayerCharacter","sexualTension") * 3 + rLvlAbt("chVal","chPlayerCharacter","rivalry") * 3 + rLvlAbt("chVal","chMir","sexualTension") * 3 + rLvlAbt("chVal","chMir","rivalry") * 3;
-		return weight;
-	}
+	function() { // Reqs to appear
+		var reqsText = formatClairvoyanceCheck("Requisites",30,formatRequisiteForClairvoyance("Player has free arms", function() {
+			var b = false;
+			if ( gC("chPlayerCharacter").body.hasOwnProperty("arms") ) {
+				if ( gC("chPlayerCharacter").body.arms.state == "free" ) {
+					b = true;
+				}
+			}
+			return b;
+		}) + formatRequisiteForClairvoyance("Player has free legs", function() {
+			var b = false;
+			if ( gC("chPlayerCharacter").body.hasOwnProperty("legs") ) {
+				if ( gC("chPlayerCharacter").body.legs.state == "free" ) {
+					b = true;
+				}
+			}
+			return b;
+		}) + formatRequisiteForClairvoyance("Claw has free arms", function() {
+			var b = false;
+			if ( gC("chClaw").body.hasOwnProperty("arms") ) {
+				if ( gC("chClaw").body.arms.state == "free" ) {
+					b = true;
+				}
+			}
+			return b;
+		}) + formatRequisiteForClairvoyance("Claw has free legs", function() {
+			var b = false;
+			if ( gC("chClaw").body.hasOwnProperty("legs") ) {
+				if ( gC("chClaw").body.legs.state == "free" ) {
+					b = true;
+				}
+			}
+			return b;
+		}));
+		return reqsText;
+	},
+	null // Hints
 );
-setup.eventsMetaInfo["gfn0"] = new eventMetaInfo(
+
+setup.eventsMetaInfo["gfn0"] = new eventMetaInfo( // "Gifts For Nature"
+	true,true,
 	"Gifts For Nature",
 	"gfn0",
 	initializeSeGiftsForNature, // initFunc
@@ -329,7 +408,23 @@ setup.eventsMetaInfo["gfn0"] = new eventMetaInfo(
 		return weight;
 	}
 );
-setup.eventsMetaInfo["dto0"] = new eventMetaInfo(
+setup.eventsMetaInfo["gfn0"].clairvoyanceData = new emiClaivoyanceData(
+	"When you and the Leirien collect offering from nature", // Cryptic Name
+	function() { // Reqs to be shown
+		return true; // Might always be shown
+	},
+	function() { // Reqs to appear
+		var reqsText = formatClairvoyanceCheck("Requisites",20,formatRequisiteForClairvoyance("Wait a few days", function() {
+			var b = true;
+			return b;
+		}));
+		return reqsText;
+	},
+	null // Hints
+);
+
+setup.eventsMetaInfo["dto0"] = new eventMetaInfo( // "Discovering The Others"
+	true,true,
 	"Discovering The Others",
 	"dto0",
 	initializeSeDiscoveringTheOthers, // initFunc
@@ -345,7 +440,23 @@ setup.eventsMetaInfo["dto0"] = new eventMetaInfo(
 		return weight;
 	}
 );
-setup.eventsMetaInfo["gol0"] = new eventMetaInfo(
+setup.eventsMetaInfo["dto0"].clairvoyanceData = new emiClaivoyanceData(
+	"When the Aiishen asks for your help to study something alien to her", // Cryptic Name
+	function() { // Reqs to be shown
+		return true; // Might always be shown
+	},
+	function() { // Reqs to appear
+		var reqsText = formatClairvoyanceCheck("Requisites",20,formatRequisiteForClairvoyance("Wait a few days", function() {
+			var b = true;
+			return b;
+		}));
+		return reqsText;
+	},
+	null // Hints
+);
+
+setup.eventsMetaInfo["gol0"] = new eventMetaInfo( // "The Grapes of Lust"
+	true,true,
 	"The Grapes of Lust",
 	"gol0",
 	initializeSeTGoL, // initFunc
@@ -365,7 +476,71 @@ setup.eventsMetaInfo["gol0"] = new eventMetaInfo(
 		return weight;
 	}
 );
-setup.eventsMetaInfo["mt1"] = new eventMetaInfo(
+
+setup.eventsMetaInfo["gol0"].clairvoyanceData = new emiClaivoyanceData(
+	"When someone's excessive focus leads to her getting taken advantage of", // Cryptic Name
+	function() { // Reqs to be shown
+		return true; // Might always be shown
+	},
+	function() { // Reqs to appear
+		var reqsText = formatClairvoyanceCheck("Requisites (1)",40,formatRequisiteForClairvoyance("Neither Maaterasu nor Valtan are submissive to " + gC("chPlayerCharacter").getName(), function() {
+			var b = false;
+			if ( gC("chPlayerCharacter").subChars.includes("chVal") == false && gC("chPlayerCharacter").subChars.includes("chAte") == false ) {
+				b = true;
+			}
+			return b;
+		}) + formatRequisiteForClairvoyance("Neither " + gC("chPlayerCharacter").getName() + " nor Valtan are submissive to Maaterasu", function() {
+			var b = false;
+			if ( gC("chAte").subChars.includes("chVal") == false && gC("chAte").subChars.includes("chPlayerCharacter") == false ) {
+				b = true;
+			}
+			return b;
+		}) + formatRequisiteForClairvoyance("Neither " + gC("chPlayerCharacter").getName() + " nor Maaterasu are submissive to Valtan", function() {
+			var b = false;
+			if ( gC("chVal").subChars.includes("chPlayerCharacter") == false && gC("chVal").subChars.includes("chAte") == false ) {
+				b = true;
+			}
+			return b;
+		})) + formatClairvoyanceCheck("Requisites (2)",70,formatRequisiteForClairvoyance("A specific bodypart of Valtan isn't blocked", function() {
+			var b = false;
+			if ( gC("chVal").body.hasOwnProperty("mouth") ) {
+				if ( gC("chVal").body.mouth.state == "free" ) {
+					b = true;
+				}
+			}
+			return b;
+		})) + formatClairvoyanceCheck("Requisites (3)",80,formatRequisiteForClairvoyance("Specific bodyparts of " + gC("chPlayerCharacter").name + " and Maaterasu aren't blocked", function() {
+			var b = false;
+			if ( gC("chPlayerCharacter").body.hasOwnProperty("mouth") && gC("chAte").body.hasOwnProperty("mouth") ) {
+				if ( gC("chPlayerCharacter").body.mouth.state == "free" && gC("chAte").body.mouth.state == "free" ) {
+					b = true;
+				}
+			}
+			return b;
+		})) + formatClairvoyanceCheck("Requisites (4)",110,formatRequisiteForClairvoyance("Valtan's pussy isn't blocked", function() {
+			var b = false;
+			if ( gC("chVal").body.hasOwnProperty("mouth") ) {
+				if ( gC("chVal").body.mouth.state == "free" ) {
+					b = true;
+				}
+			}
+			return b;
+		})) + formatClairvoyanceCheck("Requisites (5)",120,formatRequisiteForClairvoyance("The mouths of " + gC("chPlayerCharacter").name + " and Maaterasu aren't blocked", function() {
+			var b = false;
+			if ( gC("chPlayerCharacter").body.hasOwnProperty("mouth") && gC("chAte").body.hasOwnProperty("mouth") ) {
+				if ( gC("chPlayerCharacter").body.mouth.state == "free" && gC("chAte").body.mouth.state == "free" ) {
+					b = true;
+				}
+			}
+			return b;
+		}));
+		return reqsText;
+	},
+	null // Hints
+);
+
+setup.eventsMetaInfo["mt1"] = new eventMetaInfo( // "Martial Tutorship I"
+	true,true,
 	"Martial Tutorship I",
 	"mt1",
 	initializeMartialTutorshipI, // initFunc
@@ -390,7 +565,40 @@ setup.eventsMetaInfo["mt1"] = new eventMetaInfo(
 		return weight;
 	}
 );
-setup.eventsMetaInfo["fak0"] = new eventMetaInfo(
+setup.eventsMetaInfo["mt1"].clairvoyanceData = new emiClaivoyanceData(
+	"When the Ashwalker teaches you the basics of martial combat", // Cryptic Name
+	function() { // Reqs to be shown
+		return true; // Might always be shown
+	},
+	function() { // Reqs to appear
+		var reqsText = formatClairvoyanceCheck("Requisites (1)",40,formatRequisiteForClairvoyance("Nashillbyir is the tutor of " + gC("chPlayerCharacter").getName(), function() {
+			var b = false;
+			if ( gC("chNash").subChars.includes("chPlayerCharacter") ) {
+				if ( gC("chPlayerCharacter").relations.chNash.relType.type == "tutorship" ) {
+					b = true;
+				}
+			}
+			return b;
+		})) + formatClairvoyanceCheck("Requisites (2)",70,formatRequisiteForClairvoyance("Nashillbyir has free arms and legs", function() {
+			var b = false;
+			if ( gC("chNash").hasFreeBodypart("arms") && gC("chNash").hasFreeBodypart("legs") ) {
+				b = true;
+			}
+			return b;
+		})) + formatClairvoyanceCheck("Requisites (3)",80,formatRequisiteForClairvoyance(gC("chPlayerCharacter").name + " has free arms and legs, or they have been locked by Nashillbyir", function() {
+			var b = false;
+			if ( ( gC("chPlayerCharacter").hasFreeBodypart("arms") || getEquipById(gC("chPlayerCharacter").body.arms.bondage).owner == "chNash" ) && ( gC("chPlayerCharacter").hasFreeBodypart("legs") || getEquipById(gC("chPlayerCharacter").body.legs.bondage).owner == "chNash" ) ) {
+				b = true;
+			}
+			return b;
+		}));
+		return reqsText;
+	},
+	null // Hints
+);
+
+setup.eventsMetaInfo["fak0"] = new eventMetaInfo( // "Flaunting A Kitty"
+	true,true,
 	"Flaunting A Kitty",
 	"fak0",
 	initializeSeFaK, // initFunc
@@ -414,7 +622,50 @@ setup.eventsMetaInfo["fak0"] = new eventMetaInfo(
 		return weight;
 	}
 );
-setup.eventsMetaInfo["BAw0"] = new eventMetaInfo(
+setup.eventsMetaInfo["fak0"].clairvoyanceData = new emiClaivoyanceData(
+	"When you consider whether to mercilessly get a good girl teased by your resentful servant", // Cryptic Name
+	function() { // Reqs to be shown
+		return true; // Might always be shown
+	},
+	function() { // Reqs to appear
+		var reqsText = formatClairvoyanceCheck("Requisites (1)",60,formatRequisiteForClairvoyance("You have at least 12 charisma", function() {
+			var b = false;
+			if ( gCstat("chPlayerCharacter","charisma") >= 12 ) {
+				b = true;
+			}
+			return b;
+		})) + formatClairvoyanceCheck("Requisites (2)",70,formatRequisiteForClairvoyance("Padmiri is submissive no one", function() {
+			var b = false;
+			if ( gC("chMir").domChar == null ) {
+				b = true;
+			}
+			return b;
+		})) + formatClairvoyanceCheck("Requisites (3)",80,formatRequisiteForClairvoyance("Fiercest Claw is submissive to you", function() {
+			var b = false;
+			if ( gC("chClaw").domChar == "chPlayerCharacter" ) {
+				b = true;
+			}
+			return b;
+		})) + formatClairvoyanceCheck("Requisites (4)",100,formatRequisiteForClairvoyance("Fiercest Claw has a free mouth", function() {
+			var b = false;
+			if ( gC("chClaw").hasFreeBodypart("mouth") ) {
+				b = true;
+			}
+			return b;
+		}) + formatRequisiteForClairvoyance("Padmiri has a free pussy", function() {
+			var b = false;
+			if ( gC("chMir").hasFreeBodypart("pussy") ) {
+				b = true;
+			}
+			return b;
+		}));
+		return reqsText;
+	},
+	null // Hints
+);
+
+setup.eventsMetaInfo["BAw0"] = new eventMetaInfo( // "Bondage Awakening"
+	true,true,
 	"Bondage Awakening",
 	"BAw0",
 	initializeBondageAwakening, // initFunc
@@ -442,15 +693,200 @@ setup.eventsMetaInfo["BAw0"] = new eventMetaInfo(
 		return weight;
 	}
 );
+setup.eventsMetaInfo["BAw0"].clairvoyanceData = new emiClaivoyanceData(
+	"When the Leirien's patience is challenged, and she feels the desire to unleash punishment", // Cryptic Name
+	function() { // Reqs to be shown
+		return true; // Might always be shown
+	},
+	function() { // Reqs to appear
+		var reqsText = formatClairvoyanceCheck("Requisites (1)",40,formatRequisiteForClairvoyance("Claw isn't submissive to " + gC("chPlayerCharacter").name + ", Nashillbyir or Padmiri", function() {
+			var b = false;
+			if ( gC("chClaw").domChar != "chNash" && gC("chClaw").domChar != "chPlayerCharacter" && gC("chClaw").domChar != "chMir" ) {
+				b = true;
+			}
+			return b;
+		}) + formatRequisiteForClairvoyance("Nashillbyir isn't submissive to " + gC("chPlayerCharacter").name + ", Claw or Padmiri", function() {
+			var b = false;
+			if ( gC("chNash").domChar != "chClaw" && gC("chNash").domChar != "chMir" && gC("chNash").domChar != "chPlayerCharacter" ) {
+				b = true;
+			}
+			return b;
+		}) + formatRequisiteForClairvoyance("Padmiri isn't submissive to " + gC("chPlayerCharacter").name + ", Claw or Nashillbyir", function() {
+			var b = false;
+			if ( gC("chMir").domChar != "chPlayerCharacter" && gC("chMir").domChar != "chNash" && gC("chMir").domChar != "chClaw" ) {
+				b = true;
+			}
+			return b;
+		}) + formatRequisiteForClairvoyance(gC("chPlayerCharacter").name + " isn't submissive to Claw, Nashillbyir or Padmiri", function() {
+			var b = false;
+			if ( gC("chPlayerCharacter").domChar != "chNash" && gC("chPlayerCharacter").domChar != "chMir" && gC("chPlayerCharacter").domChar != "chClaw" ) {
+				b = true;
+			}
+			return b;
+		}))	+ formatClairvoyanceCheck("Requisites (2)",60,formatRequisiteForClairvoyance("Nashillbyir has free arms and legs", function() {
+			var b = false;
+			if ( gC("chNash").hasFreeBodypart("arms") && gC("chNash").hasFreeBodypart("legs") ) {
+				b = true;
+			}
+			return b;
+		}) + formatRequisiteForClairvoyance("Fiercest Claw has free arms and legs", function() {
+			var b = false;
+			if ( gC("chClaw").hasFreeBodypart("arms") && gC("chClaw").hasFreeBodypart("legs") ) {
+				b = true;
+			}
+			return b;
+		})) + formatClairvoyanceCheck("Requisites (3)",70,formatRequisiteForClairvoyance("Padmiri has free arms", function() {
+			var b = false;
+			if ( gC("chMir").hasFreeBodypart("arms") ) {
+				b = true;
+			}
+			return b;
+		}) + formatRequisiteForClairvoyance(gC("chPlayerCharacter").name + " has free arms and legs", function() {
+			var b = false;
+			if ( gC("chPlayerCharacter").hasFreeBodypart("arms") ) {
+				b = true;
+			}
+			return b;
+		}));
+		return reqsText;
+	},
+	null // Hints
+);
 
+setup.eventsMetaInfo["lm0"] = new eventMetaInfo( // "Luring Masquerade"
+	true,true,
+	"Luring Masquerade",
+	"lm0",
+	initializeSeLuringMasquerade, // initFunc
+	"Luring Masquerade Start",
+	function() { // Reqs
+		var allowed = true;
+		if ( gC("chVal").body.hasOwnProperty("legs") && gC("chPlayerCharacter").body.hasOwnProperty("legs") && gC("chMir").body.hasOwnProperty("legs") ) {
+			if ( gC("chVal").body.legs.state != "free" || gC("chPlayerCharacter").body.legs.state != "free" || gC("chMir").body.legs.state != "free" ) {
+				allowed = false;
+			}
+		} else {
+			allowed = false;
+		}
+		if ( allowed ) {
+			if ( gC("chPlayerCharacter").subChars.includes("chVal") || gC("chPlayerCharacter").subChars.includes("chMir") ) {
+				allowed = false;
+			} else if ( gC("chVal").subChars.includes("chPlayerCharacter") || gC("chVal").subChars.includes("chMir") ) {
+				allowed = false;
+			} else if ( gC("chMir").subChars.includes("chVal") || gC("chMir").subChars.includes("chPlayerCharacter") ) {
+				allowed = false;
+			} 
+		}
+		if ( allowed ) {
+			if ( gC("chVal").egaChars.includes("chPlayerCharacter") || gC("chVal").egaChars.includes("chMir") ) {
+				allowed = false;
+			}
+		}
+		return allowed;
+	},
+	function() { // Weight
+		var weight = 70;
+		weight += rLvlAbt("chVal","chPlayerCharacter","sexualTension") * 3 + rLvlAbt("chVal","chPlayerCharacter","rivalry") * 3 + rLvlAbt("chVal","chMir","sexualTension") * 3 + rLvlAbt("chVal","chMir","rivalry") * 3;
+		return weight;
+	}
+);
+setup.eventsMetaInfo["lm0"].clairvoyanceData = new emiClaivoyanceData(
+	"When your body attracts too much attention during one kind morning", // Cryptic Name
+	function() { // Reqs to be shown
+		return true; // Might always be shown
+	},
+	function() { // Reqs to appear
+		var reqsText = formatClairvoyanceCheck("Requisites (1)",30,formatRequisiteForClairvoyance("Player has free legs", function() {
+			var b = false;
+			if ( gC("chPlayerCharacter").body.hasOwnProperty("legs") ) {
+				if ( gC("chPlayerCharacter").body.legs.state == "free" ) {
+					b = true;
+				}
+			}
+			return b;
+		}) + formatRequisiteForClairvoyance("Padmiri has free legs", function() {
+			var b = false;
+			if ( gC("chMir").body.hasOwnProperty("legs") ) {
+				if ( gC("chMir").body.legs.state == "free" ) {
+					b = true;
+				}
+			}
+			return b;
+		})) + formatClairvoyanceCheck("Requisites (2)",40,formatRequisiteForClairvoyance(gC("chPlayerCharacter").name + " isn't submissive to Padmiri", function() {
+			var b = false;
+			if ( gC("chMir").subChars.includes("chPlayerCharacter") == false ) {
+				b = true;
+			}
+			return b;
+		}) + formatRequisiteForClairvoyance("Padmiri isn't submissive to " + gC("chPlayerCharacter").name, function() {
+			var b = false;
+			if ( gC("chPlayerCharacter").subChars.includes("chMir") == false ) {
+				b = true;
+			}
+			return b;
+		})) + formatClairvoyanceCheck("Requisites (3)",300,formatRequisiteForClairvoyance("Valtan has free legs", function() {
+			var b = false;
+			if ( gC("chVal").body.hasOwnProperty("legs") ) {
+				if ( gC("chVal").body.legs.state == "free" ) {
+					b = true;
+				}
+			}
+			return b;
+		}) + formatRequisiteForClairvoyance("Valtan isn't submissive to " + gC("chPlayerCharacter").name + " or Padmiri", function() {
+			var b = false;
+			if ( gC("chVal").domChar != "chPlayerCharacter" && gC("chVal").domChar != "chMir" ) {
+				b = true;
+			}
+			return b;
+		}) + formatRequisiteForClairvoyance(gC("chPlayerCharacter").name + " and Padmiri aren't submissive to Valtan", function() {
+			var b = false;
+			if ( gC("chVal").subChars.includes("chPlayerCharacter") == false && gC("chVal").subChars.includes("chMir") == false ) {
+				b = true;
+			}
+			return b;
+		}) + formatRequisiteForClairvoyance("Valtan doesn't have an egalitarian special relationship with " + gC("chPlayerCharacter").name + " or Padmiri.", function() {
+			var b = false;
+			if ( gC("chVal").egaChars.includes("chPlayerCharacter") == false && gC("chVal").egaChars.includes("chMir") == false ) {
+				b = true;
+			}
+			return b;
+		}))
+		return reqsText;
+	},
+	null // Hints
+);
+/*
+setup.eventsMetaInfo["gd3"] = new eventMetaInfo( // "A Sacrifice of Aether"
+	true,false,
+	"A Sacrifice of Aether",
+	"gd3",
+	initializeSacrificeOfAether, // initFunc
+	"SE A Sacrifice of Aether Start",
+	function() { // Reqs
+		var allowed = false;
+		
+		if ( State.variables.storyState >= storyState.secondLoop && ( State.variables.daycycle.month > 2 || State.variables.daycycle.day >= 10 ) ) {
+			allowed = true;
+		}
+		
+		return allowed;
+	},
+	function() { // Weight
+		var weight = 500;
+		return weight;
+	}
+);
+*/
 window.chooseRandomStoryEvent = function() {
 	var result = "errorWList"; // Default error string returned by bugged weighted lists. If this is the end result, no event will be initialized
 	var validEvents = []; // Event tags
 	for ( var se in setup.eventsMetaInfo ) {
-		if ( setup.eventsMetaInfo[se] instanceof eventMetaInfo ) { // Is an event
-			if ( State.variables.eventsCalendar.playedStoryEvents.includes(setup.eventsMetaInfo[se].key) == false ) { // Event hasn't been played
-				if ( setup.eventsMetaInfo[se].checkRequirements() ) { // Requirements are passed
-					validEvents.push(setup.eventsMetaInfo[se].key);
+		if ( setup.eventsMetaInfo[se] instanceof eventMetaInfo ) { // Is an eventMetaInfo object
+			if ( setup.eventsMetaInfo[se].validEvent ) { // Is an event
+				if ( State.variables.eventsCalendar.playedStoryEvents.includes(setup.eventsMetaInfo[se].key) == false ) { // Event hasn't been played
+					if ( setup.eventsMetaInfo[se].checkRequirements() ) { // Requirements are passed
+						validEvents.push(setup.eventsMetaInfo[se].key);
+					}
 				}
 			}
 		}

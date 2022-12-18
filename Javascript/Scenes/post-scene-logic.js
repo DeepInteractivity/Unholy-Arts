@@ -10,6 +10,38 @@ window.processGenericSexSceneEffects = function() {
 	
 	var	allCharsMsgs = [];
 	
+	// Invigorated Aether altered state
+	var invAeMsg = "";
+	if ( State.variables.storyState >= storyState.secondLoop ) { // Invigorated aether is allowed
+		for ( var cK of allChars ) {
+			var orgasms = gC(cK).orgasmSceneCounter + gC(cK).mindblowingOrgasmSC * 2 + gC(cK).ruinedOrgasmSceneCounter;
+			if ( orgasms > 0 ) {
+				var newIntensity = getPositionInBasicGeometricProgression(orgasms);
+				var currentIntensity = returnIntensityOfAlteredState(cK,"InAe");
+				
+				if ( currentIntensity == -1 ) {
+					// Add AS
+					applyAlteredState([cK],createASinvigoratedAether(newIntensity));
+					invAeMsg += ktn(cK) + "'s aether was invigorated.\n";
+				} else if ( currentIntensity < newIntensity ) {
+					// Add new intensity and extend duration
+					gC(cK).removeSpecificState("InAe");
+					applyAlteredState([cK],createASinvigoratedAether(newIntensity));
+					invAeMsg += ktn(cK) + "'s aether was further invigorated.\n";
+				} else {
+					// Extend duration
+					var newDuration = getInAeDuration(newIntensity);
+					for ( var as of gC(cK).alteredStates ) {
+						if ( as.acr == "InAe" ) {
+							as.remainingDays = newDuration;
+						}
+					}
+					invAeMsg += ktn(cK) + "'s aether invigoration was renewed.\n";
+				}
+			}
+		}
+	}
+	
 	// Relations & Drives changes
 	for ( var charKey of allChars ) {
 		gC(charKey).orgasmSceneCounter += gC(charKey).mindblowingOrgasmSC * 2;
@@ -309,6 +341,7 @@ window.processGenericSexSceneEffects = function() {
 	for ( var cK of allChars ) {
 		resultsMessage += allCharsMsgs[cK].msg + "\n";
 	}
+	if ( invAeMsg != "" ) { resultsMessage += "\n" + invAeMsg; }
 	if ( resultsMessage != "" ) { resultsMessage += "\n"; }
 	resultsMessage += "[[Continue|Map]]";
 	

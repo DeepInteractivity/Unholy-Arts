@@ -1749,6 +1749,13 @@ window.getGleamingCavernStreetConvs = function() {
 						'"What? But then we have to hurry to..."\n' +
 						'"No, no, she got lost, but a human from the Temple rescued her! She\'s still resting though... She might not be recovered enough to participate in the Twisted Festival."//','gray'));
 	}
+	if ( isStVarOn("neStSs") ) {
+		posConvs.push(colorText('//"Hey, look, that\'s the human who..."\n' +
+						'"Lower your voice! Pretend you haven\'t seen her..."//','gray'));
+		posConvs.push(colorText('//"Look who is it back there."\n' +
+						'"Should we ask her if she\'s going to do that again?"//','gray'));
+	}
+	
 	var chosenConv = "";
 	if ( posConvs.length > 0 ) {
 		if ( limitedRandomInt(100) >= 50 ) {

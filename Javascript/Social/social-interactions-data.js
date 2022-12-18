@@ -1363,7 +1363,7 @@ window.getApologizeSocInt = function() {
 		var desc = randomFromList( [
 								(ktn(this.actor) + " backed down and repented " + gC(this.actor).posPr + " attitude."),
 								(ktn(this.actor) + " apologized to " + ktn(this.target) + "."),
-								(ktn(this.actor) + " bowed " + gC(this.actor).posPr + " head in repentace.") ] );
+								(ktn(this.actor) + " bowed " + gC(this.actor).posPr + " head in repentance.") ] );
 		return desc;
 	}
 	

@@ -25,6 +25,31 @@ window.fixIntensity = function(inIntensity) {
 	return intensity;
 }
 
+window.getInAeDuration = function(intensity) {
+	var duration = 3 + limitedRandomInt(2); // 3 ~ 5
+	return duration;
+}
+window.createASinvigoratedAether = function(intensity) {
+	// Stats gain (phy,res,will) , increased lust resistance
+	var sgm = 0.05 * intensity; // 
+	var days = getInAeDuration(intensity);
+	var provokeEffect = function(charKey) {
+		for ( var st of setup.baseStats ) {
+			gC(charKey)[st].multModifier += this.sgm;
+		}
+	}
+	var cancelEffect = function(charKey) {
+		for ( var st of setup.baseStats ) {
+			gC(charKey)[st].multModifier -= this.sgm;
+		}
+	}
+	var description = "The aether flow of this character has been strengthened, fortifying all their stats.\n";
+	var as = new alteredState("Invigorated Aether","InAe","days",days,provokeEffect,cancelEffect,description);
+	as.sgm = sgm;
+	as.type = "buff";
+	return as;
+}
+
 window.createSensitizedTag = function(intensity,tag,name,abr,turns,description) {
 	var provokeEffect = function(charKey) {
 	}
@@ -85,7 +110,7 @@ window.createAScoldGuts = function(intensity) {
 	var sgs = 3 + intensity * 0.5; // 3 ~ 8
 	var sgm = 0.1 + intensity * 0.08; // 0.1 ~ 0.18
 	var isr = 10 + intensity * 1; // 10 ~ 20
-	var turns = 5 + limitedRandomInt(7); // 5 ~ 7
+	var turns = 5 + limitedRandomInt(2); // 5 ~ 7
 	var provokeEffect = function(charKey) {
 		gC(charKey).physique.sumModifier += sgs;
 		gC(charKey).physique.multModifier += sgm;
