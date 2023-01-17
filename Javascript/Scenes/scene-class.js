@@ -1626,6 +1626,26 @@ window.getImmediatelyConnectedCharsToChar = function(charKey) {
 		}
 	}
 
+window.formatSceneAnimationsHtmlSegment = function() {
+	var fText = "";
+	var animationSprites = selectAnimationSprites();
+	if ( animationSprites.length > 0 ) {
+		if ( getAnimationsSettings() == "enable" ) { // Enabled animations
+			fText += fText += '<div align="center"><<l' + 'ink [[[ X ]|Scene]]>>\n<<sc' + 'ript>>\n'
+					+ 'State.variables.settings.animations = "hidden";\n'
+					+ 'State.variables.sc.formatScenePassage();\n'
+					+ '<</s' + 'cript>><</l' + 'ink>></div>\n'
+					+ formatAnimationsForHtml(animationSprites) + "\n";
+		} else { // Hidden animations
+			fText += '<div align="center"><<l' + 'ink [[[ + ]|Scene]]>>\n<<sc' + 'ript>>\n'
+					+ 'State.variables.settings.animations = "enable";\n'
+					+ 'State.variables.sc.formatScenePassage();\n'
+					+ '<</s' + 'cript>><</l' + 'ink>></div>\n';
+		}
+	}
+	return fText;
+}
+
 	// UI
 	scene.prototype.formatScenePassage = function() {
 		this.formatActionsOptionList(getChar("chPlayerCharacter"));
@@ -1638,7 +1658,10 @@ window.getImmediatelyConnectedCharsToChar = function(charKey) {
 			pas += '<<removeclass "#right-ui-bar" "stowed">>';
 		}
 		// Standard Scene Passage
-		pas += "<div>";
+		if ( getAnimationsSettings() != "disable" ) {
+			pas += formatSceneAnimationsHtmlSegment(); // Format animations for HTML
+		}
+		pas += "<div>"; // Heading Description
 		if ( this.outHeadingDescription != "" ) { pas += "<div class='standardBox'>" + this.outHeadingDescription + "\\ </div> \n"; }
 		if ( this.positionsDescription != "" || this.actionsDescription != "" || this.cancelActionButtons.length > 0 ) {
 			pas += "<div class='standardBox'>";
@@ -1815,6 +1838,22 @@ window.endConditionTurns = function(turns) {
 	
 	if ( State.variables.sc.currentTurn > turns ) {
 		flagEndScene = true;
+	} else if ( State.variables.sc.sceneType == "bs" ) { // Are all characters of one team defeated, anyway?
+		var defeatedTeamA = true;
+		var defeatedTeamB = true;
+		for ( var ch of State.variables.sc.teamAcharKeys ) {
+			if ( gC(ch).koed == false ) {
+				defeatedTeamA = false;
+			}
+		}
+		for ( var ch of State.variables.sc.teamBcharKeys ) {
+			if ( gC(ch).koed == false ) {
+				defeatedTeamB = false;
+			}
+		}
+		if ( defeatedTeamA || defeatedTeamB ) {
+			flagEndScene = true;
+		}
 	}
 	
 	return flagEndScene;

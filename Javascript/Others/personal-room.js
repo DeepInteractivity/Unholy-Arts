@@ -44,6 +44,12 @@ PersonalRoom.prototype.formatRoomText = function() {
 				}
 				this.roomText += "\n" + this.getButtonSettings() + '\n\n'; // Link to settings
 				this.roomText += setup.cheatMenuLinkText; // Cheats
+				if ( getCharsAnTags("chPlayerCharacter").length == 0 ) {
+					this.roomText += "\n\n" + getButtonAnTagRed()
+								   + "\n" + getButtonAnTagYellow()
+								   + "\n" + getButtonAnTagBlack()
+								   + "\n" + getButtonAnTagGray();
+				}
 				//this.roomText += getHotfixButton();
 				break;
 			case "charInfo": 																	// Char info screen
@@ -1213,6 +1219,31 @@ window.getBuyItemButtonByID = function(id) {
 			+ "charBuysItem('chPlayerCharacter','" + id + "');\n"
 			+ "<</s" + "cript>><</l" + "ink>>" + getItemDescriptionBySetupId(id) + " - Cost: " + itemData.price;
 	}
+	return bText;
+}
+
+window.getButtonAnTagRed = function() {
+	var bText = "<<l" + "ink [[Set red hair protagonist sprites|Personal Room]]>><<s" + "cript>>"
+			+ "charReceivesAnTags('chPlayerCharacter',['Mcr']);\n"
+			+ "<</s" + "cript>><</l" + "ink>>";
+	return bText;
+}
+window.getButtonAnTagBlack = function() {
+	var bText = "<<l" + "ink [[Set black hair protagonist sprites|Personal Room]]>><<s" + "cript>>"
+			+ "charReceivesAnTags('chPlayerCharacter',['Mcb']);\n"
+			+ "<</s" + "cript>><</l" + "ink>>";
+	return bText;
+}
+window.getButtonAnTagYellow = function() {
+	var bText = "<<l" + "ink [[Set yellow hair protagonist sprites|Personal Room]]>><<s" + "cript>>"
+			+ "charReceivesAnTags('chPlayerCharacter',['Mcy']);\n"
+			+ "<</s" + "cript>><</l" + "ink>>";
+	return bText;
+}
+window.getButtonAnTagGray = function() {
+	var bText = "<<l" + "ink [[Set gray character sprites for player character|Personal Room]]>><<s" + "cript>>"
+			+ "charReceivesAnTags('chPlayerCharacter',['gc']);\n"
+			+ "<</s" + "cript>><</l" + "ink>>";
 	return bText;
 }
 

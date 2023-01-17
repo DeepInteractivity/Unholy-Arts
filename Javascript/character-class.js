@@ -1321,6 +1321,23 @@ window.textEquipment = function(charKey) {
 	return eText;
 }
 
+	// Animations // anTags -> Tags that refer to which animations should be used for this character
+window.getCharsAnTags = function(cK) {
+	var anTags = [];
+	if ( gC(cK).hasOwnProperty("anTags") == true ) {
+		anTags = gC(cK).anTags;
+	}
+	return anTags;
+}
+window.charReceivesAnTags = function(cK,anTags) {
+	if ( gC(cK).hasOwnProperty("anTags") == false ) {
+		gC(cK).anTags = [];
+	}
+	for ( var at of anTags ) {
+		gC(cK).anTags.push(at);
+	}
+}
+
 	// Base stats
 window.getThreeKindredCharStats = function(charKey) { // Returns the character's 3 stats with the highest affinity
 	var kindredStats = [];
