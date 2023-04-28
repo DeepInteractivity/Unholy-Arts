@@ -348,6 +348,19 @@ Drive.prototype.toJSON = function() {
 	return JSON.reviveWrapper('(new Drive())._init($ReviveData$)', ownData);
 };
 
+////////// MERIT Aux //////////
+window.getCandidatesMeritPosition = function(cK) {
+	var position = 1;
+	for ( var can of getCandidatesKeysArray() ) {
+		if ( can != cK ) {
+			if ( gC(can).merit > gC(cK).merit ) {
+				position++;
+			}
+		}
+	}
+	return position;
+}
+
 ////////// MOOD CLASS //////////
 // Set of parameters the determines the current mood of a given character
 
@@ -673,7 +686,7 @@ Position.prototype.makePassiveSecondaryInitiators = function(initiator,secondary
 
 Position.prototype.free = function() {
 		if ( this.cAction != null ) {
-			this.cAction.freeBodyparts();;
+			this.cAction.freeBodyparts();
 			this.cAction = null;
 		}
 		switch(this.type) {
@@ -750,6 +763,7 @@ window.flavorAffinities = function() {
 	
 	// Social
 	this.social = new flavorAffinity("social");
+	this.affection = new flavorAffinity("affection");
 	this.seduction = new flavorAffinity("seduction");
 	this.taunt = new flavorAffinity("taunt");
 	this.hypnosis = new flavorAffinity("hypnosis");
@@ -832,7 +846,8 @@ window.alteredState = function(title,acr,scope,turns,provokeEffect,cancelEffect,
 }
 
 window.applyAlteredState = function(charKeysList,alteredState) {
-	for ( var charKey of charKeysList ) {
+	var ckl = removeDuplicatesFromList(charKeysList);
+	for ( var charKey of ckl ) {
 		gC(charKey).alteredStates.push(alteredState);
 		alteredState.provokeEffect(charKey);
 	}

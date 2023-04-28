@@ -389,7 +389,7 @@ window.createSaKissLips = function() {
 									   ["spitroastTarget","spitroastBehind"]);
 	sa.unvalidRelationalPositions.push(["mountingFromBehind","mountingAndMounted"],["mountingAndMounted","mountingFromBehind"],["mountingAndMounted","mountedFromBehind"],["mountedFromBehind","mountingAndMounted"]);
 	
-	sa.flavorTags.push("foreplay","useMouth","targetMouth");
+	sa.flavorTags.push("foreplay","useMouth","targetMouth","romantic");
 	
 	sa.description = "The character slowly kisses another character's lips.\n\nSingle target action.\n"
 				   + "Actor requires free mouth, target requires free mouth.\n\nForeplay.\n\n__Influences__:\nDamage: Actor's agility x1.";
@@ -397,10 +397,20 @@ window.createSaKissLips = function() {
 		var results = new saResults;
 		var target = targetActors[0];
 		
+		// Damage
 		var multAr = getSexDamageMult(actorKey,target,this.key);
 		var lustDamage = ((getChar(actorKey).agility.getValue() * 2) / 10) * multAr[0];
 		getChar(targetActors[0]).lust.changeValue(-lustDamage);
 		results.value += lustDamage;
+		
+		// Altered state
+		if ( doesCharHaveAlteredState(target,"Mou+") == false ) {
+			var intensity = 0.05 + gCstat(actorKey,"agility") * 0.005 + limitedRandomInt(5) * 0.01;
+			var turns = 4 + limitedRandomInt(4) + (gCstat(actorKey,"agility") * 0.04) - ((gCstat(actorKey,"agility") * 0.04) % 1);
+			var as = createSensitizedTag(intensity,"useMouth","Sensitized mouth","Mou+",turns,"The mouth of this character will receive extra damage.");
+			applyAlteredState([target],as);
+		}
+		
 		results.description += randomFromList( [
 									(ktn(actorKey) + " kissed " + ktn(target) + "'s lips."),
 									(ktn(actorKey) + " placed " + getChar(actorKey).posPr + " own lips on " + ktn(target) + "'s."),
@@ -411,6 +421,117 @@ window.createSaKissLips = function() {
 	}
 	return sa;
 }
+window.createSaLickLegs = function() {
+	var sa = new sceneAction();
+	sa.name = "Lick legs";
+	sa.key = "lickLegs";
+	sa.targetType = "single";
+	sa.tags.push("ss");
+	sa.tags.push("sUse");
+	sa.reqTags.push("diffTarget");
+	sa.actorBpReqs.push("mouth");
+	sa.targetBpReqs.push("legs");
+	
+	sa.requiredPositions.push("kneeling","spitroastTarget");
+	sa.targetRequiredPositions.push("standing","spitroastFront");
+	sa.linkedPositions = true;
+	
+	sa.flavorTags.push("foreplay","useMouth","targetLegs");
+	
+	sa.description = "The character tastes the skin of the target's legs.\n\nSingle target action.\n"
+				   + "Actor requires free mouth, target requires free legs.\n\nForeplay.\n\n__Influences__:\nDamage: Actor's agility x1.";
+	sa.execute = function(actorKey,targetActors) {
+		var results = new saResults;
+		var target = targetActors[0];
+		
+		var multAr = getSexDamageMult(actorKey,target,this.key);
+		var lustDamage = ((getChar(actorKey).agility.getValue() * 2) / 14) * multAr[0];
+		getChar(targetActors[0]).lust.changeValue(-lustDamage);
+		getChar(actorKey).lust.changeValue(-(lustDamage/2));
+		results.value += lustDamage;
+		results.description += randomFromList( [
+									(ktn(actorKey) + " licked " + ktn(target) + "'s thighs."),
+									(ktn(actorKey) + "'s tongue traced a line along " + ktn(target) + "'s leg."),
+									(ktn(actorKey) + " kissed and licked " + ktn(target) + "'s calves.") ] );
+		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + ktn(actorKey)
+							 + " received " + textLustDamage((lustDamage/2)) + ". " + multAr[1];
+							   
+		return results;
+	}
+	return sa;
+}
+window.createSaKissNeck = function() {
+	var sa = new sceneAction();
+	sa.name = "Kiss Neck";
+	sa.key = "kissNeck";
+	sa.targetType = "single";
+	sa.tags.push("ss");
+	sa.tags.push("sUse");
+	sa.reqTags.push("diffTarget");
+	sa.actorBpReqs.push("mouth");
+	sa.unvalidRelationalPositions.push(["kneeling","standing"],["takenFromBehind","takingFromBehind"],["spitroastBehind","spitroastTarget"],
+									   ["spitroastTarget","spitroastBehind"]);
+	sa.unvalidRelationalPositions.push(["mountingFromBehind","mountingAndMounted"],["mountingAndMounted","mountingFromBehind"],["mountingAndMounted","mountedFromBehind"],["mountedFromBehind","mountingAndMounted"]);
+	
+	sa.flavorTags.push("foreplay","useMouth","teasing");
+	
+	sa.description = "The character devours the neck of their target, massaging it with strongly pressed lips.\n"
+				   + "\nStronger when the actor and the target desire each other.\nMight ignite desire for romantic, foreplay, teasing or target mouth actions."
+				   + "Actor requires free mouth.\n\nForeplay, teasing.\n\n__Influences__:\nDamage: Actor's will x2, agility x1, charisma x1, mutual sexual tension x3, mutual romance x1."
+				   + "\nIntensity: Actor's will x3, agility x2, charisma x2, mutual sexual tension x3, mutual romance x1.";
+	sa.execute = function(actorKey,targetActors) {
+		var results = new saResults;
+		var target = targetActors[0];
+		
+		// Relationship strength
+		var relStr = rLvlAbt(actorKey,target,"sexualTension") * 3 + rLvlAbt(target,actorKey,"sexualTension") * 3 + rLvlAbt(actorKey,target,"romance") * 1 + rLvlAbt(target,actorKey,"romance") * 1;
+		var relInt = 1;
+		if ( relStr >= 24 ) { relInt += 0.5; }
+		if ( relStr >= 48 ) { relInt += 0.5; }
+		if ( relStr >= 80 ) { relInt += 0.5; }
+		
+		// Damage
+		var multAr = getSexDamageMult(actorKey,target,this.key);
+		var lustDamage = ((getChar(actorKey).agility.getValue() * 1 + getChar(actorKey).will.getValue() * 2 + getChar(actorKey).charisma.getValue() * 1) / 20) * relInt * multAr[0];
+		getChar(targetActors[0]).lust.changeValue(-lustDamage);
+		results.value += lustDamage;
+		
+		// Altered state
+		var dice = limitedRandomInt(100) * relInt;
+		if ( dice >= 40 ) {
+			var dice2 = limitedRandomInt(100);
+			var sensitizedValues = [];
+			if ( dice2 >= 80 ) { // Romantic
+				sensitizedValues = ["Rom+","romantic","Desire for Romantic","Romantic actions are more effective on this character."];
+			} else if ( dice2 >= 60 ) {
+				sensitizedValues = ["For+","foreplay","Desire for Foreplay","Foreplay actions are more effective on this character."];
+			} else if ( dice2 >= 30 ) {
+				sensitizedValues = ["MouT","targetMouth","Desire for Mouth","This character will receive extra damage when affected by other mouths."];
+			} else {
+				sensitizedValues = ["Tea+","teasing","Sensitized to Teasing","Teasing actions are more effective on this character."];
+			}
+			if ( doesCharHaveAlteredState(target,sensitizedValues[0]) == false ) {
+				var intensity = (0.05 + gCstat(actorKey,"will") * 0.003 + gCstat(actorKey,"agility") * 0.002 + gCstat(actorKey,"charisma") * 0.002 + limitedRandomInt(5) * 0.01) * relInt / 2.5;
+				var turns = (4 + limitedRandomInt(4) + gCstat(actorKey,"will") * 0.03 + gCstat(actorKey,"agility") * 0.02 + gCstat(actorKey,"charisma") * 0.02).toFixed(0);
+				var as = createSensitizedTag(intensity,sensitizedValues[1],sensitizedValues[2],sensitizedValues[0],turns,sensitizedValues[3]);
+				applyAlteredState([target],as);
+			}
+		}
+		
+		results.description += randomFromList( [
+									("The touch of " + ktn(actorKey) + " falls on " + ktn(target) + "'s neck like a bath of sweet nectar on a thirsty mouth."),
+									(ktn(actorKey) + " devours " + ktn(target) + "'s neck like if it was about to dissipate."),
+									("The lips and tongue of " + ktn(actorKey) + " send shivers down " + ktn(target) + "'s spine as they begin massaging " + gC(target).posPr + " neck.") ] );
+		if ( relInt > 1 ) {
+			results.description += " The desire for more of the other's skin is all-consuming..."
+		}
+		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1];
+							   
+		return results;
+	}
+	return sa;
+}
+
 window.createSaFrottage = function() {
 	var sa = new sceneAction();
 	sa.name = "Groin Frottage";
@@ -542,40 +663,88 @@ window.createSaFrottage = function() {
 	return sa;
 }
 
-window.createSaLickLegs = function() {
+	// Talk
+window.createSaWhisperSweetNothings = function() {
 	var sa = new sceneAction();
-	sa.name = "Lick legs";
-	sa.key = "lickLegs";
+	sa.name = "Whisper Sweet Nothings";
+	sa.key = "whisperSNs";
 	sa.targetType = "single";
 	sa.tags.push("ss");
 	sa.tags.push("sUse");
 	sa.reqTags.push("diffTarget");
 	sa.actorBpReqs.push("mouth");
-	sa.targetBpReqs.push("legs");
+	sa.socialdriveCost = 1;
 	
-	sa.requiredPositions.push("kneeling","spitroastTarget");
-	sa.targetRequiredPositions.push("standing","spitroastFront");
-	sa.linkedPositions = true;
+	sa.flavorTags.push("talk","charm","romantic","teasing");
 	
-	sa.flavorTags.push("foreplay","useMouth","targetLegs");
-	
-	sa.description = "The character tastes the skin of the target's legs.\n\nSingle target action.\n"
-				   + "Actor requires free mouth, target requires free legs.\n\nForeplay.\n\n__Influences__:\nDamage: Actor's agility x1.";
+	sa.description = "The character confesses feelings of intentions to their target, readying them for what will come next.\n"
+				   + "\nStronger when the target hasn't yet received much lust damage or received much teasing.\nMight ignite desire for talk, romantic, charm or teasing actions."
+				   + "\nCosts 1 social drive point.\nActor requires free mouth.\n\nTalk, romantic.\n\n__Influences__:\nDamage: Actor's charisma x3, empathy x1, mutual romance x3, mutual sexual tension x1."
+				   + "\nIntensity: Actor's charisma x4, empathy x3, actor's will x2, mutual romance x3, mutual sexual tension x1.";
 	sa.execute = function(actorKey,targetActors) {
+		var actor = actorKey;
 		var results = new saResults;
 		var target = targetActors[0];
 		
+		 applySaCosts(this,actor);
+		 
+		// Relationship strength
+		var relStr = rLvlAbt(actorKey,target,"romance") * 3 + rLvlAbt(target,actorKey,"romance") * 3 + rLvlAbt(actorKey,target,"sexualTension") * 1 + rLvlAbt(target,actorKey,"sexualTension") * 1;
+		var relInt = 1;
+		if ( relStr >= 24 ) { relInt += 0.5; }
+		if ( relStr >= 48 ) { relInt += 0.5; }
+		if ( relStr >= 80 ) { relInt += 0.5; }
+		
+		// Sensitized tags on target
+		var senTags = 0;
+		for ( var as of gC(target).alteredStates ) {
+			if ( as.hasOwnProperty("tag") ) {
+				senTags++;
+			}
+		}
+		
+		// Damage
 		var multAr = getSexDamageMult(actorKey,target,this.key);
-		var lustDamage = ((getChar(actorKey).agility.getValue() * 2) / 14) * multAr[0];
+		var lustDamage = ((getChar(actorKey).charisma.getValue() * 3 + getChar(actorKey).empathy.getValue() * 1) / 10) * ((9 + relInt)/(10 + senTags)) * getBarPercentage(target,"lust") * multAr[0];
+		if ( getBarPercentage(target,"lust") < 0.5 ) {
+			lustDamage *= 0.5;
+		}
 		getChar(targetActors[0]).lust.changeValue(-lustDamage);
-		getChar(actorKey).lust.changeValue(-(lustDamage/2));
 		results.value += lustDamage;
-		results.description += randomFromList( [
-									(ktn(actorKey) + " licked " + ktn(target) + "'s thighs."),
-									(ktn(actorKey) + "'s tongue traced a line along " + ktn(target) + "'s leg."),
-									(ktn(actorKey) + " kissed and licked " + ktn(target) + "'s calves.") ] );
-		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + ktn(actorKey)
-							 + " received " + textLustDamage((lustDamage/2)) + ". " + multAr[1];
+		
+		// Altered state
+		var dice = limitedRandomInt(100) * (relInt/(1+senTags));
+		if ( dice >= 30 ) {
+			var dice2 = limitedRandomInt(100);
+			var sensitizedValues = [];
+			if ( dice2 >= 70 ) { // Romantic
+				sensitizedValues = ["Rom+","romantic","Desire for Romantic","Romantic actions are more effective on this character."];
+			} else if ( dice2 >= 40 ) {
+				sensitizedValues = ["Cha+","charm","Desire for Charm","Charm actions are more effective on this character."];
+			} else if ( dice2 >= 20 ) {
+				sensitizedValues = ["Tlk+","talk","Desire for Talk","Talk actions are more effective on this character."];
+			} else {
+				sensitizedValues = ["Tea+","teasing","Sensitized to Teasing","Teasing actions are more effective on this character."];
+			}
+			if ( doesCharHaveAlteredState(target,sensitizedValues[0]) == false ) {
+				var intensity = (0.05 + gCstat(actorKey,"charisma") * 0.004 + gCstat(actorKey,"empathy") * 0.003 + gCstat(actorKey,"will") * 0.002 + limitedRandomInt(5) * 0.01) * relInt / 2.5;
+				var turns = (4 + limitedRandomInt(4) + gCstat(actorKey,"charisma") * 0.04 + gCstat(actorKey,"empathy") * 0.03 + gCstat(actorKey,"will") * 0.02).toFixed(0);
+				var as = createSensitizedTag(intensity,sensitizedValues[1],sensitizedValues[2],sensitizedValues[0],turns,sensitizedValues[3]);
+				applyAlteredState([target],as);
+			}
+		}
+		
+		var possibleDescriptions = [ (ktn(actorKey) + " drops sweetened words on " + ktn(target) + "'s ears, shaking something in " + gC(target).posPr + " stomach."),
+									(ktn(actorKey) + "'s intimate words captivate " + ktn(target) + ".")
+													];
+		if ( relInt > 1 ) {
+			possibleDescriptions.push((ktn(actorKey) + " confesses beautiful feelings to " + ktn(target) + " on the heat of the moment."));
+		}
+		results.description += randomFromList(possibleDescriptions);
+		if ( relInt > 1 ) {
+			results.description += " The shared intimacy makes the words ring true."
+		}
+		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1] + generateSaCostsText(this,actor) + ". ";
 							   
 		return results;
 	}
@@ -1679,19 +1848,38 @@ window.createSaFrenchKiss = function() {
 	sa.description = "The character initiates a deep kiss with their target, exploring each other's tongues.\n"
 				   + "Every character's mouth must be free.\n\nSingle target continued action.\n"
 				   + "\n\nOral."
-				   + "\n\n__Influences__:\nDamage: Actor's agility x1.\nContinued damage: Actor's agility x1, actor's perception x1, actor's empathy x1.";
+				   + "\n\n__Influences__:\nDamage: Actor's agility x1, empathy x1, mutual romance x3, sexual tension x1.\nContinued damage: Actor's agility x1, actor's perception x1, actor's empathy x1, mutual romance x3, sexual tension x1.";
 				   
 	sa.execute = function(actorKey,targetActors) {
 		var results = new saResults;
 		var target = targetActors[0];
 		
+		// Relationship strength
+		var relStr = rLvlAbt(actorKey,target,"sexualTension") * 1 + rLvlAbt(target,actorKey,"sexualTension") * 1 + rLvlAbt(actorKey,target,"romance") * 3 + rLvlAbt(target,actorKey,"romance") * 3;
+		var relInt = 1;
+		if ( relStr >= 24 ) { relInt += 0.3; }
+		if ( relStr >= 48 ) { relInt += 0.3; }
+		if ( relStr >= 80 ) { relInt += 0.3; }
+		// Open eyes multiplier
+		var openEyes = 1;
+		if ( gC(actorKey).hasFreeBodypart("eyes") && gC(target).hasFreeBodypart("eyes") ) {
+			openEyes = 1.25;
+		}
+		
+		// Damage
 		var multAr = getSexDamageMult(actorKey,target,this.key);
-		var lustDamage = ((getChar(actorKey).agility.getValue() * 1) / 6.5) * multAr[0];
+		var lustDamage = ((getChar(actorKey).agility.getValue() * 1 + getChar(actorKey).empathy.getValue() * 1) / 14) * relInt * openEyes * multAr[0];
 		getChar(targetActors[0]).lust.changeValue(-lustDamage);
 		results.value += lustDamage;
 		results.description += randomFromList( [
 									(ktn(actorKey) + " captured " + ktn(target) + "'s lips and trapped them in a deep kiss."),
 									(ktn(actorKey) + " started to deeply kiss " + ktn(target) + ".") ] );
+		if ( relInt > 1 ) {
+			results.description += " It is a kiss full of confidence, full of intimacy."
+		}
+		if ( openEyes > 1 ) {
+			results.description += " " + ktn(target) + " keeps " + gC(target).posPr + " eyes half-closed, the face of " + ktn(actorKey) + " turning a warm shadow that embraces " + gC(target).comPr + " amidst the union of their lips."
+		}
 		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1];
 		
 		// Create Continued Action
@@ -1699,6 +1887,61 @@ window.createSaFrenchKiss = function() {
 							   
 		return results;
 	}
+	return sa;
+}
+
+window.createSaHoldHands = function() {
+	var sa = new sceneAction();
+	sa.name = "Hold Hands (CA)";
+	sa.key = "holdHands";
+	sa.targetType = "single";
+	sa.tags.push("ss");
+	sa.tags.push("cAct");
+	sa.reqTags.push("diffTarget");
+	sa.actorBpReqs.push("arms");
+	sa.targetBpReqs.push("arms");
+	sa.caRank = 1;
+	
+	sa.unvalidRelationalPositions.push(["takingFromBehind","takenFromBehind"],["standing","kneeling"],["kneeling","standing"]);
+	sa.unvalidRelationalPositions.push(["spitroastFront","spitroastBehind"],["spitroastBehind","spitroastFront"]);
+	sa.unvalidRelationalPositions.push(["spitroastBehind","spitroastTarget"],["spitroastTarget","spitroastBehind"],["spitroastTarget","spitroastFront"]);
+	sa.unvalidRelationalPositions.push(["mountingFromBehind","mountingAndMounted"]);
+	sa.unvalidRelationalPositions.push(["mountingAndMounted","mountingFromBehind"]);
+	sa.unvalidRelationalPositions.push(["mountingAndMounted","mountedFromBehind"]);
+	sa.unvalidRelationalPositions.push(["mountedFromBehind","mountingAndMounted"]);
+	
+	sa.flavorTags.push("romantic");
+	
+	sa.description = "The actor and their target take each other's hands, sharing their warmth.\n"
+				   + "Actor and target must have free arms. They must share valid positions.\n\nSingle target continued action.\n"
+				   + "\nRomantic."
+				   + "\n\n__Influences__:\nContinued lust damage: Actor's agility x1, actor's empathy x1, shared romance."
+				   + "\nMagnitude: Actor's agility x1, actor's empathy x1, shared romance.";
+				   
+	sa.execute = function(actorKey,targetActors) {
+		var actor = actorKey;
+		var results = new saResults;
+		var target = targetActors[0];
+		
+		var magnitude = ((((gCstat(actor,"agility") + gCstat(actor,"empathy")) * 0.1) + rLvlAbt(actorKey,target,"romance") + rLvlAbt(target,actorKey,"romance")) * 0.25).toFixed(0);
+		
+		// createSensitizedTag -> Romantic
+		var as = createSensitizedTag(magnitude,"romantic","Holding Hands ~ Romantic+","HoHa",turns,"Romantic actions are more effective on this character while holding hands. Magnitude: " + magnitude);
+		as.remainingTurns = 30;
+		applyAlteredState([actor,target],as);
+		
+		results.value += 0;
+		results.description += randomFromList( [
+								(ktn(actorKey) + " took " + ktn(target) + "'s hands, feeling " + gC(target).posPr + " warmth."),
+								("The fingers of " + ktn(actorKey) + "'s hands get interlocked with " + ktn(target) + " as they take each other's hands."),
+								("Caressing " + gC(target).posPr + " wrists and open palms, " + ktn(actorKey) + " softly takes hold of " + ktn(target) + "'s hands.")
+								] );
+		
+		State.variables.sc.continuedActions.push(createCaHoldHands(actorKey,targetActors));
+		
+		return results;
+	}
+	
 	return sa;
 }
 
@@ -3002,8 +3245,6 @@ window.createSaExtraMountFromBehind = function() {
 	
 	return sa;
 }
-// createSaExtraKneel
-// createSaExtraMakeKneel
 window.createSaExtraKneel = function() {
 	var sa = new sceneAction();
 	
@@ -3107,7 +3348,6 @@ window.createSaExtraMakeKneel = function() {
 	
 	return sa;
 }
-
 
 	// Denial
 window.createSaDenyOrgasm = function() {

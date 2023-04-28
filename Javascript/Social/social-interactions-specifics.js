@@ -331,6 +331,9 @@ window.createSistEgalitarianSex = function() {
 		var targetMoodFactor = gC(target).mood.flirty * 0.1 + gC(target).mood.intimate * 0.1 + gC(target).mood.aroused * 0.2
 							 + gC(target).mood.angry * -0.3 + gC(target).mood.bored * (-0.3) + gC(target).mood.submissive * 0.1
 							 + gC(target).mood.dominant * -0.2;
+		if ( target == "chPlayerCharacter" ) {
+			targetMoodFactor += gC(target).mood.angry * -5 + gC(target).mood.bored * -5;
+		}
 		var relationshipFactor = rLvlAbt(target,actor,"romance") * 1 + rLvlAbt(target,actor,"sexualTension") * 2
 							 + rLvlAbt(target,actor,"submission") * 2 + rLvlAbt(target,actor,"domination") * -2
 							 + rLvlAbt(target,actor,"enmity") * -3 + rLvlAbt(target,actor,"rivalry") * -1;
@@ -341,11 +344,8 @@ window.createSistEgalitarianSex = function() {
 		if ( State.variables.simCycPar.templeDayPeriod == "training" ) {
 			simulationState = -20;
 		}
-		var missionFactor = 0;
-		if ( gC(target).mission == "haveSex" ) { missionFactor += 10; }
-		else if ( gC(target).mission == "haveDomSex" ) { missionFactor -= 5; }
 		
-		var semifinalValue = targetMoodFactor + relationshipFactor + baseDifficulty + simulationState + drivesFactor + missionFactor + powerGrowthFactor;
+		var semifinalValue = targetMoodFactor + relationshipFactor + baseDifficulty + simulationState + drivesFactor + powerGrowthFactor;
 		var sfvTenth = semifinalValue * 0.1;
 		var diceThrow = luckedDiceThrow(gC(actor).luck.getValue());
 		var luckFactor = (sfvTenth * 2 * diceThrow) - sfvTenth;
@@ -374,6 +374,9 @@ window.createSistEgalitarianSex = function() {
 		var targetMoodFactor = gC(target).mood.flirty * 0.1 + gC(target).mood.intimate * 0.1 + gC(target).mood.aroused * 0.2
 							 + gC(target).mood.angry * -0.3 + gC(target).mood.bored * (-0.3) + gC(target).mood.submissive * 0.1
 							 + gC(target).mood.dominant * -0.2;
+		if ( target == "chPlayerCharacter" ) {
+			targetMoodFactor += gC(target).mood.angry * -5 + gC(target).mood.bored * -5;
+		}
 		var relationshipFactor = rLvlAbt(target,actor,"romance") * 1 + rLvlAbt(target,actor,"sexualTension") * 2
 							 + rLvlAbt(target,actor,"submission") * 2 + rLvlAbt(target,actor,"domination") * -2
 							 + rLvlAbt(target,actor,"enmity") * -3 + rLvlAbt(target,actor,"rivalry") * -1
@@ -388,11 +391,12 @@ window.createSistEgalitarianSex = function() {
 		if ( returnCharsUnlockedGenitals(target).length == 0 ) {
 			simulationState -= 20;
 		}
-		var missionFactor = 0;
-		if ( gC(target).mission == "haveSex" ) { missionFactor += 10; }
-		else if ( gC(target).mission == "haveDomSex" ) { missionFactor -= 5; }
+		var intimacyFactor = getCharsRelativeIntimacy(target,actor) * getInfluenceEffectWithDrives(target,5,["dLove"],["dPleasure","dDomination"]);
+		if ( intimacyFactor > 0 ) { intimacyFactor *= 0.5; }
 		
-		var semifinalValue = targetMoodFactor + relationshipFactor + baseDifficulty + simulationState + willpowerCostFactor + drivesFactor + missionFactor + powerGrowthFactor;
+		var alignmentData = doesOfferAlignWithTargetsGoals(actor,target,this.sT); // [0] -> Factor , [1] -> String
+		
+		var semifinalValue = targetMoodFactor + relationshipFactor + baseDifficulty + simulationState + willpowerCostFactor + drivesFactor + powerGrowthFactor + intimacyFactor + alignmentData[0];
 		var sfvTenth = semifinalValue * 0.1;
 		var diceThrow = luckedDiceThrow(gC(actor).luck.getValue());
 		var luckFactor = (sfvTenth * 2 * diceThrow) - sfvTenth;
@@ -404,7 +408,7 @@ window.createSistEgalitarianSex = function() {
 		if ( result ) { stringResult = "Success!"; secondStringResult += gC(target).perPr + " accepted."; }
 		else 		  { stringResult = "Failure."; secondStringResult += gC(target).perPr + " refused."; }
 		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Base dif.: " + baseDifficulty
-					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", Desire: " + willpowerCostFactor.toFixed(2) + ", Intentions: " + missionFactor.toFixed(2) + ", Growth: " + powerGrowthFactor.toFixed(2) + " - Result: " + finalValue.toFixed(2);
+					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", Desire: " + willpowerCostFactor.toFixed(2) + ", Intimacy: " + intimacyFactor.toFixed(1) + ", Growth: " + powerGrowthFactor.toFixed(2) + alignmentData[1] + " - Result: " + finalValue.toFixed(2);
 		}
 		
 		secondStringResult = gC(actor).getFormattedName() + " invited " + gC(target).getFormattedName() + " to have sex and ";
@@ -695,6 +699,9 @@ window.createSistExcludingEgalitarianSex = function() {
 		var targetMoodFactor = gC(target).mood.flirty * 0.1 + gC(target).mood.intimate * 0.1 + gC(target).mood.aroused * 0.2
 							 + gC(target).mood.angry * -0.3 + gC(target).mood.bored * (-0.3) + gC(target).mood.submissive * 0.1
 							 + gC(target).mood.dominant * -0.2;
+		if ( target == "chPlayerCharacter" ) {
+			targetMoodFactor += gC(target).mood.angry * -5 + gC(target).mood.bored * -5;
+		}
 		var relationshipFactor = rLvlAbt(target,actor,"romance") * 1 + rLvlAbt(target,actor,"sexualTension") * 2
 							 + rLvlAbt(target,actor,"submission") * 2 + rLvlAbt(target,actor,"domination") * -2
 							 + rLvlAbt(target,actor,"enmity") * -3 + rLvlAbt(target,actor,"rivalry") * -1
@@ -709,11 +716,12 @@ window.createSistExcludingEgalitarianSex = function() {
 		if ( returnCharsUnlockedGenitals(target).length == 0 ) {
 			simulationState -= 20;
 		}
-		var missionFactor = 0;
-		if ( gC(target).mission == "haveSex" ) { missionFactor += 10; }
-		else if ( gC(target).mission == "haveDomSex" ) { missionFactor -= 5; }
+		var intimacyFactor = getCharsRelativeIntimacy(target,actor) * getInfluenceEffectWithDrives(target,5,["dLove"],["dPleasure","dDomination"]);
+		if ( intimacyFactor > 0 ) { intimacyFactor *= 0.5; }
 		
-		var semifinalValue = targetMoodFactor + relationshipFactor + baseDifficulty + simulationState + willpowerCostFactor + drivesFactor + missionFactor + powerGrowthFactor;
+		var alignmentData = doesOfferAlignWithTargetsGoals(actor,target,this.sT); // [0] -> Factor , [1] -> String
+		
+		var semifinalValue = targetMoodFactor + relationshipFactor + baseDifficulty + simulationState + willpowerCostFactor + drivesFactor + powerGrowthFactor + intimacyFactor + alignmentData[0];
 		var sfvTenth = semifinalValue * 0.1;
 		var diceThrow = luckedDiceThrow(gC(actor).luck.getValue());
 		var luckFactor = (sfvTenth * 2 * diceThrow) - sfvTenth;
@@ -725,7 +733,7 @@ window.createSistExcludingEgalitarianSex = function() {
 		if ( result ) { stringResult = "Success!"; secondStringResult += gC(target).perPr + " accepted."; }
 		else 		  { stringResult = "Failure."; secondStringResult += gC(target).perPr + " refused."; }
 		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Base dif.: " + baseDifficulty
-					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", Desire: " + willpowerCostFactor.toFixed(2) + ", Intentions: " + missionFactor.toFixed(2) + ", Growth: " + powerGrowthFactor.toFixed(2) + " - Result: " + finalValue.toFixed(2);
+					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", Desire: " + willpowerCostFactor.toFixed(2) + ", Intimacy: " + intimacyFactor.toFixed(1) + ", Growth: " + powerGrowthFactor.toFixed(2) + alignmentData[1] + " - Result: " + finalValue.toFixed(2);
 		}
 		
 		secondStringResult = gC(actor).getFormattedName() + " invited " + gC(target).getFormattedName() + " to have sex and ";
@@ -905,6 +913,9 @@ window.createSistSubmissiveSex = function() {
 		var targetMoodFactor = gC(target).mood.flirty * 0.1 + gC(target).mood.aroused * 0.3
 							 + gC(target).mood.angry * -0.2 + gC(target).mood.bored * -0.4 + gC(target).mood.submissive * -0.2
 							 + gC(target).mood.dominant * 0.1;
+		if ( target == "chPlayerCharacter" ) {
+			targetMoodFactor += gC(target).mood.angry * -5 + gC(target).mood.bored * -5;
+		}
 		var relationshipFactor = rLvlAbt(target,actor,"romance") * 1 + rLvlAbt(target,actor,"sexualTension") * 3
 							 + rLvlAbt(target,actor,"submission") * -1 + rLvlAbt(target,actor,"domination") * 1
 							 + rLvlAbt(target,actor,"enmity") * -2 + rLvlAbt(target,actor,"rivalry") * 2;
@@ -919,11 +930,12 @@ window.createSistSubmissiveSex = function() {
 		}
 		var powerGrowthFactor = -((quantifyCharacterStats(target) - 110) / 9);
 		if ( powerGrowthFactor < 0 ) { powerGrowthFactor = 0; }
-		var missionFactor = 0;
-		if ( gC(target).mission == "haveSex" ) { missionFactor += 10; }
-		else if ( gC(target).mission == "haveDomSex" ) { missionFactor += 20; }
+		var intimacyFactor = getCharsRelativeIntimacy(target,actor) * getInfluenceEffectWithDrives(target,5,["dLove"],["dPleasure","dDomination"]);
+		if ( intimacyFactor > 0 ) { intimacyFactor *= 0.5; }
 		
-		var semifinalValue = targetMoodFactor + relationshipFactor + baseDifficulty + simulationState + willpowerCostFactor + drivesFactor + missionFactor + powerGrowthFactor;
+		var alignmentData = doesOfferAlignWithTargetsGoals(actor,target,this.sT); // [0] -> Factor , [1] -> String
+		
+		var semifinalValue = targetMoodFactor + relationshipFactor + baseDifficulty + simulationState + willpowerCostFactor + drivesFactor + powerGrowthFactor + intimacyFactor + alignmentData[0];
 		var sfvTenth = semifinalValue * 0.1;
 		var diceThrow = luckedDiceThrow(gC(actor).luck.getValue());
 		var luckFactor = (sfvTenth * 2 * diceThrow) - sfvTenth;
@@ -932,7 +944,7 @@ window.createSistSubmissiveSex = function() {
 		result = false;
 		if ( finalValue >= 0 ) { result = true; }
 		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Base dif.: " + baseDifficulty
-					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", Desire: " + willpowerCostFactor.toFixed(2) + ", Intentions: " + missionFactor.toFixed(2) + ", Growth: " + powerGrowthFactor.toFixed(2) + " - Result: " + finalValue.toFixed(2);
+					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", Desire: " + willpowerCostFactor.toFixed(2) + ", Intimacy: " + intimacyFactor.toFixed(1) + ", Growth: " + powerGrowthFactor.toFixed(2) + alignmentData[1] + " - Result: " + finalValue.toFixed(2);
 		}
 		
 		secondStringResult = gC(actor).getFormattedName() + " invited " + gC(target).getFormattedName() + " to have sex and ";
@@ -1125,6 +1137,9 @@ window.createSistDominantSex = function() {
 		var targetMoodFactor = gC(target).mood.flirty * 0.1 + gC(target).mood.intimate * 0.1 + gC(target).mood.aroused * 0.2
 							 + gC(target).mood.angry * -0.5 + gC(target).mood.bored * -0.2 + gC(target).mood.submissive * 0.2
 							 + gC(target).mood.dominant * -0.4;
+		if ( target == "chPlayerCharacter" ) {
+			targetMoodFactor += gC(target).mood.angry * -5 + gC(target).mood.bored * -5;
+		}
 		var relationshipFactor = rLvlAbt(target,actor,"romance") * 1 + rLvlAbt(target,actor,"sexualTension") * 2
 							 + rLvlAbt(target,actor,"submission") * 3 + rLvlAbt(target,actor,"domination") * -3
 							 + rLvlAbt(target,actor,"enmity") * -3 + rLvlAbt(target,actor,"rivalry") * -3;
@@ -1139,12 +1154,12 @@ window.createSistDominantSex = function() {
 		}
 		
 		var powerGrowthFactor = -((quantifyCharacterStats(target) - 110) / 9);
-		if ( powerGrowthFactor < 0 ) { powerGrowthFactor = 0; }
-		var missionFactor = 0;
-		if ( gC(target).mission == "haveSex" ) { missionFactor += 5; }
-		else if ( gC(target).mission == "haveDomSex" ) { missionFactor -= 20; }
+		if ( powerGrowthFactor < 0 ) { powerGrowthFactor = 0; }var intimacyFactor = getCharsRelativeIntimacy(target,actor) * getInfluenceEffectWithDrives(target,5,["dLove"],["dPleasure","dDomination"]);
+		if ( intimacyFactor > 0 ) { intimacyFactor *= 0.5; }
 		
-		var semifinalValue = targetMoodFactor + relationshipFactor + baseDifficulty + simulationState + willpowerCostFactor + drivesFactor + missionFactor + powerGrowthFactor;
+		var alignmentData = doesOfferAlignWithTargetsGoals(actor,target,this.sT); // [0] -> Factor , [1] -> String
+		
+		var semifinalValue = targetMoodFactor + relationshipFactor + baseDifficulty + simulationState + willpowerCostFactor + drivesFactor + powerGrowthFactor + intimacyFactor + alignmentData[0];
 		var sfvTenth = semifinalValue * 0.1;
 		var diceThrow = luckedDiceThrow(gC(actor).luck.getValue());
 		var luckFactor = (sfvTenth * 2 * diceThrow) - sfvTenth;
@@ -1153,7 +1168,7 @@ window.createSistDominantSex = function() {
 		result = false;
 		if ( finalValue >= 0 ) { result = true; }
 		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Base dif.: " + baseDifficulty
-					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", Desire: " + willpowerCostFactor.toFixed(2) + ", Intentions: " + missionFactor.toFixed(2) + ", Growth: " + powerGrowthFactor.toFixed(2) + " - Result: " + finalValue.toFixed(2);
+					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", Desire: " + willpowerCostFactor.toFixed(2) + ", Intimacy: " + intimacyFactor.toFixed(1) + ", Growth: " + powerGrowthFactor.toFixed(2) + alignmentData[1] + " - Result: " + finalValue.toFixed(2);
 		}
 		
 		secondStringResult = gC(actor).getFormattedName() + " invited " + gC(target).getFormattedName() + " to have sex and ";
@@ -1339,6 +1354,9 @@ window.createSistBorrowedDominantSex = function() {
 		var targetMoodFactor = gC(target).mood.friendly * 0.1 - gC(target).mood.flirty * 0.05 + gC(target).mood.intimate * 0.05
 							 - gC(target).mood.aroused * 0.2 + gC(target).mood.angry * -0.5
 							 + gC(target).mood.submissive * 0.1 + gC(target).mood.dominant * -0.2;
+		if ( target == "chPlayerCharacter" ) {
+			targetMoodFactor += gC(target).mood.angry * -5 + gC(target).mood.bored * -5;
+		}
 		var relationshipFactor = rLvlAbt(target,actor,"friendship") * 3 - rLvlAbt(target,actor,"sexualTension") * 2
 							 + rLvlAbt(target,actor,"submission") * 2 + rLvlAbt(target,actor,"domination") * -2
 							 + rLvlAbt(target,actor,"enmity") * -3 + rLvlAbt(target,actor,"rivalry") * -2;
@@ -1350,11 +1368,10 @@ window.createSistBorrowedDominantSex = function() {
 		}
 		
 		var powerGrowthFactor = 0;
-		var missionFactor = 0;
-		if ( gC(target).mission == "haveSex" ) { missionFactor -= 10; }
-		else if ( gC(target).mission == "haveDomSex" ) { missionFactor -= 20; }
 		
-		var semifinalValue = targetMoodFactor + relationshipFactor + baseDifficulty + simulationState + drivesFactor + missionFactor;
+		var alignmentData = doesOfferAlignWithTargetsGoals(actor,target,this.sT); // [0] -> Factor , [1] -> String
+		
+		var semifinalValue = targetMoodFactor + relationshipFactor + baseDifficulty + simulationState + drivesFactor + alignmentData[0];
 		var sfvTenth = semifinalValue * 0.1;
 		var diceThrow = luckedDiceThrow(gC(actor).luck.getValue());
 		var luckFactor = (sfvTenth * 2 * diceThrow) - sfvTenth;
@@ -1363,7 +1380,7 @@ window.createSistBorrowedDominantSex = function() {
 		result = false;
 		if ( finalValue >= 0 ) { result = true; }
 		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Base dif.: " + baseDifficulty
-					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", Intentions: " + missionFactor.toFixed(2) + " - Result: " + finalValue.toFixed(2);
+					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + alignmentData[1] + " - Result: " + finalValue.toFixed(2);
 		}
 		
 		secondStringResult = gC(actor).getFormattedName() + " asked " + gC(target).getFormattedName() + " to borrow " + gC(target).posPr + " submissives for sex and ";
@@ -1510,9 +1527,12 @@ window.createSistOfferServitudeAsMaster = function() {
 		var stringResult = "";
 		var secondStringResult = "";
 		
-		var baseDifficulty = 125;
+		var baseDifficulty = 150;
 		var targetMoodFactor = gC(target).mood.submissive * 0.4 + gC(target).mood.dominant * -0.6 + gC(target).mood.intimate * 0.1
 							 + gC(target).mood.aroused * 0.2 + gC(target).mood.bored * -0.2 + gC(target).mood.angry * -0.5;
+		if ( target == "chPlayerCharacter" ) {
+			targetMoodFactor += gC(target).mood.angry * -5 + gC(target).mood.bored * -5;
+		}
 		var relationshipFactor = rLvlAbt(target,actor,"romance") * 2 + rLvlAbt(target,actor,"sexualTension") * 2
 							 + rLvlAbt(target,actor,"submission") * 4 + rLvlAbt(target,actor,"domination") * -5
 							 + rLvlAbt(target,actor,"enmity") * -7 + rLvlAbt(target,actor,"rivalry") * -3;
@@ -1521,15 +1541,17 @@ window.createSistOfferServitudeAsMaster = function() {
 			drivesFactor += gC(target).dPleasure.level * 2 + gC(target).dLove.level * 2;
 		}
 		var willpowerCostFactor = this.getWillpowerRejectCost(actor,target) / 2;
+		
+		var alignmentData = doesOfferAlignWithTargetsGoals(actor,target,this.sT); // [0] -> Factor , [1] -> String
 							 
-		var semifinalValue = targetMoodFactor + relationshipFactor + drivesFactor + willpowerCostFactor;
+		var semifinalValue = targetMoodFactor + relationshipFactor + drivesFactor + willpowerCostFactor + alignmentData[0];
 		var sfvTenth = semifinalValue * 0.1;
 		var diceThrow = luckedDiceThrow(gC(actor).luck.getValue());
 		var luckFactor = (sfvTenth * 2 * diceThrow) - sfvTenth;
 		
 		var finalValue = semifinalValue + luckFactor;
 		if ( finalValue >= baseDifficulty ) { result = true; }
-		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Drives: " + drivesFactor + ", Willpower cost: " + willpowerCostFactor.toFixed(2) + ", Luck: " + luckFactor.toFixed(2)
+		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Drives: " + drivesFactor + ", Willpower cost: " + willpowerCostFactor.toFixed(2) + ", Luck: " + luckFactor.toFixed(2) + alignmentData[1]
 					  + " -> Result: " + finalValue.toFixed(2) + " VS Difficulty: " + baseDifficulty;
 		
 		secondStringResult = gC(actor).getFormattedName() + " invited " + gC(target).getFormattedName() + " to become " + gC(target).posPr + " master and " + gC(target).perPr;
@@ -1627,20 +1649,25 @@ window.createSistOfferServitudeAsServant = function() {
 		var baseDifficulty = -10;
 		var targetMoodFactor = gC(target).mood.submissive * -0.6 + gC(target).mood.dominant * 0.4 + gC(target).mood.intimate * 0.1
 							 + gC(target).mood.aroused * 0.4 + gC(target).mood.bored * -0.4 + gC(target).mood.angry * -0.4;
+		if ( target == "chPlayerCharacter" ) {
+			targetMoodFactor += gC(target).mood.angry * -5 + gC(target).mood.bored * -5;
+		}
 		var relationshipFactor = rLvlAbt(target,actor,"romance") * 4 + rLvlAbt(target,actor,"sexualTension") * 10
 							 + rLvlAbt(target,actor,"submission") * -5 + rLvlAbt(target,actor,"domination") * 10
 							 + rLvlAbt(target,actor,"enmity") * 5 + rLvlAbt(target,actor,"rivalry") * 5;
 		var drivesFactor = gC(target).dDomination.level * 4 + gC(target).dAmbition.level * 4 - gC(target).dCooperation.level * 2;
 		var willpowerCostFactor = this.getWillpowerRejectCost(actor,target) / 2;
+		
+		var alignmentData = doesOfferAlignWithTargetsGoals(actor,target,this.sT); // [0] -> Factor , [1] -> String
 							 
-		var semifinalValue = targetMoodFactor + relationshipFactor + drivesFactor + willpowerCostFactor;
+		var semifinalValue = targetMoodFactor + relationshipFactor + drivesFactor + willpowerCostFactor + alignmentData[0];
 		var sfvTenth = semifinalValue * 0.1;
 		var diceThrow = luckedDiceThrow(gC(actor).luck.getValue());
 		var luckFactor = (sfvTenth * 2 * diceThrow) - sfvTenth;
 		
 		var finalValue = semifinalValue + luckFactor;
 		if ( finalValue >= baseDifficulty ) { result = true; }
-		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Drives: " + drivesFactor + ", Willpower cost: " + willpowerCostFactor.toFixed(2) + ", Luck: " + luckFactor.toFixed(2)
+		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Drives: " + drivesFactor + ", Willpower cost: " + willpowerCostFactor.toFixed(2) + ", Luck: " + luckFactor.toFixed(2) + alignmentData[1]
 					  + " -> Result: " + finalValue.toFixed(2) + " VS Difficulty: " + baseDifficulty;
 		
 		secondStringResult = gC(actor).getFormattedName() + " invited " + gC(target).getFormattedName() + " to become " + gC(target).posPr + " servant and " + gC(target).perPr;
@@ -1736,9 +1763,12 @@ window.createSistOfferTutorshipAsTutor = function() {
 		var stringResult = "";
 		var secondStringResult = "";
 		
-		var baseDifficulty = 75; // 50;
+		var baseDifficulty = 85; // 50;
 		var targetMoodFactor = gC(target).mood.submissive * 0.3 + gC(target).mood.dominant * -0.5 + gC(target).mood.intimate * 0.2
 							 + gC(target).mood.aroused * 0.1 + gC(target).mood.bored * -0.2 + gC(target).mood.angry * -0.5;
+		if ( target == "chPlayerCharacter" ) {
+			targetMoodFactor += gC(target).mood.angry * -5 + gC(target).mood.bored * -5;
+		}
 		var relationshipFactor = rLvlAbt(target,actor,"romance") * 3 + rLvlAbt(target,actor,"sexualTension") * 1
 							 + rLvlAbt(target,actor,"submission") * 4 + rLvlAbt(target,actor,"domination") * -5
 							 + rLvlAbt(target,actor,"enmity") * -5 + rLvlAbt(target,actor,"rivalry") * -3;
@@ -1764,15 +1794,17 @@ window.createSistOfferTutorshipAsTutor = function() {
 		
 		
 		var willpowerCostFactor = this.getWillpowerRejectCost(actor,target) / 2;
+		
+		var alignmentData = doesOfferAlignWithTargetsGoals(actor,target,this.sT); // [0] -> Factor , [1] -> String
 							 
-		var semifinalValue = targetMoodFactor + relationshipFactor + competitionFactor + infamyFactor + drivesFactor + willpowerCostFactor;
+		var semifinalValue = targetMoodFactor + relationshipFactor + competitionFactor + infamyFactor + drivesFactor + willpowerCostFactor + alignmentData[0];
 		var sfvTenth = semifinalValue * 0.1;
 		var diceThrow = luckedDiceThrow(gC(actor).luck.getValue());
 		var luckFactor = (sfvTenth * 2 * diceThrow) - sfvTenth;
 		
 		var finalValue = semifinalValue + luckFactor;
 		if ( finalValue >= baseDifficulty ) { result = true; }
-		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Competition: " + competitionFactor.toFixed(2) + ", Infamy: " + infamyFactor.toFixed(2) + ", Drives: " + drivesFactor + ", Willpower cost: " + willpowerCostFactor.toFixed(2) + ", Luck: " + luckFactor.toFixed(2)
+		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Competition: " + competitionFactor.toFixed(2) + ", Infamy: " + infamyFactor.toFixed(2) + ", Drives: " + drivesFactor + ", Willpower cost: " + willpowerCostFactor.toFixed(2) + ", Luck: " + luckFactor.toFixed(2) + alignmentData[1]
 					  + " -> Result: " + finalValue.toFixed(2) + " VS Difficulty: " + baseDifficulty;
 		
 		secondStringResult = gC(actor).getFormattedName() + " invited " + gC(target).getFormattedName() + " to become " + gC(target).posPr + " tutor and " + gC(target).perPr;
@@ -1871,6 +1903,9 @@ window.createSistOfferTutorshipAsPupil = function() {
 		var baseDifficulty = 25; // 25;
 		var targetMoodFactor = gC(target).mood.submissive * -0.4 + gC(target).mood.dominant * 0.6 + gC(target).mood.intimate * 0.3
 							 + gC(target).mood.aroused * 0.15 + gC(target).mood.bored * -0.2 + gC(target).mood.angry * -0.4;
+		if ( target == "chPlayerCharacter" ) {
+			targetMoodFactor += gC(target).mood.angry * -5 + gC(target).mood.bored * -5;
+		}
 		var relationshipFactor = rLvlAbt(target,actor,"romance") * 6 + rLvlAbt(target,actor,"sexualTension") * 3
 							 + rLvlAbt(target,actor,"submission") * -4 + rLvlAbt(target,actor,"domination") * 8
 							 + rLvlAbt(target,actor,"enmity") * -5 + rLvlAbt(target,actor,"rivalry") * 1;
@@ -1887,15 +1922,17 @@ window.createSistOfferTutorshipAsPupil = function() {
 				competitionFactor -= 50;
 			}
 		}
-							 
-		var semifinalValue = targetMoodFactor + relationshipFactor + competitionFactor + willpowerCostFactor;
+			
+		var alignmentData = doesOfferAlignWithTargetsGoals(actor,target,this.sT); // [0] -> Factor , [1] -> String	
+		
+		var semifinalValue = targetMoodFactor + relationshipFactor + competitionFactor + willpowerCostFactor + alignmentData[0];
 		var sfvTenth = semifinalValue * 0.1;
 		var diceThrow = luckedDiceThrow(gC(actor).luck.getValue());
 		var luckFactor = (sfvTenth * 2 * diceThrow) - sfvTenth;
 		
 		var finalValue = semifinalValue + luckFactor;
 		if ( finalValue >= baseDifficulty ) { result = true; }
-		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Competition: " + competitionFactor.toFixed(2) + ", Willpower cost: " + willpowerCostFactor.toFixed(2) + ", Luck: " + luckFactor.toFixed(2)
+		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Competition: " + competitionFactor.toFixed(2) + ", Willpower cost: " + willpowerCostFactor.toFixed(2) + ", Luck: " + luckFactor.toFixed(2) + alignmentData[1]
 					  + " -> Result: " + finalValue.toFixed(2) + " VS Difficulty: " + baseDifficulty;
 		
 		secondStringResult = gC(actor).getFormattedName() + " invited " + gC(target).getFormattedName() + " to become " + gC(target).posPr + " pupil and " + gC(target).perPr;
@@ -1995,22 +2032,29 @@ window.createSistOfferCompanionship = function() {
 		var baseDifficulty = 50; // 50;
 		var targetMoodFactor = gC(target).mood.submissive * 0.2 + gC(target).mood.dominant * -0.6 + gC(target).mood.intimate * 0.4
 							 + gC(target).mood.friendly * 0.2 + gC(target).mood.bored * -0.2 + gC(target).mood.angry * -0.4;
+		if ( target == "chPlayerCharacter" ) {
+			targetMoodFactor += gC(target).mood.angry * -5 + gC(target).mood.bored * -5;
+		}
 		var relationshipFactor = rLvlAbt(target,actor,"friendship") * 4 + rLvlAbt(target,actor,"romance") * 6 + rLvlAbt(target,actor,"sexualTension") * 2
 							 + rLvlAbt(target,actor,"submission") * 4 + rLvlAbt(target,actor,"domination") * -6
 							 + rLvlAbt(target,actor,"enmity") * -6 + rLvlAbt(target,actor,"rivalry") * -4;
-		var competitionFactor = (quantifyCharacterVacuumStrength(actor) - quantifyCharacterVacuumStrength(target)) / 9;
+		var competitionFactor = (quantifyCharacterVacuumStrength(actor) - quantifyCharacterVacuumStrength(target) * 1.2) / 9;
 		var drivesFactor = gC(target).dCooperation.level * 4 + gC(target).dLove.level * 2 - gC(target).dDomination.level * 4 - gC(target).dAmbition.level * 1;
 		var willpowerCostFactor = this.getWillpowerRejectCost(actor,target) / 2;
+		var intimacyFactor = getCharsRelativeIntimacy(target,actor) * getInfluenceEffectWithDrives(target,5,["dLove"],["dAmbition"]);
+		var nAlliesFactor =  Math.pow(getCharAllies(target).length,1.5) * -8;
+		
+		var alignmentData = doesOfferAlignWithTargetsGoals(actor,target,this.sT); // [0] -> Factor , [1] -> String
 							 
-		var semifinalValue = targetMoodFactor + relationshipFactor + competitionFactor + drivesFactor + willpowerCostFactor;
+		var semifinalValue = targetMoodFactor + relationshipFactor + competitionFactor + drivesFactor + willpowerCostFactor + intimacyFactor + nAlliesFactor + alignmentData[0];
 		var sfvTenth = semifinalValue * 0.1;
 		var diceThrow = luckedDiceThrow(gC(actor).luck.getValue());
 		var luckFactor = (sfvTenth * 2 * diceThrow) - sfvTenth;
 		
 		var finalValue = semifinalValue + luckFactor;
 		if ( finalValue >= baseDifficulty ) { result = true; }
-		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Competition: " + competitionFactor.toFixed(2) + ", Willpower cost: " + willpowerCostFactor.toFixed(2) + ", Drives factor: " + drivesFactor.toFixed(2) + ", Luck: " + luckFactor.toFixed(2)
-					  + " -> Result: " + finalValue.toFixed(2) + " VS Difficulty: " + baseDifficulty;
+		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Competition: " + competitionFactor.toFixed(2) + ", Willpower cost: " + willpowerCostFactor.toFixed(2) + ", Drives factor: " + drivesFactor.toFixed(2) + ", Luck: " + luckFactor.toFixed(2) + alignmentData[1]	
+					  + ", Intimacy: " + intimacyFactor.toFixed(1) + ", Amount of allies: " + nAlliesFactor.toFixed(1) + " -> Result: " + finalValue.toFixed(2) + " VS Difficulty: " + baseDifficulty;
 		
 		secondStringResult = gC(actor).getFormattedName() + " invited " + gC(target).getFormattedName() + " to become " + gC(target).posPr + " companion and ";
 		if ( result ) { secondStringResult += gC(target).perPr + " accepted."; }
@@ -2062,6 +2106,151 @@ window.createSistOfferCompanionship = function() {
 		var bText = "<<l" + "ink [[Accept|Social Interactions]]>><<s" + "cript>>\n";
 		bText	 += "getSisCharIsIn('chPlayerCharacter').endSisPlayerPrompt();\n";
 		bText	 += "createSistOfferCompanionship().getSuccessEffect('" + actor + "','chPlayerCharacter');\n";
+		bText	 += "<</s" + "cript>><</l" + "ink>>";
+		return bText;
+	}
+	return sist;
+}
+window.createSistOfferIntimacyRel = function() {
+	var sist = new sisTopic("Invite to initiate Intimacy Relationship");
+	sist.subtitle += '<span title="' + relTypeIntimacyTooltip() + '">^^(?)^^</span>';
+	sist.sT = setup.sistType.intimacy;
+	sist.isPossible = function(actor,target) {
+		var flagPossible = false;
+		// Target is candidate, actor and target have no special relationship, or they have a companionship relationship
+		// special relationships are allowed
+		var validSpecialRel = false;
+		var areCompanions = false;
+		if ( gRelTypeAb(actor,target) != null ) {
+			if ( gRelTypeAb(actor,target).type == "companionship" ) {
+				validSpecialRel = true;
+				areCompanions = false;
+			}
+		} else {
+			validSpecialRel = true;
+		}
+		if ( ( validSpecialRel && isStVarOn("ShTNgt") )
+		  && ( State.variables.settings.relationshipTypesAllowed ) && ((gC(target).followingTo == "") || (gC(target).followingTo == actor) ) ) {
+			flagPossible = true;
+		}
+		return flagPossible;
+	}
+	
+	sist.getSocialdriveOfferCost = function(actor,target) {
+		return 25;
+	}
+	
+	sist.getDesire = function(actor,target) {
+		var desire = 0;
+		var baseDifficulty = -30;
+		var moodFactor = gC(target).mood.friendly * 0.03 + gC(target).mood.flirty * 0.03 + gC(target).mood.intimate * 0.1 - gC(target).mood.angry * 0.5 - gC(target).mood.bored * 0.3
+					   +  gC(target).mood.submissive * 0.03 - gC(target).mood.dominant * 0.04;
+		var relationshipFactor = rLvlAbt(target,actor,"friendship") * 5 + rLvlAbt(target,actor,"romance") * 5 + rLvlAbt(target,actor,"sexualTension") * 2
+							 + rLvlAbt(target,actor,"submission") * 5 - rLvlAbt(target,actor,"domination") * 10
+							 + rLvlAbt(target,actor,"rivalry") * -5 + rLvlAbt(target,actor,"enmity") * -10;
+		var statsFactor = (quantifyCharacterStats(actor) - quantifyCharacterStats(target) * 1.2) / 9;
+		desire = baseDifficulty + moodFactor + relationshipFactor + statsFactor;
+		var desireString = "Desire" + getDesireTooltip() + ": Base difficulty (" + baseDifficulty.toFixed(2) + ") + Mood (" + moodFactor.toFixed(2) + ") + Relationship ("
+						 + relationshipFactor.toFixed(2) + ") + Stats (" + statsFactor.toFixed(2) + ") = Total (" + desire.toFixed(2) + ").";
+		
+		return [desire,desireString];
+	}
+	
+	
+	sist.isSuccessful = function(actor,target) {
+		var result = false;
+		var stringResult = "";
+		var secondStringResult = "";
+		var areCompanions = false;
+		if ( gRelTypeAb(actor,target) != null ) {
+			if ( gRelTypeAb(actor,target).type == "companionship" ) {
+				areCompanions = true;
+			}
+		}
+		
+		var baseDifficulty = 90; // 90;
+		var targetMoodFactor = gC(target).mood.submissive * 0.15 + gC(target).mood.dominant * -0.6 + gC(target).mood.intimate * 0.4
+							 + gC(target).mood.flirty * 0.15 + gC(target).mood.friendly * 0.15 + gC(target).mood.bored * -0.2 + gC(target).mood.angry * -0.4;
+		if ( target == "chPlayerCharacter" ) {
+			targetMoodFactor += gC(target).mood.angry * -5 + gC(target).mood.bored * -5;
+		}
+		var relationshipFactor = rLvlAbt(target,actor,"friendship") * 4 + rLvlAbt(target,actor,"romance") * 6 + rLvlAbt(target,actor,"sexualTension") * 2
+							 + rLvlAbt(target,actor,"submission") * 4 + rLvlAbt(target,actor,"domination") * -6
+							 + rLvlAbt(target,actor,"enmity") * -6 + rLvlAbt(target,actor,"rivalry") * -4;
+		var competitionFactor = (quantifyCharacterVacuumStrength(actor) - quantifyCharacterVacuumStrength(target) * 1.2) / 9;
+		var drivesFactor = gC(target).dCooperation.level * 2 + gC(target).dLove.level * 4 - gC(target).dPleasure.level * 2 - gC(target).dDomination.level * 6 - gC(target).dAmbition.level * 1.5;
+		var willpowerCostFactor = this.getWillpowerRejectCost(actor,target) / 2;
+		var intimacyFactor = getCharsRelativeIntimacy(target,actor) * getInfluenceEffectWithDrives(target,5,["dLove"],["dAmbition"]);
+		var nAlliesFactor =  Math.pow(getCharAllies(target).length,1.5) * -12;
+		var areCompanionsFactor = -30;
+		if ( areCompanions ) {
+			areCompanionsFactor = 0;
+		}
+		
+		var alignmentData = doesOfferAlignWithTargetsGoals(actor,target,this.sT); // [0] -> Factor , [1] -> String
+							 
+		var semifinalValue = targetMoodFactor + relationshipFactor + competitionFactor + drivesFactor + willpowerCostFactor + intimacyFactor + nAlliesFactor + alignmentData[0] + areCompanionsFactor;
+		var sfvTenth = semifinalValue * 0.1;
+		var diceThrow = luckedDiceThrow(gC(actor).luck.getValue());
+		var luckFactor = (sfvTenth * 2 * diceThrow) - sfvTenth;
+		
+		var finalValue = semifinalValue + luckFactor;
+		if ( finalValue >= baseDifficulty ) { result = true; }
+		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Competition: " + competitionFactor.toFixed(2) + ", Willpower cost: " + willpowerCostFactor.toFixed(2) + ", Drives factor: " + drivesFactor.toFixed(2) + ", Luck: " + luckFactor.toFixed(2) + alignmentData[1]	
+					  + ", Intimacy: " + intimacyFactor.toFixed(1) + ", Amount of allies: " + nAlliesFactor.toFixed(1) + ", Are already companions?: " + areCompanionsFactor + " -> Result: " + finalValue.toFixed(2) + " VS Difficulty: " + baseDifficulty;
+		
+		secondStringResult = gC(actor).getFormattedName() + " invited " + gC(target).getFormattedName() + " to become " + gC(target).posPr + " intimate and ";
+		if ( result ) { secondStringResult += gC(target).perPr + " accepted."; }
+		else 		  { secondStringResult += gC(target).perPr + " refused."; }
+		
+		return [result,stringResult,secondStringResult];	
+	}
+	sist.getFailMessage = function(actor,target) {
+		var message = firstToCap(gC(target).perPr) + " refused. " + gC(target).formattedName + " is growing bored.";
+		return message;
+	}
+	sist.getFailEffect = function(actor,target) {
+		gC(target).mood.bored += 10;
+		if ( gC(target).mood.bored > 100 ) {
+			gC(target).mood.bored = 100;
+		}
+		if ( target == "chPlayerCharacter" ) {
+			gC(actor).mission = "raiseFriendship";
+		}
+	}
+	sist.getSuccessMessage = function(actor,target) {
+		var message = firstToCap(gC(target).perPr) + " agreed. You can feel the brimming affection in " + gC(target).formattedName + "'s eyes.";
+		return message;
+	}
+	sist.getSuccessEffect = function(actor,target) {
+		if ( actor == "chPlayerCharacter" ) {
+			State.variables.sisSpecifics.flagSissEnd = true;
+			
+			var bText = "<<l" + "ink [[Continue|Social Interactions]]>><<s" + "cript>>\n";
+			bText    += "finishRelType('" + actor + "','" + target + "'," + gSettings().relationshipsDuration + ");\n";
+			bText    += "createRelTypeIntimacy('" + actor + "','" + target + "'," + gSettings().relationshipsDuration + ");\n";
+			bText	 += "createRelTypeIntimacy('" + target + "','" + actor + "'," + gSettings().relationshipsDuration + ");\n";
+			bText	 += "State.variables.sisSpecifics.flagSissEnd = false;\n";
+			bText	 += "<</s" + "cript>><</l" + "ink>>";
+			
+			State.variables.sisSpecifics.formatChoicesText();
+			
+			State.variables.sisSpecifics.continueButton = bText;
+		} else {
+			finishRelType(actor,target);
+			createRelTypeCompanionship(target,actor,gSettings().relationshipsDuration);
+			createRelTypeCompanionship(actor,target,gSettings().relationshipsDuration);
+		}
+	}
+	sist.askToPlayer = function(actor,target,sisKey) {
+		var promptText = gC(actor).getFormattedName() + " wants to initiate an intimates relationship with you.\n\n"
+					   + this.getButtonPlayerAccepts(actor);
+		State.variables.compass.sisList[sisKey].setSisPlayerPrompt(promptText,"default",this.getWillpowerRejectCost(actor,target),actor,target,this.sT);
+	}
+	sist.getButtonPlayerAccepts = function(actor) {
+		var bText = "<<l" + "ink [[Accept|Social Interactions]]>><<s" + "cript>>\n";
+		bText	 += "getSisCharIsIn('chPlayerCharacter').endSisPlayerPrompt();\n";
+		bText	 += "createSistOfferIntimacyRel().getSuccessEffect('" + actor + "','chPlayerCharacter');\n";
 		bText	 += "<</s" + "cript>><</l" + "ink>>";
 		return bText;
 	}
@@ -2184,13 +2373,18 @@ window.createSistUnlockActorsGenitals = function() {
 		
 		var baseDifficulty = 30; // 30;
 		var targetMoodFactor = gC(target).mood.friendly * 0.02 + gC(target).mood.intimate * 0.03 + gC(target).mood.aroused * 0.04 + gC(target).mood.flirty * 0.06 - gC(target).mood.angry * 0.5 - gC(target).mood.bored * 0.3 + gC(target).mood.submissive * 0.05 - gC(target).mood.dominant * 0.2;
+		if ( target == "chPlayerCharacter" ) {
+			targetMoodFactor += gC(target).mood.angry * -5 + gC(target).mood.bored * -5;
+		}
 		var relationshipFactor = rLvlAbt(target,actor,"friendship") * 2 + rLvlAbt(target,actor,"romance") * 1 + rLvlAbt(target,actor,"sexualTension") * 2
 							 + rLvlAbt(target,actor,"submission") * 2 - rLvlAbt(target,actor,"domination") * 8
 							 + rLvlAbt(target,actor,"rivalry") * -5 + rLvlAbt(target,actor,"enmity") * -10;
 		var drivesFactor = gC(target).dCooperation.level * 2 + gC(target).dLove.level * 2 - gC(target).dDomination.level * 4;
 		var willpowerCostFactor = 0;
+		
+		var alignmentData = doesOfferAlignWithTargetsGoals(actor,target,this.sT); // [0] -> Factor , [1] -> String
 							 
-		var semifinalValue = targetMoodFactor + relationshipFactor + drivesFactor + willpowerCostFactor;
+		var semifinalValue = targetMoodFactor + relationshipFactor + drivesFactor + willpowerCostFactor + alignmentData[0];
 		var sfvTenth = semifinalValue * 0.1;
 		var diceThrow = luckedDiceThrow(gC(actor).luck.getValue());
 		var luckFactor = (sfvTenth * 2 * diceThrow) - sfvTenth;
@@ -2198,7 +2392,7 @@ window.createSistUnlockActorsGenitals = function() {
 		var finalValue = semifinalValue + luckFactor;
 		if ( finalValue >= baseDifficulty ) { result = true; }
 		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Drives factor: " + drivesFactor.toFixed(2) + ", Luck: " + luckFactor.toFixed(2)
-					  + " -> Result: " + finalValue.toFixed(2) + " VS Difficulty: " + baseDifficulty;
+					  + " -> Result: " + finalValue.toFixed(2) + " VS Difficulty: " + baseDifficulty + alignmentData[1];
 		
 		secondStringResult = gC(actor).getFormattedName() + " asked " + gC(target).getFormattedName() + " to free " + gC(target).posPr + " lower parts and " + gC(target).perPr;
 		if ( result ) { secondStringResult += gC(target).perPr + " accepted."; }
@@ -2343,6 +2537,9 @@ window.createSistTransformationScene = function() {
 		var targetMoodFactor = gC(target).mood.flirty * 0.03 + gC(target).mood.intimate * 0.05 + gC(target).mood.aroused * 0.11
 							 + gC(target).mood.angry * -0.4 + gC(target).mood.bored * (-0.4) + gC(target).mood.submissive * 0.1
 							 + gC(target).mood.dominant * -0.25;
+		if ( target == "chPlayerCharacter" ) {
+			targetMoodFactor += gC(target).mood.angry * -5 + gC(target).mood.bored * -5;
+		}
 		var relationshipFactor = rLvlAbt(target,actor,"romance") * 0.8 + rLvlAbt(target,actor,"sexualTension") * 1.6
 							 + rLvlAbt(target,actor,"submission") * 2 + rLvlAbt(target,actor,"domination") * -2.4
 							 + rLvlAbt(target,actor,"enmity") * -5 + rLvlAbt(target,actor,"rivalry") * -0.8
@@ -2357,13 +2554,12 @@ window.createSistTransformationScene = function() {
 		if ( returnCharsUnlockedGenitals(target).length == 0 ) {
 			simulationState -= 20;
 		}
-		var missionFactor = 0;
-		if ( gC(target).mission == "haveSex" ) { missionFactor += 5; }
-		else if ( gC(target).mission == "haveDomSex" ) { missionFactor -= 10; }
 		var othersFactor = 0;
 		if ( target == "chMes" ) { othersFactor += 20; }
 		
-		var semifinalValue = targetMoodFactor + relationshipFactor + baseDifficulty + simulationState + willpowerCostFactor + drivesFactor + missionFactor + powerGrowthFactor + othersFactor;
+		var alignmentData = doesOfferAlignWithTargetsGoals(actor,target,this.sT); // [0] -> Factor , [1] -> String
+		
+		var semifinalValue = targetMoodFactor + relationshipFactor + baseDifficulty + simulationState + willpowerCostFactor + drivesFactor + powerGrowthFactor + othersFactor + alignmentData[0];
 		var sfvTenth = semifinalValue * 0.1;
 		var diceThrow = luckedDiceThrow(gC(actor).luck.getValue());
 		var luckFactor = (sfvTenth * 2 * diceThrow) - sfvTenth;
@@ -2375,7 +2571,7 @@ window.createSistTransformationScene = function() {
 		if ( result ) { stringResult = "Success!"; secondStringResult += gC(target).perPr + " accepted."; }
 		else 		  { stringResult = "Failure."; secondStringResult += gC(target).perPr + " refused."; }
 		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Base dif.: " + baseDifficulty
-					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", Desire: " + willpowerCostFactor.toFixed(2) + ", Intentions: " + missionFactor.toFixed(2) + ", Growth: " + powerGrowthFactor.toFixed(2) + ", Others: " + othersFactor.toFixed(2) + " - Result: " + finalValue.toFixed(2);
+					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", Desire: " + willpowerCostFactor.toFixed(2) + ", Growth: " + powerGrowthFactor.toFixed(2) + ", Others: " + othersFactor.toFixed(2) + alignmentData[1] + " - Result: " + finalValue.toFixed(2)
 		}
 		
 		secondStringResult = gC(actor).getFormattedName() + " asked " + gC(target).getFormattedName() + " to perform a transformation and ";
@@ -2509,6 +2705,9 @@ window.createSistSubTransformationScene = function() {
 		var targetMoodFactor = gC(target).mood.flirty * 0.03 + gC(target).mood.intimate * 0.05 + gC(target).mood.aroused * 0.11
 							 + gC(target).mood.angry * -0.4 + gC(target).mood.bored * (-0.4) + gC(target).mood.submissive * 0.1
 							 + gC(target).mood.dominant * -0.25;
+		if ( target == "chPlayerCharacter" ) {
+			targetMoodFactor += gC(target).mood.angry * -5 + gC(target).mood.bored * -5;
+		}
 		var relationshipFactor = rLvlAbt(target,actor,"romance") * 0.8 + rLvlAbt(target,targetSub,"sexualTension") * 1.6
 							 + rLvlAbt(target,actor,"submission") * 2 + rLvlAbt(target,actor,"domination") * -2.4
 							 + rLvlAbt(target,actor,"enmity") * -5 + rLvlAbt(target,actor,"rivalry") * -0.8
@@ -2523,13 +2722,12 @@ window.createSistSubTransformationScene = function() {
 		if ( returnCharsUnlockedGenitals(target).length == 0 ) {
 			simulationState -= 20;
 		}
-		var missionFactor = 0;
-		if ( gC(target).mission == "haveSex" ) { missionFactor += 5; }
-		else if ( gC(target).mission == "haveDomSex" ) { missionFactor -= 10; }
 		var othersFactor = 0;
 		if ( target == "chMes" ) { othersFactor += 20; }
 		
-		var semifinalValue = targetMoodFactor + relationshipFactor + baseDifficulty + simulationState + willpowerCostFactor + drivesFactor + missionFactor + powerGrowthFactor + othersFactor;
+		var alignmentData = doesOfferAlignWithTargetsGoals(actor,target,this.sT); // [0] -> Factor , [1] -> String
+		
+		var semifinalValue = targetMoodFactor + relationshipFactor + baseDifficulty + simulationState + willpowerCostFactor + drivesFactor + powerGrowthFactor + othersFactor + alignmentData[0];
 		var sfvTenth = semifinalValue * 0.1;
 		var diceThrow = luckedDiceThrow(gC(actor).luck.getValue());
 		var luckFactor = (sfvTenth * 2 * diceThrow) - sfvTenth;
@@ -2541,7 +2739,7 @@ window.createSistSubTransformationScene = function() {
 		if ( result ) { stringResult = "Success!"; secondStringResult += gC(target).perPr + " accepted."; }
 		else 		  { stringResult = "Failure."; secondStringResult += gC(target).perPr + " refused."; }
 		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Base dif.: " + baseDifficulty
-					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", Desire: " + willpowerCostFactor.toFixed(2) + ", Intentions: " + missionFactor.toFixed(2) + ", Growth: " + powerGrowthFactor.toFixed(2) + ", Others: " + othersFactor.toFixed(2) + " - Result: " + finalValue.toFixed(2);
+					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", Desire: " + willpowerCostFactor.toFixed(2) + ", Growth: " + powerGrowthFactor.toFixed(2) + ", Others: " + othersFactor.toFixed(2) + alignmentData[1] + " - Result: " + finalValue.toFixed(2);
 		}
 		
 		secondStringResult = gC(actor).getFormattedName() + " asked " + gC(target).getFormattedName() + " to perform a transformation on " + gC(targetSub).getFormattedName() + " and ";
@@ -2724,6 +2922,86 @@ window.recruitCharsInSis = function(charList,actor,joinedChars,evaluationFunctio
 	return joiningChars;
 }
 
+// Social missions: raiseFriendship, flirt, seduce, haveSex, haveDomSex, getAlliance, taunt
+// transformSelf, transformSub
+window.doesOfferAlignWithTargetsGoals = function(actor,target,offerType) {
+	var modifier = 0;
+	var string = "";
+	
+	var targetSocialMission = gC(target).mission;
+	var targetSocialAi = gC(target).socialAi;
+	
+	if ( [setup.sistType.egalitarianSex,setup.sistType.egalitarianExcludingSex,setup.sistType.transformSelf,setup.sistType.transformSub].includes(offerType) ) { // General sex offers
+		if ( ["haveSex","seduce"].includes(targetSocialMission) ) { // Similar intention
+			modifier += 10;
+		} else if ( ["raiseFriendship"].includes(targetSocialMission) ) { // Divergent intention
+			modifier -= 15;
+		} else if ( ["getAlliance"].includes(targetSocialMission) ) { // Advanced intention
+			modifier -= 30;
+		} else if ( ["taunt"].includes(targetSocialMission) ) { // Hostile intention
+			modifier -= 50;
+		}
+		if ( modifier >= 0 ) {
+			if ( targetSocialAi.loveTs.includes(actor) || targetSocialAi.covetTs.includes(actor) ) {
+				modifier += 5;
+			}
+		}
+	} else if ( [setup.sistType.dominantSex].includes(offerType) ) { // Actor wants dominant sex
+		if ( ["haveSex","seduce"].includes(targetSocialMission) ) { // Similar intention
+			modifier += 5;
+		} else if ( ["raiseFriendship"].includes(targetSocialMission) ) { // Divergent intention
+			modifier -= 20;
+		} else if ( ["getAlliance"].includes(targetSocialMission) ) { // Advanced intention
+			modifier -= 40;
+		} else if ( ["taunt"].includes(targetSocialMission) ) { // Hostile intention
+			modifier -= 60;
+		}
+	} else if ( [setup.sistType.submissiveSex].includes(offerType) ) { // Actor wants submissive sex
+		if ( ["haveDomSex"].includes(targetSocialMission) ) { // Similar intention
+			modifier += 25;
+		} else if ( ["haveSex","seduce"].includes(targetSocialMission) ) { // Similar intention
+			modifier += 10;
+		} else if ( ["taunt"].includes(targetSocialMission) ) { // Acceptable intention
+			modifier += 5;
+		} else if ( ["raiseFriendship"].includes(targetSocialMission) ) { // Divergent intention
+			modifier -= 15;
+		} else if ( ["getAlliance"].includes(targetSocialMission) ) { // Advanced intention
+			modifier -= 30;
+		}
+		if ( modifier >= 0 ) {
+			if ( targetSocialAi.conquestTs.includes(actor) || targetSocialAi.covetTs.includes(actor) ) {
+				modifier += 5;
+			}
+		}
+	} else if ( [setup.sistType.borrowedSex].includes(offerType) ) { // Borrowed submissive
+		if ( ["getAlliance"].includes(targetSocialMission) ) { // Advanced intention
+			modifier -= 30;
+		} else if ( ["taunt"].includes(targetSocialMission) ) { // Hostile intention
+			modifier -= 50;
+		}
+	} else if ( [setup.sistType.unlockActorsGenitals].includes(offerType) ) { // Permission
+	} else if ( [setup.sistType.servitudeAsMaster].includes(offerType) ) { // Actor becomes dominant
+	} else if ( [setup.sistType.servitudeAsServant].includes(offerType) ) { // Target becomes submissive
+	} else if ( [setup.sistType.tutorshipAsTutor].includes(offerType) ) { // Actor becomes protector
+	} else if ( [setup.sistType.tutorshipAsPupil].includes(offerType) ) { // Target becomes protected
+	} else if ( [setup.sistType.companionship,setup.sistType.intimacy].includes(offerType) ) { // Egalitarian positive relationship
+		if ( targetSocialAi.allyTs.includes(actor) || targetSocialAi.loveTs.includes(actor) ) {
+			modifier += 5;
+			if ( ["getAlliance"].includes(targetSocialMission) ) { // Similar intention
+				modifier += 25;
+			} else if ( ["raiseFriendship"].includes(targetSocialMission) ) { // Acceptable intention
+				modifier += 5;
+			}
+		}
+	} else if ( [setup.sistType.transformSelf,setup.sistType.transformSub].includes(offerType) ) { // Transformations, moved to general sex
+		
+	}
+	
+	string += ", Target goals: " + modifier.toFixed(1)
+	
+	return [modifier,string];
+}
+
 ////////// SIS Topics Database //////////
 
 setup.sistType = {
@@ -2741,6 +3019,7 @@ setup.sistType = {
 	tutorshipAsTutor: "r2",
 	tutorshipAsPupil: "r3",
 	companionship: "r4",
+	intimacy: "r5",
 	
 	transformSelf: "f0",
 	transformSub: "f1"
@@ -2748,7 +3027,7 @@ setup.sistType = {
 
 setup.sistTypes = [ "t0","t1","t2","t3","t4",
 					"o0","o1",
-					"r0","r1","r2","r3","r4",
+					"r0","r1","r2","r3","r4","r5",
 					"f0", "f1" ];
 
 setup.sistDB = [];
@@ -2766,6 +3045,7 @@ setup.sistDB[setup.sistType.servitudeAsServant] = new createSistOfferServitudeAs
 setup.sistDB[setup.sistType.tutorshipAsTutor] = new createSistOfferTutorshipAsTutor();
 setup.sistDB[setup.sistType.tutorshipAsPupil] = new createSistOfferTutorshipAsPupil();
 setup.sistDB[setup.sistType.companionship] = new createSistOfferCompanionship();
+setup.sistDB[setup.sistType.intimacy] = new createSistOfferIntimacyRel();
 
 setup.sistDB[setup.sistType.transformSelf] = createSistTransformationScene();
 setup.sistDB[setup.sistType.transformSub] = createSistSubTransformationScene();

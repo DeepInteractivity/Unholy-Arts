@@ -571,7 +571,13 @@ window.addCharsTeamToCharsBattle = function(joiningCharacter,joinedCharacter) {
 				notification = gC(joiningCharacter).getFormattedName() + " came to the battle in support of " + gC(joinedCharacter).getFormattedName() + ".";
 				gC(joiningCharacter).changeInfamy(gainedInfamy);
 				sEvent.extraMessages.push(notification);
-				sEvent.extraMessages.push(("" + gC(joiningCharacter).getFormattedName() + " gained " + gainedInfamy.toFixed(0) + " infamy."));
+				if ( gainedInfamy > 0 ) {
+					sEvent.extraMessages.push(("" + gC(joiningCharacter).getFormattedName() + " gained " + gainedInfamy.toFixed(0) + " infamy."));
+				} else if ( gainedInfamy < 0 ) {
+					sEvent.extraMessages.push(("" + gC(joiningCharacter).getFormattedName() + " lost " + -gainedInfamy.toFixed(0) + " infamy."));
+				} else {
+					sEvent.extraMessages.push(("" + gC(joiningCharacter).getFormattedName() + " didn't gain infamy."));
+				}
 			}
 		}
 	}
@@ -1305,10 +1311,11 @@ window.Compass = function() {
 										  + 'style="position:relative;left:' + coords[0] + 'px;top:' + coords[1] + 'px"/>'
 										  + "</div>";
 						// Areas map
+							// Map cursor and links to move rooms //  getPlayerCharsGroup() // ["chPlayerCharacter"]
 						this.roomPassage += '\n<map name="image_map">';
-						if ( getCurrentRoomInfo().getConnections(["chPlayerCharacter"]) != null ) {
+						if ( getCurrentRoomInfo().getConnections(getPlayerCharsGroup()) != null ) {
 							if ( gC("chPlayerCharacter").followingTo == "" ) {
-								for ( var con of getCurrentRoomInfo().getConnections(["chPlayerCharacter"]) ) {
+								for ( var con of getCurrentRoomInfo().getConnections(getPlayerCharsGroup()) ) {
 									var ri = getRoomInfoA(con.loc);
 									this.roomPassage += '<area class="roomAreaButton" title="' + ri.title + '" coords="' + ri.getAreaCoordinates() + '" shape="rect" room-key="' + con.loc + '" travel-time="' + con.distance + '" data-passage="Map" data-setter="State.variables.compass.playerMovesToRoom(\'' + con.loc + '\',' + con.distance + ')" >\n';
 								}
@@ -1606,7 +1613,11 @@ window.Compass = function() {
 	
 	Compass.prototype.setInterludeInfo = function(passageText) {
 		if ( this.hasOwnProperty("skipInterludeInfoFlag") == false ) {
-			this.interludePassage = passageText + "[[Return to Map" + "|Map]]";
+			if ( passageText == undefined ) {
+				this.interludePassage = "Interrupted.\n\n[[Return to Map" + "|Map]]";
+			} else {
+				this.interludePassage = passageText + "[[Return to Map" + "|Map]]";
+			}
 		} else {
 			this.interludePassage = passageText;
 		}

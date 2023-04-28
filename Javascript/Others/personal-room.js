@@ -31,6 +31,7 @@ PersonalRoom.prototype.formatRoomText = function() {
 				this.roomText += "__Personal room__\nThe water flows quietly.\n";				// Description
 				this.roomText += '<span style="color:green">You can save the game.</span>\n'; // You can save msg
 				this.roomText += this.getButtonFinishDay() + "\n";								  // New day
+				this.roomText += this.getButtonShareTheNight();										// Share the Night -> Available after the "Sharing the Night" story event
 				this.roomText += "\n__Characters info__:\n" 										// Characters info
 				 
 				this.roomText += this.getButtonsCharInfo() + "\n";
@@ -50,7 +51,7 @@ PersonalRoom.prototype.formatRoomText = function() {
 								   + "\n" + getButtonAnTagBlack()
 								   + "\n" + getButtonAnTagGray();
 				}
-				//this.roomText += getHotfixButton();
+				this.roomText += getHotfixButton();
 				break;
 			case "charInfo": 																	// Char info screen
 				this.roomText  = "" + this.getButtonBackToMain() + "\n";
@@ -78,6 +79,15 @@ PersonalRoom.prototype.formatRoomText = function() {
 			case "candidatesComparison":
 				this.roomText = this.getCandidatesComparisonPassage();
 				break;
+			case "shareTheNight":
+				this.roomText = this.getStnPassage();
+				break;
+			case "shareTheNightChar":
+				this.roomText = this.getStnCharPassage(State.variables.selectedChar);
+				break;
+			case "shareTheNightCharResult":
+				this.roomText = this.getStnResultsPassage();
+				break;
 			case "endDayScreen":
 				this.roomText = '<div style="text-align: center;">' + State.variables.daycycle.returnMonthDay() + "</div>\n"
 				if ( this.newDayInfo == "" ) {
@@ -92,7 +102,6 @@ PersonalRoom.prototype.formatRoomText = function() {
 		}
 		this.roomText += "\n<<" + "script>>State.variables.eventsCalendar.activeEvent = false;<</" + "script>> \ ";
 		
-		// TO DO: REMOVE
 		applyRequiredPatches();
 	}
 	
@@ -198,6 +207,39 @@ PersonalRoom.prototype.getButtonComparisonChart = function() {
 			bText += "<</s" + "cript>><</l" + "ink>>";
 		return bText;
 	}
+
+PersonalRoom.prototype.getButtonShareTheNight = function() {
+		var bText = "";
+		if ( isStVarOn("ShTNgt") ) {
+			bText = "<<l" + "ink [[Invite someone to share the night|Personal Room]]>><<s" + "cript>>";
+			bText += "State.variables.personalRoom.roomState = 'shareTheNight';\n";
+			bText += "State.variables.invitedChars = [];\n";
+			bText += "<</s" + "cript>><</l" + "ink>>"
+			bText += "<span title='Spending the night with another character will strengthen your relationship, "
+				   + "although you will wake up more tired than usual.'>^^(?)^^</span>\n";
+		}
+		return bText;
+	}
+PersonalRoom.prototype.getButtonInviteCharForNight = function(cK) {
+		var bText = "";
+		if ( State.variables.invitedChars.includes(cK) ) {
+			bText += colorText(gC(cK).name + " has already declined.","red");
+		} else {
+			bText = "- <<l" + "ink [[Invite " + gC(cK).name + "|Personal Room]]>><<s" + "cript>>";
+			bText += "State.variables.personalRoom.roomState = 'shareTheNightChar';\n";
+			bText += "State.variables.selectedChar = '" + cK + "';\n";
+			bText += "State.variables.invitedChars.push('" + cK + "');\n";
+			bText += "<</s" + "cript>><</l" + "ink>>";
+		}
+		return bText;
+	}	
+PersonalRoom.prototype.getButtonStnResults = function(butText,intentionNpc,intentionPlayer) {
+		var bText = "- <<l" + "ink [[" + butText + "|Personal Room]]>><<s" + "cript>>";
+		bText += "State.variables.personalRoom.roomState = 'shareTheNightCharResult';\n";
+		bText += "State.variables.intentions = ['" + intentionNpc + "','" + intentionPlayer + "'];\n";
+		bText += "<</s" + "cript>><</l" + "ink>>";
+		return bText;
+	}	
 	
 PersonalRoom.prototype.getButtonFinishDay = function() {
 		var bText = "<<l" + "ink [[Rest and initiate a new day|Personal Room]]>><<s" + "cript>>";
@@ -206,7 +248,6 @@ PersonalRoom.prototype.getButtonFinishDay = function() {
 			bText += "<</s" + "cript>><</l" + "ink>>";
 		return bText;
 	}
-
 	
 PersonalRoom.prototype.getButtonNewDay = function() {
 		return State.variables.eventsCalendar.getEndDayButton();
@@ -272,6 +313,12 @@ PersonalRoom.prototype.getCharacterInfo = function(character) {
 		if ( tempText != "" ) {
 			iText += "<div class='standardBox'>__Special Relationships__:\n";
 			iText += tempText;
+			if ( character != "chPlayerCharacter" ) {
+				var intimaciesText = gC(character).textIntimacyTowardsPlayer();
+				if ( intimaciesText != "" ) {
+					iText += "\n" + intimaciesText;
+				}
+			}
 			iText += "</div>\n";
 		}
 		
@@ -466,6 +513,85 @@ PersonalRoom.prototype.getCandidatesComparisonPassage = function() {
 		return passageText;
 	}
 
+	// Share the Night
+
+PersonalRoom.prototype.getStnPassage = function() {
+		var passageText = "Select a character to invite:\n";
+		for ( var cK of getActiveSimulationCharactersArray() ) {
+			var validChar = false;
+			if ( getCandidatesKeysArray().includes(cK) ) { validChar = true; }
+			else if ( gC(cK).hasOwnProperty("isAtTemple") ) {
+				if ( gC(cK).isAtTemple ) {
+					validChar = true;
+				}
+			}
+			if ( cK != "chPlayerCharacter" && validChar ) { // The character must be either a Candidate other than the player or a currently present guest
+				passageText += this.getButtonInviteCharForNight(cK) + "\n";
+			}
+		}
+		passageText += "<<l" + "ink [[Go to sleep without inviting anyone|Personal Room]]>><<s" + "cript>>";
+			passageText += "State.variables.personalRoom.roomState = 'endDayScreen';\n";
+			passageText += "State.variables.personalRoom.endDayEffects();\n";
+			passageText += "<</s" + "cript>><</l" + "ink>>";
+		return passageText;
+	}
+PersonalRoom.prototype.getStnCharPassage = function(cK) {
+	var offerResult = actorInvitesTargetToShareNight("chPlayerCharacter",cK);
+	var passageText = "Invited " + gC(cK).getFormattedName() + " to share the night, and...\n\n" + offerResult[1] + "\n\n";
+	
+	if ( offerResult[0] == true ) {
+		var npcIntention = getCharsStnIntention(cK,"chPlayerCharacter");
+		switch(npcIntention) {
+			case "snuggle":
+				passageText += "[Intention: Snuggle]\n" + chooseDialogFromList(setup.dialogDB.stnDialoguesSnuggle,cK,"chPlayerCharacter","","") + "\n\n"
+							 + this.getButtonStnResults("Snuggle back","snuggle","snuggle") + "\n"
+							 + this.getButtonStnResults("Merciless tease","snuggle","tease") + "\n"
+							 + this.getButtonStnResults("Push " + gC(cK).comPr + " down","snuggle","sex");
+				break;
+			case "tease":
+				passageText += "[Intention: Teasing]\n" + chooseDialogFromList(setup.dialogDB.stnDialoguesTease,cK,"chPlayerCharacter","","") + "\n\n"
+							 + this.getButtonStnResults("Try to snuggle","tease","snuggle") + "\n"
+							 + this.getButtonStnResults("Tease " + gC(cK).comPr + " back","tease","tease") + "\n"
+							 + this.getButtonStnResults("Get on top","tease","sex") + "\n"
+							 + this.getButtonStnResults("Punish " + gC(cK).comPr,"tease","domination") + "\n";
+				break;
+			case "sex":
+				passageText += "[Intention: Assertive]\n" + chooseDialogFromList(setup.dialogDB.stnDialoguesEga,cK,"chPlayerCharacter","","") + "\n\n"
+							 + this.getButtonStnResults("Ask to snuggle instead","sex","altSnuggle") + "\n"
+							 + this.getButtonStnResults("Await submissively","sex","submit") + "\n"
+							 + this.getButtonStnResults("Coy tease","sex","tease") + "\n"
+							 + this.getButtonStnResults("Embrace " + gC(cK).comPr,"sex","sex") + "\n"
+							 + this.getButtonStnResults("Struggle to be on top","sex","domination");
+				break;
+			case "domination":
+				passageText += "[Intention: Dominant]\n" + chooseDialogFromList(setup.dialogDB.stnDialoguesDom,cK,"chPlayerCharacter","","") + "\n\n"
+							 + this.getButtonStnResults("Resist","domination","resist") + "\n"
+							 + this.getButtonStnResults("Await submissively","domination","submit") + "\n"
+							 + this.getButtonStnResults("Struggle to be on top","domination","domination");
+				break;
+		}
+		
+		if ( State.variables.occupiedChars == undefined ) {
+			State.variables.occupiedChars = ["chPlayerCharacter",cK];
+		} else {
+			State.variables.occupiedChars.push("chPlayerCharacter",cK);
+		}
+	} else {
+		State.variables.invitedChars.push(cK);
+		passageText += "<<l" + "ink [[Return|Personal Room]]>><<s" + "cript>>";
+			passageText += "State.variables.personalRoom.roomState = 'shareTheNight';\n";
+			passageText += "<</s" + "cript>><</l" + "ink>>"
+	}
+	
+	return passageText;
+}
+
+PersonalRoom.prototype.getStnResultsPassage = function() {
+	var pText = getStnChAChBResults(State.variables.selectedChar,"chPlayerCharacter",State.variables.intentions[0],State.variables.intentions[1]);
+	
+	return pText;
+}
+
 	// Logic
 	
 PersonalRoom.prototype.initPersonalRoom = function() {
@@ -493,6 +619,47 @@ PersonalRoom.prototype.endDayEffects = function() {
 		State.variables.eventsCalendar.stablishTomorrowsEvent();
 		
 		State.variables.personalRoom.autosavePossible = false;
+		
+		// NPCs Share the Night
+		if ( isStVarOn("ShTNgt") ) {
+			// Init vars
+			if ( State.variables.occupiedChars == undefined ) { State.variables.occupiedChars = []; }
+			// Candidates may look for a partner depending on stats
+			for ( var cK of getCandidatesKeysArray() ) {
+				if ( State.variables.occupiedChars.includes(cK) == false && cK != "chPlayerCharacter" ) {
+					// Does char want to StN?
+					var posV = getCharsDrive(cK,"dPleasure") + getCharsDrive(cK,"dLove");
+					var negV = getCharsDrive(cK,"dImprovement") + getCharsDrive(cK,"dAmbition");
+					if ( limitedRandomInt((posV + negV)) <= posV ) {
+						var validTargets = [];
+						for ( var cKt of getActiveSimulationCharactersArray() ) {
+							if ( cKt != cK && State.variables.occupiedChars.includes(cKt) == false && isCharAtTemple(cKt) == true && cKt != "chPlayerCharacter" ) {
+								if ( gC(cK).socialAi.loveTs.includes(cKt) || gC(cK).socialAi.covetTs.includes(cKt) ) {
+									validTargets.push(cKt);
+								}
+							}
+						}
+						
+						if ( validTargets.length > 0 ) {
+							var target = randomFromList(validTargets);
+								// Does target accept?
+							if ( actorInvitesTargetToShareNight(cK,target)[0] ) { // if ( true ) { //
+								// Results
+								getStnChAChBResults(cK,target,getCharsStnIntention(cK,target),getCharsStnIntention(target,cK));
+								// Add to occupiedChars
+								State.variables.occupiedChars.push(cK);
+								State.variables.occupiedChars.push(target);
+							}
+						}
+					}
+				}
+			}	
+			
+			State.variables.occupiedChars = removeDuplicatesFromList(State.variables.occupiedChars);
+			for ( var ccK of State.variables.occupiedChars ) {
+				applyAlteredState([ccK],createASmissingSleep(2));
+			}
+		}
 		
 		// New day
 		State.variables.daycycle.addDays(1);
@@ -584,6 +751,13 @@ PersonalRoom.prototype.endDayEffects = function() {
 		
 		// Guests leave and enter Passion Temple
 		guestsEnterAndLeavePassionTemple();
+		
+		// Clean other vars
+		for ( var v of ["invitedChars","selectedChar","occupiedChars","intentions"] ) {
+			if ( State.variables[v] != undefined ) {
+				delete State.variables[v];
+			}
+		}
 	}
 PersonalRoom.prototype.endDayRelationMoodEffects = function() {
 		var relTypesToFinish = [];
@@ -891,6 +1065,611 @@ window.guestsEnterAndLeavePassionTemple = function() {
 			}
 		}
 	}
+}
+
+	// Share the Night
+
+window.getCharsStnIntention = function(actor,target) {
+	var diceThrow = seedableRandomInt100(stringToUTF16sum(gC(actor).name + gC(target).name + "intention"));
+	// Assign initial values
+	var strSnuggle = rLvlAbt(actor,target,"romance") + rLvlAbt(actor,target,"submission") - rLvlAbt(actor,target,"domination") + (getCharsDrive(actor,"dLove") + getCharsDrive(actor,"dCooperation")) * 2 + gC(actor).sexScenesToday * 3;
+	var strTease = rLvlAbt(actor,target,"sexualTension") + (getCharsDrive(actor,"dPleasure") * 2 - getCharsDrive(actor,"dDomination") - getCharsDrive(actor,"dAmbition")) * 2 + gC(actor).daysWithoutSex;
+	var strSex = rLvlAbt(actor,target,"sexualTension") + rLvlAbt(actor,target,"romance") + (getCharsDrive(actor,"dCooperation") + getCharsDrive(actor,"dLove")) * 2 + gC(actor).daysWithoutSex;
+	var strDomination = rLvlAbt(actor,target,"sexualTension") + rLvlAbt(actor,target,"domination") - rLvlAbt(actor,target,"submission") + (getCharsDrive(actor,"dAmbition") + getCharsDrive(actor,"dDomination") + getCharsDrive(actor,"dPleasure")) * 2 + gC(actor).daysWithoutSex;
+	if ( strSnuggle < 0 ) { strSnuggle = 0; }
+	if ( strTease < 0 ) { strTease = 0; }
+	if ( strSex < 0 ) { strSex = 0; }
+	if ( strDomination < 0 ) { strDomination = 0; }
+	for ( var str of [strSnuggle,strTease,strSex,strDomination] ) {
+		if ( str < 0 ) { str = 0; }
+	}
+	// Prepare distribution
+	var totalStr = strSnuggle + strTease + strSex + strDomination;
+	diceThrow = diceThrow * totalStr * 0.01;
+	var intention = "snuggle";
+	var values = [strSnuggle,strTease,strSex,strDomination];
+	var choices = ["snuggle","tease","sex","domination"];
+	var i = 0;
+	// Choose intention
+	while ( i < 4 ) {
+		diceThrow -= values[i];
+		if ( diceThrow <= 0 ) {
+			intention = choices[i];
+			i = 4;
+		}
+		i++;
+	}
+	return intention;
+}
+window.getStnChAChBResults = function(chA,chB,chAintention,chBintention) {
+	// Possible intentions: ["snuggle","tease","sex","domination"];
+	// Resulting text, only useful when chB is chPlayerCharacter, to be returned later
+	var rText = "";
+	// Characters always become tired, regardless of results
+	
+	// Sex scene when applied -> If chPlayerCharacter is not present, resolve automatically
+	var sexScene = false;
+	// Relationship modifiers
+	// Affected by stats
+	// RelStats multipliers
+	var rsMultOnChB = 1 + ((gCstat(chA,"charisma") + gCstat(chA,"empathy") + gCstat(chA,"will")) * 2 / 300);
+	var rsMultOnChA = 1 + ((gCstat(chB,"charisma") + gCstat(chB,"empathy") + gCstat(chB,"will")) * 2 / 300);
+	// Resisted sex?
+	var resistedSex = false;
+		// Checks
+	if ( chAintention == "snuggle" ) {
+		var dsProportion = (rLvlAbt(chA,chB,"domination") + 1) / (rLvlAbt(chA,chB,"submission") + 1);
+		if ( dsProportion > 0.5 ) { resistedSex = true; }
+	}
+	if ( chB == "chPlayerCharacter" ) {
+	} else {
+		if ( chBintention == "snuggle" ) {
+			var dsProportion = (rLvlAbt(chB,chA,"domination") + 1) / (rLvlAbt(chB,chA,"submission") + 1);
+			if ( dsProportion > 0.5 ) { resistedSex = true; }
+		}
+	}
+	// To Do
+	switch(chAintention) {
+		case "snuggle":
+			switch(chBintention) {
+				case "snuggle": // Romance gain
+					var Arom = (50 * rsMultOnChA);
+					var Brom = (50 * rsMultOnChB);
+					State.variables[chA].relations[chB].romance.stv += Arom;
+					State.variables[chB].relations[chA].romance.stv += Brom;
+					// Text
+					rText += gC(chA).getFormattedName() + " and you agree to snuggle together. The embrace of " + gC(chA).posPr + " arms tells you of " + gC(chB).posPr + " affection.\n"
+						   + gC(chA).getFormattedName() + " gains " + colorText((Arom.toFixed(1) + " romance"),"lightcoral") + ".\n"
+						   + gC(chB).getFormattedName() + " gains " + colorText((Brom.toFixed(1) + " romance"),"lightcoral") + ".\n"
+						   + "\n" + PersonalRoom.prototype.getButtonFinishDay();
+					// No sex
+					break;
+				case "tease": // Sexual tension, DS gains
+					var Arom = (40 * rsMultOnChA);
+					var Brom = (40 * rsMultOnChB);
+					var Asub = (40 * rsMultOnChA);
+					var Bdom = (40 * rsMultOnChB);
+					State.variables[chA].relations[chB].sexualTension.stv += (40 * rsMultOnChA);
+					State.variables[chB].relations[chA].sexualTension.stv += (40 * rsMultOnChB);
+					State.variables[chA].relations[chB].submission.stv += (40 * rsMultOnChA);
+					State.variables[chB].relations[chA].domination.stv += (40 * rsMultOnChB);
+					// Text
+					rText += gC(chA).getFormattedName() + " wants to snuggle with you, and is ultimately forced to endure your endless teasing.\n"
+						   + gC(chA).getFormattedName() + " gains " + colorText((Arom.toFixed(1) + " sexual tension"),"lightcoral") + " and " + colorText((Asub.toFixed(1) + " submission"),"purple") + ".\n"
+						   + gC(chB).getFormattedName() + " gains " + colorText((Brom.toFixed(1) + " sexual tension"),"lightcoral") + " and " + colorText((Bdom.toFixed(1) + " domination"),"purple") + ".\n"
+						   + "\n" + PersonalRoom.prototype.getButtonFinishDay();
+					// No sex
+					break;
+				case "sex":
+					var Astat = (30 * rsMultOnChA);
+					var Bstat = (30 * rsMultOnChB);
+					if ( resistedSex ) { // Romance, sexual tension loss
+						State.variables[chA].relations[chB].romance.stv -= (30 * rsMultOnChA);
+						State.variables[chB].relations[chA].romance.stv -= (30 * rsMultOnChB);
+						State.variables[chA].relations[chB].sexualTension.stv -= (30 * rsMultOnChA);
+						State.variables[chB].relations[chA].sexualTension.stv -= (30 * rsMultOnChB);
+						// Text
+						rText += gC(chA).getFormattedName() + " turns annoyed when " + gC(chA).perPr + " feels forced to reject your advances.\n"
+							   + gC(chA).getFormattedName() + " loses " + colorText((Astat.toFixed(1) + " romance"),"gray") + " and " + colorText((Astat.toFixed(1) + " sexual tension"),"gray") + ".\n"
+							   + gC(chB).getFormattedName() + " loses " + colorText((Bstat.toFixed(1) + " romance"),"gray") + " and " + colorText((Bstat.toFixed(1) + " sexual tension"),"gray") + ".\n"
+							   + "\n" + PersonalRoom.prototype.getButtonFinishDay();
+						// No sex
+					} else { // Sexual tension, DS gains, romance loss
+						State.variables[chA].relations[chB].romance.stv -= (30 * rsMultOnChA);
+						State.variables[chB].relations[chA].romance.stv -= (30 * rsMultOnChB);
+						State.variables[chA].relations[chB].sexualTension.stv += (30 * rsMultOnChA);
+						State.variables[chB].relations[chA].sexualTension.stv += (30 * rsMultOnChB);
+						State.variables[chA].relations[chB].submission.stv += (30 * rsMultOnChA);
+						State.variables[chB].relations[chA].domination.stv += (30 * rsMultOnChB);
+						// Text
+						rText += gC(chA).getFormattedName() + " feels pressured, and ultimately accepts your advances.\n"
+							   + gC(chA).getFormattedName() + " loses " + colorText((Astat.toFixed(1) + " romance"),"gray") + " and gains " + colorText((Astat.toFixed(1) + " sexual tension"),"lightcoral") + " and " + colorText((Astat.toFixed(1) + " submission"),"purple") + ".\n"
+							   + gC(chB).getFormattedName() + " loses " + colorText((Bstat.toFixed(1) + " romance"),"gray") + " and gains " + colorText((Bstat.toFixed(1) + " sexual tension"),"lightcoral") + " and " + colorText((Bstat.toFixed(1) + " domination"),"purple") + ".\n"
+						// Sex (Dom)
+						sexScene = true;
+							State.variables.sc.startScene(
+							"ss","fixed",[chB],[chA],"The water flows quietly.",endConditionTurns,gSettings().stdSxScDur,"Scene Results");
+							State.variables[chB].hasLead = true;
+							State.variables[chA].hasLead = false;
+							gC(chA).aiAlgorythm = createAiWeightedMissionsByTaste();
+							gC(chA).aiAlgorythm.setRoleSubmission();
+							if ( chB != "chPlayerCharacter" ) {
+								gC(chB).aiAlgorythm = createAiWeightedMissionsByTaste();
+								gC(chB).aiAlgorythm.setRoleDomination();
+							}
+					}
+					break;
+				case "domination": // Repeat "sex" case above
+					var Astat = (30 * rsMultOnChA);
+					var Bstat = (30 * rsMultOnChB);
+					if ( resistedSex ) { // Romance, sexual tension loss
+						State.variables[chA].relations[chB].romance.stv -= (30 * rsMultOnChA);
+						State.variables[chB].relations[chA].romance.stv -= (30 * rsMultOnChB);
+						State.variables[chA].relations[chB].sexualTension.stv -= (30 * rsMultOnChA);
+						State.variables[chB].relations[chA].sexualTension.stv -= (30 * rsMultOnChB);
+						// Text
+						rText += gC(chA).getFormattedName() + " turns annoyed when " + gC(chA).perPr + " feels forced to reject your advances.\n"
+							   + gC(chA).getFormattedName() + " loses " + colorText((Astat.toFixed(1) + " romance"),"gray") + " and " + colorText((Astat.toFixed(1) + " sexual tension"),"gray") + ".\n"
+							   + gC(chB).getFormattedName() + " loses " + colorText((Bstat.toFixed(1) + " romance"),"gray") + " and " + colorText((Bstat.toFixed(1) + " sexual tension"),"gray") + ".\n"
+							   + "\n" + PersonalRoom.prototype.getButtonFinishDay();
+						// No sex
+					} else { // Sexual tension, DS gains, romance loss
+						State.variables[chA].relations[chB].romance.stv -= (20 * rsMultOnChA);
+						State.variables[chB].relations[chA].romance.stv -= (20 * rsMultOnChB);
+						State.variables[chA].relations[chB].sexualTension.stv += (20 * rsMultOnChA);
+						State.variables[chB].relations[chA].sexualTension.stv += (20 * rsMultOnChB);
+						State.variables[chA].relations[chB].submission.stv += (20 * rsMultOnChA);
+						State.variables[chB].relations[chA].domination.stv += (20 * rsMultOnChB);
+						// Text
+						rText += gC(chA).getFormattedName() + " feels pressured, and ultimately accepts your advances.\n"
+							   + gC(chA).getFormattedName() + " loses " + colorText((Astat.toFixed(1) + " romance"),"gray") + " and gains " + colorText((Astat.toFixed(1) + " sexual tension"),"lightcoral") + " and " + colorText((Astat.toFixed(1) + " submission"),"purple") + ".\n"
+							   + gC(chB).getFormattedName() + " loses " + colorText((Bstat.toFixed(1) + " romance"),"gray") + " and gains " + colorText((Bstat.toFixed(1) + " sexual tension"),"lightcoral") + " and " + colorText((Bstat.toFixed(1) + " domination"),"purple") + ".\n"
+						// Sex (Dom)
+						sexScene = true;
+							State.variables.sc.startScene(
+							"ss","fixed",[chB],[chA],"The water flows quietly.",endConditionTurns,gSettings().stdSxScDur,"Scene Results");
+							State.variables[chB].hasLead = true;
+							State.variables[chA].hasLead = false;
+							gC(chA).aiAlgorythm = createAiWeightedMissionsByTaste();
+							gC(chA).aiAlgorythm.setRoleSubmission();
+							if ( chB != "chPlayerCharacter" ) {
+								gC(chB).aiAlgorythm = createAiWeightedMissionsByTaste();
+								gC(chB).aiAlgorythm.setRoleDomination();
+							}
+					}
+					break;
+			}
+			break;
+		case "tease":
+			switch(chBintention) {
+				case "snuggle": // Sexual tension, DS gains
+					var Astat = (40 * rsMultOnChA);
+					var Bstat = (40 * rsMultOnChB);
+					State.variables[chA].relations[chB].sexualTension.stv += (40 * rsMultOnChA);
+					State.variables[chB].relations[chA].sexualTension.stv += (40 * rsMultOnChB);
+					State.variables[chA].relations[chB].domination.stv += (40 * rsMultOnChA);
+					State.variables[chB].relations[chA].submission.stv += (40 * rsMultOnChB);
+					// Text
+					rText += gC(chA).getFormattedName() + " takes advantage of your peaceful intentions, and turns your night into a hellish delight of unexpected caresses and horny whispers.\n"
+						   + gC(chA).getFormattedName() + " gains " + colorText((Astat.toFixed(1) + " sexual tension"),"lightcoral") + " and " + colorText((Astat.toFixed(1) + " domination"),"purple") + ".\n"
+						   + gC(chB).getFormattedName() + " gains " + colorText((Bstat.toFixed(1) + " sexual tension"),"lightcoral") + " and " + colorText((Bstat.toFixed(1) + " submission"),"purple") + ".\n"
+						   + "\n" + PersonalRoom.prototype.getButtonFinishDay();
+					// No sex
+					break;
+				case "tease": // Sexual tension gain
+					var Astat = (50 * rsMultOnChA);
+					var Bstat = (50 * rsMultOnChB);
+					State.variables[chA].relations[chB].sexualTension.stv += (50 * rsMultOnChA);
+					State.variables[chB].relations[chA].sexualTension.stv += (50 * rsMultOnChB);
+					// Text
+					rText += gC(chA).getFormattedName() + " enters the bed with less than innocent intentions, but finds in your company " + gC(chA).posPr + " own medicine. You both suffer a night full of tempting teasing, yet neither takes the initiative to consumate that desire.\n"
+						   + gC(chA).getFormattedName() + " gains " + colorText((Astat.toFixed(1) + " sexual tension"),"lightcoral") + ".\n"
+						   + gC(chB).getFormattedName() + " gains " + colorText((Bstat.toFixed(1) + " sexual tension"),"lightcoral") + ".\n"
+						   + "\n" + PersonalRoom.prototype.getButtonFinishDay();
+					// No sex
+					break;
+				case "sex": // Romance, sexual tension gain
+					var Astat = (20 * rsMultOnChA);
+					var Bstat = (20 * rsMultOnChB);
+					State.variables[chA].relations[chB].romance.stv += (20 * rsMultOnChA);
+					State.variables[chB].relations[chA].romance.stv += (20 * rsMultOnChB);
+					State.variables[chA].relations[chB].sexualTension.stv += (20 * rsMultOnChA);
+					State.variables[chB].relations[chA].sexualTension.stv += (20 * rsMultOnChB);
+					// Text
+					rText += gC(chA).getFormattedName() + " enters the bed with the intention of teasing you, but is met with your honest, assertive desire to have " + gC(chA).comPr + ". It isn't long until the two of your are connected.\n"
+						   + gC(chA).getFormattedName() + " gains " + colorText((Astat.toFixed(1) + " romance"),"lightcoral") + " and " + colorText((Astat.toFixed(1) + " sexual tension"),"lightcoral") + ".\n"
+						   + gC(chB).getFormattedName() + " gains " + colorText((Bstat.toFixed(1) + " romance"),"lightcoral") + " and " + colorText((Bstat.toFixed(1) + " sexual tension"),"lightcoral") + ".\n"
+					// Sex (Ega)
+					sexScene = true;
+						State.variables.sc.startScene(
+						"ss","dynamic",[chB],[chA],"The water flows quietly.",endConditionTurns,gSettings().stdSxScDur,"Scene Results");
+						gC(chA).aiAlgorythm = createAiWeightedMissionsByTaste();
+						gC(chA).aiAlgorythm.setRoleEqualFooting();
+						if ( chB != "chPlayerCharacter" ) {
+							gC(chB).aiAlgorythm = createAiWeightedMissionsByTaste();
+							gC(chB).aiAlgorythm.setRoleEqualFooting();
+						}
+					break;
+				case "domination": // Sexual tension, DS, rivalry gain
+					var A1stat = (30 * rsMultOnChA);
+					var B1stat = (30 * rsMultOnChB);
+					var A2stat = (20 * rsMultOnChA);
+					var B2stat = (20 * rsMultOnChB);
+					State.variables[chA].relations[chB].rivalry.stv += (30 * rsMultOnChA);
+					State.variables[chB].relations[chA].rivalry.stv += (30 * rsMultOnChB);
+					State.variables[chA].relations[chB].sexualTension.stv += (20 * rsMultOnChA);
+					State.variables[chB].relations[chA].sexualTension.stv += (20 * rsMultOnChB);
+					State.variables[chA].relations[chB].submission.stv += (20 * rsMultOnChA);
+					State.variables[chB].relations[chA].domination.stv += (20 * rsMultOnChB);
+					// Text
+					rText += gC(chA).getFormattedName() + " enters the bed with the intention of teasing you, but " + gC(chA).posPr + " plans are thwarted by your unquenchable desire for " + gC(chA).comPr + ".\n"
+						   + gC(chA).getFormattedName() + " gains " + colorText((A1stat.toFixed(1) + " rivalry"),"firebrick") + ", " + colorText((A2stat.toFixed(1) + " sexual tension"),"lightcoral") + " and " + colorText((A2stat.toFixed(1) + " submission"),"purple") + ".\n"
+						   + gC(chB).getFormattedName() + " gains " + colorText((B1stat.toFixed(1) + " rivalry"),"firebrick") + ", " + colorText((B2stat.toFixed(1) + " sexual tension"),"lightcoral") + " and " + colorText((B2stat.toFixed(1) + " domination"),"purple") + ".\n"
+					// Sex (Dom)
+					sexScene = true;
+						State.variables.sc.startScene(
+						"ss","fixed",[chB],[chA],"The water flows quietly.",endConditionTurns,gSettings().stdSxScDur,"Scene Results");
+						State.variables[chB].hasLead = true;
+						State.variables[chA].hasLead = false;
+						gC(chA).aiAlgorythm = createAiWeightedMissionsByTaste();
+						gC(chA).aiAlgorythm.setRoleSubmission();
+						if ( chB != "chPlayerCharacter" ) {
+							gC(chB).aiAlgorythm = createAiWeightedMissionsByTaste();
+							gC(chB).aiAlgorythm.setRoleDomination();
+						}
+					break;
+			}
+			break; 
+		case "sex":
+			switch(chBintention) {
+				case "snuggle": // Copy from snuggle-sex
+					if ( resistedSex ) { // Romance, sexual tension loss
+						var Astat = (30 * rsMultOnChA);
+						var Bstat = (30 * rsMultOnChB);
+						State.variables[chA].relations[chB].romance.stv -= (30 * rsMultOnChA);
+						State.variables[chB].relations[chA].romance.stv -= (30 * rsMultOnChB);
+						State.variables[chA].relations[chB].sexualTension.stv -= (30 * rsMultOnChA);
+						State.variables[chB].relations[chA].sexualTension.stv -= (30 * rsMultOnChB);
+						// Text
+						rText += gC(chA).getFormattedName() + " wants to impose " + gC(chA).refPr + " on you, but receives cold shoulders.\n"
+							   + gC(chA).getFormattedName() + " loses " + colorText((Astat.toFixed(1) + " romance"),"gray") + " and " + colorText((Astat.toFixed(1) + " sexual tension"),"gray") + ".\n"
+							   + gC(chB).getFormattedName() + " loses " + colorText((Bstat.toFixed(1) + " romance"),"gray") + " and " + colorText((Bstat.toFixed(1) + " sexual tension"),"gray") + ".\n"
+							   + "\n" + PersonalRoom.prototype.getButtonFinishDay();
+						// No sex
+					} else { // Sexual tension, DS gains, romance loss
+						var Astat = (30 * rsMultOnChA);
+						var Bstat = (30 * rsMultOnChB);
+						State.variables[chA].relations[chB].romance.stv -= (30 * rsMultOnChA);
+						State.variables[chB].relations[chA].romance.stv -= (30 * rsMultOnChB);
+						State.variables[chA].relations[chB].sexualTension.stv += (30 * rsMultOnChA);
+						State.variables[chB].relations[chA].sexualTension.stv += (30 * rsMultOnChB);
+						State.variables[chA].relations[chB].domination.stv += (30 * rsMultOnChA);
+						State.variables[chB].relations[chA].submission.stv += (30 * rsMultOnChB);
+						// Text
+						rText += gC(chA).getFormattedName() + " wants to impose " + gC(chA).refPr + " on you, and you ultimately submit.\n"
+							   + gC(chA).getFormattedName() + " loses " + colorText((Astat.toFixed(1) + " romance"),"gray") + " and gains " + colorText((Astat.toFixed(1) + " sexual tension"),"lightcoral") + " and " + colorText((Astat.toFixed(1) + " submission"),"purple") + ".\n"
+							   + gC(chB).getFormattedName() + " loses " + colorText((Bstat.toFixed(1) + " romance"),"gray") + " and gains " + colorText((Bstat.toFixed(1) + " sexual tension"),"lightcoral") + " and " + colorText((Bstat.toFixed(1) + " domination"),"purple") + ".\n";
+				// Sex (Dom)
+						sexScene = true;
+							State.variables.sc.startScene(
+							"ss","fixed",[chB],[chA],"The water flows quietly.",endConditionTurns,gSettings().stdSxScDur,"Scene Results");
+							State.variables[chA].hasLead = true;
+							State.variables[chB].hasLead = false;
+							gC(chA).aiAlgorythm = createAiWeightedMissionsByTaste();
+							gC(chA).aiAlgorythm.setRoleDomination();
+							if ( chB != "chPlayerCharacter" ) {
+								gC(chB).aiAlgorythm = createAiWeightedMissionsByTaste();
+								gC(chB).aiAlgorythm.setRoleSubmission();
+							}
+					}
+					break;
+				case "tease": // Romance, sexual tension gain, copy from Tease-sex
+					var Astat = (20 * rsMultOnChA);
+					var Bstat = (20 * rsMultOnChB);
+					State.variables[chA].relations[chB].romance.stv += (20 * rsMultOnChA);
+					State.variables[chB].relations[chA].romance.stv += (20 * rsMultOnChB);
+					State.variables[chA].relations[chB].sexualTension.stv += (20 * rsMultOnChA);
+					State.variables[chB].relations[chA].sexualTension.stv += (20 * rsMultOnChB);
+					// Text
+					rText += "You intend to tease " + gC(chA).getFormattedName() + " as soon as " + gC(chA).perPr + " enters the bed, but when you find " + gC(chA).comPr + " more than willing to have you, you feel forced to keep up the pace.\n"
+						   + gC(chA).getFormattedName() + " gains " + colorText((Astat.toFixed(1) + " romance"),"lightcoral") + " and " + colorText((Astat.toFixed(1) + " sexual tension"),"lightcoral") + ".\n"
+						   + gC(chB).getFormattedName() + " gains " + colorText((Bstat.toFixed(1) + " romance"),"lightcoral") + " and " + colorText((Bstat.toFixed(1) + " sexual tension"),"lightcoral") + ".\n"
+					// Sex (Ega)
+					sexScene = true;
+						State.variables.sc.startScene(
+						"ss","dynamic",[chB],[chA],"The water flows quietly.",endConditionTurns,gSettings().stdSxScDur,"Scene Results");
+						gC(chA).aiAlgorythm = createAiWeightedMissionsByTaste();
+						gC(chA).aiAlgorythm.setRoleEqualFooting();
+						if ( chB != "chPlayerCharacter" ) {
+							gC(chB).aiAlgorythm = createAiWeightedMissionsByTaste();
+							gC(chB).aiAlgorythm.setRoleEqualFooting();
+						}
+					break; 
+				case "sex": // Romance, sexual tension gain, copy from Tease-sex
+					var Astat = (20 * rsMultOnChA);
+					var Bstat = (20 * rsMultOnChB);
+					State.variables[chA].relations[chB].romance.stv += (20 * rsMultOnChA);
+					State.variables[chB].relations[chA].romance.stv += (20 * rsMultOnChB);
+					State.variables[chA].relations[chB].sexualTension.stv += (20 * rsMultOnChA);
+					State.variables[chB].relations[chA].sexualTension.stv += (20 * rsMultOnChB);
+					// Text
+					rText += gC(chA).getFormattedName() + " and you both share a want for the other's touch, for the other's body. A night of sharing the same bed soon turns into a night of sharing the same passion.\n"
+						   + gC(chA).getFormattedName() + " gains " + colorText((Astat.toFixed(1) + " romance"),"lightcoral") + " and " + colorText((Astat.toFixed(1) + " sexual tension"),"lightcoral") + ".\n"
+						   + gC(chB).getFormattedName() + " gains " + colorText((Bstat.toFixed(1) + " romance"),"lightcoral") + " and " + colorText((Bstat.toFixed(1) + " sexual tension"),"lightcoral") + ".\n"
+					// Sex (Ega)
+					sexScene = true;
+						State.variables.sc.startScene(
+						"ss","dynamic",[chB],[chA],"The water flows quietly.",endConditionTurns,gSettings().stdSxScDur,"Scene Results");
+						gC(chA).aiAlgorythm = createAiWeightedMissionsByTaste();
+						gC(chA).aiAlgorythm.setRoleEqualFooting();
+						if ( chB != "chPlayerCharacter" ) {
+							gC(chB).aiAlgorythm = createAiWeightedMissionsByTaste();
+							gC(chB).aiAlgorythm.setRoleEqualFooting();
+						}
+					break;
+				case "domination": // Romance, rivalry, DS, sexual tension gain
+					var A1stat = (40 * rsMultOnChA);
+					var B1stat = (40 * rsMultOnChB);
+					var A2stat = (20 * rsMultOnChA);
+					var B2stat = (20 * rsMultOnChB);
+					var A3stat = (10 * rsMultOnChA);
+					var B3stat = (10 * rsMultOnChB);
+					State.variables[chA].relations[chB].romance.stv += (10 * rsMultOnChA);
+					State.variables[chB].relations[chA].romance.stv += (10 * rsMultOnChB);
+					State.variables[chA].relations[chB].submission.stv += (10 * rsMultOnChA);
+					State.variables[chB].relations[chA].domination.stv += (10 * rsMultOnChB);
+					State.variables[chA].relations[chB].rivalry.stv += (40 * rsMultOnChA);
+					State.variables[chB].relations[chA].rivalry.stv += (40 * rsMultOnChB);
+					State.variables[chA].relations[chB].sexualTension.stv += (20 * rsMultOnChA);
+					State.variables[chB].relations[chA].sexualTension.stv += (20 * rsMultOnChB); 
+					// Text
+					rText += gC(chA).getFormattedName() + " wants to share a night of physical intimacy - and so do you, as long as you're on top. Facing you with a defiant grin, " + gC(chA).perPr + " accepts your conditions, but may want to get back at you later.\n"
+						   + gC(chA).getFormattedName() + " gains " + colorText((A1stat.toFixed(1) + " rivalry"),"firebrick") + ", " + colorText((A2stat.toFixed(1) + " sexual tension"),"lightcoral") + ", " + colorText((A3stat.toFixed(1) + " romance"),"lightcoral") + " and " + colorText((A3stat.toFixed(1) + " submission"),"purple") + ".\n"
+						   + gC(chB).getFormattedName() + " gains " + colorText((B1stat.toFixed(1) + " rivalry"),"firebrick") + ", " + colorText((B2stat.toFixed(1) + " sexual tension"),"lightcoral") + ", " + colorText((B3stat.toFixed(1) + " romance"),"lightcoral") + " and " + colorText((B3stat.toFixed(1) + " domination"),"purple") + ".\n"
+					// Sex (Dom)
+					sexScene = true;
+						State.variables.sc.startScene(
+						"ss","fixed",[chB],[chA],"The water flows quietly.",endConditionTurns,gSettings().stdSxScDur,"Scene Results");
+						State.variables[chB].hasLead = true;
+						State.variables[chA].hasLead = false;
+						gC(chA).aiAlgorythm = createAiWeightedMissionsByTaste();
+						gC(chA).aiAlgorythm.setRoleEqualFooting();
+						if ( chB != "chPlayerCharacter" ) {
+							gC(chB).aiAlgorythm = createAiWeightedMissionsByTaste();
+							gC(chB).aiAlgorythm.setRoleDomination();
+						}
+					break;
+				case "altSnuggle": // Friendship, romance gain, loss of sexual tension
+					var A1stat = (30 * rsMultOnChA);
+					var B1stat = (30 * rsMultOnChB);
+					var A2stat = (20 * rsMultOnChA);
+					var B2stat = (20 * rsMultOnChB);
+					State.variables[chA].relations[chB].friendship.stv += (30 * rsMultOnChA);
+					State.variables[chB].relations[chA].friendship.stv += (30 * rsMultOnChB);
+					State.variables[chA].relations[chB].romance.stv += (20 * rsMultOnChA);
+					State.variables[chB].relations[chA].romance.stv += (20 * rsMultOnChB);
+					State.variables[chA].relations[chB].sexualTension.stv -= (30 * rsMultOnChA);
+					State.variables[chB].relations[chA].sexualTension.stv -= (30 * rsMultOnChB);
+					// Text
+					rText += "Although somewhat resentful at first, " + gC(chA).getFormattedName() + " accepts your desire to avoid getting physical tonight, and share a peaceful night together.\n"
+						   + gC(chA).getFormattedName() + " gains " + colorText((A1stat.toFixed(1) + " friendship"),"khaki") + " and " + colorText((A2stat.toFixed(1) + " romance"),"lightcoral") + ", and loses " + colorText((A1stat.toFixed(1) + " sexual tension"),"gray") + ".\n"
+						   + gC(chB).getFormattedName() + " gains " + colorText((B1stat.toFixed(1) + " friendship"),"khaki") + " and " + colorText((B2stat.toFixed(1) + " romance"),"lightcoral") + ", and loses " + colorText((B1stat.toFixed(1) + " sexual tension"),"gray") + ".\n"
+						   + "\n" + PersonalRoom.prototype.getButtonFinishDay();
+					// No sex
+					break;
+				case "submit": // Sexual tension, DS, romance gain
+					var A2stat = (20 * rsMultOnChA);
+					var B2stat = (20 * rsMultOnChB);
+					var A3stat = (10 * rsMultOnChA);
+					var B3stat = (10 * rsMultOnChB);
+					State.variables[chA].relations[chB].romance.stv += (10 * rsMultOnChA);
+					State.variables[chB].relations[chA].romance.stv += (10 * rsMultOnChB);
+					State.variables[chA].relations[chB].submission.stv += (20 * rsMultOnChA);
+					State.variables[chB].relations[chA].domination.stv += (20 * rsMultOnChB);
+					State.variables[chA].relations[chB].sexualTension.stv += (20 * rsMultOnChA);
+					State.variables[chB].relations[chA].sexualTension.stv += (20 * rsMultOnChB); 
+					// Text
+					rText += "Your body drowns in " + gC(chA).getFormattedName() + "'s kisses and caresses, and in your want for more, you submit whole for " + gC(chA).comPr + ".\n"
+						   + gC(chA).getFormattedName() + " gains " + colorText((A2stat.toFixed(1) + " sexual tension"),"lightcoral") + ", " + colorText((A2stat.toFixed(1) + " domination"),"purple") + " and " + colorText((A3stat.toFixed(1) + " romance"),"lightcoral") + ".\n"
+						   + gC(chB).getFormattedName() + " gains " + colorText((B2stat.toFixed(1) + " sexual tension"),"lightcoral") + ", " + colorText((B2stat.toFixed(1) + " submission"),"purple") + " and " + colorText((B3stat.toFixed(1) + " romance"),"lightcoral") + ".\n"
+					// Sex (Dom)
+					sexScene = true;
+						State.variables.sc.startScene(
+						"ss","fixed",[chB],[chA],"The water flows quietly.",endConditionTurns,gSettings().stdSxScDur,"Scene Results");
+						State.variables[chA].hasLead = true;
+						State.variables[chB].hasLead = false;
+						gC(chA).aiAlgorythm = createAiWeightedMissionsByTaste();
+						gC(chA).aiAlgorythm.setRoleDomination();
+						if ( chB != "chPlayerCharacter" ) {
+							gC(chB).aiAlgorythm = createAiWeightedMissionsByTaste();
+							gC(chB).aiAlgorythm.setRoleSubmission();
+						}
+					break;
+			}
+			break;
+		case "domination":
+			switch(chBintention) {
+				case "snuggle": // Copy from snuggle-sex
+					var Astat = (30 * rsMultOnChA);
+					var Bstat = (30 * rsMultOnChB);
+					if ( resistedSex ) { // Romance, sexual tension loss
+						State.variables[chA].relations[chB].romance.stv -= (30 * rsMultOnChA);
+						State.variables[chB].relations[chA].romance.stv -= (30 * rsMultOnChB);
+						State.variables[chA].relations[chB].sexualTension.stv -= (30 * rsMultOnChA);
+						State.variables[chB].relations[chA].sexualTension.stv -= (30 * rsMultOnChB);
+						// Text
+						rText += gC(chA).getFormattedName() + " turns annoyed when you reject " + gC(chA).posPr + " advances, and turns " + gC(chA).posPr + " back to you.\n"
+							   + gC(chA).getFormattedName() + " loses " + colorText((Astat.toFixed(1) + " romance"),"gray") + " and " + colorText((Astat.toFixed(1) + " sexual tension"),"gray") + ".\n"
+							   + gC(chB).getFormattedName() + " loses " + colorText((Bstat.toFixed(1) + " romance"),"gray") + " and " + colorText((Bstat.toFixed(1) + " sexual tension"),"gray") + ".\n"
+							   + "\n" + PersonalRoom.prototype.getButtonFinishDay();
+						// No sex
+					} else { // Sexual tension, DS gains, romance loss
+						State.variables[chA].relations[chB].romance.stv -= (30 * rsMultOnChA);
+						State.variables[chB].relations[chA].romance.stv -= (30 * rsMultOnChB);
+						State.variables[chA].relations[chB].sexualTension.stv += (30 * rsMultOnChA);
+						State.variables[chB].relations[chA].sexualTension.stv += (30 * rsMultOnChB);
+						State.variables[chA].relations[chB].domination.stv += (30 * rsMultOnChA);
+						State.variables[chB].relations[chA].submission.stv += (30 * rsMultOnChB);
+						// Text
+						rText += gC(chA).getFormattedName() + " attempts to force " + gC(chA).refPr + " on you, and although it wasn't your initial intention, you ultimately submit.\n"
+							   + gC(chA).getFormattedName() + " loses " + colorText((Astat.toFixed(1) + " romance"),"gray") + " and gains " + colorText((Astat.toFixed(1) + " sexual tension"),"lightcoral") + " and " + colorText((Astat.toFixed(1) + " submission"),"purple") + ".\n"
+							   + gC(chB).getFormattedName() + " loses " + colorText((Bstat.toFixed(1) + " romance"),"gray") + " and gains " + colorText((Bstat.toFixed(1) + " sexual tension"),"lightcoral") + " and " + colorText((Bstat.toFixed(1) + " domination"),"purple") + ".\n"
+						// Sex (Dom)
+						sexScene = true;
+							State.variables.sc.startScene(
+							"ss","fixed",[chB],[chA],"The water flows quietly.",endConditionTurns,gSettings().stdSxScDur,"Scene Results");
+							State.variables[chA].hasLead = true;
+							State.variables[chB].hasLead = false;
+							gC(chA).aiAlgorythm = createAiWeightedMissionsByTaste();
+							gC(chA).aiAlgorythm.setRoleDomination();
+							if ( chB != "chPlayerCharacter" ) {
+								gC(chB).aiAlgorythm = createAiWeightedMissionsByTaste();
+								gC(chB).aiAlgorythm.setRoleSubmission();
+							}
+					}
+					break;
+				case "tease": // Sexual tension, DS, rivalry gain, almost copy from Tease-Domination
+					var A1stat = (30 * rsMultOnChA);
+					var B1stat = (30 * rsMultOnChB);
+					var A2stat = (20 * rsMultOnChA);
+					var B2stat = (20 * rsMultOnChB);
+					State.variables[chA].relations[chB].rivalry.stv += (30 * rsMultOnChA);
+					State.variables[chB].relations[chA].rivalry.stv += (30 * rsMultOnChB);
+					State.variables[chA].relations[chB].sexualTension.stv += (20 * rsMultOnChA);
+					State.variables[chB].relations[chA].sexualTension.stv += (20 * rsMultOnChB);
+					State.variables[chA].relations[chB].domination.stv += (20 * rsMultOnChA);
+					State.variables[chB].relations[chA].submission.stv += (20 * rsMultOnChB);
+					// Text
+					rText += "Your passive-aggressive demeanor falls apart like a house of cards when you realize that " + gC(chA).getFormattedName() + " never had the intention of playing nice. " + firstToCap(gC(chA).posPr) + " hands quickly grab your wrists, and you find yourself at " + gC(chA).posPr + " mercy."
+						   + gC(chA).getFormattedName() + " gains " + colorText((A1stat.toFixed(1) + " rivalry"),"firebrick") + ", " + colorText((A2stat.toFixed(1) + " sexual tension"),"lightcoral") + " and " + colorText((A2stat.toFixed(1) + " submission"),"purple") + ".\n"
+						   + gC(chB).getFormattedName() + " gains " + colorText((B1stat.toFixed(1) + " rivalry"),"firebrick") + ", " + colorText((B2stat.toFixed(1) + " sexual tension"),"lightcoral") + " and " + colorText((B2stat.toFixed(1) + " domination"),"purple") + ".\n"
+					// Sex (Dom)
+					sexScene = true;
+						State.variables.sc.startScene(
+						"ss","fixed",[chB],[chA],"The water flows quietly.",endConditionTurns,gSettings().stdSxScDur,"Scene Results");
+						State.variables[chA].hasLead = true;
+						State.variables[chB].hasLead = false;
+						gC(chA).aiAlgorythm = createAiWeightedMissionsByTaste();
+						gC(chA).aiAlgorythm.setRoleDomination();
+						if ( chB != "chPlayerCharacter" ) {
+							gC(chB).aiAlgorythm = createAiWeightedMissionsByTaste();
+							gC(chB).aiAlgorythm.setRoleSubmission();
+						}
+					break;
+				case "sex": // Romance, rivalry, DS, sexual tension gain
+					var A1stat = (40 * rsMultOnChA);
+					var B1stat = (40 * rsMultOnChB);
+					var A2stat = (20 * rsMultOnChA);
+					var B2stat = (20 * rsMultOnChB);
+					var A3stat = (10 * rsMultOnChA);
+					var B3stat = (10 * rsMultOnChB);
+					State.variables[chA].relations[chB].romance.stv += (10 * rsMultOnChA);
+					State.variables[chB].relations[chA].romance.stv += (10 * rsMultOnChB);
+					State.variables[chA].relations[chB].domination.stv += (10 * rsMultOnChA);
+					State.variables[chB].relations[chA].submission.stv += (10 * rsMultOnChB);
+					State.variables[chA].relations[chB].rivalry.stv += (40 * rsMultOnChA);
+					State.variables[chB].relations[chA].rivalry.stv += (40 * rsMultOnChB);
+					State.variables[chA].relations[chB].sexualTension.stv += (20 * rsMultOnChA);
+					State.variables[chB].relations[chA].sexualTension.stv += (20 * rsMultOnChB);
+					// Text
+					rText += "You want to share a night of physical intimacy - and so does " + gC(chA).perPr + ", as long as " + gC(chA).perPr + "'s on top. Facing " + gC(chA).comPr + " with a defiant grin, you accept " + gC(chA).posPr + " conditions as you start thinking on how you will get back at " + gC(chA).comPr + ".\n"
+						   + gC(chA).getFormattedName() + " gains " + colorText((A1stat.toFixed(1) + " rivalry"),"firebrick") + ", " + colorText((A2stat.toFixed(1) + " sexual tension"),"lightcoral") + ", " + colorText((A3stat.toFixed(1) + " romance"),"lightcoral") + " and " + colorText((A3stat.toFixed(1) + " domination"),"purple") + ".\n"
+						   + gC(chB).getFormattedName() + " gains " + colorText((B1stat.toFixed(1) + " rivalry"),"firebrick") + ", " + colorText((B2stat.toFixed(1) + " sexual tension"),"lightcoral") + ", " + colorText((B3stat.toFixed(1) + " romance"),"lightcoral") + " and " + colorText((B3stat.toFixed(1) + " submission"),"purple") + ".\n"
+					// Sex (Dom)
+					sexScene = true;
+						State.variables.sc.startScene(
+						"ss","fixed",[chB],[chA],"The water flows quietly.",endConditionTurns,gSettings().stdSxScDur,"Scene Results");
+						State.variables[chA].hasLead = true;
+						State.variables[chB].hasLead = false;
+						gC(chA).aiAlgorythm = createAiWeightedMissionsByTaste();
+						gC(chA).aiAlgorythm.setRoleDomination();
+						if ( chB != "chPlayerCharacter" ) {
+							gC(chB).aiAlgorythm = createAiWeightedMissionsByTaste();
+							gC(chB).aiAlgorythm.setRoleEqualFooting();
+						}
+					break;
+				case "domination": // DS, sexual tension gain
+					var A1stat = (50 * rsMultOnChA);
+					var B1stat = (50 * rsMultOnChB);
+					var A2stat = (20 * rsMultOnChA);
+					var B2stat = (20 * rsMultOnChB);
+					State.variables[chA].relations[chB].rivalry.stv += (50 * rsMultOnChA);
+					State.variables[chB].relations[chA].rivalry.stv += (50 * rsMultOnChB);
+					State.variables[chA].relations[chB].sexualTension.stv += (20 * rsMultOnChA);
+					State.variables[chB].relations[chA].sexualTension.stv += (20 * rsMultOnChB);
+					// Text
+					rText += "You enter the bed confident and assertive, ready to grab " + gC(chA).getFormattedName() + "'s wrists and have your way with " + gC(chA).comPr + ", but soon discover that " + gC(chA).perPr + " has the same exact intentions. The two of you end up struggling to decide who'll remain on top.\n"
+						   + gC(chA).getFormattedName() + " gains " + colorText((A1stat.toFixed(1) + " rivalry"),"firebrick") + " and " + colorText((A2stat.toFixed(1) + " sexual tension"),"lightcoral") + ".\n"
+						   + gC(chB).getFormattedName() + " gains " + colorText((B1stat.toFixed(1) + " rivalry"),"firebrick") + " and " + colorText((B2stat.toFixed(1) + " sexual tension"),"lightcoral") + ".\n"
+					// Sex (Ega)
+					sexScene = true;
+						State.variables.sc.startScene(
+						"ss","dynamic",[chB],[chA],"The water flows quietly.",endConditionTurns,gSettings().stdSxScDur,"Scene Results");
+						gC(chA).aiAlgorythm = createAiWeightedMissionsByTaste();
+						gC(chA).aiAlgorythm.setRoleDomination();
+						if ( chB != "chPlayerCharacter" ) {
+							gC(chB).aiAlgorythm = createAiWeightedMissionsByTaste();
+							gC(chB).aiAlgorythm.setRoleDomination();
+						}
+					break;
+				case "resist": // Immediate resist
+					var Astat = (30 * rsMultOnChA);
+					var Bstat = (30 * rsMultOnChB);
+					State.variables[chA].relations[chB].romance.stv -= (30 * rsMultOnChA);
+					State.variables[chB].relations[chA].romance.stv -= (30 * rsMultOnChB);
+					State.variables[chA].relations[chB].sexualTension.stv -= (30 * rsMultOnChA);
+					State.variables[chB].relations[chA].sexualTension.stv -= (30 * rsMultOnChB);
+					// Text
+					rText += gC(chA).getFormattedName() + " turns annoyed when you reject " + gC(chA).posPr + " advances, and turns " + gC(chA).posPr + " back to you.\n"
+						   + gC(chA).getFormattedName() + " loses " + colorText((Astat.toFixed(1) + " romance"),"gray") + " and " + colorText((Astat.toFixed(1) + " sexual tension"),"gray") + ".\n"
+						   + gC(chB).getFormattedName() + " loses " + colorText((Bstat.toFixed(1) + " romance"),"gray") + " and " + colorText((Bstat.toFixed(1) + " sexual tension"),"gray") + ".\n"
+						   + "\n" + PersonalRoom.prototype.getButtonFinishDay();
+					// No sex
+					break;
+				case "submit": // Sexual tension, DS, romance gain
+					var A2stat = (20 * rsMultOnChA);
+					var B2stat = (20 * rsMultOnChB);
+					var A3stat = (10 * rsMultOnChA);
+					var B3stat = (10 * rsMultOnChB);
+					State.variables[chA].relations[chB].romance.stv += (10 * rsMultOnChA);
+					State.variables[chB].relations[chA].romance.stv += (10 * rsMultOnChB);
+					State.variables[chA].relations[chB].submission.stv += (20 * rsMultOnChA);
+					State.variables[chB].relations[chA].domination.stv += (20 * rsMultOnChB);
+					State.variables[chA].relations[chB].sexualTension.stv += (20 * rsMultOnChA);
+					State.variables[chB].relations[chA].sexualTension.stv += (20 * rsMultOnChB); 
+					// Text
+					rText += "Your body drowns in " + gC(chA).getFormattedName() + "'s kisses and caresses, and in your want for more, you submit whole for " + gC(chA).comPr + ".\n"
+						   + gC(chA).getFormattedName() + " gains " + colorText((A2stat.toFixed(1) + " sexual tension"),"lightcoral") + ", " + colorText((A2stat.toFixed(1) + " domination"),"purple") + " and " + colorText((A3stat.toFixed(1) + " romance"),"lightcoral") + ".\n"
+						   + gC(chB).getFormattedName() + " gains " + colorText((B2stat.toFixed(1) + " sexual tension"),"lightcoral") + ", " + colorText((B2stat.toFixed(1) + " submission"),"purple") + " and " + colorText((B3stat.toFixed(1) + " romance"),"lightcoral") + ".\n"
+					// Sex (Dom)
+					sexScene = true;
+						State.variables.sc.startScene(
+						"ss","fixed",[chB],[chA],"The water flows quietly.",endConditionTurns,gSettings().stdSxScDur,"Scene Results");
+						State.variables[chA].hasLead = true;
+						State.variables[chB].hasLead = false;
+						gC(chA).aiAlgorythm = createAiWeightedMissionsByTaste();
+						gC(chA).aiAlgorythm.setRoleDomination();
+						if ( chB != "chPlayerCharacter" ) {
+							gC(chB).aiAlgorythm = createAiWeightedMissionsByTaste();
+							gC(chB).aiAlgorythm.setRoleSubmission();
+						}
+					break; 
+			}
+			
+			break;
+	}
+	
+	if ( sexScene ) {
+		State.variables.sc.endSceneScript = processGenericSexSceneEffects;
+		if ( chB != "chPlayerCharacter" ) {
+			State.variables.sc.autoResolveScene();
+		} else {
+			State.variables.sc.formatScenePassage();
+			rText += "\n[[Continue|Scene]]";
+		}
+	}
+	
+	return rText;
 }
 
 // Windows
@@ -1421,6 +2200,54 @@ window.npcsEquipBestTools = function() {
 			}
 		}
 	}
+}
+
+window.actorInvitesTargetToShareNight = function(actor,target) {
+	var result = false;
+		var stringResult = "";
+		var relType = gRelTypeAb(target,actor);
+		
+		if ( relType ) {
+			if ( relType.forcedToSex ) {
+				result = true;
+				stringResult = gC(target).getFormattedName() + " is bound by your relationship to accept.";
+			}
+		}
+		if ( result == false ) {
+		var baseDifficulty = 100; // 100
+		var relationshipFactor = rLvlAbt(target,actor,"friendship") * 1 + rLvlAbt(target,actor,"romance") * 2 + rLvlAbt(target,actor,"sexualTension") * 2
+							 + rLvlAbt(target,actor,"submission") * 2 + rLvlAbt(target,actor,"enmity") * -3 + rLvlAbt(target,actor,"rivalry") * -1;
+		var powerGrowthFactor = -((quantifyCharacterStats(target) - 110) / 45);
+		if ( powerGrowthFactor < 0 ) { powerGrowthFactor = 0; }
+		var simulationState = 0;
+		if ( returnCharsUnlockedGenitals(target).length == 0 ) {
+			simulationState -= 20;
+		}
+		var intimacyFactor = getCharsRelativeIntimacy(target,actor) * getInfluenceEffectWithDrives(target,4,["dLove"],["dPleasure","dDomination"]);
+		if ( intimacyFactor > 0 ) { intimacyFactor *= 0.5; }
+		var drivesFactor = gC(target).dLove.level * 1 + gC(target).dPleasure.level * 1 - gC(target).dImprovement.level * 1;
+		if ( getCandidatesKeysArray().includes(target) ) {
+			if ( getCharsDrivePercent(target,"dDomination") >= 0.16 || getCharsDrivePercent(target,"dAmbition") >= 0.16 ) {
+				drivesFactor -= (( gC(target).dDomination.level * 1 + gC(target).dAmbition.level * 1 ) * ( getCandidatesMeritPosition(target) - 1 ) * 0.5);
+			}
+		}
+		drivesFactor *= ( 1 + ( powerGrowthFactor * 0.2 ) );
+		var dwxFactor = gC(target).daysWithoutSex; // Days without sex
+		
+		var semifinalValue = relationshipFactor + simulationState + drivesFactor + powerGrowthFactor + intimacyFactor + dwxFactor;
+		var diceThrow = seedableRandomInt100(stringToUTF16sum(gC(actor).name + gC(target).name));
+		
+		var finalValue = semifinalValue + diceThrow;
+		result = false;
+		if ( finalValue >= baseDifficulty ) { result = true; }
+		if ( result ) { stringResult += gC(target).getFormattedName() + " accepted the offer." }
+		else { stringResult += gC(target).getFormattedName() + " refused the invitation." }
+		stringResult += "\nDice throw (100): " + diceThrow + ", Relationship: " + relationshipFactor.toFixed(2) + ", Locked genitals: " + simulationState
+					  + ", Drives: " + drivesFactor.toFixed(2) + ", Intimacy: " + intimacyFactor.toFixed(1) + ", Growth: " + powerGrowthFactor.toFixed(2) 
+					  + ", Days without sex: " + dwxFactor.toFixed(0) + " - Result: " + finalValue.toFixed(2) + " VS Base difficulty: " + baseDifficulty;
+		}
+		
+		return [result,stringResult];
 }
 
 // Engine

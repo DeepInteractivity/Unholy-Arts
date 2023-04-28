@@ -566,6 +566,7 @@ window.SocIntSys = function(key,charList) {
 		// Data clean
 		this.charMoodChanges = [];
 		this.charRelChanges = [];
+		this.extraEffect = "";
 		this.interactionsDescription = "";
 		this.expGainsDescription = "";
 		

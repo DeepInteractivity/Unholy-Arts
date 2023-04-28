@@ -424,6 +424,23 @@ window.getTextRelationIncrease = function(charA,charB,type,intensity) {
 	return msg;
 }
 
+window.getSpecialRelationshipsOfXtypes = function(charKey,relationshipTypes) {
+	var fittingRelationships = [];
+	for ( var rl in gC(charKey).relations ) {
+		if ( gC(charKey).relations[rl] != undefined ) {
+			if ( gC(charKey).relations[rl].relType != undefined ) {
+				if ( relationshipTypes.includes(gC(charKey).relations[rl].relType.type) ) {
+					fittingRelationships.push(gC(charKey).relations[rl].relType.target);
+				}
+			}
+		}
+	}
+	return fittingRelationships;
+}
+window.getCharAllies = function(charKey) {
+	return getSpecialRelationshipsOfXtypes(charKey,["companionship"]);
+}
+
 ////////// RELATIONSHIPTYPE CLASS  //////////
 // A relationship type is a specific form or relationship that follows specific rules
 
@@ -475,7 +492,7 @@ window.finishRelType = function(charA,charB) {
 	if ( relType ) {
 		gC(charA).relations[charB].relType.finishRelTypeExtra();
 		gC(charB).relations[charA].relType.finishRelTypeExtra();
-		description = "The " + relType.name + " relationship between " + gC(charA).name + " and " + gC(charB).name + " has finished.";
+		description = "The " + relType.name + " relationship between " + gC(charA).name + " and " + gC(charB).name + " has finished.\n";
 		if ( relType.hierarchy == "ega" ) {
 			gC(charA).egaChars = arrayMinusA(gC(charA).egaChars,charB);
 			gC(charB).egaChars = arrayMinusA(gC(charB).egaChars,charA);
@@ -492,6 +509,53 @@ window.finishRelType = function(charA,charB) {
 	return description;
 }
 
+window.getCharTopIntimacy = function(charA) {
+	var topIntimacy = 0;
+	for ( var rl in gC(charA).relations ) {
+		if ( gC(charA).relations[rl] != undefined ) {
+			if ( gC(charA).relations[rl].target != undefined ) {
+				var cInt = getCharsAbsoluteIntimacy(charA,gC(charA).relations[rl].target);
+				if ( cInt > topIntimacy ) {
+					topIntimacy = cInt;
+				}
+			}
+		}
+	}
+	return topIntimacy;
+}
+window.getCharsAbsoluteIntimacy = function(charA,charB) {
+	var intimacy = 0;
+	var rel = gC(charA).relations[charB];
+	if ( rel != undefined ) {
+		if ( rel.relType != undefined ) {
+			if ( rel.relType.intimacy != undefined ) {
+				intimacy = rel.relType.intimacy;
+			}
+		}
+	}
+	return intimacy;
+}
+window.getCharsRelativeIntimacy = function(charA,charB) {
+	var charAtopInt = getCharTopIntimacy(charA);
+	var absInt = getCharsAbsoluteIntimacy(charA,charB);
+	var relInt = absInt - ( charAtopInt / 2 );
+	return relInt;
+}
+window.getInfluenceEffectWithDrives = function(cK,baseMultiplier,positiveDrives,negativeDrives) {
+	var fMult = baseMultiplier;
+	for ( var dr of positiveDrives ) {
+		if ( getCharsDrivePercent(cK,dr) > 0.2 ) {
+			fMult *= 1.5;
+		}
+	}
+	for ( var dr of negativeDrives ) {
+		if ( getCharsDrivePercent(cK,dr) > 0.2 ) {
+			fMult *= 0.67;
+		}
+	}
+	return fMult;
+}
+
 window.createRelTypeServitudeSub = function(actor,target,days) {
 	var relType = new RelationshipType(actor,target,"servitude","servitude",colorText("Sv","violet"),"servant","temporary",days,"sub");
 	relType.forcedToFollow = true;
@@ -505,20 +569,21 @@ window.createRelTypeServitudeSub = function(actor,target,days) {
 		gC(this.actor).changeMerit(-meritLoss);
 		gC(this.actor).relations[this.target].submission.stv += submissionGain;
 		
-		var description = gC(this.actor).name + " has lost " + meritLoss + " merit. " + gC(this.actor).name + "'s submission towards " + gC(this.target).name + " is growing.";
+		var description = gC(this.actor).name + " has lost " + meritLoss + " merit. " + gC(this.actor).name + "'s submission towards " + gC(this.target).name + " is growing (+50).";
 		return description;
 	}
 	relType.getTooltip = relTypeServitudeTooltip;
+	relType.intimacy = 1;
 	
 	gC(actor).domChar = target;
 	gC(actor).relations[target].relType = relType;
 	
-	gC(actor).relations[target].submission.levelMod += 4;
-	gC(actor).relations[target].sexualTension.levelMod += 2;
+	gC(actor).relations[target].submission.levelMod += 2;
+	gC(actor).relations[target].sexualTension.levelMod += 1;
 	
 	relType.finishRelTypeExtra = function() {
-		gC(this.actor).relations[this.target].submission.levelMod -= 4;
-		gC(this.actor).relations[this.target].sexualTension.levelMod -= 2;
+		gC(this.actor).relations[this.target].submission.levelMod -= 2;
+		gC(this.actor).relations[this.target].sexualTension.levelMod -= 1;
 	}
 }
 window.createRelTypeServitudeDom = function(actor,target,days) {
@@ -531,20 +596,21 @@ window.createRelTypeServitudeDom = function(actor,target,days) {
 		gC(this.actor).changeMerit(meritGain);
 		gC(this.actor).relations[this.target].domination.stv += dominationGain;
 		
-		var description = gC(this.actor).name + " has won " + meritGain + " merit. " + gC(this.actor).name + "'s domination towards " + gC(this.target).name + " is growing.";
+		var description = gC(this.actor).name + " has won " + meritGain + " merit. " + gC(this.actor).name + "'s domination towards " + gC(this.target).name + " is growing (+50).";
 		return description;
 	}
 	relType.getTooltip = relTypeServitudeTooltip;
+	relType.intimacy = 1;
 	
 	gC(actor).subChars.push(target);
 	gC(actor).relations[target].relType = relType;
 	
-	gC(actor).relations[target].domination.levelMod += 4;
-	gC(actor).relations[target].sexualTension.levelMod += 2;
+	gC(actor).relations[target].domination.levelMod += 2;
+	gC(actor).relations[target].sexualTension.levelMod += 1;
 	
 	relType.finishRelTypeExtra = function() {
-		gC(this.actor).relations[this.target].domination.levelMod -= 4;
-		gC(this.actor).relations[this.target].sexualTension.levelMod -= 2;
+		gC(this.actor).relations[this.target].domination.levelMod -= 2;
+		gC(this.actor).relations[this.target].sexualTension.levelMod -= 1;
 	}
 }
 
@@ -563,24 +629,21 @@ window.createRelTypeTutorshipSub = function(actor,target,days) {
 		gC(this.actor).relations[this.target].submission.stv += submissionGain;
 		gC(this.actor).relations[this.target].friendship.stv += friendshipGain;
 		
-		var description = gC(this.actor).name + "'s submission towards " + gC(this.target).name + " is growing. " + gC(this.actor).name + "'s and " + gC(this.target).name + "'s friendship is growing.";
+		var description = gC(this.actor).name + "'s submission towards " + gC(this.target).name + " is growing (+25). " + gC(this.actor).name + "'s and " + gC(this.target).name + "'s friendship is growing (+25).";
 		return description;
 	}
 	relType.getTooltip = relTypeTutorshipTooltip;
+	relType.intimacy = 1;
 	
 	gC(actor).domChar = target;
 	gC(actor).relations[target].relType = relType;
 	
-	gC(actor).relations[target].submission.levelMod += 2;
-	gC(actor).relations[target].sexualTension.levelMod += 1;
+	gC(actor).relations[target].submission.levelMod += 1;
 	gC(actor).relations[target].friendship.levelMod += 2;
-	gC(actor).relations[target].romance.levelMod += 1;
 	
 	relType.finishRelTypeExtra = function() {
-		gC(this.actor).relations[this.target].submission.levelMod -= 2;
-		gC(this.actor).relations[this.target].sexualTension.levelMod -= 1;
+		gC(this.actor).relations[this.target].submission.levelMod -= 1;
 		gC(this.actor).relations[this.target].friendship.levelMod -= 2;
-		gC(this.actor).relations[this.target].romance.levelMod -= 1;
 	}
 }
 window.createRelTypeTutorshipDom = function(actor,target,days) {
@@ -595,24 +658,21 @@ window.createRelTypeTutorshipDom = function(actor,target,days) {
 		gC(this.actor).relations[this.target].domination.stv += dominationGain;
 		gC(this.actor).relations[this.target].friendship.stv += friendshipGain;
 		
-		var description = gC(this.actor).name + " has won " + meritGain + " merit. " + gC(this.actor).name + "'s domination towards " + gC(this.target).name + " is growing. " + gC(this.actor).name + "'s and " + gC(this.target).name + "'s friendship is growing.";
+		var description = gC(this.actor).name + " has won " + meritGain + " merit. " + gC(this.actor).name + "'s domination towards " + gC(this.target).name + " is growing (+25). " + gC(this.actor).name + "'s and " + gC(this.target).name + "'s friendship is growing (+25).";
 		return description;
 	}
 	relType.getTooltip = relTypeTutorshipTooltip;
+	relType.intimacy = 1;
 	
 	gC(actor).subChars.push(target);
 	gC(actor).relations[target].relType = relType;
 	
-	gC(actor).relations[target].domination.levelMod += 2;
-	gC(actor).relations[target].sexualTension.levelMod += 1;
+	gC(actor).relations[target].domination.levelMod += 1;
 	gC(actor).relations[target].friendship.levelMod += 2;
-	gC(actor).relations[target].romance.levelMod += 1;
 	
 	relType.finishRelTypeExtra = function() {
-		gC(this.actor).relations[this.target].domination.levelMod -= 2;
-		gC(this.actor).relations[this.target].sexualTension.levelMod -= 1;
+		gC(this.actor).relations[this.target].domination.levelMod -= 1;
 		gC(this.actor).relations[this.target].friendship.levelMod -= 2;
-		gC(this.actor).relations[this.target].romance.levelMod -= 1;
 	}
 }
 
@@ -630,61 +690,107 @@ window.createRelTypeCompanionship = function(actor,target,days) {
 		gC(this.actor).relations[this.target].friendship.stv += friendshipGain;
 		gC(this.actor).relations[this.target].romance.stv += romanceGain;
 		
-		var description = gC(this.actor).name + "'s friendship and romance towards " + gC(this.target).name + " are growing.";
+		var description = gC(this.actor).name + "'s friendship and romance towards " + gC(this.target).name + " are growing (+25,+25).";
 		return description;
 	}
 	relType.getTooltip = relTypeCompanionshipTooltip;
 	relType.supportInfamy = -1;
+	relType.intimacy = 2;
 	
 	gC(actor).egaChars.push(target);
 	gC(actor).relations[target].relType = relType;
 	
-	gC(actor).relations[target].friendship.levelMod += 3;
-	gC(actor).relations[target].romance.levelMod += 2;
+	gC(actor).relations[target].friendship.levelMod += 2;
+	gC(actor).relations[target].romance.levelMod += 1;
 	gC(actor).relations[target].sexualTension.levelMod += 1;
 	
 	relType.finishRelTypeExtra = function() {
-		gC(this.actor).relations[this.target].friendship.levelMod -= 3;
-		gC(this.actor).relations[this.target].romance.levelMod -= 2;
+		gC(this.actor).relations[this.target].friendship.levelMod -= 2;
+		gC(this.actor).relations[this.target].romance.levelMod -= 1;
 		gC(this.actor).relations[this.target].sexualTension.levelMod -= 1;
 	}
 }
 
-
+window.createRelTypeIntimacy = function(actor,target,days) {
+	var relType = new RelationshipType(actor,target,"intimacy","intimacy",colorText("In","mediumseagreen"),"intimate","temporary",days,"ega");
+	relType.forcedToFollow = false;
+	relType.forcedToAssistAssault = true;
+	relType.forcedToSex = false;
+	relType.disallowedAssault = true;
+	relType.disallowedChallenge = true;
+	relType.liberationChallenge = false;
+	relType.dailyEffect = function() {
+		var friendshipGain = 25;
+		var romanceGain = 50;
+		gC(this.actor).relations[this.target].friendship.stv += friendshipGain;
+		gC(this.actor).relations[this.target].romance.stv += romanceGain;
+		
+		var description = gC(this.actor).name + "'s romance and friendship towards " + gC(this.target).name + " are growing (+50,+25).";
+		return description;
+	}
+	relType.getTooltip = relTypeIntimacyTooltip;
+	relType.supportInfamy = -1;
+	relType.intimacy = 6;
+	
+	gC(actor).egaChars.push(target);
+	gC(actor).relations[target].relType = relType;
+	
+	gC(actor).relations[target].friendship.levelMod += 2;
+	gC(actor).relations[target].romance.levelMod += 3;
+	gC(actor).relations[target].sexualTension.levelMod += 1;
+	
+	relType.finishRelTypeExtra = function() {
+		gC(this.actor).relations[this.target].friendship.levelMod -= 2;
+		gC(this.actor).relations[this.target].romance.levelMod -= 3;
+		gC(this.actor).relations[this.target].sexualTension.levelMod -= 1;
+	}
+}
 
 	// Relatinship Types' Tooltips
 
 window.relTypeServitudeTooltip = function() {
 	var tt = "In a servitude relationship, the servant is expected to follow the orders of the master.\n"
 		   + "Daily domination/submission gains.\n"
-		   + "Flat domination/submission and sexual tension increases.\n"
+		   + "Temporary domination/submission and sexual tension level increases.\n"
 		   + "Daily merit transfer from servant to master.\n"
 		   + "The master may demand the servant to follow.\n"
 		   + "The master may demand the servant to assist on assault.\n"
 		   + "The master may demand sex from the servant.\n"
 		   + "Neither master nor servant may assault each other.\n"
 		   + "The master may not challenge the servant.\n"
-		   + "The servant may challenge the master to regain their freedom.\n";
+		   + "The servant may challenge the master to regain their freedom.\n"
+		   + "Intimacy: 1.\n";
 	return tt;
 }
 
 window.relTypeTutorshipTooltip = function() {
 	var tt = "In a tutorship relationship, the pupil is expected to follow the orders of the tutor, in exchange for experience.\n"
 		   + "Daily domination/submission gains. Daily friendship gains.\n"
-		   + "Flat domination/submission, friendship, romance and sexual tension increases.\n"
+		   + "Temporary domination/submission, friendship level increases.\n"
 		   + "Daily merit gain for tutor.\n"
 		   + "The tutor may demand the pupil to follow.\n"
 		   + "Neither tutor nor pupil may assault each other.\n"
 		   + "The tutor may not challenge the pupil.\n"
-		   + "When both tutor and pupil train a stat and the tutor excels at it,\nthe pupil will gain additional experience.\n";
+		   + "When both tutor and pupil train a stat and the tutor excels at it,\nthe pupil will gain additional experience.\n"
+		   + "Intimacy: 1.\n";
 	return tt;
 }
 
 window.relTypeCompanionshipTooltip = function() {
 	var tt = "In a companionship relationship, companions are not allowed to assault each other.\n"
 		   + "Daily friendship and romance gains.\n"
-		   + "Flat friendship, romance and sexual tension increases.\n"
-		   + "Companions may not assault each other.\n";
+		   + "Temporary friendship, romance and sexual tension level increases.\n"
+		   + "Companions may not assault each other.\n"
+		   + "Intimacy: 2.\n";
+	return tt;
+}
+
+window.relTypeIntimacyTooltip = function() {
+	var tt = "In an intimates relationship, companions are not allowed to assault or challenge each other.\n"
+		   + "Daily friendship and romance gains.\n"
+		   + "Temporary friendship, romance and sexual tension level increases.\n"
+		   + "Intimates may not assault or challenge each other.\n"
+		   + "Intimacy: 6.\n";
 	return tt;
 }
 

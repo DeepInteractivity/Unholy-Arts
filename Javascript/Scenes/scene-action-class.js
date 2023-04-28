@@ -729,9 +729,12 @@ window.saList = function() {
 	this.pussyFootjob = createSaPussyFootjob();
 	
 	this.kissLips = createSaKissLips();
+	this.kissNeck = createSaKissNeck();
 	this.frottage = createSaFrottage();
 	
 	this.lickLegs = createSaLickLegs();
+	
+	this.whisperSNs = createSaWhisperSweetNothings();
 	
 	this.thrust = createSaThrust();
 	this.analThrust = createSaAnalThrust();
@@ -786,6 +789,8 @@ window.saList = function() {
 		// Cont. actions
 	
 	this.frenchKiss = createSaFrenchKiss();
+	this.holdHands = createSaHoldHands();
+	
 	this.legHoldHead = createLegHoldHead();
 	this.extraLegHoldHead = createExtraLegHoldHead();
 	this.giveCunnilingus = createGiveCunnilingus();
@@ -940,6 +945,17 @@ window.saList = function() {
 	this.disablingShot = createDisablingShot();
 	this.weaponPlunge = createWeaponPlunge();
 };
+
+window.getAllActions = function() {
+	var actions = [];
+	var saListD = saList();
+	for ( var sa in saListD ) {
+		if ( saListD[sa] instanceof sceneAction ) {
+			actions.push(saListD[sa].key);
+		}
+	}
+	return actions;
+}
 
 window.returnBaList = function() {
 	return ["struggle","baKissLips","baStrokeDick","baStrokePussy","baTeaseLockedDick","baTeaseLockedPussy","pounceFrontal","pounceFrontalD2P","pounceFrontalP2D","pounceFrontalP2P","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","coldGuts","baScratch","catAspect","embers","freezeFeet","sparkingRubbing","lightningDarts","taunt","baTease","baHypnoticGlance","baOrderKneeling","baDrainingKiss","baEnergyDrainingKiss","baEtherealChains","baVineArmLock","baBorrowedIdentity","baRelaxingScent","holyBlast","flamingFan","flaringFeint","disablingShot","earthWall","quake"];

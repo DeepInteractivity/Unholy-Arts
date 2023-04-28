@@ -685,6 +685,48 @@ Character.prototype.textRelationshipWithPlayer = function() {
 	}
 	return text;
 }
+
+Character.prototype.textSpecialRelationships = function() {
+	var text = "";
+	var character = this.varName;
+		if ( gC(character).domChar ) {
+			text += "Submissive relationship:\n"
+					  + gC(gC(character).domChar).getFormattedName() + ": " + getRelTypeNameMayus(gC(character).domChar,character);
+					  if ( gRelTypeAb(gC(character).domChar,character).persistence == "temporary" ) {
+						  text += " | Days remaining: " + gRelTypeAb(gC(character).domChar,character).days;
+					  }
+		}
+		if ( gC(character).subChars.length > 0 ) {
+			text += "Dominant relationships: ";
+			for ( var sChar of gC(character).subChars ) {
+				text += "\n" + gC(sChar).getFormattedName() + ": " + getRelTypeNameMayus(sChar,character);
+					  if ( gRelTypeAb(sChar,character).persistence == "temporary" ) {
+						  text += " | Days remaining: " + gRelTypeAb(sChar,character).days;
+					  }
+			}
+		}
+		if ( gC(character).egaChars.length > 0 ) {
+			if ( text != "" ) { text += "\n"; }
+			text += "Egalitarian relationships: ";
+			for ( var eChar of gC(character).egaChars ) {
+				text += "\n" + gC(eChar).getFormattedName() + ": " + getRelTypeNameMayus(eChar,character);
+					  if ( gRelTypeAb(eChar,character).persistence == "temporary" ) {
+						  text += " | Days remaining: " + gRelTypeAb(eChar,character).days;
+					  }
+			}
+		}
+	return text;
+}
+
+Character.prototype.textIntimacyTowardsPlayer = function() {
+	var intimaciesText = "";
+	var absInt = getCharsAbsoluteIntimacy(this.varName,"chPlayerCharacter");
+	var relInt = getCharsRelativeIntimacy(this.varName,"chPlayerCharacter");
+	if ( absInt != 0 || relInt != 0 ) {
+		intimaciesText = "Intimacy towards player: " + relInt + "\nRelationship type intimacy: " + absInt;
+	}
+	return intimaciesText;
+}
 	
 	// Pronouns
 Character.prototype.assignFemeninePronouns = function() {
@@ -811,6 +853,16 @@ Character.prototype.getCharacterScreenInfo = function() { // Returns a string th
 		string += textEquipment(this.varName);
 		if ( isStVarOn("HdRlts") == false ) {
 			string += this.textRelationshipWithPlayer();
+		}
+		if ( this.varName != "chPlayerCharacter" ) {
+			var intimaciesText = this.textIntimacyTowardsPlayer();
+			if ( intimaciesText != "" ) {
+				string += "\n" + intimaciesText;
+			}
+		}
+		var spRelsString = this.textSpecialRelationships();
+		if ( spRelsString != "" ) {
+			string += "\n\n__Special Relationships__:\n" + spRelsString;
 		}
 		return string;
 	}

@@ -387,6 +387,7 @@ window.initFakePeriodPassionTemple = function() {
 	State.variables.personalRoom.endDayRelationMoodEffects();
 }
 window.initFakePeriodPassionTempleXtimes = function(times) {
+	addToStVarsList("ShTNgt");
 	gC("chClaw").addBodypart("dick","dick");
 	gC("chAte").addBodypart("dick","dick");
 	gC("chVal").addBodypart("dick","dick");

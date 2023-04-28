@@ -2256,7 +2256,7 @@ window.createSaSparkingRubbing = function() {
 	sa.key = "sparkingRubbing";
 	sa.actionType = "contact";
 	sa.targetType = "single";
-	sa.willpowerCost = 2;
+	sa.willpowerCost = 3;
 	
 	sa.tags.push("bs");
 	sa.tags.push("sUse");
@@ -2287,31 +2287,34 @@ window.createSaSparkingRubbing = function() {
 		
 		if ( evResults.hit ) { // Hit lands
 			var completeAffinities = this.affinities;
-			var damageMultiplier = 0.6;
+			
+			
+			var damageMultiplier = 0.7;
 			var flagHitBodyParts = false;
 			for ( var bp of ["dick","pussy","breasts"] ) {
 				if ( gC(target).body.hasOwnProperty(bp) ) {
 					if ( gC(target).body[bp].state == "free" || gC(target).body[bp].state == "inUse" ) {
-						damageMultiplier += 0.2;
+						damageMultiplier += 0.1;
 						completeAffinities.push(("target" + firstToCap(bp)));
 						flagHitBodyParts = true;
 					}
 				}
 			}
 			// Damage
-			var inDamValue = gCstat(actor,"intelligence") * 0.35 + gCstat(actor,"agility") * 0.15 - gCstat(target,"resilience") * 0.1 * damageMultiplier;
+			var inDamValue = (gCstat(actor,"intelligence") * 0.35 + gCstat(actor,"agility") * 0.15 - gCstat(target,"resilience") * 0.1) * damageMultiplier;
 			inDamValue = addLuckFactor(inDamValue,0.1,gCstat(actor,"luck"));
 			var damage = calculateAttackEffects("lust",actor,target,completeAffinities,inDamValue);
 			var dmgEffMsg = getWeaknessToAttackText(completeAffinities,target);
-			// Altered State
-			var asIntensity = addLuckFactor((gCstat(actor,"intelligence") * 0.1),0.1,gCstat(actor,"luck"));
-			var asIntensity = fixIntensity(asIntensity);
-			var altState = createASsensitizedGenitals(asIntensity);
 			// Apply
 			applyBarDamage(target,"lust",-damage);
-			// gC(target).lust.attack(-damage);
-			applyAlteredState([target],altState);
 			results.value = damage;
+			// Altered State
+			if ( doesCharHaveState(target,"SeGe") == false ) {
+				var asIntensity = addLuckFactor((gCstat(actor,"intelligence") * 0.1),0.1,gCstat(actor,"luck"));
+				var asIntensity = fixIntensity(asIntensity);
+				var altState = createASsensitizedGenitals(asIntensity);
+				applyAlteredState([target],altState);
+			}
 			// Description
 			if ( gC(actor).race != "monster" ) {
 				results.description += randomFromList( [

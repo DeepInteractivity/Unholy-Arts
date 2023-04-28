@@ -2037,3 +2037,90 @@ window.tftgOrgy = function() {
 	setRefreshLustScript();
 }
 
+// Sharing the Night
+window.stnStdEgaScene = function(partner,description,nextPassage) {
+	State.variables.sc.startScene(
+	"ss","dynamic",["chPlayerCharacter"],[partner],description,endConditionEveryonesXOrgasms,2,
+	nextPassage);
+	// Assign choices
+	State.variables[partner].aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables[partner].aiAlgorythm.setRoleActive();
+		//
+	State.variables.sc.formatScenePassage();
+	State.variables.sc.endSceneScript = endSceneScriptCharactersBecomeHealedAndTired;
+}
+window.stnStdDsScene = function(partner,isPlayerDomming,description,nextPassage) {
+	State.variables.sc.startScene(
+	"ss","fixed",["chPlayerCharacter"],[partner],description,endConditionEveryonesXOrgasms,2,
+	nextPassage);
+		// Assign choices
+		State.variables[partner].aiAlgorythm = createAiWeightedMissionsByTaste();
+	if ( isPlayerDomming ) {
+		State.variables.chPlayerCharacter.hasLead = true;
+		State.variables[partner].hasLead = false;
+		State.variables[partner].aiAlgorythm.setRoleSubmission();
+	} else {
+		State.variables.chPlayerCharacter.hasLead = false;
+		State.variables[partner].hasLead = true;
+		State.variables[partner].aiAlgorythm.setRoleDomination();
+	}
+		//
+	State.variables.sc.formatScenePassage();
+	State.variables.sc.endSceneScript = endSceneScriptCharactersBecomeHealedAndTired;
+}
+window.stnValSilThreesome = function() {
+	var doesSilExist = State.variables.hasOwnProperty("chSil");
+	addSceneTagToChar("noLead","chPlayerCharacter");
+	
+	if ( doesSilExist ) {
+		State.variables.StVars.check6 = [gC("chSil").name,gC("chSil").nameColor,gC("chSil").formattedName,gC("chSil").names];
+		charAcopiesAppeareanceCharB("chSil","chVal");
+		State.variables.sc.startScene(
+			"ss","dynamic",["chPlayerCharacter"],["chVal","chSil"],"A large pond covers most of the room.",endConditionEveryonesXOrgasms,2,
+			"Sharing the Night Sil3");
+		State.variables.chSil.aiAlgorythm = createAiWeightedMissionsByTaste();
+		State.variables.chSil.aiAlgorythm.setRoleActive();
+		gC("chSil").hasLead = false;
+	} else {
+		var tempSil = generateFemaleAnonShapeshifter([]);
+		charAcopiesAppeareanceCharB(tempSil,"chVal");
+		recalculateMaxBars(tempSil);
+		destroyCharsVirginitiesNoFlavor(tempSil);
+		State.variables.sc.startScene(
+			"ss","dynamic",["chPlayerCharacter"],["chVal",tempSil],"A large pond covers most of the room.",endConditionEveryonesXOrgasms,2,
+			"Sharing the Night Sil3");
+		State.variables.sc.genericCharacters = [tempSil];
+		gC(tempSil).aiAlgorythm = createAiWeightedMissionsByTaste();
+		gC(tempSil).aiAlgorythm.setRoleActive();
+		gC(tempSil).hasLead = false;
+	}
+	State.variables.chVal.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chVal.aiAlgorythm.setRoleDomination();
+	State.variables.chPlayerCharacter.hasLead = false;
+	State.variables.chVal.hasLead = true;
+	
+	addSceneTagToChar("noLead","chPlayerCharacter");
+	
+	State.variables.sc.formatScenePassage();
+	State.variables.sc.endSceneScript = endSceneScriptCharactersBecomeHealedAndTired;
+	// Clean Sillan's appearance
+	// Sillan's portrait on the next passage shouldn't depend on her character existing
+}
+window.cleanSillansAppearance = function() {
+	if ( State.variables.hasOwnProperty("chSil") ) {
+		var charA = "chSil";
+		gC(charA).name = State.variables.StVars.check6[0];
+		gC(charA).nameColor = State.variables.StVars.check6[1];
+		gC(charA).formattedName = State.variables.StVars.check6[2];
+		gC(charA).names = State.variables.StVars.check6[3];
+		gC(charA).fullPortrait = function() {
+		return "[img[img/portraits/sillan-full.png]]";
+	}
+		gC(charA).avatar = function() {
+		return "[img[img/portraits/sillan-avatar.png]]";
+	}
+		gC(charA).fullPortraitL = "img/portraits/sillan-full.png";
+		gC(charA).avatarL = "img/portraits/sillan-avatar.png";
+	}
+}
+

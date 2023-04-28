@@ -271,7 +271,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Caress ass 1
 		var flagValid = false;
 		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("foreplay") &&
-			 setup.saList[context.extra1].flavorTags.includes("targetAss")
+			 setup.saList[context.extra1].flavorTags.includes("targetAnus")
 			) { flagValid = true; }
 		return flagValid;
 	},
@@ -468,7 +468,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Penetrating 1
 		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("fullsex") &&
 			 setup.saList[context.extra1].flavorTags.includes("useDick") &&
-			 (setup.saList[context.extra1].flavorTags.includes("targetPussy") || setup.saList[context.extra1].flavorTags.includes("targetAss"))
+			 (setup.saList[context.extra1].flavorTags.includes("targetPussy") || setup.saList[context.extra1].flavorTags.includes("targetAnus"))
 			) { flagValid = true; }
 		return flagValid;
 	},
@@ -488,7 +488,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Penetrating 2
 		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("fullsex") &&
 			 setup.saList[context.extra1].flavorTags.includes("useDick") &&
-			 (setup.saList[context.extra1].flavorTags.includes("targetPussy") || setup.saList[context.extra1].flavorTags.includes("targetAss"))
+			 (setup.saList[context.extra1].flavorTags.includes("targetPussy") || setup.saList[context.extra1].flavorTags.includes("targetAnus"))
 			) { flagValid = true; }
 		return flagValid;
 	},
@@ -509,7 +509,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Penetrating 3
 		if ( 
 			 setup.saList[context.extra1].flavorTags.includes("fullsex") &&
 			 setup.saList[context.extra1].flavorTags.includes("useDick") &&
-			 (setup.saList[context.extra1].flavorTags.includes("targetPussy") || setup.saList[context.extra1].flavorTags.includes("targetAss")) &&
+			 (setup.saList[context.extra1].flavorTags.includes("targetPussy") || setup.saList[context.extra1].flavorTags.includes("targetAnus")) &&
 			 dominationScore >= -4 &&
 			 gC(context.actor).domChar != context.target
 			) { flagValid = true; }
@@ -1136,7 +1136,7 @@ setup.dialogDB.ssDialogs.push(new dialog( 					// Virgin ass caressing target 1
 	function(context) {
 		var flagValid = false;
 		if ( 
-			 doesAnyActionContainTags(context.extra2,["foreplay","targetAss"]) &&
+			 doesAnyActionContainTags(context.extra2,["foreplay","targetAnus"]) &&
 			 anyOtherActorHasFreeBodypart(context.actor,"dick") &&
 			 checkCharsVirginityExists(context.target,"anal")
 			) { flagValid = true; }
@@ -1961,27 +1961,259 @@ setup.dialogDB.icDialogs.push(new dialog( // Casus belli retribution 3
 		return weight;
 	}));
 
-window.dialogToText = function(dialog,context) {
-	var actor = context.actor;
-	var dText = gC(actor).getFormattedName() + ': //' + colorText(('"' + dialog.getDialog(context) + '"'),gC(actor).speechColor) + '//';
-	return dText;
-}
-window.chooseDialogFromList = function(dList,actor,target,extra1,extra2) {
-	var chosenDialog = "";
-	var context = new dialogContext(actor,target,extra1,extra2);
-	var wList = [];
-	for ( var dialog of dList ) { // If requisites are met, add dialog object to weighted list with valid weight
-		if ( dialog.checkReqs(context) ) {
-			wList.push(new weightedElement(dialog,dialog.getWeight(context)));
+// Accept sharing the night dialogues
+
+	// Snuggle
+setup.dialogDB.stnDialoguesSnuggle = [];
+setup.dialogDB.stnDialoguesSnuggle.push(new dialog( // Snuggle 1
+	function(context) {
+		var dText = "I want you to warm me tonight. Please hug me tightly.";
+		return dText;
+	},
+	function(context) {
+		var flagValid = true;
+		return flagValid;
+	},
+	function(context) {
+		var weight = 100;
+		return weight;
+	}));
+setup.dialogDB.stnDialoguesSnuggle.push(new dialog( // Snuggle 2
+	function(context) {
+		var dText = "Can we just stay close to each other?";
+		return dText;
+	},
+	function(context) {
+		var flagValid = true;
+		return flagValid;
+	},
+	function(context) {
+		var weight = 50;
+		if ( getCharsDrivePercent(context.actor,"dPleasure") <= 0.12 ) {
+			weight *= 2.5;
 		}
-	}
-	if ( wList.length > 0 ) {
-		var chosenDialog = randomFromWeightedListPercentThreshold(wList,0.3);
-		return dialogToText(chosenDialog,context);
-	} else {
-		return chosenDialog;
-	}
-}
+		return weight;
+	}));
+setup.dialogDB.stnDialoguesSnuggle.push(new dialog( // Snuggle 3
+	function(context) {
+		var dText = "I'm really tired after the whole day. I just want to have you next to me and feel your breathing on my neck.";
+		return dText;
+	},
+	function(context) {
+		var flagValid = true;
+		return flagValid;
+	},
+	function(context) {
+		var weight = 100;
+		return weight;
+	}));
+setup.dialogDB.stnDialoguesSnuggle.push(new dialog( // Snuggle 4
+	function(context) {
+		var dText = "I don't want much tonight. Just to have you next to me, and feel your warmth...";
+		return dText;
+	},
+	function(context) {
+		var flagValid = false;
+		if ( rLvlAbt(context.actor,context.target,"romance") >= 4 ) {
+			flagValid = true;
+		}
+		return flagValid;
+	},
+	function(context) {
+		var weight = 0;
+		weight += rLvlAbt(context.actor,context.target,"romance") * 20;
+		return weight;
+	}));
+	
+	// Tease
+setup.dialogDB.stnDialoguesTease = [];
+setup.dialogDB.stnDialoguesTease.push(new dialog( // Tease 1
+	function(context) {
+		var dText = "Keep your hands where I can see them, will you? Only I am allowed to tease you tonight.";
+		return dText;
+	},
+	function(context) {
+		var flagValid = true;
+		return flagValid;
+	},
+	function(context) {
+		var weight = 40;
+		weight += (rLvlAbt(context.actor,context.target,"domination") - rLvlAbt(context.actor,context.target,"submission")) * 20;
+		return weight;
+	}));
+setup.dialogDB.stnDialoguesTease.push(new dialog( // Tease 2
+	function(context) {
+		var dText = "It'd be quite a shame. To have me all alone for yourself and not make a move...";
+		return dText;
+	},
+	function(context) {
+		var flagValid = true;
+		return flagValid;
+	},
+	function(context) {
+		var weight = 100;
+		return weight;
+	}));
+setup.dialogDB.stnDialoguesTease.push(new dialog( // Tease 3
+	function(context) {
+		var dText = "Look at me, all quiet and helpless... How terrible it would be if someone here were to ravage me.";
+		return dText;
+	},
+	function(context) {
+		var flagValid = true;
+		return flagValid;
+	},
+	function(context) {
+		var weight = 40;
+		weight += (rLvlAbt(context.actor,context.target,"submission") - rLvlAbt(context.actor,context.target,"domination")) * 20;
+		return weight;
+	}));
+
+	// Ega
+setup.dialogDB.stnDialoguesEga = [];
+setup.dialogDB.stnDialoguesEga.push(new dialog( // Ega 1
+	function(context) {
+		var dText = "Finally, we get a moment just for ourselves. I want to feel connected to you.";
+		return dText;
+	},
+	function(context) {
+		var flagValid = true;
+		return flagValid;
+	},
+	function(context) {
+		var weight = 100;
+		return weight;
+	}));
+setup.dialogDB.stnDialoguesEga.push(new dialog( // Ega 2
+	function(context) {
+		var dText = "Hey, I... I want to feel your love, deep within me.";
+		return dText;
+	},
+	function(context) {
+		var flagValid = false;
+		if ( gC(context.actor).hasFreeBodypart("pussy") ) {
+			flagValid = true;
+		}
+		return flagValid;
+	},
+	function(context) {
+		var weight = 100;
+		if ( gC(context.actor).hasFreeBodypart("dick") ) {
+			weight *= 0.5;
+		}
+		return weight;
+	}));
+setup.dialogDB.stnDialoguesEga.push(new dialog( // Ega 3
+	function(context) {
+		var dText = "Hey, I... I want to feel your love, deep within you.";
+		return dText;
+	},
+	function(context) {
+		var flagValid = false;
+		if ( gC(context.actor).hasFreeBodypart("dick") ) {
+			flagValid = true;
+		}
+		return flagValid;
+	},
+	function(context) {
+		var weight = 100;
+		if ( gC(context.actor).hasFreeBodypart("pussy") ) {
+			weight *= 0.5;
+		}
+		return weight;
+	}));
+setup.dialogDB.stnDialoguesEga.push(new dialog( // Ega 4
+	function(context) {
+		var dText = "I'm going to hug you tight, and I'm not letting you go.";
+		return dText;
+	},
+	function(context) {
+		var flagValid = true;
+		return flagValid;
+	},
+	function(context) {
+		var weight = 100;
+		weight += (rLvlAbt(context.actor,context.target,"romance") - rLvlAbt(context.actor,context.target,"sexualTension")) * 20;
+		return weight;
+	}));
+setup.dialogDB.stnDialoguesEga.push(new dialog( // Ega 5
+	function(context) {
+		var dText = "Those lips of yours look awfully lonely. Mine should keep them company.";
+		return dText;
+	},
+	function(context) {
+		var flagValid = true;
+		return flagValid;
+	},
+	function(context) {
+		var weight = 40;
+		weight += (rLvlAbt(context.actor,context.target,"sexualTension") - rLvlAbt(context.actor,context.target,"romance")) * 20;
+		return weight;
+	}));
+
+	// Dom
+setup.dialogDB.stnDialoguesDom = [];
+setup.dialogDB.stnDialoguesDom.push(new dialog( // Dom 1
+	function(context) {
+		var dText = "You better be a good girl tonight.";
+		return dText;
+	},
+	function(context) {
+		var flagValid = false;
+		if ( gC(context.target).perPr == "she" ) {
+			flagValid = true;
+		}
+		return flagValid;
+	},
+	function(context) {
+		var weight = 100;
+		return weight;
+	}));
+setup.dialogDB.stnDialoguesDom.push(new dialog( // Dom 2
+	function(context) {
+		var dText = "You better be a good boy tonight.";
+		return dText;
+	},
+	function(context) {
+		var flagValid = false;
+		if ( gC(context.target).perPr == "he" ) {
+			flagValid = true;
+		}
+		return flagValid;
+	},
+	function(context) {
+		var weight = 100;
+		return weight;
+	}));
+setup.dialogDB.stnDialoguesDom.push(new dialog( // Dom 3
+	function(context) {
+		var dText = "I trust you will behave while I have my way with you.";
+		return dText;
+	},
+	function(context) {
+		var flagValid = true;
+		return flagValid;
+	},
+	function(context) {
+		var weight = 40;
+		if ( context.actor == "chClaw" ) { weight += 40; }
+		weight += (rLvlAbt(context.actor,context.target,"sexualTension") - rLvlAbt(context.actor,context.target,"romance")) * 20;
+		return weight;
+	}));
+setup.dialogDB.stnDialoguesDom.push(new dialog( // Dom 4
+	function(context) {
+		var dText = "Stay quiet for me. You are going to enjoy this.";
+		return dText;
+	},
+	function(context) {
+		var flagValid = true;
+		return flagValid;
+	},
+	function(context) {
+		var weight = 40;
+		weight += (rLvlAbt(context.actor,context.target,"romance") - rLvlAbt(context.actor,context.target,"sexualTension")) * 10;
+		return weight;
+	}));
 
 // Orgasm messages
 
@@ -2744,3 +2976,27 @@ setup.dialogDB.bbCshutup.push(new dialog(					// Domming 5
 		return weight;
 	}
 ));
+
+window.dialogToText = function(dialog,context) {
+	var actor = context.actor;
+	var dText = gC(actor).getFormattedName() + ': //' + colorText(('"' + dialog.getDialog(context) + '"'),gC(actor).speechColor) + '//';
+	return dText;
+}
+window.chooseDialogFromList = function(dList,actor,target,extra1,extra2) {
+	var chosenDialog = "";
+	var context = new dialogContext(actor,target,extra1,extra2);
+	var wList = [];
+	for ( var dialog of dList ) { // If requisites are met, add dialog object to weighted list with valid weight
+		if ( dialog.checkReqs(context) ) {
+			wList.push(new weightedElement(dialog,dialog.getWeight(context)));
+		}
+	}
+	if ( wList.length > 0 ) {
+		var chosenDialog = randomFromWeightedListPercentThreshold(wList,0.3);
+		return dialogToText(chosenDialog,context);
+	} else {
+		return chosenDialog;
+	}
+}
+
+

@@ -890,10 +890,12 @@ window.createBdemandBodyPaint = function() {
 		var totalPoints = 0;
 		for ( var bpTag of getListOfValidBdPntsFromActorToTarget(actor,target) ) {
 			var points = scoreBdPnt(bpTag,actor,target);
+			totalPoints += points;
 			paintDemandsList.push([points,this,bpTag,""]);
 		}
 		var l = paintDemandsList.length;
 		var totalSum = 20 + gC(actor).infamy;
+		if ( totalPoints == 0 ) { totalPoints = 1; }
 		for ( var pd of paintDemandsList ) {
 			pd[0] = (pd[0] / totalPoints) * totalSum;
 		}

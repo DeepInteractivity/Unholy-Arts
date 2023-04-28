@@ -221,6 +221,8 @@ window.scene = function() {
 		
 		this.turnsWithoutActions = 0;
 		
+		applyRequiredScenePatches();
+		
 		this.formatScenePassage();
 	}
 	
@@ -2079,10 +2081,10 @@ window.getSexPrefDamageMult = function(target,isActor,action) {
 	for ( var tag of setup.saList[action].flavorTags ) {
 		if ( tag != "continuedAction" && tag != "position" ) {
 			var cTag = tag;
+			var effectMultiplier = 1;
 			if ( cTag == "foreplay" || cTag == "talk" || cTag == "oral" || cTag == "fullsex" ) {
 				effectMultiplier = 0.5;
 			}
-			var effectMultiplier = 1;
 			// Select valid opposite tag if appropriate
 			if ( tagVector(tag) && isActor == false ) {
 				cTag = getOppositeTag(tag);
@@ -2207,10 +2209,25 @@ window.getSexPrefDamageMultAlt = function(target,isActor,tags) {
 	for ( var tag of tags ) {
 		if ( tag != "continuedAction" && tag != "position" ) {
 			var cTag = tag;
+			var effectMultiplier = 1;
+			if ( cTag == "foreplay" || cTag == "talk" || cTag == "oral" || cTag == "fullsex" ) {
+				effectMultiplier = 0.5;
+			}
+			// Select valid opposite tag if appropriate
 			if ( tagVector(tag) && isActor == false ) {
 				cTag = getOppositeTag(tag);
 			}
-			mult += gC(target).tastes[cTag].r * 0.03;
+			// Get extra altered state damage
+			var asV = 0;
+			for ( var as of gC(target).alteredStates ) {
+				if ( as.hasOwnProperty("tag") ) {
+					if ( as.tag == cTag ) {
+						asV = as.intensity * effectMultiplier;
+					}
+				}
+			}
+			// Add rank, get final multiplier
+			mult += gC(target).tastes[cTag].r * (0.03 * effectMultiplier) + asV;
 		}
 	}
 	return mult;
@@ -2390,6 +2407,17 @@ window.endSceneScriptUnconditionalCleanLust = function() {
 	var allChars = State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys);
 	for ( var cK of allChars ) {
 		gC(cK).lust.current = gC(cK).lust.max; 
+	}
+}
+window.endSceneScriptCharactersBecomeTired = function() {
+	var allChars = State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys);
+	applyAlteredState(allChars,createASmissingSleep(1));
+}
+window.endSceneScriptCharactersBecomeHealedAndTired = function() {
+	var allChars = State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys);
+	applyAlteredState(allChars,createASmissingSleep(1));
+	for ( var cK of allChars ) {
+		gC(cK).restoreBars();
 	}
 }
 

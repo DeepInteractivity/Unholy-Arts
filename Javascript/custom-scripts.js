@@ -307,7 +307,7 @@ window.configureTestsRoomScene = function() {
 	charactersLearnSceneActions(["chVal"],[
 									"doublePenetration"
 		]);
-	State.variables.chVal.saList = ["doNothing", "struggle", "strokePussy", "lickGroin", "baKissLips", "baStrokeDick", "baStrokePussy", "baThrust", "baPushHipsBack", "baScissor", "baScissorBack", "baRideDick", "baPushDickBack", "coldGuts", "baTease", "embers", "freezeFeet", "sparkingRubbing", "thrust", "piston", "finalPush", "suckDick", "lickPussy", "scissor", "strokeAss", "analThrust", "dickFootjob", "pussyFootjob", "lickLegs", "pushHipsBack", "spanking", "fuckFace", "rideFace", "frenchKiss", "legHoldHead", "getBlowjob", "doublePenetration", "mountFaceToFace", "mountFromBehind", "pounceFrontalD2P", "pounceFrontalP2P", "pounceFrontalP2D", "doubleThrust","slimeHug","denyOrgasm"];
+	State.variables.chVal.saList = ["doNothing", "struggle", "strokePussy", "lickGroin", "baKissLips", "baStrokeDick", "baStrokePussy", "baThrust", "baPushHipsBack", "baScissor", "baScissorBack", "baRideDick", "baPushDickBack", "coldGuts", "baTease", "embers", "freezeFeet", "sparkingRubbing", "thrust", "piston", "finalPush", "suckDick", "lickPussy", "scissor", "strokeAss", "analThrust", "dickFootjob", "pussyFootjob", "lickLegs", "pushHipsBack", "spanking", "fuckFace", "rideFace", "frenchKiss", "legHoldHead", "getBlowjob", "doublePenetration", "mountFaceToFace", "mountFromBehind", "pounceFrontalD2P", "pounceFrontalP2P", "pounceFrontalP2D", "doubleThrust","slimeHug","denyOrgasm","holdHands"];
 	//State.variables.chVal.tastes.bondage.w = 20000;
 	//State.variables.chVal.tastes.domination.w = 20000;
 	State.variables.chVal.tastes.denial.w = 2000;
@@ -324,7 +324,7 @@ window.configureBattleTestsRoomScene = function() {
 window.setUpTestScenesRoom = function() {
 	charactersLearnSceneActions(getCandidatesKeysArray(),["strokePussy","strokeBreasts","kissLips","frottage","frenchKiss","kneel","makeKneel","lickGroin",
 	"legHoldHead","mountFromBehind","penetratePussy","thrust","piston","finalPush","mountFaceToFace","getBlowjob","suckDick","lickPussy","interlockLegs",
-	"scissor","strokeAss","penetrateAss","analThrust","holdArms","vinesHoldArms","dickFootjob","pussyFootjob","lickLegs","rideDick","pushDickBack","extraMountFromBehind","analMountDick","analRideDick","analPushDickBack"]);
+	"scissor","strokeAss","penetrateAss","analThrust","holdArms","vinesHoldArms","dickFootjob","pussyFootjob","lickLegs","rideDick","pushDickBack","extraMountFromBehind","analMountDick","analRideDick","analPushDickBack","holdHands","kissNeck","whisperSNs"]);
 	
 	charactersLearnSceneActions(["chPlayerCharacter"],[
 									"kick","coldGuts",

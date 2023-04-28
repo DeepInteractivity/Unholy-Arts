@@ -2,10 +2,11 @@
 ////// MAP PLAYER PROMPTS //////
 // Functions used to generate prompts sent to player under specific circumstances
 
-window.getButtonAcceptConversation = function(askingCharacter) {
+window.getButtonAcceptConversation = function(askingCharacter,rMission) {
 	var bText = "<<l" + "ink [[Accept conversation|Social Interactions]]>><<s" + "cript>>\n";
 	bText	 += "State.variables.compass.finishPlayerPrompt();\n";
 	bText	 += "State.variables.compass.createNewSis(getCharGroup('chPlayerCharacter').concat(getCharGroup('" + askingCharacter + "')));\n";
+	bText	 += "charRemembersMission('" + askingCharacter + "','" + rMission + "');\n";
 	bText	 += "State.variables.compass.cleanPhantasmEvents();\n";
 	bText	 += "<</s" + "cript>><</l" + "ink>>";
 	return bText;
@@ -18,11 +19,12 @@ window.getButtonRejectConversation = function(askingCharacter) {
 	bText	 += "<</s" + "cript>><</l" + "ink>>";
 	return bText;
 }
-window.getButtonAcceptConversationInterrupted = function(askingCharacter) {
+window.getButtonAcceptConversationInterrupted = function(askingCharacter,rMission) {
 	var bText = "<<l" + "ink [[Accept conversation|Social Interactions]]>><<s" + "cript>>\n";
 	bText	 += "State.variables.compass.finishPlayerPrompt();\n";
 	bText 	 += "State.variables.compass.findFirstEventInvolvingPlayer().forceEnd();\n"; // Interrupt player's current event
 	bText	 += "State.variables.compass.createNewSis(getCharGroup('chPlayerCharacter').concat(getCharGroup('" + askingCharacter + "')));\n";
+	bText	 += "charRemembersMission('" + askingCharacter + "','" + rMission + "');\n";
 	bText	 += "State.variables.compass.cleanPhantasmEvents();\n";
 	bText	 += "<</s" + "cript>><</l" + "ink>>"
 	bText	 += " (This will interrupt your current activity)";	// Warning
@@ -38,14 +40,15 @@ window.getButtonRejectConversationInterrupted = function(askingCharacter) {
 }
 
 // Buttons Battles
-window.getButtonBeingAssaulted = function(assaultingCharacter) {
+window.getButtonBeingAssaulted = function(assaultingCharacter,rMission) {
 	var bText = "<<l" + "ink [[Fight back|Scene]]>><<s" + "cript>>\n";
 	bText	 += "State.variables.compass.finishPlayerPrompt();\n";
+	bText	 += "charRemembersMission('" + assaultingCharacter + "','" + rMission + "');\n";
 	bText	 += "State.variables.compass.pushAllTimeToAdvance();\n";
 	bText	 += "<</s" + "cript>><</l" + "ink>>"
 	return bText;
 }
-window.getButtonBeingAssaultedPlus = function(assaultingCharacter) {
+window.getButtonBeingAssaultedPlus = function(assaultingCharacter,rMission) {
 	var bText = "<<l" + "ink [[Fight back|Scene]]>><<s" + "cript>>\n";
 	bText	 += "State.variables.compass.finishPlayerPrompt();\n";
 	bText	 += "initiateNpcAssault('" + assaultingCharacter + "','chPlayerCharacter');\n";
@@ -54,11 +57,12 @@ window.getButtonBeingAssaultedPlus = function(assaultingCharacter) {
 	return bText;
 }
 
-window.getButtonAcceptChallenge = function(challengingCharacter,stakes) {
+window.getButtonAcceptChallenge = function(challengingCharacter,stakes,rMission) {
 	// Initiate challenge battle, assign infamy
 	var bText = "<<l" + "ink [[Accept challenge|Scene]]>><<s" + "cript>>\n";
 	bText	 += "State.variables.compass.finishPlayerPrompt();\n";
 	bText	 += "initiateNpcToPlayerAcceptedChallenge('" + challengingCharacter + "'," + stakes + ");\n";
+	bText	 += "charRemembersMission('" + challengingCharacter + "','" + rMission + "');\n";
 	bText	 += "State.variables.compass.pushAllTimeToAdvance();\n";
 	bText	 += "<</s" + "cript>><</l" + "ink>>"
 	return bText;
@@ -182,6 +186,12 @@ window.canPlayerBeAskedToFollow = function(requester) {
 		}
 	}
 	return result;
+}
+
+window.charRemembersMission = function(cK,mission) {
+	if ( mission != undefined ) {
+		gC(cK).mission = mission;
+	}
 }
 
 ////////////////////////////////

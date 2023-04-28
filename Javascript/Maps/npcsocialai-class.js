@@ -97,126 +97,144 @@ NpcSocialAi.prototype.getInterRoundBehavior = function(sis) {
 		
 		// Characters following someone shouldn't be able to propose sex or leave SIS on their own
 		if ( gC(this.charKey).followingTo == "" ) {
-			// Check to propose sex
-		
-			// Get alliance
-			if ( gC(this.charKey).mission == "getAlliance" ) {
-				var validTarget = "";
-				for ( var chKey of sis.charList ) {
-					if ( gC(this.charKey).socialAi.allyTs.includes(chKey) ) {
-						if ( setup.sistDB[setup.sistType.companionship].isSuccessful(this.charKey,chKey)[0] ) {
-							validTarget = chKey;
+			// Checks not directly tied to specific missions
+			for ( var cK of sis.charList ) {
+				// Intimate relationship
+				if ( gC(this.charKey).socialAi.loveTs.includes(cK) ) {
+					if ( setup.sistDB[setup.sistType.companionship].isPossible(this.charKey,cK) ) {
+						if ( setup.sistDB[setup.sistType.companionship].isSuccessful(this.charKey,cK)[0] && setup.sistDB[setup.sistType.companionship].isSuccessful(cK,this.charKey)[0] ) {
+							choice = setup.sistType.intimacy;
+							target = cK;
 						}
 					}
-				}
-				if ( validTarget != "" ) {
-					target = validTarget;
-					choice = setup.sistType.companionship;
 				}
 			}
-			// Transformations
-			else if ( gC(this.charKey).mission == "transformSelf" || gC(this.charKey).mission == "transformSub" ) {
-				var transformersInConv = [];
-				for ( var ch of getValidTfActors() ) {
-					if ( sis.charList.includes(ch) ) { transformersInConv.push(ch); }
-				}
-				if ( transformersInConv.length > 0 ) {
-					var chosenTransformer = randomFromList(transformersInConv);
-					// Transform self
-					if ( gC(this.charKey).mission == "transformSelf" ) {
-						flagSkipSexAttempts = true;
-						if ( (setup.sistDB[setup.sistType.transformSelf].isSuccessful(this.charKey,chosenTransformer)[0]) ) {
-							choice = setup.sistType.transformSelf;
-							target = chosenTransformer;
+		
+			if ( choice == "none" ) {
+				// Get alliance
+				if ( gC(this.charKey).mission == "getAlliance" ) {
+					var validTarget = "";
+					for ( var chKey of sis.charList ) {
+						if ( gC(this.charKey).socialAi.allyTs.includes(chKey) || gC(this.charKey).socialAi.loveTs.includes(chKey) ) {
+							if ( setup.sistDB[setup.sistType.companionship].isSuccessful(this.charKey,chKey)[0] ) {
+								validTarget = chKey;
+							}
 						}
 					}
-					// Transform sub
-					else if ( gC(this.charKey).mission == "transformSub" ) {
-						var tfTarget = gC(this.charKey).missionExtra;
-						if ( tfTarget != undefined ) {
-							if ( sis.charList.includes(tfTarget) && gC(this.charKey).followedBy.includes(tfTarget) ) {
-								if ( (setup.sistDB[setup.sistType.transformSub].isSuccessful(this.charKey,chosenTransformer,tfTarget)[0]) ) {
-									choice = setup.sistType.transformSub;
-									target = chosenTransformer;
-									extra = tfTarget;
+					if ( validTarget != "" ) {
+						target = validTarget;
+						choice = setup.sistType.companionship;
+					}
+				}
+				// Transformations
+				else if ( gC(this.charKey).mission == "transformSelf" || gC(this.charKey).mission == "transformSub" ) {
+					var transformersInConv = [];
+					for ( var ch of getValidTfActors() ) {
+						if ( sis.charList.includes(ch) ) { transformersInConv.push(ch); }
+					}
+					if ( transformersInConv.length > 0 ) {
+						var chosenTransformer = randomFromList(transformersInConv);
+						// Transform self
+						if ( gC(this.charKey).mission == "transformSelf" ) {
+							flagSkipSexAttempts = true;
+							if ( (setup.sistDB[setup.sistType.transformSelf].isSuccessful(this.charKey,chosenTransformer)[0]) ) {
+								choice = setup.sistType.transformSelf;
+								target = chosenTransformer;
+							}
+						}
+						// Transform sub
+						else if ( gC(this.charKey).mission == "transformSub" ) {
+							var tfTarget = gC(this.charKey).missionExtra;
+							if ( tfTarget != undefined ) {
+								if ( sis.charList.includes(tfTarget) && gC(this.charKey).followedBy.includes(tfTarget) ) {
+									if ( (setup.sistDB[setup.sistType.transformSub].isSuccessful(this.charKey,chosenTransformer,tfTarget)[0]) ) {
+										choice = setup.sistType.transformSub;
+										target = chosenTransformer;
+										extra = tfTarget;
+									}
 								}
 							}
 						}
 					}
 				}
-			}
-			// Check if demanding sex from sub is possible
-			else if ( gC(this.charKey).subChars.length > 0 && gC(this.charKey).sexScenesToday < 1 && (gC(this.charKey).mission == "haveSex" || gC(this.charKey).mission == "haveDomSex") ) {
-				var potentialSubs = [];
-				for ( var chKey of sis.charList ) {
-					if ( gC(this.charKey).subChars.includes(chKey) ) {
-						if ( gRelTypeAb(chKey,this.charKey).forcedToSex ) {
-							potentialSubs.push(chKey);
+				// Check if demanding sex from sub is possible
+				else if ( gC(this.charKey).subChars.length > 0 && gC(this.charKey).sexScenesToday < 1 && (gC(this.charKey).mission == "haveSex" || gC(this.charKey).mission == "haveDomSex") ) {
+					var potentialSubs = [];
+					for ( var chKey of sis.charList ) {
+						if ( gC(this.charKey).subChars.includes(chKey) ) {
+							if ( gRelTypeAb(chKey,this.charKey).forcedToSex ) {
+								potentialSubs.push(chKey);
+							}
 						}
 					}
-				}
-				if ( potentialSubs.length > 0 ) {
-					choice = setup.sistType.dominantSex;
-					target = randomFromList(potentialSubs);
-				}
-			}
-			if ( choice == "none" && flagSkipSexAttempts == false ) {
-				// Standard sex checks
-					// Sub-missions: any sex, egal sex, dominating sex
-				var sexWantScore = 0;
-				if ( getCharsDrivePercent(this.charKey,"dPleasure") <= 0.1 ) {
-					sexWantScore = -1;
-				} else if ( getCharsDrivePercent(this.charKey,"dPleasure") >= 0.2 ) {
-					sexWantScore = 1;
-				}
-				if ( gC(this.charKey).mission == "getAlliance" ) {
-					sexWantScore -= 3;
-				}
-		
-				if ( 
-						( gC(this.charKey).mood.flirty + gC(this.charKey).mood.aroused - gC(this.charKey).mood.angry + ((1 - getBarPercentage(this.charKey,"lust")) * 100) ) >= 50
-						&& ( limitedRandomInt(10 + gC(this.charKey).daysWithoutSex + sexWantScore) > ( 6 + gC(this.charKey).sexScenesToday ) )
-						&& ( gC(this.charKey).socialdrive.current >= 10 )
-					) {
-					var highestPriority = -1;
-					var priorizedChar = "";
-					// Get character with highest priority
-					for ( var character of sis.getValidProposedCharacters(this.charKey) ) {
-						if ( getSocialPriorityAgainstTarget(this,character) > highestPriority || highestPriority == -1 ) {
-							highestPriority = getSocialPriorityAgainstTarget(this,character);
-							priorizedChar = character;
-						}
+					if ( potentialSubs.length > 0 ) {
+						choice = setup.sistType.dominantSex;
+						target = randomFromList(potentialSubs);
 					}
-		
-					var allowedSex = true;
-					if ( gC(this.charKey).subChars.includes(priorizedChar) ) {
-						if ( limitedRandomInt(16) > 4 ) { allowedSex == false; }
+				}
+				if ( choice == "none" && flagSkipSexAttempts == false ) {
+					// Standard sex checks
+						// Sub-missions: any sex, egal sex, dominating sex
+					var sexWantScore = 0;
+					if ( getCharsDrivePercent(this.charKey,"dPleasure") <= 0.1 ) {
+						sexWantScore = -1;
+					} else if ( getCharsDrivePercent(this.charKey,"dPleasure") >= 0.2 ) {
+						sexWantScore = 1;
 					}
-					if ( allowedSex ) {
-						var domSexAllowed = true;
-						var egaSexAllowed = true;
-						var subSexAllowed = false;
-						if ( gC(this.charKey).mission == "raiseFriendship" || gC(this.charKey).mission == "flirt" || gC(this.charKey).mission == "getAlliance" ) {
-							domSexAllowed = false;
+					if ( gC(this.charKey).mission == "getAlliance" ) {
+						sexWantScore -= 3;
+					}
+			
+					if ( 
+							( gC(this.charKey).mood.flirty + gC(this.charKey).mood.aroused - gC(this.charKey).mood.angry + ((1 - getBarPercentage(this.charKey,"lust")) * 100) ) >= 50
+							&& ( limitedRandomInt(10 + gC(this.charKey).daysWithoutSex + sexWantScore) > ( 6 + gC(this.charKey).sexScenesToday ) )
+							&& ( gC(this.charKey).socialdrive.current >= 10 )
+						) {
+						var highestPriority = -1;
+						var priorizedChar = "";
+						// Get character with highest priority
+						for ( var character of sis.getValidProposedCharacters(this.charKey) ) {
+							if ( getSocialPriorityAgainstTarget(this,character) > highestPriority || highestPriority == -1 ) {
+								highestPriority = getSocialPriorityAgainstTarget(this,character);
+								priorizedChar = character;
+							}
 						}
-						if ( gC(this.charKey).mission == "haveDomSex" || gC(this.charKey).mission == "seduce" || ( (gC(this.charKey).socialAi.covetTs.includes(priorizedChar) || gC(this.charKey).socialAi.conquestTs.includes(priorizedChar)) && gC(this.charKey).socialAi.allyTs.includes(priorizedChar) == false ) ) {
-							egaSexAllowed = false;
+			
+						var allowedSex = true;
+						if ( gC(this.charKey).subChars.includes(priorizedChar) ) {
+							if ( limitedRandomInt(16) > 4 ) { allowedSex == false; }
 						}
-						if ( (gC(this.charKey).socialAi.covetTs.includes(priorizedChar) == false && gC(this.charKey).socialAi.conquestTs.includes(priorizedChar) == false) && (getCharsDrivePercent(this.charKey,"dPleasure")*2 > getCharsDrivePercent(this.charKey,"dDomination") + getCharsDrivePercent(this.charKey,"dAmbition")) && (gC(this.charKey).socialAi.loveTs.includes(priorizedChar) || gC(this.charKey).mission == "haveSex") && gC(priorizedChar).domChar != this.charKey ) {
-							subSexAllowed = true;
-						}
-		
-						// Check for dominant sex
-						if ( (setup.sistDB[setup.sistType.dominantSex].isSuccessful(this.charKey,priorizedChar)[0] && domSexAllowed) ) {
-							choice = setup.sistType.dominantSex;
-							target = priorizedChar;
-						} // Check for egalitarian sex
-						else if ( (setup.sistDB[setup.sistType.egalitarianSex].isSuccessful(this.charKey,priorizedChar)[0] && egaSexAllowed) ) {
-							choice = setup.sistType.egalitarianSex;
-							target = priorizedChar;
-						} else if ( setup.sistDB[setup.sistType.submissiveSex].isSuccessful(this.charKey,priorizedChar)[0] && subSexAllowed ) {
-							choice = setup.sistType.submissiveSex;
-							target = priorizedChar;
+						if ( allowedSex ) {
+							var domSexAllowed = true;
+							var egaSexAllowed = true;
+							var subSexAllowed = false;
+							if ( gC(this.charKey).mission == "raiseFriendship" || gC(this.charKey).mission == "flirt" || gC(this.charKey).mission == "getAlliance" ) {
+								domSexAllowed = false;
+							}
+							if ( gC(this.charKey).mission == "haveDomSex" || gC(this.charKey).mission == "seduce" || ( (gC(this.charKey).socialAi.covetTs.includes(priorizedChar) || gC(this.charKey).socialAi.conquestTs.includes(priorizedChar)) && gC(this.charKey).socialAi.allyTs.includes(priorizedChar) == false ) ) {
+								egaSexAllowed = false;
+							}
+							if ( (gC(this.charKey).socialAi.covetTs.includes(priorizedChar) == false && gC(this.charKey).socialAi.conquestTs.includes(priorizedChar) == false) && (getCharsDrivePercent(this.charKey,"dPleasure")*2 > getCharsDrivePercent(this.charKey,"dDomination") + getCharsDrivePercent(this.charKey,"dAmbition")) && (gC(this.charKey).socialAi.loveTs.includes(priorizedChar) || gC(this.charKey).mission == "haveSex") && gC(priorizedChar).domChar != this.charKey ) {
+								subSexAllowed = true;
+							}
+			
+							var targetWillpowerMargin = gC(priorizedChar).willpower.max * 0.1;
+							var desireAttack = false;
+							if ( limitedRandomInt(40) > 30 ) {
+								desireAttack = true;
+							}
+							// Check for dominant sex
+							if ( ((setup.sistDB[setup.sistType.dominantSex].isSuccessful(this.charKey,priorizedChar)[0] || (setup.sistDB[setup.sistType.dominantSex].getDesire(this.charKey,priorizedChar)[0] >= (targetWillpowerMargin + 20) && desireAttack)) && domSexAllowed) ) {
+								choice = setup.sistType.dominantSex;
+								target = priorizedChar;
+							} // Check for egalitarian sex
+							else if ( ((setup.sistDB[setup.sistType.egalitarianSex].isSuccessful(this.charKey,priorizedChar)[0] || (setup.sistDB[setup.sistType.egalitarianSex].getDesire(this.charKey,priorizedChar)[0] >= (targetWillpowerMargin + 20) && desireAttack)) && egaSexAllowed) ) {
+								choice = setup.sistType.egalitarianSex;
+								target = priorizedChar;
+							} else if ( (setup.sistDB[setup.sistType.submissiveSex].isSuccessful(this.charKey,priorizedChar)[0] || (setup.sistDB[setup.sistType.submissiveSex].getDesire(this.charKey,priorizedChar)[0] >= (targetWillpowerMargin + 20) && desireAttack)) && subSexAllowed ) {
+								choice = setup.sistType.submissiveSex;
+								target = priorizedChar;
+							}
 						}
 					}
 				}
@@ -670,10 +688,12 @@ window.scorePotentialLove = function(actor,target) {
 	var relationScore = rLvlAbt(actor,target,"romance") * 2 + rLvlAbt(actor,target,"sexualTension") * 1 - rLvlAbt(actor,target,"enmity") * 3;
 	var domSubScore = (rLvlAbt(actor,target,"domination") + rLvlAbt(actor,target,"submission")) * 0.1;
 	var powerScore = (quantifyCharacterVacuumStrength(target) / quantifyAverageCandidateVacuumStrength());
+	var intimateScore = getCharsRelativeIntimacy(actor,target) * getInfluenceEffectWithDrives(target,2,["dLove"],["dAmbition","dDomination"]) * -1;
 	
 	score += relationScore;
 	score += domSubScore;
 	if ( powerScore >= 1 ) { score += powerScore * 10; }
+	score += intimateScore;
 	
 	score += score * limitedRandom(setup.randomTargetScore);
 	return score;
@@ -717,11 +737,13 @@ window.scorePotentialRival = function(actor,target) {
 	var submissionScore = rLvlAbt(actor,target,"submission") - rLvlAbt(actor,target,"domination");
 	var meritScore = gC(target).merit - gC(actor).merit;
 	var infamyScore = gC(target).infamy - gC(actor).infamy;
+	var intimateScore = getCharsRelativeIntimacy(actor,target) * getInfluenceEffectWithDrives(target,2,["dLove","dCooperation"],["dAmbition","dDomination","dImprovement"]) * -1;
 	
 	score += relationScore;
 	if ( submissionScore > 0 ) { score += submissionScore * getCharsDrivePercent(actor,"dAmbition") * 5; }
 	if ( meritScore > 0 ) { score += meritScore; }
 	if ( infamyScore > 0 ) { score += infamyScore * getCharsDrivePercent(actor,"dCooperation") * 5; }
+	score += intimateScore;
 	
 	score += score * limitedRandom(setup.randomTargetScore);
 	

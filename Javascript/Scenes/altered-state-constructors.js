@@ -62,6 +62,24 @@ window.createSensitizedTag = function(intensity,tag,name,abr,turns,description) 
 }
 // List: Pus+ ; Bre+ ; Dic+ ; Ass+ ; DicT ; PusT
 
+window.createASmissingSleep = function(days) {
+	var provokeEffect = function(charKey) {
+		for ( var st of getStatNamesArray() ) {
+			gC(charKey)[st].multModifier -= 0.1;
+		}
+	}
+	var cancelEffect = function(charKey) {
+		for ( var st of getStatNamesArray() ) {
+			gC(charKey)[st].multModifier += 0.1;
+		}
+	}
+	var description = "For one reason or another, this character did not get as much sleep as they needed to.";
+	var as = new alteredState("Missing Sleep","MsSl","days",days,provokeEffect,cancelEffect,description);
+	as.remainingDays = days;
+	as.type = "dayDebuff";
+	return as;
+}
+
 window.createASfrozenFeet = function(intensity) {
 	// Extra energy cost, control recovery reduction, agility loss (sum, mult) // Turns
 	var eec = 5 + intensity * 1; // 5 ~ 15

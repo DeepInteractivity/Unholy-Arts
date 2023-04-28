@@ -233,7 +233,7 @@ window.createCandidateGlobalAi = function(charKey) {
 			}
 		}
 		
-		if ( allTargets.length > 0 && getBarPercentage(this.charKey,"socialdrive") >= 0.25 ) {
+		if ( allTargets.length > 0 && getBarPercentage(this.charKey,"socialdrive") >= 0.35 ) {
 			var selectedChar = "";
 			if ( (gC(this.charKey).mood.angry + gC(this.charKey).mood.bored * 0.5 - 15 ) < ( gC(this.charKey).mood.friendly + gC(this.charKey).mood.flirty ) ) {
 				// Nurture friendship, flirt, seduce, taunt
@@ -323,22 +323,45 @@ window.createCandidateGlobalAi = function(charKey) {
 				}
 				
 				// Get alliance
-				var alTargets = allyTargets.concat(loveTargets);
+				var baseAlTargets = allyTargets.concat(loveTargets);
+				var alTargets = [];
+				for ( var cK of baseAlTargets ) {
+					if ( gC(this.charKey).egaChars.includes(cK) == false && gC(this.charKey).domChar != cK && gC(this.charKey).subChars.includes(cK) == false ) {
+						alTargets.push(cK);
+					}
+				}
 				if ( alTargets.length > 0 ) {
-					
-					selectedChar = randomFromList(alTargets);
+					//selectedChar = randomFromList(alTargets);
+					selectedChar = prioritizeAllianceTarget(this.charKey,alTargets);
 					var gaChoice = cAdvancedScialGoalMissionChoice(this.charKey,selectedChar,"getAlliance");
 					var weight = 2 + gC(this.charKey).dLove.level * 1 + gC(this.charKey).dCooperation.level * 2 - gC(this.charKey).mood.angry * 0.1 + gC(this.charKey).mood.intimate * 0.1;
 					if ( State.variables.simCycPar.templeDayPeriod != "training" ) { weight *= 2 + alTargets.length * 1.5; }
-					if ( gC(this.charKey).egaChars.length < 2 ) {
+					
+					if ( getCharAllies(this.charKey).length < 2 && getCharsDrivePercent(this.charKey,"dDomination") < 0.24 ) {
+						weight *= 2;
+							if ( getCharsDrivePercent(this.charKey,"dCooperation") > 0.2 ) {
+								weight *= 2;
+							}
+							if ( getCharsDrivePercent(this.charKey,"dCooperation") > 0.12 ) {
+								weight *= 2;
+							}
+							if ( getCharsDrivePercent(this.charKey,"dLove") > 0.2 ) {
+								weight *= 2;
+							}
+						if ( getCharAllies(this.charKey).length < 1 && getCharsDrivePercent(this.charKey,"dDomination") < 0.2 ) {
+							weight *= 3;
+							if ( getCharAllies(this.charKey).length < 1 && getCharsDrivePercent(this.charKey,"dDomination") < 0.16 ) {
+								weight *= 4;
+							}
+						}
+					} else if ( getCharAllies(this.charKey).length >= 2 && getCharsDrivePercent(this.charKey,"dCooperation") < 0.16 ) {
+						weight *= 0.1;
+					} else if ( getCharAllies(this.charKey).length >= 2 && getCharsDrivePercent(this.charKey,"dCooperation") < 0.24 ) {
 						weight *= 0.5;
-					} else if ( gC(this.charKey).egaChars.length >= 2 ) {
-						weight = 0;
 					}
-
+					
 					gaChoice.weight = weight;
 					if ( gaChoice.weight > 0 ) { mChoices.push(gaChoice); }
-					
 				}
 				
 			}
@@ -1768,6 +1791,23 @@ window.removeNonCandidateCharsFromCharList = function(charList) {
 		}
 	}
 	return newCharList;
+}
+
+window.prioritizeAllianceTarget = function(charKey,alTargets) {
+	var selectedChar = "";
+	if ( alTargets.length > 1 ) {
+		var weightedTargets = listIntoWeightedList(alTargets);
+		for ( var el in weightedTargets ) {
+			var wt = weightedTargets[el];
+			if ( wt instanceof weightedElement ) {
+				wt.w = Math.pow(((rLvlAbt(charKey,wt.content,"friendship") + rLvlAbt(charKey,wt.content,"romance") - rLvlAbt(charKey,wt.content,"rivalry") - rLvlAbt(charKey,wt.content,"enmity") * 2) * 10 + quantifyCharacterStats(wt.content) * 0.5),1.3);
+			}
+		}
+		selectedChar = randomFromWeightedList(weightedTargets);
+	} else {
+		selectedChar = alTargets[0];
+	}
+	return selectedChar;
 }
 
 // General evaluations auxiliar functions

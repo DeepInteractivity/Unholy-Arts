@@ -855,6 +855,62 @@ setup.eventsMetaInfo["lm0"].clairvoyanceData = new emiClaivoyanceData(
 	},
 	null // Hints
 );
+
+setup.eventsMetaInfo["stn"] = new eventMetaInfo( // "Sharing the Night"
+	true,true,
+	"Sharing the Night",
+	"stn",
+	initializeSeSharingTheNight, // initFunc
+	"Sharing the Night Start",
+	function() { // Reqs
+		var allowed = false;
+		
+		if ( State.variables.daycycle.month > 1 ) {
+			for ( var cK of ["chNash","chMir","chVal","chClaw","chAte"] ) {
+				var relPoints = rLvlAbt(cK,"chPlayerCharacter","romance") * 3 + rLvlAbt(cK,"chPlayerCharacter","sexualTension") * 3 - rLvlAbt(cK,"chPlayerCharacter","rivalry") * 2 - rLvlAbt(cK,"chPlayerCharacter","enmity") * 5;
+				if ( relPoints >= 18 ) {
+					allowed = true;
+				}
+			}
+		}
+		return allowed;
+	},
+	function() { // Weight
+		var weight = 100;
+		
+		return weight;
+	}
+);
+setup.eventsMetaInfo["stn"].clairvoyanceData = new emiClaivoyanceData(
+	"When you're invited to share the night", // Cryptic Name
+	function() { // Reqs to be shown
+		var result = false;
+		if ( State.variables.daycycle.month > 1 ) {
+			result = true;
+		}
+		return result; // 
+	},
+	function() { // Reqs to appear
+		var reqsText = formatClairvoyanceCheck("Requisites",50,formatRequisiteForClairvoyance("You have a growing intimate relationship with at least one other Candidate.", function() {
+			var b = false;
+			for ( var cK of ["chNash","chMir","chVal","chClaw","chAte"] ) {
+				var relPoints = rLvlAbt(cK,"chPlayerCharacter","romance") * 3 + rLvlAbt(cK,"chPlayerCharacter","sexualTension") * 3 - rLvlAbt(cK,"chPlayerCharacter","rivalry") * 2 - rLvlAbt(cK,"chPlayerCharacter","enmity") * 5;
+				if ( relPoints >= 18 ) {
+					b = true;
+				}
+			}
+			return b;
+		}))
+//		+ formatClairvoyanceCheck("Hints",75,formatRequisiteForClairvoyance("Your dominance and submission towards other may limit your options.", function() {
+//			var b = true;
+//			return b;
+//		}))
+		;
+		return reqsText;
+	},
+	null // Hints
+);
+
 /*
 setup.eventsMetaInfo["gd3"] = new eventMetaInfo( // "A Sacrifice of Aether"
 	true,false,

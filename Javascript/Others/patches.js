@@ -5,6 +5,11 @@ window.applyRequiredPatches = function() {
 	v037Patches();
 	v0310Patches();
 	v0316Patches();
+	v0318GeneralPatches();
+}
+
+window.applyRequiredScenePatches = function() {
+	v0318ScenePatches();
 }
 
 window.v036Patches = function() {
@@ -60,6 +65,27 @@ window.v0316Patches = function() {
 		State.variables.chNer.iconL = "img/charIcons/nerIcon.png";
 		State.variables.chNer.icon = function() {
 			return "[img[img/charIcons/nerIcon.png]]";
+		}
+	}
+}
+
+window.v0318GeneralPatches = function() {
+	for ( var cK of getActiveSimulationCharactersArray() ) {
+		if ( gC(cK).combatAffinities.hasOwnProperty("affection") == false ) {
+			gC(cK).combatAffinities.affection = new flavorAffinity("affection");
+		}
+		if ( gC(cK).combatAffinities.hasOwnProperty("rivalry") == false ) {
+			gC(cK).combatAffinities.affection = new flavorAffinity("rivalry");
+		}
+	}
+}
+window.v0318ScenePatches = function() {
+	for ( var cK of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
+		if ( gC(cK).combatAffinities.hasOwnProperty("affection") == false ) {
+			gC(cK).combatAffinities.affection = new flavorAffinity("affection");
+		}
+		if ( gC(cK).combatAffinities.hasOwnProperty("rivalry") == false ) {
+			gC(cK).combatAffinities.affection = new flavorAffinity("rivalry");
 		}
 	}
 }

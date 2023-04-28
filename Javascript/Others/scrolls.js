@@ -410,7 +410,6 @@ window.getScrollTributeForTheGoddess = function() {
 window.createScrollTributeForTheGoddess = function() {
 	var scr = new Scroll("tributeForTheGoddess","Tribute for the Goddess","shortStory");
 	scr.firstTimeEffect = function(characters) {
-		// TO DO: Learn new positional actions
 		var textResults = charactersLearnSceneActions(characters,['extraMountFromBehind','extraKneel','extraMakeKneel','extraLegHoldHead']);
 		return textResults;
 	}
@@ -614,6 +613,70 @@ window.createScrollDeeperRelationships = function() {
 	}
 	return scr;
 }
+// Relationships Nuance
+window.getScrollRelationshipsNuance = function() {
+	var content = `Your relationships with your fellow Candidates will grow, evolve and mutate during your preparation as a potential High Priestess, and thus, it is fundamental for you to pay attention to the nuances they may take with enough anticipation so that you may properly direct them towards the most fruitful stream.
+One of such nuances might be intimacy, so often taken for granted while it's slipping out of your hands, only to be noticed when you've already lost it. Your intimacy with someone does not only depend on the kind of relationship you share, but the intimacy of all other relationships each of you have as well. If you see your loved one committing to raise her intimacy with a third person, you should be aware that failing to reach the same level of compromise may result in you being left behind.
+Do you want your relationship with your current ally to remain something pragmatic and goal-oriented, or are you willing to trust them enough to commit to a more intimate one? Would you be willing to compromise the obedience of your current servant to explore a dimension of shared love, or is her discipline an unalienable goal of yours? Should you maintain a low profile regarding someone you cannot see eye to eye, or are your differences large enough that you should publicly announce your rivalry to raise the stakes of your future encounters?
+Some Candidates have taken these choices depending on their feelings, others tried to calculate the best path to victory, and some were guided by her most personal convictions. Whatever it is your decision, you should dedicate as much time as required to voice your goals with your peers and make sure your intentions are aligned, when possible.`;
+	return content;
+}
+window.createScrollRelationshipsNuance = function() {
+	var scr = new Scroll("relsNuance","Relationships Nuance","tutorial");
+	scr.firstTimeEffect = function(characters) {
+		var textResults = "";
+		var expPoints = 100;
+		for ( var character of characters ) {
+			gC(character).empathy.addExperience(expPoints);
+			textResults += gC(character).getFormattedName() + " gained " + (expPoints * gC(character).empathy.affinity).toFixed(1) + " empathy experience points.\n";
+		}
+		return textResults;
+	}
+	
+	scr.getContent = getScrollRelationshipsNuance;
+	scr.mayBeFound = function(characters) {
+		var flag = false;
+		if ( getCurrentStoryState() >= storyState.secondLoop ) {
+			flag = true;
+		}
+		return flag;
+	}
+	return scr;
+}
+
+// Forbidden Love
+window.getScrollForbiddenLove = function() {
+	var content = `"The phantom has visited me again tonight. No matter how strong I shut the doors, how vehemently I reject its advances and ignore its cries, it just keeps coming. How can you, after all, forbid the visits of a ghost that lives in your own head?
+
+And to be entirely honest with myself... I have been clinging onto it, no matter how much that nail burns. I keep telling myself that the pain it brings isn't worth it, but how can I survive the pain of knowing I will never see you again, that I'll have to continue living on without the reminiscence of your smile? Every night, when I'm about to cry myself to sleep, a little part of me leaves a small crack open in the door, and so the phantom manages to enter. This ghost is the living memory of your laugh bright and full of joy, of your hand gently caressing my face, of your mouth seducing mine in a slow dance... It is a fire that warms my desolate soul, and in my weakness, I welcome its destructive embrace, its merciless visits that burn my skin.
+
+Why must our families be so foolish, feuding over ages old disputes? Who cares if you're Ashwalker and me, Gaanidan? If our love could flourish in such brief encounters, shouldn't the world respect and protect its beauty? Why must the hate of our tribes get in the way of our affection? Our soul-penetrating stares, prelude to the symphony of our kiss, the warm embrace of our hands, and their fingers seeking the union with each other, our skin turning open to each other's touch and massage, as if we were going to fuse ourselves... Why must all of that hold less weight than the rivalry of long dead corpses?"
+
+[A few words have been crossed out to the point of no longer being readable. The text continues long below, with a fairly different handwriting, sometimes firm, but sometimes shaken.]
+
+"Today is the day when the new Gaanidan Candidate is chosen. I have already submitted myself to my fate, resigned to the powerless frustration of not being capable of defying men and women who value the dead over myself... But if by some chance... The Goddess is aware of my pain... Please, listen to my plea... Please send me to the Passion Temple, and send her as well. My hands are trembling, and my face bathed in tears... I cannot leave home like this... Please..."
+
+Segments of the personal diary of Iuno, High Priestess of the Passion Temple.`;
+	return content;
+}
+window.createScrollForbiddenLove = function() {
+	var scr = new Scroll("forbiddenLove","A Forbidden Love","shortStory");
+	scr.firstTimeEffect = function(characters) {
+		var textResults = charactersLearnSceneActions(characters,['whisperSNs','kissNeck','holdHands']);
+		return textResults;
+	}
+	
+	scr.getContent = getScrollForbiddenLove;
+	scr.mayBeFound = function(characters) {
+		var flag = false;
+		if ( State.variables.daycycle.month > 1 ) {
+			flag = true;
+		}
+		return flag;
+	}
+	return scr;
+}
+
 
 setup.scrollsList = [];
 setup.scrollsList.onAether = createScrollOnAether();
@@ -634,6 +697,8 @@ setup.scrollsList.artsSocializing = createScrollTheArtsOfSocializing();
 setup.scrollsList.artsBed = createScrollTheArtsOfBed();
 setup.scrollsList.artsCombat = createScrollTheArtsOfCombat();
 setup.scrollsList.deeperRelationships = createScrollDeeperRelationships();
+setup.scrollsList.relsNuance = createScrollRelationshipsNuance();
+setup.scrollsList.forbiddenLove = createScrollForbiddenLove();
 
 window.getScrollsStringList = function() {
 	var scrollsList = [];
@@ -669,6 +734,7 @@ window.getScrollTypeText = function(scr) {
 			break;
 		case "tutorial":
 			txt = "Tutorial";
+			break;
 	}
 	return txt;
 }

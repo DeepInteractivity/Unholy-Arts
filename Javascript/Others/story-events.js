@@ -1288,3 +1288,77 @@ window.finishSacrificeOfAether = function() {
 	State.variables.chPlayerCharacter.nameColor = State.variables.StVars.check6;
 }
 
+window.initializeSeSharingTheNight = function() {
+	var chosenCandidate = "chNash";
+	var highestScore = -1;
+	for ( var cK of ["chNash","chMir","chVal","chClaw","chAte"] ) {
+		var relPoints = rLvlAbt(cK,"chPlayerCharacter","romance") * 3 + rLvlAbt(cK,"chPlayerCharacter","sexualTension") * 3 - rLvlAbt(cK,"chPlayerCharacter","rivalry") * 2 - rLvlAbt(cK,"chPlayerCharacter","enmity") * 5;
+		if ( relPoints > highestScore ) {
+			highestScore = relPoints;
+			chosenCandidate = cK;
+		}
+	}
+	State.variables.StVars.check1 = chosenCandidate;
+	if ( chosenCandidate == "chVal" ) {
+		if ( isStVarOn("GcEndC") == false ) {
+			State.variables.StVars.check1 = "chSil";
+		}
+	}
+	State.variables.StVars.check2 = (gCstat("chPlayerCharacter","empathy") + gCstat("chPlayerCharacter","perception")) >= 26;
+	
+	addToStVarsList("ShTNgt");
+	State.variables.StVars.check9 = charactersLearnSceneActions(["chPlayerCharacter"],["holdHands"]);
+	if ( State.variables.StVars.check9 != "" ) { State.variables.StVars.check9 += "\n"; }
+	State.variables.StVars.check9 += colorText("It is now possible to invite other characters to spend the night together.\nIt is now possible to initiate 'intimate' special relationships.","khaki");
+	
+	if ( chosenCandidate == "chNash" ) { // Checks Nashillbyir
+		var relBalance = ( 1 + rLvlAbt("chPlayerCharacter","chNash","domination") + rLvlAbt("chNash","chPlayerCharacter","submission") ) / ( 1 + rLvlAbt("chPlayerCharacter","chNash","submission") + rLvlAbt("chNash","chPlayerCharacter","domination") );
+		// Allowed ega
+		if ( relBalance >= 0.65 ) {
+			State.variables.StVars.check3 = true;
+			// Allowed dom
+			if ( relBalance >= 1.5 ) {
+				State.variables.StVars.check4 = true;
+			} else {
+				State.variables.StVars.check4 = false;
+			}
+		} else {
+			State.variables.StVars.check3 = false;
+			State.variables.StVars.check4 = false;
+		}
+	} else if ( chosenCandidate == "chMir" ) { // Checks Padmiri
+		var relBalance = ( 1 + rLvlAbt("chPlayerCharacter","chMir","domination") + rLvlAbt("chMir","chPlayerCharacter","submission") ) / ( 1 + rLvlAbt("chPlayerCharacter","chMir","submission") + rLvlAbt("chMir","chPlayerCharacter","domination") );
+		// Allowed ega
+		if ( relBalance >= 1.5 ) {
+			State.variables.StVars.check4 = true;
+		} else {
+			State.variables.StVars.check4 = false;
+		}
+	} else if ( chosenCandidate == "chVal" ) { // Checks Valtan
+		State.variables.StVars.check3 = false;
+		State.variables.StVars.check3 = (gCstat("chPlayerCharacter","intelligence") + gCstat("chPlayerCharacter","empathy") + gCstat("chPlayerCharacter","perception")) >= 40;
+	} else if ( chosenCandidate == "chSil" ) { // Checks Valtan + Sillan
+		State.variables.StVars.check3 = false;
+		State.variables.StVars.check3 = (gCstat("chPlayerCharacter","intelligence") + gCstat("chPlayerCharacter","empathy") + gCstat("chPlayerCharacter","perception")) >= 40;
+	} else if ( chosenCandidate == "chClaw" ) { // Checks Claw
+		var relBalance = ( 1 + rLvlAbt("chPlayerCharacter","chClaw","domination") + rLvlAbt("chClaw","chPlayerCharacter","submission") ) / ( 1 + rLvlAbt("chPlayerCharacter","chClaw","submission") + rLvlAbt("chClaw","chPlayerCharacter","domination") );
+		// Allowed ega
+		if ( relBalance >= 1.5 ) {
+			State.variables.StVars.check4 = true;
+		} else {
+			State.variables.StVars.check4 = false;
+		}
+	} else if ( chosenCandidate == "chAte" ) { // Checks Ate
+		var relBalance = ( 1 + rLvlAbt("chPlayerCharacter","chAte","domination") + rLvlAbt("chAte","chPlayerCharacter","submission") ) / ( 1 + rLvlAbt("chPlayerCharacter","chAte","submission") + rLvlAbt("chAte","chPlayerCharacter","domination") );
+		// Sex turns dom
+		if ( relBalance >= 1.5 ) {
+			State.variables.StVars.check4 = true;
+		} else {
+			State.variables.StVars.check4 = false;
+		}
+	}
+
+}
+
+
+

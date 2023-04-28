@@ -91,6 +91,7 @@ window.continuedAction = function() {
 	}
 }
 
+	// Oral
 window.createCaFrenchKiss = function(initiator, targetsList) {
 	var ca = new continuedAction();
 	ca.name = "French Kissing";
@@ -109,9 +110,22 @@ window.createCaFrenchKiss = function(initiator, targetsList) {
 	ca.execute = function() {
 		var results = new saResults;
 		
+		// Relationship strength
+		var relStr = rLvlAbt(this.initiator,this.targetsList[0],"sexualTension") * 1 + rLvlAbt(this.targetsList[0],this.initiator,"sexualTension") * 1 + rLvlAbt(this.initiator,this.targetsList[0],"romance") * 3 + rLvlAbt(this.targetsList[0],this.initiator,"romance") * 3;
+		var relInt = 1;
+		if ( relStr >= 24 ) { relInt += 0.15; }
+		if ( relStr >= 48 ) { relInt += 0.15; }
+		if ( relStr >= 80 ) { relInt += 0.15; }
+		// Open eyes multiplier
+		var openEyes = 1;
+		if ( gC(this.initiator).hasFreeBodypart("eyes") && gC(this.targetsList[0]).hasFreeBodypart("eyes") ) {
+			openEyes = 1.25;
+		}
+		
+		// Damage
 		var multAr = getSexDamageMultAlt(this.initiator,this.targetsList[0],this.flavorTags);
 		var multAr2 = getSexDamageMultAlt(this.initiator,this.initiator,this.flavorTags);
-		var lustDamage = ((getChar(this.initiator).agility.getValue() + getChar(this.initiator).perception.getValue() + getChar(this.initiator).empathy.getValue()) / 15);
+		var lustDamage = ((getChar(this.initiator).agility.getValue() + getChar(this.initiator).perception.getValue() + getChar(this.initiator).empathy.getValue()) / 15) * relInt * openEyes;
 		var lustDamage2 = lustDamage * 0.5 * multAr2[0];
 		lustDamage *= multAr[0];
 		getChar(this.initiator).lust.changeValue((-lustDamage/2));
@@ -193,6 +207,7 @@ window.createCaLegHoldHead = function(initiator, targetsList) {
 	return ca;
 }
 
+	// Full sex
 window.createCaPenetratePussy = function(initiator, targetsList) {
 	var ca = new continuedAction();
 	ca.key = "penetratePussy";
@@ -655,6 +670,82 @@ window.createCaDoubleDildoPussyPenetration = function(initiator, targetsList) {
 	return ca;
 }
 
+	// Romantic Misc
+window.createCaHoldHands = function(initiator,targetsList) {
+	var ca = new continuedAction();
+	ca.key = "holdHands";
+	ca.name = "Holding Hands";
+	ca.initiator = initiator;
+	ca.targetsList = targetsList;
+	ca.initiatorBodyparts = [ "arms" ];
+	ca.targetsBodyparts = [ "arms" ];
+	ca.occupyBodyparts();
+	ca.flavorTags = ["romantic","useHands","targetHands","continuedAction"]; 
+	
+	ca.validRelationalPositions = []
+	ca.unvalidRelationalPositions = [["takingFromBehind","takenFromBehind"],["standing","kneeling"],["kneeling","standing"]];
+	ca.unvalidRelationalPositions.push(["spitroastFront","spitroastBehind"],["spitroastBehind","spitroastFront"]);
+	ca.unvalidRelationalPositions.push(["spitroastBehind","spitroastTarget"],["spitroastTarget","spitroastBehind"],["spitroastTarget","spitroastFront"]);
+	ca.unvalidRelationalPositions.push(["mountingFromBehind","mountingAndMounted"]);
+	ca.unvalidRelationalPositions.push(["mountingAndMounted","mountingFromBehind"]);
+	ca.unvalidRelationalPositions.push(["mountingAndMounted","mountedFromBehind"]);
+	ca.unvalidRelationalPositions.push(["mountedFromBehind","mountingAndMounted"]);
+									 
+	ca.execute = function() {
+		var results = new saResults;
+		var actor = this.initiator;
+		var actorKey = this.initiator;
+		var target = this.targetsList[0];
+		
+		var multAr1 = getSexDamageMultAlt(this.targetsList[0],this.initiator,this.flavorTags);
+		var multAr2 = getSexDamageMultAlt(this.initiator,this.targetsList[0],this.flavorTags);
+		var baseLustDamage = 0.6 * (1 + (((gCstat(actor,"agility") + gCstat(actor,"empathy")) * 0.1) + rLvlAbt(actorKey,target,"romance") + rLvlAbt(target,actorKey,"romance")) * 0.1).toFixed(0);
+		var lustDamage = baseLustDamage;
+		
+		gC(target).lust.changeValue(-lustDamage);
+		results.value += lustDamage;
+		results.description += randomFromList( [
+								(ktn(actor) + "'s hand keeps locked tight with " + ktn(target) + "'s."),
+								(ktn(actor) + " and " + ktn(target) + " continue holding hands."),
+								(ktn(actor) + " won't let go of " + ktn(target) + "'s hands.") ] );
+								
+		if ( getBarPercentage(target,"lust") >= 0.5 ) {
+			var targetLustDamage = lustDamage * getBarPercentage(target,"lust") * multAr2[0];
+			gC(target).lust.changeValue(-targetLustDamage);
+			results.description += " " + ktn(target) + " received " + textLustDamage(targetLustDamage) + ". " + multAr2[1];
+		}
+		if ( getBarPercentage(actor,"lust") >= 0.5 ) {
+			var actorLustDamage = lustDamage * getBarPercentage(actor,"lust") * multAr1[0];
+			gC(actor).lust.changeValue(-actorLustDamage);
+			results.description += " " + ktn(actor) + " received " + textLustDamage(actorLustDamage) + ". " + multAr1[1];
+		}
+				
+		return results;
+	}
+	ca.freeBodyparts = function() {
+		for ( var bp in this.initiatorBodyparts ) {
+			getChar(this.initiator).body[this.initiatorBodyparts[bp]].state = "free";
+		}
+		for ( var bp in this.targetsBodyparts ) {
+			for ( var tg in this.targetsList ) {
+				getChar(this.targetsList[tg]).body[this.targetsBodyparts[bp]].state = "free";
+			}
+		}
+		var i = 0;
+		for ( var bpl of this.tornTargetsBodyparts ) {
+			var target = this.targetsList[i];
+			for ( var bp of bpl ) {
+				gC(target).body[bp].state = "free";
+			}
+			i++;
+		}
+		removeAlteredStateByAcr(this.initiator,"HoHa");
+		removeAlteredStateByAcr(this.targetsList[0],"HoHa");
+	}
+	return ca;
+}
+
+
 	// Fetish
 
 window.createCaHoldArms = function(initiator,targetsList) {
@@ -666,7 +757,7 @@ window.createCaHoldArms = function(initiator,targetsList) {
 	ca.initiatorBodyparts = [ "arms" ];
 	ca.targetsBodyparts = [ "arms" ];
 	ca.occupyBodyparts();
-	ca.flavorTags = ["domination"];
+	ca.flavorTags = ["domination","useHands","targetHands","continuedAction"];
 	
 	ca.validRelationalPositions.push(["mountingFromBehind","mountedFromBehind"],["mountingFaceToFace","mountedFaceToFace"],
 									 ["spitroastBehind","spitroastTarget"],["mountingFromBehind","mountingAndMounted"],
@@ -708,7 +799,7 @@ window.createCaVinesHoldArms = function(initiator,targetsList) {
 	ca.targetsList = targetsList;
 	ca.targetsBodyparts = [ "arms" ];
 	ca.occupyBodyparts();
-	ca.flavorTags = ["domination","bondage"];
+	ca.flavorTags = ["domination","bondage","continuedAction"];
 									 
 	ca.execute = function() {
 		var results = new saResults;
