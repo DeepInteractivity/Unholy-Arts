@@ -414,7 +414,7 @@ PersonalRoom.prototype.getCharacterInfo = function(character) {
 			// Drives
 		if ( character != "chPlayerCharacter" ) {
 			// Extra conditions
-			if ( gC(character).domChar == "chPlayerCharacter" || gC(character).subChars.includes("chPlayerCharacter") || gC(character).egaChars.includes("chPlayerCharacter") ) {
+			if ( gC(character).domChar == "chPlayerCharacter" || gC(character).subChars.includes("chPlayerCharacter") || (gC(character).egaChars.includes("chPlayerCharacter") && getCharEnemies("chPlayerCharacter").includes(character) == false ) ) {
 				var drivesDesc = "\n<div class='standardBox'>__" + gC(character).name + "'s drives__:\n";
 				drivesDesc += textCharactersDrives(character) + "</div>";
 				iText += drivesDesc;
@@ -422,14 +422,14 @@ PersonalRoom.prototype.getCharacterInfo = function(character) {
 		}
 		
 		// Sexual preferences
-		if ( character == "chPlayerCharacter" || gC(character).domChar == "chPlayerCharacter" || gC(character).subChars.includes("chPlayerCharacter") || gC(character).egaChars.includes("chPlayerCharacter") ) {
+		if ( character == "chPlayerCharacter" || gC(character).domChar == "chPlayerCharacter" || gC(character).subChars.includes("chPlayerCharacter") || (gC(character).egaChars.includes("chPlayerCharacter") && getCharEnemies("chPlayerCharacter").includes(character) == false ) ) {
 			var prefsDesc = "\n<div class='standardBox'>__" + gC(character).name + "'s sex preferences__:\n";
 			prefsDesc += textCharactersTastes(character) + "</div>";
 			iText += prefsDesc;
 		}
 		
 		// Virginities
-		if ( character == "chPlayerCharacter" || gC(character).domChar == "chPlayerCharacter" || gC(character).subChars.includes("chPlayerCharacter") || gC(character).egaChars.includes("chPlayerCharacter") ) {
+		if ( character == "chPlayerCharacter" || gC(character).domChar == "chPlayerCharacter" || gC(character).subChars.includes("chPlayerCharacter") || (gC(character).egaChars.includes("chPlayerCharacter") && getCharEnemies("chPlayerCharacter").includes(character) == false ) ) {
 			var virginitiesText = getCharsVirginityChart(character);
 			if ( virginitiesText != "" ) {
 				iText += "\n<div class='standardBox'>__Virginities__:\n";

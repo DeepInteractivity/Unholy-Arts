@@ -71,6 +71,13 @@ window.SocIntSys = function(key,charList) {
 	this.charList = charList; // List of char keys
 	this.charInteractions = []; // List of lists. Each list represents the interactions offered to each character participating in the conversation,
 								// the list's position is the same as its character's position in this.charList
+	this.charsSocialInfo = []; // Dynamic array with every character who has been present in the conversation, as long as the player character is or was present.
+						       // The value of each character represents the social info gathered by the player, used to determine the character's social mission
+	for ( var cK in charList ) {
+		if ( this.charsSocialInfo[charList[cK]] == undefined ) {
+			this.charsSocialInfo[charList[cK]] = 0;
+		}
+	}
 	
 	this.importantMessages = "";
 	this.interactionsDescription = "";
@@ -100,9 +107,10 @@ window.SocIntSys = function(key,charList) {
 	this.extraEffects = "";
 	
 	this.tempLeftSis = [];
-	
+};
+
 	// UI
-	this.formatPassageText = function() {
+	SocIntSys.prototype.formatPassageText = function() {
 		
 		this.passageText = "";
 		
@@ -160,6 +168,8 @@ window.SocIntSys = function(key,charList) {
 					}
 				}
 				
+				this.passageText += this.displayCharsIntentions() + "\n";
+				
 				if ( flagExtraOptions ) {
 					if ( gC("chPlayerCharacter").followingTo == "" ) {
 						// Specific interactions
@@ -187,7 +197,7 @@ window.SocIntSys = function(key,charList) {
 		
 	}
 	
-	this.formatTargetsButtons = function() {
+	SocIntSys.prototype.formatTargetsButtons = function() {
 		var potentialTargets = [];
 		for ( var c of this.charList ) {
 			if ( c != "chPlayerCharacter" ) {
@@ -208,16 +218,113 @@ window.SocIntSys = function(key,charList) {
 			if ( (flagNoTarget == true && i == 0) || State.variables.sisPlayerInfo.lastTarget == t ) {
 				bText += 'checked="checked" ';
 			}
-			bText += 'onclick="selectTarget(' + "'" + t + "'" + ')">\n';
+			bText += 'onclick="selectTarget(' + "'" + t + "'" + ')">';
 			bText += "<label for='" + t + "'>" + firstToCap(gC(t).name) + "</" + "label><br>";
+			// bText += " " + this.displayTargetsIntention(t,this.charsSocialInfo[t]) + "\n";
 			i++;
 		}
 		bText += "</" + "html>";
 		
 		return bText;
 	}
+	SocIntSys.prototype.displayCharsIntentions = function() {
+		var iText = "__Intentions__:\n";
+		for ( var cK of this.charList ) {
+			if ( cK != "chPlayerCharacter" ) {
+				iText += "- " + gC(cK).getFormattedName() + ": " + this.displayTargetsIntention(cK,this.charsSocialInfo[cK]) + "\n"
+			}
+		}
+		return iText;
+	}
+	// Social missions: raiseFriendship, flirt, seduce, haveSex, haveDomSex, getAlliance, taunt
+	SocIntSys.prototype.displayTargetsIntention = function(target,points) {
+		var dText = "";
+		// Exact intention, mostly precise intention, vague intention, no information
+		if ( points > 10 ) {
+			dText += this.turnMissionIntoIntention(gC(target).mission,3);
+		} else if ( points > 6.6 ) {
+			dText += this.turnMissionIntoIntention(gC(target).mission,2);
+		} else if ( points > 3.3 ) {
+			dText += this.turnMissionIntoIntention(gC(target).mission,1);
+		} else {
+			dText += getTextWithTooltipAlt("(?)","You haven't got a clue about this character's intention yet.");
+		}
+		return dText;
+	}
+	SocIntSys.prototype.turnMissionIntoIntention = function(intention,pointsRank) {
+		var iText = "";
+		switch(intention) {
+			case "raiseFriendship":
+				if ( pointsRank == 1 ) {
+					iText = getTextWithTooltipAlt("( [img[img/socialIcons/friendlyIcon.png]] ?)","This character may have friendly intentions.");
+				} else if ( pointsRank == 2 ) {
+					iText = getTextWithTooltipAlt("( [img[img/socialIcons/friendlyIcon.png]] ?)","This character may want to raise their friendships.");
+				} else {
+					iText = getTextWithTooltipAlt("( [img[img/socialIcons/friendlyIcon.png]] )","This character wants to raise their friendships.");
+				}
+				break;
+			case "flirt":
+				if ( pointsRank == 1 ) {
+					iText = getTextWithTooltipAlt("( [img[img/socialIcons/flirtyIcon.png]] ?)","This character may have flirty intentions.");
+				} else if ( pointsRank == 2 ) {
+					iText = getTextWithTooltipAlt("( [img[img/socialIcons/flirtyIcon.png]] ?)","This character may want to flirt with someone.");
+				} else {
+					iText = getTextWithTooltipAlt("( [img[img/socialIcons/flirtyIcon.png]] )","This character wants to attract someone.");
+				}
+				break;
+			case "seduce":
+				if ( pointsRank == 1 ) {
+					iText = getTextWithTooltipAlt("( [img[img/socialIcons/flirtyIcon.png]] ?)","This character may have flirty intentions.");
+				} else if ( pointsRank == 2 ) {
+					iText = getTextWithTooltipAlt("( [img[img/socialIcons/dominantIcon.png]] ?)","This character may want to seduce someone.");
+				} else {
+					iText = getTextWithTooltipAlt("( [img[img/socialIcons/dominantIcon.png]] )","This character wants to get someone under their thumb.");
+				}
+				break;
+			case "haveSex":
+				if ( pointsRank == 1 ) {
+					iText = getTextWithTooltipAlt("( [img[img/socialIcons/arousedIcon.png]] ?)","This character may have sexual intentions.");
+				} else if ( pointsRank == 2 ) {
+					iText = getTextWithTooltipAlt("( [img[img/socialIcons/arousedIcon.png]] ?)","This character may want to get inside someone's pants.");
+				} else {
+					iText = getTextWithTooltipAlt("( [img[img/socialIcons/arousedIcon.png]] )","This character wants to get someone to bed.");
+				}
+				break;
+			case "haveDomSex":
+				if ( pointsRank == 1 ) {
+					iText = getTextWithTooltipAlt("( [img[img/socialIcons/arousedIcon.png]] ?)","This character may have sexual intentions.");
+				} else if ( pointsRank == 2 ) {
+					iText = getTextWithTooltipAlt("( [img[img/socialIcons/dominantIcon.png]] ?)","This character may want to pin someone down.");
+				} else {
+					iText = getTextWithTooltipAlt("( [img[img/socialIcons/dominantIcon.png]] )","This character wants to dominate someone in bed.");
+				}
+				break;
+			case "getAlliance":
+				if ( pointsRank == 1 ) {
+					iText = getTextWithTooltipAlt("( [img[img/socialIcons/friendlyIcon.png]] ?)","This character may have friendly intentions.");
+				} else if ( pointsRank == 2 ) {
+					iText = getTextWithTooltipAlt("( [img[img/socialIcons/friendlyIcon.png]] ?)","This character may want to raise their friendships.");
+				} else {
+					iText = getTextWithTooltipAlt("( [img[img/socialIcons/friendlyIcon.png]] )","This character wants to take a relationship to the next level.");
+				}
+				break;
+			case "taunt":
+				if ( pointsRank == 1 ) {
+					iText = getTextWithTooltipAlt("( [img[img/socialIcons/friendlyIcon.png]] ?)","This character may have friendly intentions.");
+				} else if ( pointsRank == 2 ) {
+					iText = getTextWithTooltipAlt("( [img[img/socialIcons/angryIcon.png]] ?)","This character has hostile intentions.");
+				} else {
+					iText = getTextWithTooltipAlt("( [img[img/socialIcons/angryIcon.png]] )","This character is trying to taunt someone.");
+				}
+				break;
+		}
+		if ( iText == "" ) {
+			iText = getTextWithTooltipAlt("(X)","This character doesn't seem to have specific goals."); 
+		}
+		return iText;
+	}
 	
-	this.formatMoodChanges = function() {
+	SocIntSys.prototype.formatMoodChanges = function() {
 		
 		var desc = ""; // '<span style="color:darkgray"'+'>__Mood changes__:\n</'+'span>';
 		for ( var cmc in this.charMoodChanges ) {
@@ -240,7 +347,7 @@ window.SocIntSys = function(key,charList) {
 		}
 	}
 	
-	this.formatRelationChanges = function() {
+	SocIntSys.prototype.formatRelationChanges = function() {
 		var desc = "";
 		var i = 0;
 		for ( var crc in this.charRelChanges ) {
@@ -292,7 +399,7 @@ window.SocIntSys = function(key,charList) {
 		}
 	}
 	
-	this.formatDescription = function() {
+	SocIntSys.prototype.formatDescription = function() {
 		this.descriptionsText = "";
 		
 		if ( this.interactionsDescription != "" ) {
@@ -316,7 +423,7 @@ window.SocIntSys = function(key,charList) {
 		}
 	}
 	
-	this.formatInteractionChoice = function(si) {
+	SocIntSys.prototype.formatInteractionChoice = function(si) {
 		var iText = "";
 		
 		if ( getSiByKey(si).isUsable(this,"chPlayerCharacter",State.variables.sisPlayerInfo.currentTarget,[],0) == false ) {
@@ -347,7 +454,7 @@ window.SocIntSys = function(key,charList) {
 		return iText;
 	}
 	
-	this.formatPlayerInteractionsToTarget = function(target,interactionsList) {
+	SocIntSys.prototype.formatPlayerInteractionsToTarget = function(target,interactionsList) {
 		var iText = "";
 		
 		if ( this.charList.includes("chPlayerCharacter") ) {
@@ -381,7 +488,7 @@ window.SocIntSys = function(key,charList) {
 	
 	
 	// Logic
-	this.getAllValidInteractionsChar = function(character) {
+	SocIntSys.prototype.getAllValidInteractionsChar = function(character) {
 		
 		var allInteractions = getAllSocialInteractions(); // These are keys
 		var allExtraInteractions = getAllCharExtraSocialInteractions(character);
@@ -406,7 +513,7 @@ window.SocIntSys = function(key,charList) {
 		return validInteractions;
 	}
 	
-	this.getOfferedInteractionsToChar = function(character,numInteractions) {
+	SocIntSys.prototype.getOfferedInteractionsToChar = function(character,numInteractions) {
 		// Generates potential interactions for a character to choose from
 		// numInteractions is the amount of requested interactions
 		
@@ -438,7 +545,7 @@ window.SocIntSys = function(key,charList) {
 		return offInteractionsList;
 	}
 	
-	this.npcsMakeInterRoundDecisions = function() {
+	SocIntSys.prototype.npcsMakeInterRoundDecisions = function() {
 		var allowOtherCostlyDecisions = true;
 		var actions = [];
 		var chars = [];
@@ -496,7 +603,7 @@ window.SocIntSys = function(key,charList) {
 			gC(character).wasPromptedInCurrentSisRound = false;
 		}
 	}
-	this.executeStandardSistEffects = function(sistId,actor,target,extra) {
+	SocIntSys.prototype.executeStandardSistEffects = function(sistId,actor,target,extra) {
 		// This gets executed when a character other than the player's executes a sist. For player, check processTopicResult()
 		// var sist = State.variables.sistDB[sistId];
 		var sist = setup.sistDB[sistId];
@@ -523,7 +630,7 @@ window.SocIntSys = function(key,charList) {
 		
 	}
 	
-	this.applyExpGains = function(charsNactions) {
+	SocIntSys.prototype.applyExpGains = function(charsNactions) {
 		var roundMult = this.roundsCount * 0.2 - ((this.roundsCount * 0.2) % 1);
 		if ( roundMult > 3 ) { roundMult = 3; }
 		if ( roundMult >= 1 ) {
@@ -540,7 +647,7 @@ window.SocIntSys = function(key,charList) {
 	}
 	
 	// Logic (The heavy stuff)
-	this.preInitiateNewRoundNoPC = function(flagInterrounds) {
+	SocIntSys.prototype.preInitiateNewRoundNoPC = function(flagInterrounds) {
 		if ( flagInterrounds ) {
 			this.npcsMakeInterRoundDecisions();
 		}
@@ -548,10 +655,10 @@ window.SocIntSys = function(key,charList) {
 			this.initiateNewRound();
 		}
 	}
-	this.preInitiateNewRoundWithPC = function() {
+	SocIntSys.prototype.preInitiateNewRoundWithPC = function() {
 		this.npcsMakeInterRoundDecisions();
 	}
-	this.initiateNewRound = function() {
+	SocIntSys.prototype.initiateNewRound = function() {
 		if ( State.variables.compass.flagEndedScenario == false ) {
 			var newSevent = createSystemEventSisRound(this.charList,this.key);
 			State.variables.compass.ongoingEvents.push(newSevent);
@@ -561,8 +668,15 @@ window.SocIntSys = function(key,charList) {
 			
 		}
 	}
-	this.processRound = function() {
+	SocIntSys.prototype.processRound = function() {
 		this.tempLeftSis = [];
+		// Add info points if required
+		if ( this.charList.includes("chPlayerCharacter") ) {
+			for ( var cK in this.charList ) {
+				this.charsSocialInfo[this.charList[cK]] += Math.pow(((gCstat("chPlayerCharacter","empathy")*3 + gCstat("chPlayerCharacter","perception")*2 + gCstat("chPlayerCharacter","intelligence")) * 0.16 ),0.65) * ((50 + gCstat("chPlayerCharacter","empathy")) / ((50) + gCstat(this.charList[cK],"charisma"))) * 0.1;
+			}
+		}
+		
 		// Data clean
 		this.charMoodChanges = [];
 		this.charRelChanges = [];
@@ -611,13 +725,24 @@ window.SocIntSys = function(key,charList) {
 		
 		// Remember player pick
 		State.variables.sisPlayerInfo.lastTarget = State.variables.sisPlayerInfo.currentTarget;
-			
+		
+		// Chance of rerolling missions
+		for ( var cK of this.charList ) {
+			if ( cK != "chPlayerCharacter" ) {
+				if ( gC(cK).mission == "" || getValidSocialMissions().includes(gC(cK).mission) == false ) {
+					if ( limitedRandomInt(100) >= 80 ) {
+						npcAttemptsToRerollSocialMission(cK);
+					}
+				}
+			}
+		}
+		
 		// End round
 		this.roundsData.push(charsNactions);
 		this.roundsCount++;
 	}
 	
-	this.processCharsInteractions = function() {
+	SocIntSys.prototype.processCharsInteractions = function() {
 		var results = [];
 		for ( var character of this.charList ) {
 			if ( character == "chPlayerCharacter" ) {
@@ -643,11 +768,11 @@ window.SocIntSys = function(key,charList) {
 		}
 		return results;
 	}
-	this.orderInteractions = function(charsNactions) {
+	SocIntSys.prototype.orderInteractions = function(charsNactions) {
 		// TO DO
 		return charsNactions;
 	}
-	this.createInteraction = function(cNa) {
+	SocIntSys.prototype.createInteraction = function(cNa) {
 		var draftInteraction = getSiByKey(cNa[2]);
 		var interaction = JSON.parse(JSON.stringify(draftInteraction));
 		//var interaction = Object.assign({}, getSiByKey(cNa[2])); // Copies interaction from the data base
@@ -665,10 +790,10 @@ window.SocIntSys = function(key,charList) {
 		return interaction;
 	}
 	
-	this.interactionExtraEffect = function(interaction) {
+	SocIntSys.prototype.interactionExtraEffect = function(interaction) {
 		interaction.extraEffect = interaction.calculateExtraEffect();
 	}
-	this.interactionMoodChanges = function(interaction) {
+	SocIntSys.prototype.interactionMoodChanges = function(interaction) {
 		var moodMultiplier = interaction.getMoodMultiplier();
 		
 		// Target
@@ -683,7 +808,7 @@ window.SocIntSys = function(key,charList) {
 			this.setCharMoodChange(obs,mVo);
 		}
 	}
-	this.interactionRelationChanges = function(interaction) {
+	SocIntSys.prototype.interactionRelationChanges = function(interaction) {
 		var relationMultiplier = interaction.getRelationMultiplier() * setup.conversationRelationMultiplier;
 		
 		// Target
@@ -700,7 +825,7 @@ window.SocIntSys = function(key,charList) {
 		}
 	}
 	
-	this.charLeavesSisAiProtocol = function(charKey) {
+	SocIntSys.prototype.charLeavesSisAiProtocol = function(charKey) {
 		if ( charKey != "chPlayerCharacter" ) {
 			// gC(charKey).mapAi.state != "idle" && 
 			if ( gC(charKey).followingTo == "" ) {
@@ -714,7 +839,7 @@ window.SocIntSys = function(key,charList) {
 	}
 	
 	// Management
-	this.getAllPossibleInteractions = function(character,target) {
+	SocIntSys.prototype.getAllPossibleInteractions = function(character,target) {
 		var allSocInt = getAllSocialInteractions();
 		var charSocInt = []; // Valid social interactions for character
 		for ( var si of allSocInt ) {
@@ -723,7 +848,7 @@ window.SocIntSys = function(key,charList) {
 		return charSocInt;
 	}
 
-	this.playerRequestsJoin = function() {
+	SocIntSys.prototype.playerRequestsJoin = function() {
 		var i = this.getCorrespondingRoundEventPos();
 		if ( i != -1 ) {
 			var remainingTime = State.variables.compass.ongoingEvents[i].timeRemaining;
@@ -733,7 +858,7 @@ window.SocIntSys = function(key,charList) {
 		}
 	}
 
-	this.charJoinsSis = function(character) {
+	SocIntSys.prototype.charJoinsSis = function(character) {
 		if ( this.charList.includes(character) == false ) {
 			gC(character).mapAi.state = "active";
 			this.charList.push(character);
@@ -742,14 +867,17 @@ window.SocIntSys = function(key,charList) {
 				State.variables.sisPlayerInfo.autoSelectNewTarget();
 			}
 		}
+		if ( this.charsSocialInfo[character] == undefined ) {
+			this.charsSocialInfo[character] = 0;
+		}
 	}
-	this.charsJoinSis = function(charList) {
+	SocIntSys.prototype.charsJoinSis = function(charList) {
 		for ( var charKey of charList ) {
 			this.charJoinsSis(charKey);
 		}
 	}
 
-	this.charLeavesSis = function(character) {
+	SocIntSys.prototype.charLeavesSis = function(character) {
 		this.charLeavesSisAiProtocol(character);
 		this.charList = arrayMinusA(this.charList,character);
 		
@@ -794,8 +922,14 @@ window.SocIntSys = function(key,charList) {
 		if ( this.charList.includes("chPlayerCharacter") ) { // Autoselect new player's target
 			State.variables.sisPlayerInfo.autoSelectNewTarget();
 		}
+		
+		if ( character != "chPlayerCharacter" ) { // Remove social mission if required
+			if ( getValidSocialMissions().includes(gC(character).mission) ) {
+				gC(character).mission = "";
+			}
+		}
 	}
-	this.charsLeaveSis = function(charList) {
+	SocIntSys.prototype.charsLeaveSis = function(charList) {
 		for ( var character of charList ) {
 			// AI
 			this.charLeavesSisAiProtocol(character);
@@ -825,7 +959,7 @@ window.SocIntSys = function(key,charList) {
 			this.preInitiateNewRoundNoPC(false);
 		}
 	}
-	this.remainingCharsLeaveSis = function() {
+	SocIntSys.prototype.remainingCharsLeaveSis = function() {
 		for ( var character of this.charList ) {
 			if ( character == "chPlayerCharacter" ) {
 				State.variables.sisPlayerInfo.clean();
@@ -837,14 +971,14 @@ window.SocIntSys = function(key,charList) {
 		}
 	}
 	
-	this.playerPicksInteraction = function(interactionKey) {
+	SocIntSys.prototype.playerPicksInteraction = function(interactionKey) {
 		State.variables.sisPlayerInfo.currentInteraction = interactionKey;
 		// This must be working later
 		// State.variables.compass.advanceTime(5);
 		this.initiateNewRound();
 		State.variables.compass.pushAllTimeToAdvance();
 	}
-	this.playerDoesNotPickInteraction = function(interactionKey) {
+	SocIntSys.prototype.playerDoesNotPickInteraction = function(interactionKey) {
 		State.variables.sisPlayerInfo.currentInteraction = "none";
 		// This must be working later
 		// State.variables.compass.advanceTime(5);
@@ -852,7 +986,7 @@ window.SocIntSys = function(key,charList) {
 		State.variables.compass.pushAllTimeToAdvance();
 	}
 	
-	this.feedCharInteractionsOptionsList = function() {
+	SocIntSys.prototype.feedCharInteractionsOptionsList = function() {
 		var i = 0;
 		if ( this.charInteractions.length != this.charList.length ) {
 			for ( var character of this.charList ) {
@@ -862,7 +996,7 @@ window.SocIntSys = function(key,charList) {
 		}
 	}
 	
-	this.getPlayerOfferedInteractions = function() {
+	SocIntSys.prototype.getPlayerOfferedInteractions = function() {
 		// Finds the SIS' assigned interactions for the player and returns them
 		var it = 0;
 		var itA = this.charList[it];
@@ -873,7 +1007,7 @@ window.SocIntSys = function(key,charList) {
 		return this.charInteractions[it];
 	}
 	
-	this.getCorrespondingRoundEventPos = function() {
+	SocIntSys.prototype.getCorrespondingRoundEventPos = function() {
 		var i = 0;
 		var j = -1;
 		for ( var sEvent of State.variables.compass.ongoingEvents ) {
@@ -887,7 +1021,7 @@ window.SocIntSys = function(key,charList) {
 		return j;
 	}
 	
-	this.setSisPlayerPrompt = function(promptText,extra,rejectCost,actor,target,sT) {
+	SocIntSys.prototype.setSisPlayerPrompt = function(promptText,extra,rejectCost,actor,target,sT) {
 		// Extra is a keyword that specifies specific behavior
 		this.flagPlayerIsPrompted = true;
 		this.playerPromptText = promptText;
@@ -902,13 +1036,13 @@ window.SocIntSys = function(key,charList) {
 				break;
 		}
 	}
-	this.endSisPlayerPrompt = function() {
+	SocIntSys.prototype.endSisPlayerPrompt = function() {
 		this.flagPlayerIsPrompted = false;
 		this.playerPromptText = "";
 	}
 	
 	// Data
-	this.setCharMoodChange = function(character,moodVector) {
+	SocIntSys.prototype.setCharMoodChange = function(character,moodVector) {
 		if ( this.charMoodChanges.hasOwnProperty(character) ) {
 			this.charMoodChanges[character] = sumMoodVectors(this.charMoodChanges[character],moodVector);
 			this.charMoodChanges[character].name = character;
@@ -917,7 +1051,7 @@ window.SocIntSys = function(key,charList) {
 			this.charMoodChanges[character].name = character;
 		}
 	}
-	this.setCharRelationChange = function(actor,target,relationVector) {
+	SocIntSys.prototype.setCharRelationChange = function(actor,target,relationVector) {
 		if ( this.charRelChanges.hasOwnProperty(actor) == false ) {
 			this.charRelChanges[actor] = [];
 			this.charRelChanges[actor].name = actor;
@@ -932,32 +1066,32 @@ window.SocIntSys = function(key,charList) {
 	}
 	
 	// Buttons
-	this.getButtonPlayerDoesNothing = function() {
+	SocIntSys.prototype.getButtonPlayerDoesNothing = function() {
 		var bText = "<<l" + "ink [[Do nothing|Social Interactions]]>><<s" + "cript>>\n";
 		bText 	 += "State.variables.compass.sisList[" + this.key + "].playerDoesNotPickInteraction();";
 		bText	 += "<</s" + "cript>><</l" + "ink>>";
 		return bText;
 	}
-	this.getButtonPlayerPicksAction = function(actionKey,target) {
+	SocIntSys.prototype.getButtonPlayerPicksAction = function(actionKey,target) {
 		var bText = "<<l" + "ink [[" + getSiByKey(actionKey).title + "|Social Interactions]]>><<s" + "cript>>\n";
 		bText 	 += "State.variables.compass.sisList[" + this.key + "].playerPicksInteraction('" + actionKey + "');";
 		bText	 += "<</s" + "cript>><</l" + "ink>>";
 		return bText;
 	}
-	this.getButtonEndSis = function() {
+	SocIntSys.prototype.getButtonEndSis = function() {
 		var bText = "<<l" + "ink [[Leave conversation|Map]]>><<s" + "cript>>\n";
 		bText	 += "playerLeavesSis();\n";
 		//bText 	 += "State.variables.compass.sisList[" + this.key + "].charsLeaveSis(getCharGroup('chPlayerCharacter'));";
 		bText	 += "<</s" + "cript>><</l" + "ink>>";
 		return bText;
 	}
-	this.getButtonEndDeadSis = function() {
+	SocIntSys.prototype.getButtonEndDeadSis = function() {
 		var bText = "<<l" + "ink [[Leave|Map]]>><<s" + "cript>>\n";
 		bText 	 += "State.variables.compass.sisList[" + this.key + "].charsLeaveSis(getCharGroup('chPlayerCharacter'));";
 		bText	 += "<</s" + "cript>><</l" + "ink>>";
 		return bText;
 	}
-	this.getButtonSisSpecifics = function() {
+	SocIntSys.prototype.getButtonSisSpecifics = function() {
 		var bText = "<<l" + "ink [[Specific Topics|Social Interactions Specifics]]>><<s" + "cript>>\n";
 		bText	 += "State.variables.sisSpecifics.playerTarget = State.variables.sisPlayerInfo.currentTarget;\n";
 		bText	 += 'State.variables.sisPlayerInfo.lastTarget = State.variables.sisPlayerInfo.currentTarget;\n';
@@ -966,7 +1100,7 @@ window.SocIntSys = function(key,charList) {
 		return bText;
 	}
 
-	this.getButtonRejectSisPrompt = function(cost,sT,actor,target) {
+	SocIntSys.prototype.getButtonRejectSisPrompt = function(cost,sT,actor,target) {
 		var bText = "<<l" + "ink [[Reject|Social Interactions]]>><<s" + "cript>>\n";
 		bText	 += "State.variables.chPlayerCharacter.willpower.current -=" + cost + ";\n";
 		if ( sT != -1 ) {
@@ -984,14 +1118,14 @@ window.SocIntSys = function(key,charList) {
 		return bText;		
 	}
 
-	this.getButtonForcedOutOfSis = function() {
+	SocIntSys.prototype.getButtonForcedOutOfSis = function() {
 		var bText = "<<l" + "ink [[Continue to map|Map]]>><<s" + "cript>>\n";
 		// bText 	 += "State.variables.compass.sisList[" + this.key + "].charsLeaveSis(getCharGroup('chPlayerCharacter'));";
 		bText	 += "<</s" + "cript>><</l" + "ink>>";
 		return bText;
 	}
 
-	this.getButtonTakenToScene = function() {
+	SocIntSys.prototype.getButtonTakenToScene = function() {
 		var bText = "<<l" + "ink [[Continue to scene|Scene]]>><<s" + "cript>>\n";
 		bText	 += "State.variables.compass.sisList[" + this.key + "].flagPlayerTakenToScene = 'false';\n";
 		if ( gC("chPlayerCharacter").hasOwnProperty("sisWillSkipTimeFlag") ) {
@@ -1003,7 +1137,7 @@ window.SocIntSys = function(key,charList) {
 	}
 
 	// Provide info
-	this.getValidProposedCharacters = function(proposerCharacter) {
+	SocIntSys.prototype.getValidProposedCharacters = function(proposerCharacter) {
 		// Returns a list with the SIS' characters that proposerCharacter may make specific proposals to, such as leaving to have sex
 		var validCharsList = [];
 		for ( var charKey of this.charList ) {
@@ -1014,7 +1148,6 @@ window.SocIntSys = function(key,charList) {
 		
 		return validCharsList;
 	}
-};
 
 window.playerLeavesSis = function() {
 	var sisId = State.variables.compass.findFirstSisIdInvolvingCharacter("chPlayerCharacter");
@@ -1085,6 +1218,39 @@ window.scoreIntoInteractions = function(score) {
 	else if ( score >= 30 ) { n = 5; }
 	else if ( score >= 20 ) { n = 4; }
 	return n;
+}
+
+window.npcAttemptsToRerollSocialMission = function(cK) {
+	var convId = State.variables.compass.getCharacterSisId(cK);
+	if ( convId != -1 ) {
+		State.variables.compass.sisList[convId].npcRerollsSocialMission(cK);
+	}
+}
+SocIntSys.prototype.npcRerollsSocialMission = function(cK) {
+	var validMissions = [];
+	var selectedMission = "";
+	for ( var target of this.charList ) {
+		if ( gC(cK).socialAi.allyTs.includes(target) ) {
+			validMissions.push("raiseFriendship");
+		}
+		if ( gC(cK).socialAi.loveTs.includes(target) ) {
+			validMissions.push("flirt");
+		}
+		if ( gC(cK).socialAi.covetTs.includes(target) ) {
+			validMissions.push("flirt");
+			validMissions.push("seduce");
+		}
+		if ( gC(cK).socialAi.conquestTs.includes(target) ) {
+			validMissions.push("seduce");
+		}
+		if ( gC(cK).socialAi.rivalTs.includes(target) ) {
+			validMissions.push("taunt");
+		}
+	}
+	if ( validMissions.length > 0 ) {
+		selectedMission = randomFromList(validMissions);
+	}
+	return selectedMission;
 }
 
 // Ad-hoc solution to scene skipping

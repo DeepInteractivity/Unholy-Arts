@@ -618,7 +618,7 @@ window.getTalkAboutSocInt = function(type) {
 		if ( gC(this.target).likedTopics.includes(this.topic) ) {
 			this.getDescription = function() {
 				var desc = (ktn(this.actor) + " wanted to discuss about " + this.topic + ". " + ktn(this.target) + " loved to talk "
-						 + "about one of " + gC(this.actor).posPr + " passions.");
+						 + "about one of " + gC(this.target).posPr + " passions.");
 				return desc;
 			}
 			this.getMoodVectorTarget = function() {
@@ -2008,13 +2008,23 @@ window.getInsultSocInt = function(type) {
 	// Extra effect
 	socInt.calculateExtraEffect = function() {
 		var chance = 25;
+		var eText = "";
 		if ( limitedRandomInt(100) <= chance ) {
 			// Description
 			// Effect
 			this.furtherEffects = function(sis) {
 				actorGetsCbAgainstTarget(this.target,this.actor);
-				var eText = "\n" + gC(this.target).formattedName + " took great offense, and may decide to take " + gC(this.target).posPr + " revenge later.";
+				eText = "\n" + gC(this.target).getFormattedName() + " took great offense, and may decide to take " + gC(this.target).posPr + " revenge later.";
 				sis.extraEffects += eText; 
+				
+				if ( isDeclaringRivalryPossible(this.target,this.actor) ) {
+					if ( 20 >= limitedRandomInt(100) ) {
+						createRelTypeRivalry(this.actor,this.target,gSettings().relationshipsDuration);
+						createRelTypeRivalry(this.target,this.actor,gSettings().relationshipsDuration);
+						eText = colorText("\n" + gC(this.target).getFormattedName() + " has decided " + gC(this.target).perPr + " will not take this anymore, and declares " + gC(this.target).posPr + " new rivalry with " + gC(this.actor).getFormattedName() + ".","red");
+						sis.extraEffects += eText; 
+					}
+				}
 			}
 		}
 	}
@@ -2944,7 +2954,7 @@ window.getRelaxingScent = function(type) {
 	socInt.isUsable = function(sis,actor,target,observers,extraData) {
 		// Determines if the interaction is usable on the selected target
 		var flagUsable = false;
-		if ( (gC(actor).socialdrive.current >= this.socialDriveCost) ) {
+		if ( (gC(actor).socialdrive.current >= this.socialDriveCost) && gC(actor).race == "leirien" ) {
 			flagUsable = true;
 		}
 		return flagUsable;
@@ -3152,6 +3162,7 @@ window.siExtraDatabase = function() {
 	// Hypnosis
 	this.hypnoticGlance = getHypnoticGlanceSocInt("hypnoticGlance");
 	this.relaxingScent = getRelaxingScent();
+	this.telephaticConnection = getTelephaticConnection();
 }
 
 setup.siList = new siDatabase();

@@ -38,6 +38,9 @@ window.initTrainingPeriodPassionTemple = function() {
 		}
 	}
 	
+	// Declare rivalries if required
+	activeNPCsDeclareRivalries();
+	
 	State.variables.compass.allCharsCheckMapAi();
 	
 	// Set period variables

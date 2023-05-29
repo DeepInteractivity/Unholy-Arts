@@ -260,7 +260,7 @@ window.createMapAiGoalTalkTo = function(charKey,targetCharKey) {
 					var genericDialogue = chooseDialogFromList(setup.dialogDB.csDialogs,this.charKey,"chPlayerCharacter","","");
 					var p = genericDialogue + "\n" + gC(this.charKey).getFormattedName() + " wants to talk to you.\n\n";
 					if ( playerEvent == null ) {
-						p += getButtonAcceptConversation(this.charKey) + "\n";
+						p += getButtonAcceptConversation(this.charKey,gC(this.charKey).mission) + "\n";
 						if ( flagPlayerIsSub ) {
 							p += colorText("Locked: ","red") + "You can't refuse a conversation from a character you're submissive to.";
 						} else {
@@ -271,7 +271,7 @@ window.createMapAiGoalTalkTo = function(charKey,targetCharKey) {
 						}
 					} else {
 						var canInterrupt = true;
-						p += getButtonAcceptConversationInterrupted(this.charKey) + "\n";
+						p += getButtonAcceptConversationInterrupted(this.charKey,gC(this.charKey).mission) + "\n";
 						if ( flagPlayerIsSub ) {
 							p += colorText("Locked: ","red") + "You can't refuse a conversation from a character you're submissive to.";
 						} else {
@@ -372,7 +372,7 @@ window.createMapAiGoalAssault = function(charKey,targetCharKey) {
 					p += getButtonBeingAssaultedPlus(charKey);
 					State.variables.compass.interruptPlayer(p,this.charKey,true);
 				} else {
-					p += getButtonBeingAssaulted(charKey);
+					p += getButtonBeingAssaulted(charKey,gC(charKey).mission);
 					initiateNpcAssault(charKey,targetCharKey);
 					if ( playerEvent == null ) {
 						State.variables.compass.setPlayerPrompt(p,this.charKey,true);
@@ -419,7 +419,7 @@ window.createMapAiGoalChallenge = function(charKey,targetCharKey) {
 						break;
 				}
 				var p = gD + "\n" + gC(charKey).getFormattedName() + " is challenging you for " + stakesMsg + "!\nRefusing the challenge will make you lose merit.\n\n";
-				p += getButtonAcceptChallenge(charKey,stakes) + "\n" + getButtonRejectChallenge(charKey,stakes);
+				p += getButtonAcceptChallenge(charKey,stakes,gC(charKey).mission) + "\n" + getButtonRejectChallenge(charKey,stakes);
 				if ( playerEvent == null ) {
 					State.variables.compass.setPlayerPrompt(p,this.charKey,true);
 				} else {

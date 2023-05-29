@@ -781,6 +781,12 @@ window.createAiWeightedMissionsByTaste = function() {
 			}
 		} else {
 			this.missionCommands = [];
+			if ( gC(character).hasLead ) {
+				charEvaluatesContinuedActionsToCancel(character);
+				if ( State.variables.sc.hasOwnProperty("tfFlag") ) {
+					cancelActionsConflictingWithTf(character);
+				}
+			}
 			results = chooseValidBasicAction(character,allyCharacters,enemyCharacters);
 		}
 		
@@ -1078,7 +1084,9 @@ window.charEvaluatesContinuedActionsToCancel = function(actor) {
 				if ( ca.rank == 2 ) {
 					if ( gC(actor).aiAlgorythm.missionCommands.length == 0 ) {
 						if ( limitedRandomInt(100) > 50 ) {
-							flagCancelPosition = true;
+							if ( State.variables.sc.sceneConditions.includes("cantChangePositions") == false && State.variables.sc.sceneConditions.includes("cantCancelPositions") == false ) {
+								flagCancelPosition = true;
+							}
 						}
 					}
 				}

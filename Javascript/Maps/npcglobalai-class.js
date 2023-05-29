@@ -34,7 +34,10 @@ window.createCandidateGlobalAi = function(charKey) {
 		// Get followers
 		if ( gSettings().followingAllowed ) {
 			charactersGetsForcedFollowers(this.charKey);
-			var dangerProportion = this.evaluateDangerState();
+			var dcq = findMostDangerousAggressiveCharacterMinusCharA(this.charKey);
+			var dangerousChar = dcq[0];
+			var dangerValue = dcq[1];
+			var dangerProportion = dangerValue / quantifyCharactersGroupStrength(this.charKey);
 			if ( dangerProportion != 0 ) {
 				if ( dangerProportion > 2.3 ) {
 					// Case 1: Danger way too high, follow someone
@@ -50,7 +53,7 @@ window.createCandidateGlobalAi = function(charKey) {
 					}
 				} else if ( dangerProportion < 0.52 ) {
 					// Case 3: Danger too low, if has non-essential followers, drop one
-					this.findBestCharToLeave();
+					this.findBestCharToLeave(dangerValue);
 				}
 			}
 		}
@@ -86,7 +89,7 @@ window.createCandidateGlobalAi = function(charKey) {
 					currentEvaluation = quantifyCharactersGroupStrength(charKey);
 					if ( currentEvaluation > mostDangerousStrength ) {
 						mostDangerousStrength = currentEvaluation;
-					}
+					} 
 				}
 			}
 			if ( mostDangerousStrength > 0 ) {
@@ -153,12 +156,14 @@ window.createCandidateGlobalAi = function(charKey) {
 		}
 		return foundFollowed;
 	} 
-	globalAi.findBestCharToLeave = function() {
+	globalAi.findBestCharToLeave = function(dangerValue) {
 		var leftFollower = false;
 		var potentialUnfollowers = [];
 		for ( var charKey of gC(this.charKey).followedBy ) {
 			if ( gC(charKey).followingForDebt ) {
-				potentialUnfollowers.push(charKey);
+				if ( (dangerValue / quantifyCharactersAgroupMinusCharBStrength(this.charKey,charKey)) < 1 ) {
+					potentialUnfollowers.push(charKey);
+				}
 			}
 		}
 		if ( potentialUnfollowers.length > 0 ) {
@@ -505,6 +510,7 @@ window.createCandidateGlobalAi = function(charKey) {
 					selectedChar = randomFromList(potentialChallengeTargets);
 					var chChoice = cChallengeGoalsMissionChoice(this.charKey,selectedChar,"challenge");
 					var weight = 1 + gC(this.charKey).dImprovement.level + gC(this.charKey).dAmbition.level;
+					if ( getCharEnemies(this.charKey).includes(selectedChar) ) { weight *= 2.5; }
 					if ( gC(this.charKey).infamy == 0 ) { weight += 6; }
 					if ( State.variables.simCycPar.templeDayPeriod != "training" ) { weight *= 2; }
 					chChoice.weight = weight;
@@ -517,6 +523,7 @@ window.createCandidateGlobalAi = function(charKey) {
 					selectedChar = randomFromList(potentialChallengeTargets.concat(potentialChallengeRivals));
 					var hmChoice = cChallengeGoalsMissionChoice(this.charKey,selectedChar,"humilliate");
 					var weight = 1 + gC(this.charKey).dAmbition.level * 2;
+					if ( getCharEnemies(this.charKey).includes(selectedChar) ) { weight *= 1.5; }
 					if ( gC(this.charKey).infamy == 0 ) { weight += 4; }
 					if ( State.variables.simCycPar.templeDayPeriod != "training" ) { weight *= 2; }
 					hmChoice.weight = weight;
@@ -527,6 +534,7 @@ window.createCandidateGlobalAi = function(charKey) {
 					selectedChar = randomFromList(potentialChallengeRivals);
 					var weChoice = cChallengeGoalsMissionChoice(this.charKey,selectedChar,"weakenEnemy");
 					var weight = 3 * (quantifyCharacterStats(selectedChar) / quantifyCharacterStats(this.charKey)) + gC(selectedChar).infamy - gC(this.charKey).infamy;
+					if ( getCharEnemies(this.charKey).includes(selectedChar) ) { weight *= 3; }
 					if ( gC(this.charKey).infamy == 0 ) { weight += 6; }
 					if ( State.variables.simCycPar.templeDayPeriod != "training" ) { weight *= 2; }
 					weChoice.weight = weight;
@@ -535,6 +543,7 @@ window.createCandidateGlobalAi = function(charKey) {
 					selectedChar = randomFromList(potentialAssaultRivals);
 					var weChoice = cAssaultGoalsMissionChoice(this.charKey,selectedChar,"weakenEnemy");
 					var weight = 10 + (quantifyCharacterStats(selectedChar) - quantifyCharacterStats(this.charKey));
+					if ( getCharEnemies(this.charKey).includes(selectedChar) ) { weight *= 3; }
 					if ( gC(this.charKey).infamy == 0 ) { weight += 6; }
 					if ( State.variables.simCycPar.templeDayPeriod != "training" ) { weight *= 2; }
 					weChoice.weight = weight;
@@ -549,6 +558,7 @@ window.createCandidateGlobalAi = function(charKey) {
 						selectedChar = randomFromList(challengeConquestTs);
 						var gdChoice = cChallengeGoalsMissionChoice(this.charKey,selectedChar,"gainDomination");
 						var weight = 1 + gC(this.charKey).dDomination.level * 2;
+						if ( getCharEnemies(this.charKey).includes(selectedChar) ) { weight *= 2; }
 						if ( gC(this.charKey).infamy == 0 ) { weight += 7; }
 						if ( State.variables.simCycPar.templeDayPeriod != "training" ) { weight *= 2; }
 						gdChoice.weight = weight;
@@ -557,6 +567,7 @@ window.createCandidateGlobalAi = function(charKey) {
 						selectedChar = randomFromList(assaultConquestTs);
 						var gdChoice = cAssaultGoalsMissionChoice(this.charKey,selectedChar,"gainDomination");
 						var weight = 1 + gC(this.charKey).dDomination.level * 2;
+						if ( getCharEnemies(this.charKey).includes(selectedChar) ) { weight *= 2; }
 						if ( gC(this.charKey).infamy == 0 ) { weight += 7; }
 						if ( State.variables.simCycPar.templeDayPeriod != "training" ) { weight *= 2; }
 						gdChoice.weight = weight;
@@ -599,6 +610,7 @@ window.createCandidateGlobalAi = function(charKey) {
 						selectedChar = randomFromList(challengeTs);
 						var fdChoice = cChallengeGoalsMissionChoice(this.charKey,selectedChar,"gainSubmissive");
 						var weight = 1 + gC(this.charKey).dAmbition.level + gC(this.charKey).dPleasure.level + gC(this.charKey).dDomination.level; 
+						if ( getCharEnemies(this.charKey).includes(selectedChar) ) { weight *= 2; }
 						if ( gC(this.charKey).infamy == 0 ) { weight += 13; }
 						if ( State.variables.simCycPar.templeDayPeriod != "training" ) { weight *= 2; }
 						fdChoice.weight = weight;
@@ -607,6 +619,7 @@ window.createCandidateGlobalAi = function(charKey) {
 						selectedChar = randomFromList(assaultTs);
 						var fdChoice = cAssaultGoalsMissionChoice(this.charKey,selectedChar,"gainSubmissive");
 						var weight = 1 + gC(this.charKey).dAmbition.level + gC(this.charKey).dPleasure.level + gC(this.charKey).dDomination.level; 
+						if ( getCharEnemies(this.charKey).includes(selectedChar) ) { weight *= 2; }
 						if ( gC(this.charKey).infamy == 0 ) { weight += 13; }
 						if ( State.variables.simCycPar.templeDayPeriod != "training" ) { weight *= 2; }
 						fdChoice.weight = weight; 
@@ -619,6 +632,7 @@ window.createCandidateGlobalAi = function(charKey) {
 					selectedChar = randomFromList(validAssaultOppressors);
 					var lfChoice = cAssaultGoalsMissionChoice(this.charKey,selectedChar,"liberateFriend");
 					var weight = 1 + gC(this.charKey).dCooperation.level * 2 + gC(this.charKey).dLove.level * 2; 
+					if ( getCharEnemies(this.charKey).includes(selectedChar) ) { weight *= 3; }
 					if ( State.variables.simCycPar.templeDayPeriod != "training" ) { weight *= 2.5; }
 					lfChoice.weight = weight;
 					if ( lfChoice.weight > 0 && canActorAttackTarget(this.charKey,selectedChar) ) { mChoices.push(lfChoice); }
@@ -628,6 +642,7 @@ window.createCandidateGlobalAi = function(charKey) {
 					selectedChar = randomFromList(validCasusBelliRetribution);
 					var cbrChoice = cAssaultGoalsMissionChoice(this.charKey,selectedChar,"cbRetribution");
 					var weight = 1 - gC(this.charKey).dCooperation.level * 1 + gC(this.charKey).dAmbition.level * 1 + gC(this.charKey).dDomination.level * 2;
+					if ( getCharEnemies(this.charKey).includes(selectedChar) ) { weight *= 2; }
 					if ( State.variables.simCycPar.templeDayPeriod != "training" ) { weight *= 2.5; }
 					cbrChoice.weight = weight;
 					if ( cbrChoice.weight > 0 && canActorAttackTarget(this.charKey,selectedChar) ) { mChoices.push(cbrChoice); }
@@ -674,6 +689,10 @@ window.createCandidateGlobalAi = function(charKey) {
 				var generalWeightMult = 0.2;
 				mChoice1.weight *= generalWeightMult * 2;
 				mChoice2.weight *= generalWeightMult;
+				
+				if ( getCharEnemies(this.charKey).includes(selectedTarget) ) {
+					weight *= 3;
+				}
 				
 				if ( this.attackedToday ) {
 					mChoice1.weight *= 0.1;
@@ -1681,6 +1700,80 @@ missionChoice.prototype.toJSON = function() {
 	return JSON.reviveWrapper('(new missionChoice())._init($ReviveData$)', ownData);
 };
 
+// Other AI functions
+window.activeNPCsDeclareRivalries = function() {
+	var chosenRival = "";
+	var activeChars = getRandomizedActiveSimulationCharactersArray();
+	activeChars = purgeGuestsNotAtTemple(activeChars);
+	var activeNPCs = arrayMinusA(activeChars,"chPlayerCharacter"); // All active chars minus player are active NPCs
+	
+	for ( var npc of activeNPCs ) {
+		chosenRival = "";
+		var potentialValidRivals = arrayMinusA(activeChars,npc); // All active chars minus self must be checked as valid rivals
+		var validRivals = [];
+		for ( var pvr of potentialValidRivals ) {
+			if ( isDeclaringRivalryPossible(npc,pvr) ) {
+				validRivals.push(pvr);
+			}
+		}
+		if ( validRivals.length > 0 ) {
+			var scoredRivalsList = []; // [[rival,score],(...)]
+			// Social targets, merit, infamy, character values, isACandidate
+			var actorBaseScore = (getCharsDrivePercent(npc,"dAmbition") * 1.5 + getCharsDrivePercent(npc,"dDomination") * 1.5 + getCharsDrivePercent(npc,"dImprovement") * 1 - getCharsDrivePercent(npc,"dCooperation") * 2 - getCharsDrivePercent(npc,"dLove") * 1) * 40;
+			if ( (actorBaseScore + limitedRandomInt(100)) > 75 ) {
+				for ( var vr of validRivals ) {
+					// Score each valid rival
+					var score = 0;
+						// Social targets
+					if ( gC(npc).socialAi.allyTs.includes(vr) ) { score -= 50; }
+					if ( gC(npc).socialAi.loveTs.includes(vr) ) { score -= 100; }
+					if ( gC(npc).socialAi.covetTs.includes(vr) ) { score += 10; }
+					if ( gC(npc).socialAi.conquestTs.includes(vr) ) { score += 40; }
+					if ( gC(npc).socialAi.rivalTs.includes(vr) ) { score += 100; }
+						// Merit
+					if ( getCandidatesKeysArray().includes(npc) && getCandidatesKeysArray().includes(vr) ) {
+						var meritDifference = gC(vr).merit - gC(npc).merit;
+						if ( meritDifference > 0 ) {
+							score += meritDifference * (1 + (getCharsDrivePercent(npc,"dAmbition") - 0.16) * 5);
+						}
+					}
+						// Infamy
+					var extraInfamy = gC(vr).infamy - gC(npc).infamy;
+					if ( extraInfamy > 0 ) {
+						score += extraInfamy * getInfluenceEffectWithDrives(npc,2,["dCooperation","dLove"],["dDomination"]);
+					}
+						// Relationships	
+					score += (rLvlAbt(npc,vr,"rivalry") + rLvlAbt(npc,vr,"enmity")) * getInfluenceEffectWithDrives(npc,2,["dDomination"],["dCooperation"])
+						   - (rLvlAbt(npc,vr,"friendship") + rLvlAbt(npc,vr,"romance")) * getInfluenceEffectWithDrives(npc,2,["dLove","dCooperation"],["dAmbition","dDomination"]);
+						// Stats difference
+					var statsDifference = Math.abs(quantifyCharacterStrength(npc) - 9 - quantifyCharacterStrength(vr));
+					score -= (statsDifference/4.5) * getInfluenceEffectWithDrives(npc,2,["dImprovement"],["dDomination"]);
+						// Randomizer
+					if ( score > 0 ) {
+						score += limitedRandomInt(score*2);
+					}
+					scoredRivalsList.push([vr,score]);
+				}
+				// Choose highest rated potential rival
+				var highestScore = 1;
+				for ( var rd of scoredRivalsList ) {
+					if ( rd[1] >= highestScore ) {
+						highestScore = rd[1];
+						chosenRival = rd[0]
+					}
+				}
+			}
+		}
+		if ( chosenRival != "" ) {
+			// Create rivalry and initialize it
+			declareRivalry(npc,chosenRival);
+			// State.variables.compass.setMapMessage(gC(unfollowingChar).getFormattedName() + " stopped following " + gC(unfollowedChar).getFormattedName() + ".");
+		}
+	}
+	
+	
+}
+
 // Auxiliars
 
 window.setTrainingGoals = function(charKey) {
@@ -1744,16 +1837,55 @@ window.quantifyCharacterStrength = function(charKey) {
 	str *= gC(charKey).lust.current * 0.01;
 	return str;
 }
-window.quantifyCharactersGroupStrength = function(charKey) {
+window.quantifyCharactersGroupStrength = function(chA) {
 	var str = 0;
-	for ( var charKey of getCharGroup(charKey) ) {
+	for ( var charKey of getCharGroup(chA) ) {
 		str += quantifyCharacterStrength(charKey);
+	}
+	return str;
+}
+window.quantifyCharactersAgroupMinusCharBStrength = function(chA,chB) {
+	var str = 0;
+	for ( var charKey of getCharGroup(chA) ) {
+		if ( charKey != chB ) {
+			str += quantifyCharacterStrength(charKey);
+		}
 	}
 	return str;
 }
 window.proportionQuantifiedCharactersStrength = function(charA,charB) {
 	var proportion = quantifyCharacterStrength(charA) / quantifyCharacterStrength(charB);
 	return proportion;
+}
+
+window.findMostDangerousAggressiveCharacterMinusCharA = function(charA) {
+	var charPlusDanger = ["",0];
+	// The Candidate evaluates their situation in the training/socialization period and potential danger from other Candidates
+		var dangerProportion = 0; // Fraction that determines how powerful is the most dangerous Candidate in comparison to self
+		var aggressiveCandidates = []; // Find Candidates who have accumulated a certain amount of infamy
+		for ( var charKey of getActiveSimulationCharactersArray() ) {
+			if ( charKey != charA ) {
+				if ( gC(charKey).infamy > 5 ) {
+					aggressiveCandidates.push(charKey);
+				}
+			}
+		}
+		if ( aggressiveCandidates.length > 0 ) {
+			var mostDangerousStrength = 0; // Find strength of most dangerous enemy
+			var mostDangerousEnemy = "";
+			var currentEvaluation = 0;
+			for ( var charKey of aggressiveCandidates ) {
+				if ( gC(charKey).followingTo == "" ) {
+					currentEvaluation = quantifyCharactersGroupStrength(charKey);
+					if ( currentEvaluation > mostDangerousStrength ) {
+						mostDangerousStrength = currentEvaluation;
+						mostDangerousEnemy = charKey;
+					}
+				}
+			}
+			charPlusDanger = [mostDangerousEnemy,mostDangerousStrength];
+		}
+	return charPlusDanger;
 }
 
 window.quantifyCharacterTiredness = function(charKey) {

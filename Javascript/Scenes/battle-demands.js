@@ -127,9 +127,13 @@ window.createBdemandHumillitation = function() {
 		return "noDescription";
 	}
 	bDemand.provokeEffect = function(actor,target,battleWeight,infamyMultiplier,extra1,extra2) {
-		var meritTaken = 2 * battleWeight;
-		var dominationApplied = 50 * battleWeight;
-		var rivalryApplied = 35 * battleWeight;
+		var generalMultiplier = 1 * battleWeight;
+		if ( getCharEnemies(actor).includes(target) ) {
+			generalMultiplier *= 2;
+		}
+		var meritTaken = 1 * generalMultiplier;
+		var dominationApplied = 50 * generalMultiplier;
+		var rivalryApplied = 35 * generalMultiplier;
 		// Merit
 		gC(actor).changeMerit(meritTaken);
 		gC(target).changeMerit(-meritTaken);
@@ -149,14 +153,21 @@ window.createBdemandHumillitation = function() {
 		return 1;
 	}
 	bDemand.resultMessage = function(actor,target,battleWeight,infamyMultiplier,extra1,extra2) {
-		var meritTaken = 2 * battleWeight;
-		var dominationApplied = 50 * battleWeight;
-		var rivalryApplied = 35 * battleWeight;
+		var generalMultiplier = 1 * battleWeight;
+		if ( getCharEnemies(actor).includes(target) ) {
+			generalMultiplier *= 2;
+		}
+		var meritTaken = 2 * generalMultiplier;
+		var dominationApplied = 50 * generalMultiplier;
+		var rivalryApplied = 35 * generalMultiplier;
 		var msg = randomFromList( [
 					(gC(actor).getFormattedName() + " made " + gC(target).getFormattedName() + " kneel on the ground and admit " + gC(target).posPr + " loss."),
 					(gC(actor).getFormattedName() + " mocked " + gC(target).getFormattedName() + " and laughed at " + gC(target).posPr + " sad position."),
-					(gC(actor).getFormattedName() + " made " + gC(target).getFormattedName() + " say that " + gC(target).perPr + " will be more obedient in the future.") ])
-				+ "\n " + gC(actor).getFormattedName() + " took " + meritTaken.toFixed(1) + " merit from " + gC(target).getFormattedName() + ".\n"
+					(gC(actor).getFormattedName() + " made " + gC(target).getFormattedName() + " say that " + gC(target).perPr + " will be more obedient in the future.") ]);
+		if ( getCharEnemies(actor).includes(target) ) {
+			msg += "\n" + "The rivalry between " + gC(actor).getFormattedName() + " and " + gC(target).getFormattedName() + " adds weight to the sour taste of defeat.";
+		}
+		msg += "\n " + gC(actor).getFormattedName() + " took " + meritTaken.toFixed(1) + " merit from " + gC(target).getFormattedName() + ".\n"
 				+ gC(actor).getFormattedName() + "'s domination towards " + gC(target).getFormattedName() + " has slightly grown.\n"
 				+ "The rivalry between " + gC(actor).getFormattedName() + " and " + gC(target).getFormattedName() + " has slightly grown.";
 		return msg;
@@ -286,7 +297,7 @@ window.createBdemandForceServitude = function() {
 	bDemand.isPossible = function(actor,target,battleWeight) {
 		var isPossible = false;
 		if ( gC(actor).type == "candidate" && gC(target).type == "candidate" && battleWeight >= 3 && gSettings().servitudeRelationships == "enable" ) {
-			if ( gC(actor).domChar == null && gC(target).domChar == null && gC(target).subChars.length < 1 && gC(actor).egaChars.includes(target) == false ) {
+			if ( gC(actor).domChar == null && gC(target).domChar == null && gC(target).subChars.length < 1 && (gC(actor).egaChars.includes(target) == false || getCharEnemies(actor).includes(target) ) ) {
 				isPossible = true;
 			}
 		}
@@ -300,16 +311,27 @@ window.createBdemandForceServitude = function() {
 		return "noDescription";
 	}
 	bDemand.provokeEffect = function(actor,target,battleWeight,infamyMultiplier,extra1,extra2) {
+		var generalMultiplier = 1 * battleWeight;
+		var infamyFactor = 1;
+		if ( getCharEnemies(actor).includes(target) ) {
+			var gainedMerit = gSettings().relationshipsDuration;
+			gC(actor).changeMerit(gainedMerit);
+			generalMultiplier *= 10;
+			infamyFactor = 1.2;
+		}
 		// Infamy
-		gC(actor).changeInfamy(this.calculateInfamy(actor,target,battleWeight,infamyMultiplier));
+		gC(actor).changeInfamy(this.calculateInfamy(actor,target,battleWeight,infamyMultiplier * infamyFactor));
 		// Domination
-		getRelation(actor,target).domination.stv += 10;
-		getRelation(target,actor).submission.stv += 10;
+		getRelation(actor,target).domination.stv += 10 * generalMultiplier;
+		getRelation(target,actor).submission.stv += 10 * generalMultiplier;
 		// Rivalry
-		getRelation(target,actor).rivalry.stv += 20;
+		getRelation(target,actor).rivalry.stv += 20 * generalMultiplier;
 		// Enmity
-		getRelation(target,actor).enmity.stv += 20;
+		getRelation(target,actor).enmity.stv += 20 * generalMultiplier;
 		// Special relationship
+		if ( getCharEnemies(actor).includes(target) ) {
+			finishRelType(actor,target);
+		}
 		createRelTypeServitudeDom(actor,target,gSettings().relationshipsDuration);
 		createRelTypeServitudeSub(target,actor,gSettings().relationshipsDuration);
 		// Sex preferences
@@ -322,12 +344,23 @@ window.createBdemandForceServitude = function() {
 		return 1;
 	}
 	bDemand.resultMessage = function(actor,target,battleWeight,infamyMultiplier,extra1,extra2) {
-		var infamy = this.calculateInfamy(actor,target,battleWeight,infamyMultiplier);
+		var infamyFactor = 1;
+		if ( getCharEnemies(actor).includes(target) ) {
+			infamyFactor = 1.2;
+		}
+		var infamy = this.calculateInfamy(actor,target,battleWeight,infamyMultiplier * infamyFactor);
 		var days = 3;
 		
 		var msg = gC(actor).getFormattedName() + " will force " + gC(target).getFormattedName() + " to be " + gC(actor).posPr + " servant for " + days +" days.\n"
-				+ gC(actor).getFormattedName() + " will get " + infamy.toFixed(1) + " infamy. "
-				+ gC(target).getFormattedName() + "'s submission, rivalry and enmity towards " + gC(actor).getFormattedName() + " have slightly increased.";
+				+ gC(actor).getFormattedName() + " will get " + infamy.toFixed(1) + " infamy. ";
+		if ( getCharEnemies(actor).includes(target) ) {
+			msg += "\n" + "The rivalry between " + gC(actor).getFormattedName() + " and " + gC(target).getFormattedName() + " adds a brassy, almost bloody taste to this resounding defeat."
+				 + "\n" + gC(actor).getFormattedName() + " has gained some extra merit."
+				 + gC(target).getFormattedName() + "'s submission, rivalry and enmity towards " + gC(actor).getFormattedName() + " have increased.";
+		}
+		else {
+			msg += gC(target).getFormattedName() + "'s submission, rivalry and enmity towards " + gC(actor).getFormattedName() + " have slightly increased.";
+		}
 		return msg;
 	}
 	
@@ -477,15 +510,19 @@ window.createBdemandStealServant = function() {
 		return "noDescription";
 	}
 	bDemand.provokeEffect = function(actor,target,battleWeight,infamyMultiplier,extra1,extra2) {
+		var generalMultiplier = 1 * battleWeight;
+		if ( getCharEnemies(actor).includes(target) ) {
+			generalMultiplier *= 2;
+		}
 		// Infamy
 		gC(actor).changeInfamy(this.calculateInfamy(actor,target,battleWeight,infamyMultiplier));
 		// Domination
-		getRelation(actor,extra1).domination.stv += 25;
-		getRelation(extra1,actor).submission.stv += 25;
+		getRelation(actor,extra1).domination.stv += 25 * generalMultiplier;
+		getRelation(extra1,actor).submission.stv += 25 * generalMultiplier;
 		// Enmity
-		getRelation(extra1,actor).enmity.stv += 25;
+		getRelation(extra1,actor).enmity.stv += 25 * generalMultiplier;
 		// Rivalry
-		getRelation(target,actor).rivalry.stv += 50;
+		getRelation(target,actor).rivalry.stv += 50 * generalMultiplier;
 		// Terminate special relationship
 		finishRelType(target,extra1);		
 		// Create new servitude relationship
@@ -497,8 +534,11 @@ window.createBdemandStealServant = function() {
 		var infamy = this.calculateInfamy(actor,target,battleWeight,infamyMultiplier);
 		var days = 3;
 		
-		var msg = gC(actor).getFormattedName() + " will steal " + gC(extra1).getFormattedName() + " from " + gC(target).getFormattedName() + ", forcing servitude upon " + gC(extra1).comPr + " for " + days + " days.\n"
-				+ gC(actor).getFormattedName() + " will gain " + infamy.toFixed(1) + " infamy.\n"
+		var msg = gC(actor).getFormattedName() + " will steal " + gC(extra1).getFormattedName() + " from " + gC(target).getFormattedName() + ", forcing servitude upon " + gC(extra1).comPr + " for " + days + " days.\n";
+		if ( getCharEnemies(actor).includes(target) ) {
+			msg += "\n" + "The rivalry between " + gC(actor).getFormattedName() + " and " + gC(target).getFormattedName() + " adds weight to the sour taste of defeat.";
+		}
+		msg += gC(actor).getFormattedName() + " will gain " + infamy.toFixed(1) + " infamy.\n"
 				+ gC(extra1).getFormattedName() + "'s submission and enmity towards " + gC(actor).getFormattedName() + " have slightly increased.\n"
 				+ gC(target).getFormattedName() + "'s rivalry towards " + gC(actor).getFormattedName() + " has increased.\n";
 				

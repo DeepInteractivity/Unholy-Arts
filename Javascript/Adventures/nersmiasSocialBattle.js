@@ -134,7 +134,7 @@ window.formatNersmiasSocialBattleMainPassage = function(isFirstRound) {
 			pT += "\n\n" + getNSBlinksToRandomTopics();
 			pT += "\n" + getLinkToNSBpassageNname("skipRound","Skip round and re-roll interactions") + hoverText("^^(?)^^","Will worsen the attitude of Nersmias.");
 				// Option to leave
-			pT += "\n\n[[Abandon the conversation and leave|FaSe NSB LeavingConversation]]";
+			pT += "\n\n[[Finish the conversation, and make demands or leave|FaSe NSB LeavingConversation]]";
 		}
 	}
 	

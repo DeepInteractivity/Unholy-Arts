@@ -2080,6 +2080,7 @@ window.createSistOfferCompanionship = function() {
 		return message;
 	}
 	sist.getSuccessEffect = function(actor,target) {
+		npcAttemptsToRerollSocialMission(actor);
 		if ( actor == "chPlayerCharacter" ) {
 			State.variables.sisSpecifics.flagSissEnd = true;
 			
@@ -2223,6 +2224,7 @@ window.createSistOfferIntimacyRel = function() {
 		return message;
 	}
 	sist.getSuccessEffect = function(actor,target) {
+		npcAttemptsToRerollSocialMission(actor);
 		if ( actor == "chPlayerCharacter" ) {
 			State.variables.sisSpecifics.flagSissEnd = true;
 			

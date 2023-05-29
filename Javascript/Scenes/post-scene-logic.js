@@ -479,6 +479,10 @@ window.processGenericMapBattleEffects = function() {
 		  }
 	}
 	
+	if ( getCharEnemies(winner).includes(loser) ) {
+		infamyMult *= 0.8;
+	}
+	
 	// Execute logic
 	if ( flagStaleMate == false ) {
 		if ( winner != "chPlayerCharacter" ) { // NPC victory

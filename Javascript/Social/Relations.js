@@ -426,11 +426,13 @@ window.getTextRelationIncrease = function(charA,charB,type,intensity) {
 
 window.getSpecialRelationshipsOfXtypes = function(charKey,relationshipTypes) {
 	var fittingRelationships = [];
-	for ( var rl in gC(charKey).relations ) {
-		if ( gC(charKey).relations[rl] != undefined ) {
-			if ( gC(charKey).relations[rl].relType != undefined ) {
-				if ( relationshipTypes.includes(gC(charKey).relations[rl].relType.type) ) {
-					fittingRelationships.push(gC(charKey).relations[rl].relType.target);
+	if ( charKey != "" ) {
+		for ( var rl in gC(charKey).relations ) {
+			if ( gC(charKey).relations[rl] != undefined && gC(charKey).relations[rl] instanceof Relation ) {
+				if ( gC(charKey).relations[rl].relType != undefined ) {
+					if ( relationshipTypes.includes(gC(charKey).relations[rl].relType.type) ) {
+						fittingRelationships.push(gC(charKey).relations[rl].relType.target);
+					}
 				}
 			}
 		}
@@ -439,6 +441,10 @@ window.getSpecialRelationshipsOfXtypes = function(charKey,relationshipTypes) {
 }
 window.getCharAllies = function(charKey) {
 	return getSpecialRelationshipsOfXtypes(charKey,["companionship"]);
+}
+window.getCharEnemies = function(charKey) {
+	var xRels = getSpecialRelationshipsOfXtypes(charKey,["rivalry"]);
+	return xRels;
 }
 
 ////////// RELATIONSHIPTYPE CLASS  //////////
@@ -746,6 +752,42 @@ window.createRelTypeIntimacy = function(actor,target,days) {
 	}
 }
 
+window.createRelTypeRivalry = function(actor,target,days) {
+	var relType = new RelationshipType(actor,target,"rivalry","rivalry",colorText("Rv","red"),"rival","temporary",days,"ega");
+	relType.forcedToFollow = false;
+	relType.forcedToAssistAssault = false;
+	relType.forcedToSex = false;
+	relType.disallowedAssault = false;
+	relType.disallowedChallenge = false;
+	relType.liberationChallenge = false;
+	relType.dailyEffect = function() {
+		var rivalryGain = 50;
+		var enmityGain = 25;
+		gC(this.actor).relations[this.target].rivalry.stv += rivalryGain;
+		gC(this.actor).relations[this.target].enmity.stv += enmityGain;
+		
+		var description = gC(this.actor).name + "'s rivalry and enmity towards " + gC(this.target).name + " are growing (+50,+25).";
+		return description;
+	}
+	relType.getTooltip = relTypeRivalryTooltip;
+	relType.supportInfamy = 0;
+	relType.intimacy = -8;
+	
+	gC(actor).egaChars.push(target);
+	gC(actor).relations[target].relType = relType;
+	
+	gC(actor).relations[target].rivalry.levelMod += 4;
+	gC(actor).relations[target].enmity.levelMod += 2;
+	gC(actor).relations[target].sexualTension.levelMod += 2;
+	
+	relType.finishRelTypeExtra = function() {
+		gC(this.actor).relations[this.target].rivalry.levelMod -= 4;
+		gC(this.actor).relations[this.target].enmity.levelMod -= 2;
+		gC(this.actor).relations[this.target].sexualTension.levelMod -= 2;
+	}
+}
+
+
 	// Relatinship Types' Tooltips
 
 window.relTypeServitudeTooltip = function() {
@@ -794,6 +836,14 @@ window.relTypeIntimacyTooltip = function() {
 	return tt;
 }
 
+// TO DO: CONTINUE UPDATING
+window.relTypeRivalryTooltip = function() {
+	var tt = "Once rivalry has sparked, the adversaries' honour will be at stake.\n"
+		   + "Daily rivalry and enmity gains.\n"
+		   + "Temporary rivalry, enmity and sexual tension level increases.\n";
+	return tt;
+}
+
 	// Print info functions
 	
 window.getRelTypeInTt = function(charA,charB) {
@@ -831,6 +881,36 @@ window.getRelTypeNameMayus = function(charA,charB) {
 		abr = '<span title="' + getRelTypeInTt(charA,charB) + relType.getTooltip() + '">' + firstToCap(relType.roleName) + '</span>';
 	}
 	return abr;
+}
+
+	// Auxiliars
+window.getRivalsLimit = function(charA) {
+	var limit = 1;
+	return limit;
+}
+window.isRivalryPossible = function(charA,charB) {
+	var isPossible = true;
+	// Allowed by story
+	if ( (getCurrentStoryState() < storyState.secondLoop) || isCurrentStoryStateInMainLoop() == false ) {
+		isPossible = false;
+	}
+	// Chars share no special relationship
+	if ( gRelTypeAb(charA,charB) ) {
+		isPossible = false;
+	}
+	// Chars don't have too many rivals
+	if ( (getCharEnemies(charA).length >= getRivalsLimit(charA)) || (getCharEnemies(charB).length >= getRivalsLimit(charB)) ) {
+		isPossible = false;
+	}
+	// Compatible dominants
+	if ( (gC(charA).domChar == null && gC(charB).domChar != null) || (gC(charA).domChar != null && gC(charB).domChar == null) ) {
+		isPossible = false;
+	}
+	// Following status
+	if ( (gC(charA).followingTo == charB) || (gC(charA).followedBy.includes(charB)) ) {
+		isPossible = false;
+	}
+	return isPossible;
 }
 
 // Constructors, serializers, etc.

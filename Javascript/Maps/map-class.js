@@ -410,7 +410,7 @@ window.initiateLiberationChallenge = function(actor,target) {
 		var playerEvent = State.variables.compass.findFirstEventInvolvingPlayer();
 		var gD = chooseDialogFromList(setup.dialogDB.icDialogs,actor,"chPlayerCharacter","","");
 		var p = gD + "\n" + gC(actor).getFormattedName() + " is initiating a liberation challenge against you!\n\n";
-		p += getButtonBeingAssaulted(actor);
+		p += getButtonBeingAssaulted(actor,gC(actor).mission);
 		State.variables.compass.setPlayerPrompt(p,actor,true);
 	}
 }
@@ -605,6 +605,14 @@ window.addCharsTeamToCharsMonsterBattle = function(joiningCharacter,joinedCharac
 			sEvent.extraMessages.push(notification);
 		}
 	}
+}
+
+	// Declarations
+window.declareRivalry = function(actor,target) {
+	gC(actor).socialdrive.current -= getDeclaringRivalryCost(actor,target);
+	createRelTypeRivalry(actor,target,gSettings().relationshipsDuration);
+	createRelTypeRivalry(target,actor,gSettings().relationshipsDuration);
+	State.variables.compass.setMapMessage(gC(actor).getFormattedName() + colorText(" has declared a rivalry against ","red") + gC(target).getFormattedName() + "!");
 }
 
 ////////// COMPASS CLASS  //////////
@@ -1526,9 +1534,10 @@ window.Compass = function() {
 				text += this.getButtonAdventureRequests(character);
 			}
 			
-			// Battle buttons
+			// Battle, rivalry buttons
 			if ( character != "chPlayerCharacter" ) {
 				var battleButtons = [];
+				// Battle
 				if ( isChallengePossible("chPlayerCharacter",character) ) {
 					battleButtons.push(this.getButtonChallenge(character));
 				}
@@ -1537,6 +1546,10 @@ window.Compass = function() {
 				}
 				if ( isLiberationChallengePossible("chPlayerCharacter",character) ) {
 					battleButtons.push(this.getButtonLiberationChallenge(character));
+				}
+				// Rivalry
+				if ( isDeclaringRivalryPossible("chPlayerCharacter",character) ) {
+					battleButtons.push(this.getButtonDeclareRivalry(character));
 				}
 				if ( battleButtons.length > 0 ) {
 					text += " (" + stringArrayToTextMinusAnd(battleButtons) + ")";
@@ -1736,7 +1749,14 @@ window.Compass = function() {
 		bText 	 += "initiateLiberationChallenge('chPlayerCharacter','" + target + "');\n";
 		bText	 += "<</s" + "cript>><</l" + "ink>>";
 		return bText;
-	}		
+	}
+
+	Compass.prototype.getButtonDeclareRivalry = function(target) {
+		var bText = "<<l" + "ink [[ Riv|Map]]>><<s" + "cript>>\n";
+		bText 	 += "declareRivalry('chPlayerCharacter','" + target + "');\n";
+		bText	 += "<</s" + "cript>><</l" + "ink>>" + getTextWithTooltipAlt("^^(?)^^:","Declare rivalry.\n" + relTypeRivalryTooltip()) + colorText(getDeclaringRivalryCost("chPlayerCharacter",target),"khaki") + "";
+		return bText;
+	}	
 	
 	Compass.prototype.getButtonSpectateCombat = function(target) {
 		var bText = "<<l" + "ink [[Spectate Combat|Scene]]>><<s" + "cript>>\n";

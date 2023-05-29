@@ -333,7 +333,7 @@ window.initializeSeDiscoveringTheOthers = function() {
 	setPasChars([getPresentCharByKey("chAte")]);
 	
 	// New social action
-	State.variables.chAte.extraSocIntList.push("relaxingScent");
+	State.variables.chAte.extraSocIntList.push("telephaticConnection");
 }
 
 window.effectsSeDiscoveringTheOthersEarlyEnd = function() {

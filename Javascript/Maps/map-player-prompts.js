@@ -189,7 +189,7 @@ window.canPlayerBeAskedToFollow = function(requester) {
 }
 
 window.charRemembersMission = function(cK,mission) {
-	if ( mission != undefined ) {
+	if ( mission != undefined && mission != "undefined" ) {
 		gC(cK).mission = mission;
 	}
 }

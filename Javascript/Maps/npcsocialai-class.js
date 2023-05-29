@@ -821,6 +821,7 @@ relationshipGoal.prototype.toJSON = function() {
 	return JSON.reviveWrapper('(new relationshipGoal())._init($ReviveData$)', ownData);
 };
 
+// Auxiliar
 
 window.feedCandidatesRelationshipGoals = function() {
 	/*
@@ -835,5 +836,8 @@ window.feedCandidatesRelationshipGoals = function() {
 		}
 	}*/
 }
-
+window.getValidSocialMissions = function() {
+	var missions = ["raiseFriendship","flirt","seduce","haveSex","haveDomSex","getAlliance","taunt"];
+	return missions;
+}
 

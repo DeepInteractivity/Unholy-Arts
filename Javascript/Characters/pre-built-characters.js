@@ -1230,7 +1230,7 @@ window.setUpRelations = function() {
 	State.variables.chVal.relations.chClaw.rivalry.stv = 350;
 	State.variables.chClaw.relations.chVal.rivalry.stv = 350;
 	
-	feedCandidatesRelationshipGoals();
+	// feedCandidatesRelationshipGoals();
 }
 
 //////// Other NPC colors

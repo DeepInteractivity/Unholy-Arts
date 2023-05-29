@@ -1,11 +1,34 @@
 ///// PATCHING FUNCTIONS /////
 
 window.applyRequiredPatches = function() {
+	genericPatches();
+	
 	v036Patches();
 	v037Patches();
 	v0310Patches();
 	v0316Patches();
 	v0318GeneralPatches();
+}
+
+window.genericPatches = function() {
+	for ( var cKa of getActiveSimulationCharactersArray() ) {
+		// Fix erroneous special relationships
+		var cKb = gC(cKa).domChar;
+		if ( getRelation(cKa,cKb) == null ) {
+			gC(cKa).domChar = null;
+		} else if ( gRelTypeAb(cKa,cKb) == null ) {
+			gC(cKa).domChar = null;
+		}
+		for ( var cKb of gC(cKa).egaChars.concat(gC(cKa).subChars) ) {
+			if ( getRelation(cKa,cKb) == null ) {
+				gC(cKa).egaChars = arrayMinusA(gC(cKa).egaChars,cKb);
+				gC(cKa).subChars = arrayMinusA(gC(cKa).subChars,cKb);
+			} else if ( gRelTypeAb(cKa,cKb) == null ) {
+				gC(cKa).egaChars = arrayMinusA(gC(cKa).egaChars,cKb);
+				gC(cKa).subChars = arrayMinusA(gC(cKa).subChars,cKb);
+			}
+		}
+	}
 }
 
 window.applyRequiredScenePatches = function() {

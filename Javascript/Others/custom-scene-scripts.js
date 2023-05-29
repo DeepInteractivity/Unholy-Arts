@@ -981,7 +981,7 @@ window.fakPlayerPleasuresClaw = function() {
 }
 window.fakMoaningKittyEndCondition = function() {
 	var flagReady = false;
-	if ( getBarPercentage("chClaw","lust") <= 0.75 ) {
+	if ( getBarPercentage("chClaw","lust") <= 0.75 || State.variables.chClaw.getAllSceneOrgasms() > 0 ) {
 		flagReady = true;
 	}
 	return flagReady;
@@ -1001,7 +1001,7 @@ window.fakPlayerTakesClaw = function() {
 }
 window.fakMoaningKitty2EndCondition = function() {
 	var flagReady = false;
-	if ( getBarPercentage("chClaw","lust") <= 0.55 ) {
+	if ( getBarPercentage("chClaw","lust") <= 0.55 || State.variables.chClaw.getAllSceneOrgasms() > 0 ) {
 		flagReady = true;
 	}
 	return flagReady;
