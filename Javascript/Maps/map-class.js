@@ -320,8 +320,13 @@ window.signCharsActive = function(characters) {
 
 	// Battles
 window.initiatePlayerAssault = function(target) {
+	if ( gC("chPlayerCharacter").hasOwnProperty("attackedToday") ) {
+		gC("chPlayerCharacter").attackedToday++;
+	} else {
+		gC("chPlayerCharacter").attackedToday = 1;
+	}
 	// Infamy
-	var infamy = getCharGroup("chPlayerCharacter").length * 3 / getCharGroup(target).length;
+	var infamy = (getCharGroup("chPlayerCharacter").length * 3 + gC("chPlayerCharacter").attackedToday - 1 ) / getCharGroup(target).length;
 	if ( gC("chPlayerCharacter").cbl.includes(target) ) {
 		infamy = 0;
 		gC("chPlayerCharacter").cbl = arrayMinusA(gC("chPlayerCharacter").cbl,target);
@@ -350,14 +355,14 @@ window.initiatePlayerAssault = function(target) {
 	State.variables.compass.setInterludeTrigger(iText);
 }
 window.initiateNpcAssault = function(actor,target) {
-	if ( gC(actor).hasOwnProperty("globalAi") ) {
-		if ( gC(actor).globalAi.hasOwnProperty("attackedToday") ) {
-			gC(actor).globalAi.attackedToday = true;
-		}
+	if ( gC(actor).hasOwnProperty("attackedToday") == false ) {
+		gC(actor).attackedToday = 1;
+	} else {
+		gC(actor).attackedToday++;
 	}
 	
 	// Infamy
-	var infamy = getCharGroup(actor).length * 3 / getCharGroup(target).length;
+	var infamy = (getCharGroup(actor).length * 3 + gC(actor).attackedToday - 1) / getCharGroup(target).length;
 	if ( gC(actor).cbl.includes(target) ) {
 		infamy = 0;
 		gC(actor).cbl = arrayMinusA(gC(actor).cbl,target);
@@ -433,11 +438,16 @@ window.setUpPlayerChallengeOptions = function(target) {
 	State.variables.compass.setInterludeTrigger(oText);
 }
 window.processNpcChallengeResponse = function(target,stakes) {
+	if ( gC("chPlayerCharacter").hasOwnProperty("attackedToday") ) {
+		gC("chPlayerCharacter").attackedToday++;
+	} else {
+		gC("chPlayerCharacter").attackedToday = 1;
+	}
 	var flagAccepts = doesTargetAcceptChallenge("chPlayerCharacter",target,stakes);
 	var msg = "";
 	
 	// Infamy
-	var infamy = 1;
+	var infamy = gC("chPlayerCharacter").attackedToday;
 	if ( gC("chPlayerCharacter").cbl.includes(target) ) {
 		infamy = 0;
 		gC("chPlayerCharacter").cbl = arrayMinusA(gC("chPlayerCharacter").cbl,target);
@@ -466,6 +476,7 @@ window.processNpcChallengeResponse = function(target,stakes) {
 		msg += "\n\n"
 			+ "[[Continue|Scene]]";
 	} else {
+		gC(target).refusedChallengeToday = true;
 		gC("chPlayerCharacter").changeMerit(1);
 		gC(target).changeMerit(-1);
 		// Message
@@ -479,15 +490,15 @@ window.processNpcChallengeResponse = function(target,stakes) {
 	State.variables.compass.setInterludeTrigger(msg);
 }
 window.initiateNpcToNpcChallenge = function(actor,target,stakes) {
-	if ( gC(actor).hasOwnProperty("globalAi") ) {
-		if ( gC(actor).globalAi.hasOwnProperty("attackedToday") ) {
-			gC(actor).globalAi.attackedToday = true;
-		}
+	if ( gC(actor).hasOwnProperty("attackedToday") == false ) {
+		gC(actor).attackedToday = 1;
+	} else {
+		gC(actor).attackedToday++;
 	}
 	var flagAccepts = doesTargetAcceptChallenge(actor,target,stakes);
 	
 	// Infamy
-	var infamy = 1;
+	var infamy = gC(actor).attackedToday;
 	if ( gC(actor).cbl.includes(target) ) {
 		infamy = 0;
 		gC(actor).cbl = arrayMinusA(gC("chPlayerCharacter").cbl,target);
@@ -508,6 +519,7 @@ window.initiateNpcToNpcChallenge = function(actor,target,stakes) {
 		State.variables.compass.ongoingEvents.push(createSystemEventStandardChallenge([actor],[target],spectators,stakes));
 		State.variables.compass.sortOnGoingEventsByTime();
 	} else {
+		gC(target).refusedChallengeToday = true;
 		gC(actor).changeMerit(1);
 		gC(target).changeMerit(-1);
 	}
@@ -515,10 +527,10 @@ window.initiateNpcToNpcChallenge = function(actor,target,stakes) {
 }
 window.initiateNpcToPlayerAcceptedChallenge = function(challenger,stakes) {
 	var actor = challenger;
-	if ( gC(actor).hasOwnProperty("globalAi") ) {
-		if ( gC(actor).globalAi.hasOwnProperty("attackedToday") ) {
-			gC(actor).globalAi.attackedToday = true;
-		}
+	if ( gC(actor).hasOwnProperty("attackedToday") == false ) {
+		gC(actor).attackedToday = 1;
+	} else {
+		gC(actor).attackedToday++;
 	}
 	
 	var target = "chPlayerCharacter";

@@ -525,6 +525,7 @@ window.createBdemandStealServant = function() {
 		getRelation(target,actor).rivalry.stv += 50 * generalMultiplier;
 		// Terminate special relationship
 		finishRelType(target,extra1);		
+		finishRelType(actor,extra1);	
 		// Create new servitude relationship
 		createRelTypeServitudeDom(actor,extra1,gSettings().relationshipsDuration);
 		createRelTypeServitudeSub(extra1,actor,gSettings().relationshipsDuration);

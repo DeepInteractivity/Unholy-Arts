@@ -326,14 +326,17 @@ window.setUpTestScenesRoom = function() {
 	"legHoldHead","mountFromBehind","penetratePussy","thrust","piston","finalPush","mountFaceToFace","getBlowjob","suckDick","lickPussy","interlockLegs",
 	"scissor","strokeAss","penetrateAss","analThrust","holdArms","vinesHoldArms","dickFootjob","pussyFootjob","lickLegs","rideDick","pushDickBack","extraMountFromBehind","analMountDick","analRideDick","analPushDickBack","holdHands","kissNeck","whisperSNs"]);
 	
+	gC("chPlayerCharacter").race = "shapeshifter";
+	
 	charactersLearnSceneActions(["chPlayerCharacter"],[
 									"kick","coldGuts",
 									"embers","freezeFeet","sparkingRubbing",
-									"taunt","baTease"
-									,"realHypnoticGlance"
+									"taunt","baTease",
+									"realHypnoticGlance"
 									,"energyDrainingKiss"
 									,"baEtherealChains","etherealChains",
-									"denyOrgasm","teaseLockedPussy","teaseLockedDick"
+									"denyOrgasm","teaseLockedPussy","teaseLockedDick",
+									"doublePenetration"
 		]);
 	charactersLearnSceneActions(["chVal"],[
 									"denyOrgasm","teaseLockedPussy","teaseLockedDick"

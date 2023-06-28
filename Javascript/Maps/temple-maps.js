@@ -565,7 +565,9 @@ setup.mapTrainingGrounds.starsTower.getCustomActionsText = function(characters) 
 	}
 	
 	if ( State.variables.daycycle.day > 9 || State.variables.daycycle.month > 1 ) {
-		if ( State.variables.simCycPar.templeDayPeriod != "socialization" ) {
+		if ( State.variables.storyState == storyState.secondLoop && State.variables.daycycle.day < 18 && eventCardsAvailable ) {
+			cText = getButtonClairvoyance() + "<sup><span title='The orb might contain hints about the challenges the future holds for you, if you are capable of clawing your way into them.\nTaototh is not here, but he has left the orb of clairvoyance unlocked for all to use.'>(?)</span></sup> " + "\n";
+		} else if ( State.variables.simCycPar.templeDayPeriod != "socialization" ) {
 			cText += "Taototh isn't here during training hours, which prevents you from accessing the orb of clairvoyance.\n";
 		} else if ( eventCardsAvailable ) {
 			cText = getButtonClairvoyance() + "<sup><span title='The orb might contain hints about the challenges the future holds for you, if you are capable of clawing your way into them.'>(?)</span></sup> " + "\n";

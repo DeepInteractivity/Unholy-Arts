@@ -846,8 +846,20 @@ Character.prototype.getCharacterUIbarInfo = function() { // Returns a string tha
 	}
 Character.prototype.getCharacterScreenInfo = function() { // Returns a string that generates the character's stats screen when displayed on Sugarcube 2
 		var string = "__" + this.formattedName + "__\n";
-		string += this.textBars() + "\n";
-		string += this.textStats() + "\n\n";
+		
+		string += this.textBars();
+		if ( gSettings().challengingAllowed || gSettings().assaultingAllowed ) {
+			string += "Merit" + getMeritTooltip() + ": " + this.merit;
+			string += " | Infamy" + getInfamyTooltip() + ": " + this.infamy + "/" + State.variables.settings.infamyLimit;
+			if ( this.varName == "chPlayerCharacter" ) {
+				string += " | Money: " + this.money.toFixed(0);
+			}
+			string += "\n";
+		}
+		string += "\n";
+		string += this.textStats() + "\n";
+		string += "\n";
+		
 		string += "__Bodyparts__:\n";
 		string += this.textBodyparts() + "\n";
 		string += textEquipment(this.varName);
@@ -860,10 +872,12 @@ Character.prototype.getCharacterScreenInfo = function() { // Returns a string th
 				string += "\n" + intimaciesText;
 			}
 		}
+		
 		var spRelsString = this.textSpecialRelationships();
 		if ( spRelsString != "" ) {
 			string += "\n\n__Special Relationships__:\n" + spRelsString;
 		}
+		
 		return string;
 	}
 	
@@ -1433,6 +1447,13 @@ window.returnCharsUnlockedGenitals = function(charKey) {
 		unlockedGenitals.push("pussy");
 	}
 	return unlockedGenitals;
+}
+
+window.returnCharsLockedLimbs = function(charKey) {
+	var lockedLimbs = [];
+	if ( charHasLockedBodypart(charKey,"arms") ) { lockedLimbs.push("arms"); }
+	if ( charHasLockedBodypart(charKey,"legs") ) { lockedLimbs.push("legs"); }
+	return lockedLimbs;
 }
 
 	// Gender

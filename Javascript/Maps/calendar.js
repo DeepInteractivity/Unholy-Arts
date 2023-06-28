@@ -288,6 +288,11 @@ window.formatRequisiteForClairvoyance = function(reqName,reqFunc) {
 	fText += "\n";
 	return fText;
 }
+window.formatHintForClairvoyance = function(hintName) {
+	var fText = "- " + hintName;
+	fText += "\n";
+	return fText;
+}
 
 window.formatAllClairvoyance = function() {
 	var eventsMetaInfo = gEMI
@@ -464,7 +469,7 @@ setup.eventsMetaInfo["gol0"] = new eventMetaInfo( // "The Grapes of Lust"
 	function() { // Reqs
 		var allowed = true;
 		
-		if ( gC("chVal").domChar == "chPlayerCharacter" || gC("chVal").domChar == "chAte" || gC("chPlayerCharacter").domChar == "chVal" || gC("chAte").domChar == "chVal" || gC("chAte").domChar == "chPlayerCharacter" || (gC("chVal").hasFreeBodypart("pussy") == false) || (gC("chPlayerCharacter").hasFreeBodypart("mouth") == false) || (gC("chAte").hasFreeBodypart("mouth") == false) ) {
+		if ( gC("chVal").domChar == "chPlayerCharacter" || gC("chVal").domChar == "chAte" || gC("chPlayerCharacter").domChar == "chVal" || gC("chAte").domChar == "chVal" || gC("chAte").domChar == "chPlayerCharacter" || (gC("chVal").hasFreeBodypart("pussy") == false) || (gC("chPlayerCharacter").hasFreeBodypart("mouth") == false) || (gC("chAte").hasFreeBodypart("mouth") == false) || State.variables.storyState != storyState.firstLoop ) {
 			allowed = false;
 		}
 		
@@ -480,7 +485,11 @@ setup.eventsMetaInfo["gol0"] = new eventMetaInfo( // "The Grapes of Lust"
 setup.eventsMetaInfo["gol0"].clairvoyanceData = new emiClaivoyanceData(
 	"When someone's excessive focus leads to her getting taken advantage of", // Cryptic Name
 	function() { // Reqs to be shown
-		return true; // Might always be shown
+		var b = false;
+		if ( State.variables.storyState == storyState.firstLoop ) {
+			b = true;
+		}
+		return b; // Might always be shown
 	},
 	function() { // Reqs to appear
 		var reqsText = formatClairvoyanceCheck("Requisites (1)",40,formatRequisiteForClairvoyance("Neither Maaterasu nor Valtan are submissive to " + gC("chPlayerCharacter").getName(), function() {
@@ -531,6 +540,12 @@ setup.eventsMetaInfo["gol0"].clairvoyanceData = new emiClaivoyanceData(
 				if ( gC("chPlayerCharacter").body.mouth.state == "free" && gC("chAte").body.mouth.state == "free" ) {
 					b = true;
 				}
+			}
+			return b;
+		})) + formatClairvoyanceCheck("Requisites (6)",160,formatRequisiteForClairvoyance("Time is fleeting", function() {
+			var b = false;
+			if ( State.variables.storyState == storyState.firstLoop ) {
+				b = true;
 			}
 			return b;
 		}));
@@ -901,6 +916,81 @@ setup.eventsMetaInfo["stn"].clairvoyanceData = new emiClaivoyanceData(
 			}
 			return b;
 		}))
+//		+ formatClairvoyanceCheck("Hints",75,formatRequisiteForClairvoyance("Your dominance and submission towards other may limit your options.", function() {
+//			var b = true;
+//			return b;
+//		}))
+		;
+		return reqsText;
+	},
+	null // Hints
+);
+
+setup.eventsMetaInfo["CNe0"] = new eventMetaInfo( // "Candidates Negotiation"
+	true,false,
+	"Candidates Negotiation",
+	"CNe0",
+	initializeSeCandidatesNegotiation, // initFunc
+	"SE Candidates Negotiation Start",
+	function() { // Reqs
+		var allowed = false;
+		
+		if ( State.variables.daycycle.month > 1 && isCurrentStoryStateInMainLoop() == true && getCurrentStoryState() > storyState.firstAdventure ) {
+			allowed = true;
+		}
+		return allowed;
+	},
+	function() { // Weight
+		var weight = 5000;
+		
+		return weight;
+	}
+);
+
+setup.eventsMetaInfo["RuRe"] = new eventMetaInfo( // "A Ruler's Responsibility"
+	true,true,
+	"A Ruler's Responsibility",
+	"RuRe",
+	initializeRulersResponsibility, // initFunc
+	"SE RulersResp Start",
+	function() { // Reqs
+		var allowed = false;
+		
+		if ( getCurrentStoryState() == storyState.secondLoop ) {
+			var nashRel = rLvlAbt("chNash","chPlayerCharacter","friendship") + rLvlAbt("chNash","chPlayerCharacter","romance") + rLvlAbt("chNash","chPlayerCharacter","sexualTension") - rLvlAbt("chNash","chPlayerCharacter","rivalry") - rLvlAbt("chNash","chPlayerCharacter","enmity");
+			var mirRel = rLvlAbt("chMir","chPlayerCharacter","friendship") + rLvlAbt("chMir","chPlayerCharacter","romance") + rLvlAbt("chMir","chPlayerCharacter","sexualTension") - rLvlAbt("chMir","chPlayerCharacter","rivalry") - rLvlAbt("chMir","chPlayerCharacter","enmity");
+			if ( nashRel >= 5 || mirRel >= 5 ) {
+				allowed = true;
+			}
+		}
+		return allowed;
+	},
+	function() { // Weight
+		var weight = 100 + (rLvlAbt("chNash","chPlayerCharacter","friendship") + rLvlAbt("chNash","chPlayerCharacter","romance") + rLvlAbt("chNash","chPlayerCharacter","sexualTension") - rLvlAbt("chNash","chPlayerCharacter","rivalry") - rLvlAbt("chNash","chPlayerCharacter","enmity")) * 5 + (rLvlAbt("chMir","chPlayerCharacter","friendship") + rLvlAbt("chMir","chPlayerCharacter","romance") + rLvlAbt("chMir","chPlayerCharacter","sexualTension") - rLvlAbt("chMir","chPlayerCharacter","rivalry") - rLvlAbt("chMir","chPlayerCharacter","enmity")) * 5;
+		if ( weight < 10 ) { weight = 10; }
+		
+		return weight;
+	}
+);
+setup.eventsMetaInfo["RuRe"].clairvoyanceData = new emiClaivoyanceData(
+	"When the Leirien ponders on the responsibilities of the High Priestess", // Cryptic Name
+	function() { // Reqs to be shown
+		var result = false;
+		if ( getCurrentStoryState() == storyState.secondLoop ) {
+			result = true;
+		}
+		return result; // 
+	},
+	function() { // Reqs to appear
+		var reqsText = formatClairvoyanceCheck("Requisites",50,formatRequisiteForClairvoyance("Either Padmiri or Nashillbyir have a mild trust for you", function() {
+			var b = false;
+			var nashRel = rLvlAbt("chNash","chPlayerCharacter","friendship") + rLvlAbt("chNash","chPlayerCharacter","romance") + rLvlAbt("chNash","chPlayerCharacter","sexualTension") - rLvlAbt("chNash","chPlayerCharacter","rivalry") - rLvlAbt("chNash","chPlayerCharacter","enmity");
+			var mirRel = rLvlAbt("chMir","chPlayerCharacter","friendship") + rLvlAbt("chMir","chPlayerCharacter","romance") + rLvlAbt("chMir","chPlayerCharacter","sexualTension") - rLvlAbt("chMir","chPlayerCharacter","rivalry") - rLvlAbt("chMir","chPlayerCharacter","enmity");
+			if ( nashRel >= 5 || mirRel >= 5 ) {
+				b = true;
+			}
+			return b;
+		})) + formatClairvoyanceCheck("Hints",75,formatHintForClairvoyance("Intelligence and empathy may open new paths.")) + formatClairvoyanceCheck("Hints",85,formatHintForClairvoyance("Intelligence, perception and empathy may open new paths."));
 //		+ formatClairvoyanceCheck("Hints",75,formatRequisiteForClairvoyance("Your dominance and submission towards other may limit your options.", function() {
 //			var b = true;
 //			return b;

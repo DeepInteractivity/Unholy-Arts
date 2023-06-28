@@ -75,6 +75,7 @@ window.getButtonRejectChallenge = function(challengingCharacter,stakes) {
 	bText	 += "State.variables." + challengingCharacter + ".changeInfamy(1);\n";
 	bText	 += "State.variables." + challengingCharacter + ".changeMerit(1);\n";
 	bText	 += "State.variables.chPlayerCharacter.changeMerit(-1);\n";
+	bText	 += "State.variables.chPlayerCharacter.refusedChallengeToday = true;\n";
 	//bText	 += "State.variables." + challengingCharacter + ".mapAi.state = 'idle';\n";
 	bText	 += "State.variables.compass.pushAllTimeToAdvance();\n";
 	bText	 += "<</s" + "cript>><</l" + "ink>>"

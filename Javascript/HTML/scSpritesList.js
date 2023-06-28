@@ -254,6 +254,104 @@ setup.SCSL.scsBLlegGm = new scSprite("scsBLlegGm","scs-b-lLeg-gm.gif",15,[195,93
 setup.SCSL.scsBRlegGm = new scSprite("scsBRlegGm","scs-b-rLeg-gm.gif",27,[207,280],[318,27],"scsBRleg","GmB","MftfScs");
 setup.SCSL.scsBHeadGm = new scSprite("scsBHeadGm","scs-b-head-gm.gif",140,[110,93],[470,265],"scsBHead","GmB","MftfScs"); // Main male gray head
 
+// Mount Face to Face, doble penetration // Mftfdp
+
+	// Top
+		// White Human // Wh -> White Human ; Mcy -> Main Character Yellow
+
+setup.SCSL.dpTTrunkWh = new scSprite("dpTTrunkWh","dp-t-trunk-wh.gif",10,[133,255],[235,64],"dpTTrunk","WhT","Mftfdp"); 
+setup.SCSL.dpTChestWhbig = new scSprite("dpTChestWhbig","dp-t-chest-whBig.gif",50,[85,97],[289,96],"dpTChest","WhT","Mftfdp"); // 
+setup.SCSL.dpTChestWhmedium = new scSprite("dpTChestWhmedium","dp-t-chest-whMed.gif",50,[85,97],[289,96],"dpTChest","WhT","Mftfdp"); 
+setup.SCSL.dpTChestWhsmall = new scSprite("dpTChestWhsmall","dp-t-chest-whSmall.gif",50,[79,70],[298,103],"dpTChest","WhT","Mftfdp"); // 
+setup.SCSL.dpTHandpalmWh = new scSprite("dpTHandpalmWh","dp-t-handpalm-wh.gif",5,[37,63],[295,103],"dpTHandpalm","WhT","Mftfdp"); 
+setup.SCSL.dpTRarmWh = new scSprite("dpTRarmWh","dp-t-rArm-wh.gif",60,[202,161],[272,106],"dpTRarm","WhT","Mftfdp"); 
+setup.SCSL.dpTRlegWh = new scSprite("dpTRlegWh","dp-t-RLeg-wh.gif",30,[266,180],[306,232],"dpTRleg","WhT","Mftfdp"); 
+setup.SCSL.dpTfeetWh = new scSprite("dpTfeetWh","dp-t-feet-wh.gif",0,[70,54],[428,278],"dpTfeet","WhT","Mftfdp"); 
+setup.SCSL.dpTHeadMcy = new scSprite("dpTHeadMcy","dp-t-head-mcy.gif",100,[127,121],[195,9],"dpTHead","McyT","Mftfdp"); // Main character yellow
+setup.SCSL.dpTHeadMcb = new scSprite("dpTHeadMcb","dp-t-head-mcb.gif",100,[182,353],[140,7],"dpTHead","McbT","Mftfdp"); // Main character black
+setup.SCSL.dpTHeadMcr = new scSprite("dpTHeadMcr","dp-t-head-mcr.gif",100,[150,229],[177,7],"dpTHead","McrT","Mftfdp"); // Main character red 
+
+	     // Gray character // Gf -> Gray Female
+
+setup.SCSL.dpTTrunkGf = new scSprite("dpTTrunkGf","dp-t-trunk-gf.gif",10,[133,255],[235,64],"dpTTrunk","GfT","Mftfdp"); 
+setup.SCSL.dpTChestGfbig = new scSprite("dpTChestGfbig","dp-t-chest-gfBig.gif",50,[85,97],[289,96],"dpTChest","GfT","Mftfdp"); // 
+setup.SCSL.dpTChestGfmedium = new scSprite("dpTChestGfmedium","dp-t-chest-gfMed.gif",50,[85,97],[289,96],"dpTChest","GfT","Mftfdp"); 
+setup.SCSL.dpTChestGfsmall = new scSprite("dpTChestGfsmall","dp-t-chest-gfSmall.gif",50,[79,70],[298,103],"dpTChest","GfT","Mftfdp"); // 
+setup.SCSL.dpTHandpalmGf = new scSprite("dpTHandpalmGf","dp-t-handpalm-gf.gif",5,[37,63],[295,103],"dpTHandpalm","GfT","Mftfdp"); 
+setup.SCSL.dpTRarmGf = new scSprite("dpTRarmGf","dp-t-rArm-gf.gif",60,[202,161],[272,106],"dpTRarm","GfT","Mftfdp"); 
+setup.SCSL.dpTRlegGf = new scSprite("dpTRlegGf","dp-t-RLeg-gf.gif",30,[266,180],[306,232],"dpTRleg","GfT","Mftfdp"); 
+setup.SCSL.dpTfeetGf = new scSprite("dpTfeetGf","dp-t-feet-gf.gif",0,[70,54],[428,278],"dpTfeet","GfT","Mftfdp"); 
+setup.SCSL.dpTHeadGf = new scSprite("dpTHeadGf","dp-t-head-gf.gif",100,[127,121],[195,9],"dpTHead","GfT","Mftfdp"); // Main character gray
+
+            // Gray character // Gm -> Gray male
+
+setup.SCSL.dpTTrunkGm = new scSprite("dpTTrunkGm","dp-t-trunk-gm.gif",10,[133,254],[235,64],"dpTTrunk","GmT","Mftfdp"); 
+setup.SCSL.dpTHandpalmGm = new scSprite("dpTHandpalmGm","dp-t-handpalm-gm.gif",5,[37,63],[295,103],"dpTHandpalm","GmT","Mftfdp"); 
+setup.SCSL.dpTRarmGm = new scSprite("dpTRarmGm","dp-t-rArm-gm.gif",60,[211,160],[264,106],"dpTRarm","GmT","Mftfdp"); 
+setup.SCSL.dpTRlegGm = new scSprite("dpTRlegGm","dp-t-RLeg-gm.gif",30,[266,180],[306,232],"dpTRleg","GmT","Mftfdp"); 
+setup.SCSL.dpTfeetGm = new scSprite("dpTfeetGm","dp-t-feet-gm.gif",0,[70,54],[428,278],"dpTfeet","GmT","Mftfdp"); 
+setup.SCSL.dpTHeadGm = new scSprite("dpTHeadGm","dp-t-head-gm.gif",100,[127,121],[195,9],"dpTHead","GmT","Mftfdp"); // Main character gray
+
+
+	// Bottom
+		// White human
+
+setup.SCSL.dpBDobledickWh = new scSprite("dpBDobledickWh","dp-b-dobledicks-wh.gif",15,[61,107],[304,262],"dpBdicks","WhB","Mftfdp"); // doble dicks bottom 
+setup.SCSL.dpBDobledickWhsmall = new scSprite("dpBDobledickWhsmall","dp-b-dobledicks-whSmall.gif",15,[53,25],[315,255],"dpBdicks","WhB","Mftfdp"); // doble dicks bottom small 
+
+setup.SCSL.dpBPussydickWh = new scSprite("dpBPussydickWh","dp-b-pussydick-wh.gif",15,[61,107],[304,262],"dpBdicks","WhB","Mftfdp"); // pussy dick bottom 
+setup.SCSL.dpBAnaldickWh = new scSprite("dpBAnaldickWh","dp-b-analdick-wh.gif",15,[61,107],[304,262],"dpBdicks","WhB","Mftfdp"); // anal dick bottom 
+
+setup.SCSL.dpBTrunklegWh = new scSprite("dpBTrunklegWh","dp-b-trunkleg-wh.gif",3,[366,291],[87,102],"dpBTrunkleg","WhB","Mftfdp"); 
+setup.SCSL.dpBChestWhbig = new scSprite("dpBChestWhbig","dp-b-chest-whBig.gif",5,[85,97],[322,157],"dpBChest","WhB","Mftfdp"); // 
+setup.SCSL.dpBChestWhmedium = new scSprite("dpBChestWhmedium","dp-b-chest-whMed.gif",5,[85,97],[322,157],"dpBChest","WhB","Mftfdp"); 
+setup.SCSL.dpBChestWhsmall = new scSprite("dpBChestWhsmall","dp-b-chest-whSmall.gif",5,[85,97],[322,157],"dpBChest","WhB","Mftfdp"); // 
+setup.SCSL.dpBLhandWh = new scSprite("dpBLhandWh","dp-b-lhand-wh.gif",90,[62,109],[265,219],"dpBLhand","WhB","Mftfdp"); 
+setup.SCSL.dpBRarmdWh = new scSprite("dpBRarmdWh","dp-b-rarm-wh.gif",50,[62,109],[412,149],"dpBRarm","WhB","Mftfdp"); 
+setup.SCSL.dpBRforearmWh = new scSprite("dpBRforearmWh","dp-b-rforearm-wh.gif",90,[197,96],[274,176],"dpBRforearm","WhB","Mftfdp"); 
+setup.SCSL.dpBRlegWh = new scSprite("dpBRlegWh","dp-b-rLeg-wh.gif",20,[165,97],[261,302],"dpBRleg","WhB","Mftfdp"); 
+setup.SCSL.dpBHeadMcy = new scSprite("dpBHeadMcy","dp-b-head-mcy.gif",140,[110,116],[339,33],"dpBHead","McyB","Mftfdp"); // Main character yellow 
+setup.SCSL.dpBHeadMcb = new scSprite("dpBHeadMcb","dp-b-head-mcb.gif",140,[108,97],[333,39],"dpBHead","McbB","Mftfdp"); // Main character black 
+setup.SCSL.dpBHeadMcr = new scSprite("dpBHeadMcr","dp-b-head-mcr.gif",140,[92,97],[340,40],"dpBHead","McrB","Mftfdp"); // Main character red  
+setup.SCSL.dpBTailMcb = new scSprite("dpBTailMcb","dp-b-tail-mcb.gif",1,[183,294],[363,48],"dpBTail","McbB","Mftfdp"); // Tail hair dark character 
+setup.SCSL.dpBTailMcr = new scSprite("dpBTailMcr","dp-t-tail-mcr.gif",1,[146,229],[344,34],"dpBTail","McrB","Mftfdp"); // Tails hair red character
+
+	// Gray character // Gf -> Gray Female
+
+setup.SCSL.dpBDobledickGf = new scSprite("dpBDobledickGf","dp-b-dobledicks-gf.gif",15,[61,107],[304,262],"dpBdicks","GfB","Mftfdp"); // doble dicks bottom gray
+setup.SCSL.dpBDobledickGfsmall = new scSprite("dpBDobledickGfsmall","dp-b-dobledicks-gfSmall.gif",15,[53,25],[315,255],"dpBdicks","GfB","Mftfdp"); // doble dicks bottom small gray
+
+setup.SCSL.dpBBPussydickGf = new scSprite("dpBBPussydickGf","dp-b-pussydick-gf.gif",15,[61,107],[304,262],"dpBdicks","GfB","Mftfdp"); // pussy front dick bottom gray
+setup.SCSL.dpBAnaldickGf = new scSprite("dpBAnaldickGf","dp-b-analdick-gf.gif",15,[61,107],[304,262],"dpBdicks","GfB","Mftfdp"); // anal back dick bottom gray
+
+setup.SCSL.dpBTrunklegGf = new scSprite("dpBTrunklegGf","dp-b-trunkleg-gf.gif",3,[366,291],[87,102],"dpBTrunkleg","GfB","Mftfdp"); 
+setup.SCSL.dpBChestGfbig = new scSprite("dpBChestGfbig","dp-b-chest-gfBig.gif",5,[85,97],[322,157],"dpBChest","GfB","Mftfdp"); // 
+setup.SCSL.dpBChestGfmedium = new scSprite("dpBChestGfmedium","dp-b-chest-gfMed.gif",5,[85,97],[322,157],"dpBChest","GfB","Mftfdp"); 
+setup.SCSL.dpBChestGfsmall = new scSprite("dpBChestGfsmall","dp-b-chest-gfSmall.gif",5,[85,97],[322,157],"dpBChest","GfB","Mftfdp"); // 
+setup.SCSL.dpBLhandGf = new scSprite("dpBLhandGf","dp-b-lhand-gf.gif",90,[62,109],[265,219],"dpBLhand","GfB","Mftfdp"); 
+setup.SCSL.dpBRarmdGf = new scSprite("dpBRarmdGf","dp-b-rarm-gf.gif",50,[62,109],[412,149],"dpBRarm","GfB","Mftfdp"); 
+setup.SCSL.dpBRforearmGf = new scSprite("dpBRforearmGf","dp-b-rforearm-gf.gif",90,[197,96],[274,176],"dpBRforearm","GfB","Mftfdp"); 
+setup.SCSL.dpBRlegGf = new scSprite("dpBRlegGf","dp-b-rLeg-gf.gif",20,[165,97],[261,302],"dpBRleg","GfB","Mftfdp"); 
+setup.SCSL.dpBHeadGf = new scSprite("dpBHeadGf","dp-b-head-gf.gif",140,[108,97],[332,42],"dpBHead","GfB","Mftfdp"); // Main character gray
+
+
+        // Gray character // Gm -> Gray male
+
+setup.SCSL.dpBDobledickGm = new scSprite("dpBDobledickGm","dp-b-dobledicks-gm.gif",15,[61,107],[304,262],"dpBdicks","GmB","Mftfdp"); // doble dicks bottom gray
+setup.SCSL.dpBDobledickGmsmall = new scSprite("dpBDobledickGmsmall","dp-b-dobledicks-gmSmall.gif",15,[53,25],[315,255],"dpBdicks","GmB","Mftfdp"); // doble dicks bottom small gray
+
+setup.SCSL.dpBBPussydickGm = new scSprite("dpBBPussydickGm","dp-b-pussydick-gm.gif",15,[61,107],[304,262],"dpBdicks","GmB","Mftfdp"); // pussy front dick bottom gray
+setup.SCSL.dpBAnaldickGm = new scSprite("dpBAnaldickGm","dp-b-analdick-gm.gif",15,[61,107],[304,262],"dpBdicks","GmB","Mftfdp"); // anal back dick bottom gray
+
+setup.SCSL.dpBTrunklegGm = new scSprite("dpBTrunklegGm","dp-b-trunkleg-gm.gif",3,[366,291],[87,102],"dpBTrunkleg","GmB","Mftfdp"); 
+setup.SCSL.dpBLhandGm = new scSprite("dpBLhandGm","dp-b-lhand-gm.gif",90,[37,63],[265,216],"dpBLhand","GmB","Mftfdp");
+setup.SCSL.dpBRarmdGm = new scSprite("dpBRarmdGm","dp-b-rarm-gm.gif",50,[62,109],[407,149],"dpBRarm","GmB","Mftfdp"); 
+setup.SCSL.dpBRforearmGm = new scSprite("dpBRforearmGm","dp-b-rforearm-gm.gif",90,[197,96],[274,176],"dpBRforearm","GmB","Mftfdp"); 
+setup.SCSL.dpBRlegGm = new scSprite("dpBRlegGm","dp-b-rLeg-gm.gif",20,[165,97],[261,302],"dpBRleg","GmB","Mftfdp"); 
+setup.SCSL.dpBHeadGm = new scSprite("dpBHeadGm","dp-b-head-gm.gif",140,[108,97],[332,42],"dpBHead","GmB","Mftfdp"); // Main character gray
+
+//////////////////
+
 
 ///// Scene Sprites Sets Data Lists /////
 
@@ -462,6 +560,143 @@ setup.SCSDL.MftfScsB.MGrayCharacter.arms = ["scsBLhandGm","scsBLarmdGm"];
 setup.SCSDL.MftfScsB.MGrayCharacter.legs = ["scsBLlegGm","scsBRlegGm"];
 setup.SCSDL.MftfScsB.MGrayCharacter.head = ["scsBHeadGm"];
 
+setup.SCSDL.MftfPntT = []; // Mount Face to Face Penetrated Top
+setup.SCSDL.MftfPntT.WhiteHuman = [];
+setup.SCSDL.MftfPntT.WhiteHuman.core = ["dpTTrunkWh"];
+setup.SCSDL.MftfPntT.WhiteHuman.bigChest = ["dpTChestWhbig"];
+setup.SCSDL.MftfPntT.WhiteHuman.medChest = ["dpTChestWhmedium"];
+setup.SCSDL.MftfPntT.WhiteHuman.smaChest = ["dpTChestWhsmall"];
+setup.SCSDL.MftfPntT.WhiteHuman.dick = [];
+setup.SCSDL.MftfPntT.WhiteHuman.arms = ["dpTRarmWh","dpTHandpalmWh"];
+setup.SCSDL.MftfPntT.WhiteHuman.legs = ["dpTRlegWh","dpTfeetWh"];
+
+setup.SCSDL.MftfPntT.Mcy = [];
+setup.SCSDL.MftfPntT.Mcy.head = ["dpTHeadMcy"];
+setup.SCSDL.MftfPntT.Mcb = [];
+setup.SCSDL.MftfPntT.Mcb.head = ["dpTHeadMcb"];
+setup.SCSDL.MftfPntT.Mcr = [];
+setup.SCSDL.MftfPntT.Mcr.head = ["dpTHeadMcr"];
+
+setup.SCSDL.MftfPntT.GrayCharacter = [];
+setup.SCSDL.MftfPntT.GrayCharacter.core = ["dpTTrunkGf"];
+setup.SCSDL.MftfPntT.GrayCharacter.bigChest = ["dpTChestGfbig"];
+setup.SCSDL.MftfPntT.GrayCharacter.medChest = ["dpTChestGfmedium"];
+setup.SCSDL.MftfPntT.GrayCharacter.smaChest = ["dpTChestGfsmall"];
+setup.SCSDL.MftfPntT.GrayCharacter.dick = [];
+setup.SCSDL.MftfPntT.GrayCharacter.arms = ["dpTHandpalmGf","dpTRarmGf"];
+setup.SCSDL.MftfPntT.GrayCharacter.legs = ["dpTRlegGf","dpTfeetGf"];
+setup.SCSDL.MftfPntT.GrayCharacter.head = ["dpTHeadGf"];
+
+setup.SCSDL.MftfPntT.MGrayCharacter = [];
+setup.SCSDL.MftfPntT.MGrayCharacter.core = ["dpTTrunkGm"];
+setup.SCSDL.MftfPntT.MGrayCharacter.dick = [];
+setup.SCSDL.MftfPntT.MGrayCharacter.arms = ["dpTHandpalmGm","dpTRarmGm"];
+setup.SCSDL.MftfPntT.MGrayCharacter.legs = ["dpTRlegGm","dpTfeetGm"];
+setup.SCSDL.MftfPntT.MGrayCharacter.head = ["dpTHeadGm"];
+
+setup.SCSDL.MftfPpB = []; // Mount Face to Face Penetrate Pussy Bottom
+setup.SCSDL.MftfPpB.WhiteHuman = [];
+setup.SCSDL.MftfPpB.WhiteHuman.core = ["dpBTrunklegWh"];
+setup.SCSDL.MftfPpB.WhiteHuman.bigChest = ["dpBChestWhbig"];
+setup.SCSDL.MftfPpB.WhiteHuman.medChest = ["dpBChestWhmedium"];
+setup.SCSDL.MftfPpB.WhiteHuman.smaChest = ["dpBChestWhsmall"];
+setup.SCSDL.MftfPpB.WhiteHuman.dick = ["dpBPussydickWh"];
+setup.SCSDL.MftfPpB.WhiteHuman.arms = ["dpBLhandWh","dpBRarmdWh","dpBRforearmWh"];
+setup.SCSDL.MftfPpB.WhiteHuman.legs = ["dpBRlegWh"];
+
+setup.SCSDL.MftfPpB.Mcy = [];
+setup.SCSDL.MftfPpB.Mcy.head = ["dpBHeadMcy"];
+setup.SCSDL.MftfPpB.Mcb = [];
+setup.SCSDL.MftfPpB.Mcb.head = ["dpBHeadMcb","dpBTailMcb"];
+setup.SCSDL.MftfPpB.Mcr = [];
+setup.SCSDL.MftfPpB.Mcr.head = ["dpBHeadMcr","dpBTailMcr"];
+
+setup.SCSDL.MftfPpB.GrayCharacter = [];
+setup.SCSDL.MftfPpB.GrayCharacter.core = ["dpBTrunklegGf"];
+setup.SCSDL.MftfPpB.GrayCharacter.bigChest = ["dpBChestGfbig"];
+setup.SCSDL.MftfPpB.GrayCharacter.medChest = ["dpBChestGfmedium"];
+setup.SCSDL.MftfPpB.GrayCharacter.smaChest = ["dpBChestGfsmall"];
+setup.SCSDL.MftfPpB.GrayCharacter.dick = ["dpBBPussydickGf"];
+setup.SCSDL.MftfPpB.GrayCharacter.arms = ["dpBLhandGf","dpBRarmdGf","dpBRforearmGf"];
+setup.SCSDL.MftfPpB.GrayCharacter.legs = ["dpBRlegGf"];
+setup.SCSDL.MftfPpB.GrayCharacter.head = ["dpBHeadGf"];
+
+setup.SCSDL.MftfPpB.MGrayCharacter = [];
+setup.SCSDL.MftfPpB.MGrayCharacter.core = ["dpBTrunklegGm"];
+setup.SCSDL.MftfPpB.MGrayCharacter.dick = ["dpBBPussydickGm"];
+setup.SCSDL.MftfPpB.MGrayCharacter.arms = ["dpBLhandGm","dpBRarmdGm","dpBRforearmGm"];
+setup.SCSDL.MftfPpB.MGrayCharacter.legs = ["dpBRlegGm"];
+setup.SCSDL.MftfPpB.MGrayCharacter.head = ["dpBHeadGm"];
+
+setup.SCSDL.MftfPaB = []; // Mount Face to Face Penetrate Ass Bottom
+setup.SCSDL.MftfPaB.WhiteHuman = [];
+setup.SCSDL.MftfPaB.WhiteHuman.core = ["dpBTrunklegWh"];
+setup.SCSDL.MftfPaB.WhiteHuman.bigChest = ["dpBChestWhbig"];
+setup.SCSDL.MftfPaB.WhiteHuman.medChest = ["dpBChestWhmedium"];
+setup.SCSDL.MftfPaB.WhiteHuman.smaChest = ["dpBChestWhsmall"];
+setup.SCSDL.MftfPaB.WhiteHuman.dick = ["dpBAnaldickWh"];
+setup.SCSDL.MftfPaB.WhiteHuman.arms = ["dpBLhandWh","dpBRarmdWh","dpBRforearmWh"];
+setup.SCSDL.MftfPaB.WhiteHuman.legs = ["dpBRlegWh"];
+
+setup.SCSDL.MftfPaB.Mcy = [];
+setup.SCSDL.MftfPaB.Mcy.head = ["dpBHeadMcy"];
+setup.SCSDL.MftfPaB.Mcb = [];
+setup.SCSDL.MftfPaB.Mcb.head = ["dpBHeadMcb","dpBTailMcb"];
+setup.SCSDL.MftfPaB.Mcr = [];
+setup.SCSDL.MftfPaB.Mcr.head = ["dpBHeadMcr","dpBTailMcr"];
+
+setup.SCSDL.MftfPaB.GrayCharacter = [];
+setup.SCSDL.MftfPaB.GrayCharacter.core = ["dpBTrunklegGf"];
+setup.SCSDL.MftfPaB.GrayCharacter.bigChest = ["dpBChestGfbig"];
+setup.SCSDL.MftfPaB.GrayCharacter.medChest = ["dpBChestGfmedium"];
+setup.SCSDL.MftfPaB.GrayCharacter.smaChest = ["dpBChestGfsmall"];
+setup.SCSDL.MftfPaB.GrayCharacter.dick = ["dpBAnaldickGf"];
+setup.SCSDL.MftfPaB.GrayCharacter.arms = ["dpBLhandGf","dpBRarmdGf","dpBRforearmGf"];
+setup.SCSDL.MftfPaB.GrayCharacter.legs = ["dpBRlegGf"];
+setup.SCSDL.MftfPaB.GrayCharacter.head = ["dpBHeadGf"];
+
+setup.SCSDL.MftfPaB.MGrayCharacter = [];
+setup.SCSDL.MftfPaB.MGrayCharacter.core = ["dpBTrunklegGm"];
+setup.SCSDL.MftfPaB.MGrayCharacter.dick = ["dpBAnaldickGm"];
+setup.SCSDL.MftfPaB.MGrayCharacter.arms = ["dpBLhandGm","dpBRarmdGm","dpBRforearmGm"];
+setup.SCSDL.MftfPaB.MGrayCharacter.legs = ["dpBRlegGm"];
+setup.SCSDL.MftfPaB.MGrayCharacter.head = ["dpBHeadGm"];
+
+setup.SCSDL.MftfDpB = []; // Mount Face to Face Double Penetration Bottom
+setup.SCSDL.MftfDpB.WhiteHuman = [];
+setup.SCSDL.MftfDpB.WhiteHuman.core = ["dpBTrunklegWh"];
+setup.SCSDL.MftfDpB.WhiteHuman.bigChest = ["dpBChestWhbig"];
+setup.SCSDL.MftfDpB.WhiteHuman.medChest = ["dpBChestWhmedium"];
+setup.SCSDL.MftfDpB.WhiteHuman.smaChest = ["dpBChestWhsmall"];
+setup.SCSDL.MftfDpB.WhiteHuman.dick = ["dpBDobledickWh"];
+setup.SCSDL.MftfDpB.WhiteHuman.arms = ["dpBLhandWh","dpBRarmdWh","dpBRforearmWh"];
+setup.SCSDL.MftfDpB.WhiteHuman.legs = ["dpBRlegWh"];
+
+setup.SCSDL.MftfDpB.Mcy = [];
+setup.SCSDL.MftfDpB.Mcy.head = ["dpBHeadMcy"];
+setup.SCSDL.MftfDpB.Mcb = [];
+setup.SCSDL.MftfDpB.Mcb.head = ["dpBHeadMcb","dpBTailMcb"];
+setup.SCSDL.MftfDpB.Mcr = [];
+setup.SCSDL.MftfDpB.Mcr.head = ["dpBHeadMcr","dpBTailMcr"];
+
+setup.SCSDL.MftfDpB.GrayCharacter = [];
+setup.SCSDL.MftfDpB.GrayCharacter.core = ["dpBTrunklegGf"];
+setup.SCSDL.MftfDpB.GrayCharacter.bigChest = ["dpBChestGfbig"];
+setup.SCSDL.MftfDpB.GrayCharacter.medChest = ["dpBChestGfmedium"];
+setup.SCSDL.MftfDpB.GrayCharacter.smaChest = ["dpBChestGfsmall"];
+setup.SCSDL.MftfDpB.GrayCharacter.dick = ["dpBDobledickGf"];
+setup.SCSDL.MftfDpB.GrayCharacter.arms = ["dpBLhandGf","dpBRarmdGf","dpBRforearmGf"];
+setup.SCSDL.MftfDpB.GrayCharacter.legs = ["dpBRlegGf"];
+setup.SCSDL.MftfDpB.GrayCharacter.head = ["dpBHeadGf"];
+
+setup.SCSDL.MftfDpB.MGrayCharacter = [];
+setup.SCSDL.MftfDpB.MGrayCharacter.core = ["dpBTrunklegGm"];
+setup.SCSDL.MftfDpB.MGrayCharacter.dick = ["dpBDobledickGm"];
+setup.SCSDL.MftfDpB.MGrayCharacter.arms = ["dpBLhandGm","dpBRarmdGm","dpBRforearmGm"];
+setup.SCSDL.MftfDpB.MGrayCharacter.legs = ["dpBRlegGm"];
+setup.SCSDL.MftfDpB.MGrayCharacter.head = ["dpBHeadGm"];
+
+
 window.getScSprite = function(spriteVarName) {
 	return setup.SCSL[spriteVarName];
 }
@@ -479,7 +714,7 @@ window.vAnSet = function(vasKey,vCaList,extraConditions,result) {
 setup.vAnSetsList = []; // Valid Animation Sets List
 // Mount Face to Face, Mount Dick
 setup.vAnSetsList.MftfMd = new vAnSet("MftfMd", // Key
-["mountDick","penetratePussy"], // Valid CAs
+["mountDick"], // Valid CAs
 function(ca) { // Extra conditions
 	var conditionsMet = false;
 	if ( ["mountingFaceToFace","mountedFaceToFace","mountingAndMounted"].includes(gC(ca.initiator).position.key) ) { 
@@ -500,8 +735,8 @@ function(ca) { // Returned Valid Animation Data
 }
 );
 // Mount Face to Face, Anal Mount Dick
-setup.vAnSetsList.MftfMd = new vAnSet("MftfAmd", // Key
-["analMountDick","penetrateAss"], // Valid CAs
+setup.vAnSetsList.MftfAmd = new vAnSet("MftfAmd", // Key
+["analMountDick"], // Valid CAs
 function(ca) { // Extra conditions
 	var conditionsMet = false;
 	if ( ["mountingFaceToFace","mountedFaceToFace","mountingAndMounted"].includes(gC(ca.initiator).position.key) ) { 
@@ -517,6 +752,33 @@ function(ca) { // Returned Valid Animation Data
 		vad[1] = [[ca.targetsList[0],"MftfAmdT"],[ca.initiator,"MftfAmdB"]];
 	} else if ( ca.key == "analMountDick" ) {
 		vad[1] = [[ca.targetsList[0],"MftfAmdB"],[ca.initiator,"MftfAmdT"]];
+	}
+	return vad;
+}
+);
+// Mount Face to Face, Penetrate Pussy
+setup.vAnSetsList.MftfPen = new vAnSet("MftfPen", // Key
+["penetratePussy","penetrateAss","doublePenetration"], // ,"penetrateAss"], // Valid CAs
+function(ca) { // Extra conditions
+	var conditionsMet = false;
+	if ( ["mountingFaceToFace","mountingAndMounted"].includes(gC(ca.initiator).position.key) ) { 
+		if ( ["mountedFaceToFace"].includes(gC(ca.targetsList[0]).position.key) ) {
+			conditionsMet = true;
+		}
+	}
+	return conditionsMet;
+},
+function(ca) { // Returned Valid Animation Data
+	var vad = ["penetratePussy",[],"MftfPen" + ca.initiator + ca.targetsList[0]];
+	if ( ca.key == "penetratePussy" ) {
+		vad[1] = [[ca.targetsList[0],"MftfPntT"],[ca.initiator,"MftfPpB"]];
+		vad[2] = "MftfPpus" + ca.initiator + ca.targetsList[0];
+	} else if ( ca.key == "penetrateAss" ) {
+		vad[1] = [[ca.targetsList[0],"MftfPntT"],[ca.initiator,"MftfPaB"]];
+		vad[2] = "MftfPAss" + ca.initiator + ca.targetsList[0];
+	} else if ( ca.key == "doublePenetration" ) {
+		vad[1] = [[ca.targetsList[0],"MftfPntT"],[ca.initiator,"MftfDpB"]];
+		vad[2] = "MftfDPen" + ca.initiator + ca.targetsList[0];
 	}
 	return vad;
 }

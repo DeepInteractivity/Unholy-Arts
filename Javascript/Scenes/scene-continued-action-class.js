@@ -188,7 +188,6 @@ window.createCaLegHoldHead = function(initiator, targetsList) {
 			// Submissive loss of willpower
 			if ( gC(target).hasLead == false && gC(target).position.key == "kneeling" ) {
 				var exWillpowerDamage = (gC(this.initiator).charisma.getValue() / Math.max(gC(target).will.getValue(),1)) * (2 - (gC(target).willpower.current / gC(target).willpower.max));
-				//var exWillpowerDamage = ((gC(this.initiator).will.getValue() * 0.5 + gC(this.initiator).charisma.getValue() * 1) / Math.max(gC(target).will.getValue() * 1,1));
 				gC(target).willpower.changeValue(-exWillpowerDamage);
 				results.description += ktn(target) + "'s submissive position made " + gC(target).comPr + " receive " + textWillpowerDamage(exWillpowerDamage) + ". ";
 			}
@@ -444,9 +443,9 @@ window.createCaDoublePenetration = function(initiator, targetsList) {
 		getChar(this.initiator).lust.changeValue(-lustDamage2);
 		var energyDamage = ((getChar(this.initiator).physique.getValue() * 1 + getChar(this.initiator).resilience.getValue() * 1) / 45) * multAr[0];
 		getChar(this.targetsList[0]).energy.changeValue(-energyDamage);
-		results.value += lustDamage;
+		results.value += lustDamage; 
 		results.description += randomFromList( [
-								(ktn(initiator) + "'s " + dickWord() + "s remain connected to " + ktn(target) + "'s insides."),
+								(ktn(initiator) + "'s " + pluralDickWord() + "s remain connected to " + ktn(target) + "'s insides."),
 								(ktn(initiator) + " keeps penetrating " + ktn(target) + "'s " + pussyWord() + " and " + assWord() + "."),
 								(ktn(initiator) + " is double fucking " + ktn(target) + ".") ] );
 		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + " and " + textEnergyDamage(energyDamage) + ". " + multAr[1];

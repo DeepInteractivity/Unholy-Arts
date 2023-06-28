@@ -665,6 +665,21 @@ window.createSaDoNothing = function() {
 		results.description = randomFromList([ ( (ktn(actorKey)) + " did nothing." ),
 									( (ktn(actorKey)) + " stayed quiet." ),
 									( (ktn(actorKey)) + " waited for the others to act.")]);
+		if ( State.variables.sc.sceneType == "bs" && gC(actorKey).koed == false ) { // Is battle scene, is character KO
+			// Get used recoveries intensity
+			var usReIntensity = getUsedRecoveriesIntensity(actorKey);
+			// Extend used recoveries
+			applyUsedRecoveries(actorKey);
+			var recMod = 1 - (0.1 * usReIntensity);
+			if ( recMod > 0 ) {
+				// Apply recoveries
+				var recPoints = recMod * 2;
+				gC(actorKey).energy.changeValue(recPoints);
+				gC(actorKey).willpower.changeValue(recPoints);
+				gC(actorKey).socialdrive.changeValue(recPoints);
+				results.description += " " + ktn(actorKey) + " recovered " + textEnergyPoints(recPoints) + ", " + textWillpowerPoints(recPoints) + " and " + textSocialdrivePoints(recPoints) + ".";
+			}
+		}
 		
 		return results;
 	}

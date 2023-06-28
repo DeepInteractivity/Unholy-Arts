@@ -107,7 +107,7 @@ setup.tfExtraSettingsNames = [ "No transformations", "Temporary", "Permanent", "
 
 ////////// GAME SETTINGS CLASS //////////
 
-setup.versionName = "Unholy Arts v0.3.19";
+setup.versionName = "Unholy Arts v0.3.21";
 
 setup.infamySecondThreshold = 1.2;
 setup.infamyThirdThreshold = 1.4;
@@ -573,6 +573,15 @@ window.getMFSCAtooltip = function() {
 	return tText;
 }
 
+window.getMeritTooltip = function() {
+	var tText = '<span title="How well viewed is this character as a potential ruler.\n\nHigh merit brings respect, but also jealousy from ambitious people.">^^(?)^^</span>';
+	return tText;
+}
+window.getInfamyTooltip = function() {
+	var tText = '<span title="How mischievous this character has been at the Temple lately.\n\nGoing over the infamy limit may provoke a punishment from Drishtya.\nKind-hearted people may resent those who accrue high infamy.\n\nSome infamy is lost on a daily basis.">^^(?)^^</span>';
+	return tText;
+}
+
 window.getSexFromBattlesTooltip = function() {
 	var tText = '<span title="Partially implemented. Disabling this option will prevent characters from demanding sex after they win a battle.">^^(?)^^</span>';;
 	return tText;
@@ -666,6 +675,10 @@ window.isChallengePossible = function(actor,target) {
 			flagPossible = false;
 		}
 	}
+	if ( gC(target).hasOwnProperty("refusedChallengeToday") ) { // Target has refused a challenge today
+		flagPossible = false;
+	}
+	
 	// Actor and target don't have a special relationship that prevents challenges
 	var relType = gRelTypeAb(actor,target);
 	if ( relType != null ) {

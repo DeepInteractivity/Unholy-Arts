@@ -845,7 +845,7 @@ window.scene = function() {
 				// Weighted list
 				var wL = new weightedList();
 				for ( var charK of currentChars ) {
-					wL[charK] = new weightedElement(charK,gC(charK).luck.getValue());
+					wL[charK] = new weightedElement(charK,gC(charK).luck.getValue()); // 135
 				}
 				// Take weighted random elements from wL, execute their action, delete them from the list, until j == 0
 				var j = currentChars.length;
@@ -853,11 +853,15 @@ window.scene = function() {
 					var currentC = randomFromWeightedList(wL); // Take weighted random char
 					if ( currentActions[currentC] != undefined ) {
 						var currentA = currentActions[currentC][1]; // Execute action
-						var actionDesc = setup.saList[currentA].description;
-						var actionName = "[<span title=" + '"' + actionDesc + '"' + ">" + setup.saList[currentA].name + "</span>] ";
-						this.actionsDescription += colorText(actionName,"darkgray");
-						this.actionsDescription += tryExecuteAction(currentA,currentC,currentActions[currentC][2]).description;
-						this.actionsDescription += "\n";
+						
+						if ( State.variables.sc.sceneType == "bs" && gC(currentC).koed == false ) {
+							var actionDesc = setup.saList[currentA].description;
+							var actionName = "[<span title=" + '"' + actionDesc + '"' + ">" + setup.saList[currentA].name + "</span>] ";
+							this.actionsDescription += colorText(actionName,"darkgray");
+							this.actionsDescription += tryExecuteAction(currentA,currentC,currentActions[currentC][2]).description;
+							this.actionsDescription += "\n";
+						}
+						
 						delete wL[currentC]; // Delete from weighted list
 					}
 					j--; // Reduce j

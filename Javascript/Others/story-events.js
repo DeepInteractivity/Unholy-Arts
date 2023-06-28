@@ -1360,5 +1360,373 @@ window.initializeSeSharingTheNight = function() {
 
 }
 
+window.initializeSeCandidatesNegotiation = function() { // CNe0
+	// Candidates Order: chNash, chMir, chClaw, chVal, chAte
+	var npcs = ["chNash","chMir","chClaw","chVal","chAte"];
+	State.variables.StVars.check9 = "__Candidates Negotiation__\nProposed changes:\n"
+								  + "Special relationships duration: " + gSettings().relationshipsDuration + " > " + (gSettings().relationshipsDuration + 1) + "\n"
+								  + "Imposed equipment duration: " + gSettings().equipmentDuration + " > " + (gSettings().equipmentDuration + 1) + "\n"
+								  + "Infamy limit: " + gSettings().infamyLimit + " > " + (gSettings().infamyLimit + 5);
+	State.variables.StVars.check1 = []; // Vote intention
+	State.variables.StVars.check2 = []; // Relations score
+	State.variables.StVars.check3 = "";
+	State.variables.StVars.check4 = "";
+	State.variables.StVars.check5 = "";
+	State.variables.StVars.check6 = ""; // Dynamic Sway Text
+	State.variables.StVars.check7 = ""; // Player has been swayed
+	
+	// Debug
+	// createRelTypeServitudeDom("chClaw","chPlayerCharacter",1);
+	// createRelTypeServitudeSub("chPlayerCharacter","chClaw",1);
+	
+	
+	for ( var npc of npcs ) {
+		var voteIntention = 0; // Positive: vote in favor of more independence
+		voteIntention += gC(npc).dAmbition.level * 2 + gC(npc).dDomination.level * 2 + gC(npc).dPleasure.level * 1 - gC(npc).dCooperation.level * 2 - gC(npc).dImprovement.level * 1 - gC(npc).dLove.level * 1;
+		voteIntention += (6 - getCandidatesMeritPosition(npc)) * 10 - 25;
+		State.variables.StVars.check1.push(voteIntention);
+		// Vote may be seen
+		var relation = rLvlAbt(npc,"chPlayerCharacter","friendship") + rLvlAbt(npc,"chPlayerCharacter","romance") - rLvlAbt(npc,"chPlayerCharacter","rivalry") - rLvlAbt(npc,"chPlayerCharacter","enmity") + Math.abs( rLvlAbt(npc,"chPlayerCharacter","submission") - rLvlAbt(npc,"chPlayerCharacter","domination") ) / 2;
+		State.variables.StVars.check2.push(relation);
+	}
+	// Does player have a strong-minded dominant?
+	if ( npcs.includes(gC("chPlayerCharacter").domChar) ) {
+		if ( getCharServitudeRels("chPlayerCharacter").includes(gC("chPlayerCharacter").domChar) ) {
+			var i = 0;
+			while ( gC("chPlayerCharacter").domChar != npcs[i] ) {
+				i++;
+			}
+			State.variables.logL2.push(i);
+			if ( State.variables.StVars.check1[i] <= -20 || State.variables.StVars.check1[i] >= 20 ) { // Player has an opinionated dominant, who will try and sway the player
+				State.variables.StVars.check3 = gC("chPlayerCharacter").domChar;
+			}
+		}
+	}
+	// Does any other character want to sway the player?
+		// Find strongest relationship with strong opinion
+	var closestChar = "";
+	var strongestRel = -1;
+	var i = 0;
+	for ( var npc of npcs ) {
+		if ( Math.abs(State.variables.StVars.check1[i]) >= 20 ) {
+			if ( State.variables.StVars.check2[i] >= 3 && State.variables.StVars.check2[i] > strongestRel ) {
+				strongestRel = State.variables.StVars.check2[i];
+				closestChar = npc;
+			}
+		}
+		i++;
+	}
+	if ( closestChar != "" ) {
+		State.variables.StVars.check4 = closestChar;
+	}
+	if ( State.variables.StVars.check3 != "" ) {
+		// Dom sway attempt
+		State.variables.StVars.check5 = `[[Continue|SE Candidates Negotiation Dom Sway]]`;
+		var i = 0;
+		while ( State.variables.StVars.check3 != npcs[i] ) {
+			i++;
+		}
+		var npc = npcs[i];
+		if ( State.variables.StVars.check1[i] >= 0 ) { // Wants yes vote
+			var stdText = `<span @style=$` + npc + `.colorStyleKey>//"Hey, can I convince you to vote in favor of this? I could make it worth your while."//</span>`;
+			if ( npc == "chAte" ) {
+				stdText = `<span @style=$` + npc + `.colorStyleKey>//"$chPlayerCharacter.name. What would you want in exchange to vote in favor?"//</span>`;
+			} else if ( npc == "chClaw" ) {
+				stdText = `<span @style=$` + npc + `.colorStyleKey>//"You're lucky today. I want you to vote in favor, so I could give you something in exchange. What do you want?"//</span>`;
+			}
+			State.variables.StVars.check6 = stdText + "\n\n"
+						+ '<<link [[Accept in exchange of favors|SE Candidates Negotiation DomGivesFavors]]>><<script>>State.variables.StVars.check7 = "votesYes"; SeCandidatesNegotiationFormatDomSwayFavors();<</' + 'script>><</' + 'link>> (10 favors)\n'
+						+ '<<link [[Accept in exchange for a shorter servitude|SE Candidates Negotiation DomShorterServitude]]>><<script>>State.variables.StVars.check7 = "votesYes"; SeCandidatesNegotiationFormatDomSwayFreedom();<</' + 'script>><</' + 'link>> (1 day)\n'
+						+ '<<link [[Accept unconditionally|SE Candidates Negotiation DomObedientTo]]>><<script>>State.variables.StVars.check7 = "votesYes"; SeCandidatesNegotiationFormatDomObedientTo();<</' + 'script>><</' + 'link>>\n'
+						+ '<<link [[Refuse to be swayed|SE Candidates Negotiation DomRefused]]>><<script>>SeCandidatesNegotiationFormatDomRefused();<</' + 'script>><</' + 'link>>';
+		} else { // Wants no vote
+			var stdText = `<span @style=$` + npc + `.colorStyleKey>//"Hey, can I convince you to vote against this? I could make it worth your while."//</span>`;
+			if ( npc == "chAte" ) {
+				stdText = `<span @style=$` + npc + `.colorStyleKey>//"$chPlayerCharacter.name. What would you want in exchange to vote against the proposal?"//</span>`;
+			} else if ( npc == "chClaw" ) {
+				stdText = `<span @style=$` + npc + `.colorStyleKey>//"You're lucky today. I want you to vote against the proposal, so I could give you something in exchange. What do you want?"//</span>`;
+			}
+			State.variables.StVars.check6 = stdText + "\n\n"
+						+ '<<link [[Accept in exchange of favors|SE Candidates Negotiation DomGivesFavors]]>><<script>>State.variables.StVars.check7 = "votesNo"; SeCandidatesNegotiationFormatDomSwayFavors();<</' + 'script>><</' + 'link>> (10 favors)\n'
+						+ '<<link [[Accept in exchange for a shorter servitude|SE Candidates Negotiation DomShorterServitude]]>><<script>>State.variables.StVars.check7 = "votesNo"; SeCandidatesNegotiationFormatDomSwayFreedom();<</' + 'script>><</' + 'link>> (1 day)\n'
+						+ '<<link [[Accept unconditionally|SE Candidates Negotiation DomObedientTo]]>><<script>>State.variables.StVars.check7 = "votesNo"; SeCandidatesNegotiationFormatDomObedientTo();<</' + 'script>><</' + 'link>>\n'
+						+ '<<link [[Refuse to be swayed|SE Candidates Negotiation DomRefused]]>><<script>>SeCandidatesNegotiationFormatDomRefused();<</' + 'script>><</' + 'link>>';
+		}
+	} else if ( State.variables.StVars.check4 != "" ) {
+		// Friend sway attempt
+		var i = 0;
+		while ( State.variables.StVars.check4 != npcs[i] ) {
+			i++;
+		}
+		var npc = npcs[i];
+		var stdText = "";
+		if ( State.variables.StVars.check1[i] >= 0 ) {  // Wants yes vote
+			stdText = `<span @style=$` + npc + `.colorStyleKey>//"Hey, can I convince you to vote in favor of this? I could make it worth your while."//</span>`;
+			if ( npc == "chAte" ) {
+				stdText = `<span @style=$` + npc + `.colorStyleKey>//"$chPlayerCharacter.name. Would you vote in favor in exchange for my loyalty?"//</span>`;
+			} else if ( npc == "chClaw" ) {
+				stdText = `<span @style=$` + npc + `.colorStyleKey>//"I want you to vote in favor of this. Do it and you'll have my fists at your disposal."//</span>`;
+			}
+			State.variables.StVars.check6 = stdText + "\n\n"
+						+ '<<link [[Accept in exchange of favors|SE Candidates Negotiation AllyGivesFavors]]>><<script>>State.variables.StVars.check7 = "votesYes"; SeCandidatesNegotiationFormatAllySwayFavors();<</' + 'script>><</' + 'link>> (20 favors)\n'
+						+ '<<link [[Accept unconditionally|SE Candidates Negotiation AllyUnconditional]]>><<script>>State.variables.StVars.check7 = "votesYes"; SeCandidatesNegotiationFormatAllySwayUnconditional();<</' + 'script>><</' + 'link>> \n'
+						+ '<<link [[Refuse|SE Candidates Negotiation AllyRefused]]>><<script>>SeCandidatesNegotiationFormatAllyRefused();<</' + 'script>><</' + 'link>> \n';
+									
+		} else {  // Wants no vote
+			stdText = `<span @style=$` + npc + `.colorStyleKey>//"Hey, can I convince you to vote against this? I could make it worth your while."//</span>`;
+			if ( npc == "chAte" ) {
+				stdText = `<span @style=$` + npc + `.colorStyleKey>//"$chPlayerCharacter.name. Would you vote against the proposal in exchange for my loyalty?"//</span>`;
+			} else if ( npc == "chClaw" ) {
+				stdText = `<span @style=$` + npc + `.colorStyleKey>//"I want you to vote against the proposal. Do it and you'll have my fists at your disposal."//</span>`;
+			} else if ( npc == "chMir" ) {
+				stdText = `<span @style=$` + npc + `.colorStyleKey>//"The one thing we don't need is to waste our time in petty conflicts... Would you please vote against the proposal?"//</span>`;
+			} else if ( npc == "chNash" ) {
+				stdText = `<span @style=$` + npc + `.colorStyleKey>//"Would you do me the favor of voting against this...? The more we're able to mess with each other, the less time we'll dedicate to training."//</span>`;
+			}
+			State.variables.StVars.check6 = stdText + "\n\n"
+						+ '<<link [[Accept in exchange of favors|SE Candidates Negotiation AllyGivesFavors]]>><<script>>State.variables.StVars.check7 = "votesNo"; SeCandidatesNegotiationFormatAllySwayFavors();<</' + 'script>><</' + 'link>> (20 favors)\n'
+						+ '<<link [[Accept unconditionally|SE Candidates Negotiation AllyUnconditional]]>><<script>>State.variables.StVars.check7 = "votesNo"; SeCandidatesNegotiationFormatAllySwayUnconditional();<</' + 'script>><</' + 'link>> \n'
+						+ '<<link [[Refuse|SE Candidates Negotiation AllyRefused]]>><<script>>SeCandidatesNegotiationFormatAllyRefused();<</' + 'script>><</' + 'link>> \n';
+		}
+		State.variables.StVars.check5 = `[[Continue|SE Candidates Negotiation Friend Sway]]`;
+	} else {
+		// Normal proceeding
+		State.variables.StVars.check5 = `[[Continue|SE Candidates Negotiation Votes Screen]]`;
+	}
+}
+window.SeCandidatesNegotiationFormatDomSwayFavors = function() {
+	var npc = State.variables.StVars.check3;
+	payFavorDebt("chPlayerCharacter",npc,10);
+	State.variables.temp = `<span @style=$chPlayerCharacter.colorStyleKey>//"Fine, but you owe me for this."//</span>
+	
+							<span @style=$` + npc + `.colorStyleKey>//"Of course. Just as soon as our current relationship ends, I'll have your back."//</span>
+							
+							` + gC(npc).getFormattedName() + " now owes you 10 extra favors." + `
+							
+							[[Continue|SE Candidates Negotiation Votes Screen]]`;
+}
+window.SeCandidatesNegotiationFormatAllySwayFavors = function() {
+	var npc = State.variables.StVars.check4;
+	payFavorDebt("chPlayerCharacter",npc,20);
+	State.variables.temp = `<span @style=$chPlayerCharacter.colorStyleKey>//"Fine, but you owe me for this."//</span>
+	
+							<span @style=$` + npc + `.colorStyleKey>//"Of course. You won't regret this, you have my word."//</span>
+							
+							` + gC(npc).getFormattedName() + " now owes you 20 extra favors." + `
+							
+							[[Continue|SE Candidates Negotiation Votes Screen]]`;
+}
+window.SeCandidatesNegotiationFormatDomSwayFreedom = function() {
+	var npc = State.variables.StVars.check3;
+	var sRelA = gC("chPlayerCharacter").relations[npc].relType;
+	var sRelB = gC(npc).relations["chPlayerCharacter"].relType;
+	sRelA.days--;
+	sRelB.days--;
+	if ( sRelA.days == 0 ) {
+		finishRelType("chPlayerCharacter",npc);
+		finishRelType(npc,"chPlayerCharacter");
+	}
+	State.variables.temp = `<span @style=$chPlayerCharacter.colorStyleKey>//"Fine, but my servitude for you will finish sooner."//</span>
+	
+							<span @style=$` + npc + `.colorStyleKey>//"That sounds like an awful lot, but okay. You can have your freedom one day earlier."//</span>
+							
+							<span @style=$chPlayerCharacter.colorStyleKey>//"Deal."//</span>
+							
+							` + "Your servitude towards " + gC(npc).getFormattedName() + " has become one day shorter." + `
+							
+							[[Continue|SE Candidates Negotiation Votes Screen]]`;
+}
+window.SeCandidatesNegotiationFormatDomObedientTo = function() {
+	var npc = State.variables.StVars.check3;
+	// More submission, more friendship, less rivalry, less enmity, dom gains merit
+	gC("chPlayerCharacter").relations[npc].submission.stv += 500;
+	gC("chPlayerCharacter").relations[npc].friendship.stv += 500;
+	gC("chPlayerCharacter").relations[npc].rivalry.stv -= 300;
+	gC("chPlayerCharacter").relations[npc].enmity.stv -= 300;
+	gC(npc).relations["chPlayerCharacter"].domination.stv += 500;
+	gC(npc).relations["chPlayerCharacter"].friendship.stv += 500;
+	gC(npc).relations["chPlayerCharacter"].rivalry.stv -= 300;
+	gC(npc).relations["chPlayerCharacter"].enmity.stv -= 300;
+	State.variables.temp = `<span @style=$chPlayerCharacter.colorStyleKey>//"It'll be my pleasure. I don't even need anything in exchange."//</span>
+	
+							<span @style=$` + npc + `.colorStyleKey>//"Aren't you awfully obedient today? It's always pleasant to see you know your place."//</span>
+							
+							<span style="color:purple">Your submission towards ` + gC(npc).getFormattedName() + ` has largely increased.</span>
+							<span style="color:khaki">Your friendship with ` + gC(npc).getFormattedName() + ` has largely increased.</span>
+							<span style="color:gray">Your rivalry with ` + gC(npc).getFormattedName() + ` has decreased.</span>
+							<span style="color:gray">Your enmity with ` + gC(npc).getFormattedName() + ` has decreased.</span>
+							
+							` + gC(npc).getFormattedName() + ` gains 3 merit.
+							
+							[[Continue|SE Candidates Negotiation Votes Screen]]`;
+}
+window.SeCandidatesNegotiationFormatAllySwayUnconditional = function() {
+	var npc = State.variables.StVars.check4;
+	// More friendship, less rivalry, less enmity
+	gC("chPlayerCharacter").relations[npc].friendship.stv += 500;
+	gC("chPlayerCharacter").relations[npc].rivalry.stv -= 150;
+	gC("chPlayerCharacter").relations[npc].enmity.stv -= 150;
+	gC(npc).relations["chPlayerCharacter"].friendship.stv += 500;
+	gC(npc).relations["chPlayerCharacter"].rivalry.stv -= 150;
+	gC(npc).relations["chPlayerCharacter"].enmity.stv -= 150;
+	State.variables.temp = `<span @style=$chPlayerCharacter.colorStyleKey>//"No need to get so formal, you can count on my support. And you have nothing to repay me for."//</span>
+	
+							<span @style=$` + npc + `.colorStyleKey>//"I knew I could count on you. I won't forget this."//</span>
+							
+							<span style="color:khaki">Your friendship with ` + gC(npc).getFormattedName() + ` has largely increased.</span>
+							<span style="color:gray">Your rivalry with ` + gC(npc).getFormattedName() + ` has slightly decreased.</span>
+							<span style="color:gray">Your enmity with ` + gC(npc).getFormattedName() + ` has slightly decreased.</span>
+							
+							[[Continue|SE Candidates Negotiation Votes Screen]]`;
+}
+window.SeCandidatesNegotiationFormatDomRefused = function() {
+	var npc = State.variables.StVars.check3;
+	// Less submission, more rivalry, more enmity
+	gC("chPlayerCharacter").relations[npc].submission.stv -= 150;
+	gC("chPlayerCharacter").relations[npc].rivalry.stv += 300;
+	gC("chPlayerCharacter").relations[npc].enmity.stv += 300;
+	gC(npc).relations["chPlayerCharacter"].domination.stv -= 150;
+	gC(npc).relations["chPlayerCharacter"].rivalry.stv += 300;
+	gC(npc).relations["chPlayerCharacter"].enmity.stv += 300;
+	State.variables.temp = `<span @style=$chPlayerCharacter.colorStyleKey>//"I'll be making up my own mind on this. I have the right to decide my own vote, even if I have to obey immediately afterwards."//</span>
+	
+							<span @style=$` + npc + `.colorStyleKey>//"Suit yourself."//</span>
+							
+							<span style="color:gray">Your submission towards ` + gC(npc).getFormattedName() + ` has slightly decreased.</span>
+							<span style="color:red">Your rivalry with ` + gC(npc).getFormattedName() + ` has increased.</span>
+							<span style="color:red">Your enmity with ` + gC(npc).getFormattedName() + ` has increased.</span>
+							
+							[[Continue|SE Candidates Negotiation Votes Screen]]`;
+}
+window.SeCandidatesNegotiationFormatAllyRefused = function() {
+	var npc = State.variables.StVars.check4;
+	State.variables.temp = `<span @style=$chPlayerCharacter.colorStyleKey>//"I cannot accept. I hope you understand that I have my reasons."//</span>
+	
+							<span @style=$` + npc + `.colorStyleKey>//"I understand. It's a pity, nonetheless."//</span>
+							
+							[[Continue|SE Candidates Negotiation Votes Screen]]`;
+}
+window.seCandidatesNegotiationPlayerSwaysNPC = function() {
+	// Candidates Order: chNash, chMir, chClaw, chVal, chAte
+	var swayedNpc = State.variables.StVars.check3;
+	payFavorDebt(swayedNpc,"chPlayerCharacter",20);
+	var i = 0;
+	if ( swayedNpc == "chMir" ) {
+		i = 1;
+	} else if ( swayedNpc == "chClaw" ) {
+		i = 2;
+	} else if ( swayedNpc == "chVal" ) {
+		i = 3;
+	} else if ( swayedNpc == "chAte" ) {
+		i = 4;
+	}
+	
+	var voteDirection = State.variables.StVars.check4;
+	var passageText = "";
+
+	if ( voteDirection == "yes" ) {
+		State.variables.StVars.check1[i] = 21;
+	} else {
+		State.variables.StVars.check1[i] = -21;
+	}
+	
+	passageText += `<span @style=$chPlayerCharacter.colorStyleKey>//"Hey, ` + gC(swayedNpc).name + `, could you vote `;
+	if ( voteDirection == "yes" ) {
+		passageText += `in favor of this proposal?"//</span>`;
+	} else {
+		passageText += `against the proposal?"//</span>`;
+	}
+	passageText += "\n\n";
+	if ( swayedNpc == "chNash" ) {
+		passageText += `<span @style=$chNash.colorStyleKey>//"Do you think that's for the best...? Alright, I will, but you owe me for it, got it?"//</span>
+		
+		<span @style=$chPlayerCharacter.colorStyleKey>//"Of course. I knew I could count on you."//</span>`;
+	} else if ( swayedNpc == "chMir" ) {
+		passageText += `<span @style=$chMir.colorStyleKey>//"Are you sure that's the best idea...? Fine, $chPlayerCharacter.name, I'll trust you on this one. But I'm expecting you to have my back in exchange."//</span>
+		
+		<span @style=$chPlayerCharacter.colorStyleKey>//"You can count on it, Mir."//</span>`
+	} else if ( swayedNpc == "chClaw" ) {
+		passageText += `<span @style=$chClaw.colorStyleKey>//"I hope you're not plotting anything behind my back... I think you've earned some of my trust, but I'm expecting you to aid me in my goals in exchange."//</span>
+		
+		<span @style=$chPlayerCharacter.colorStyleKey>//"It's a deal. You won't regret it."//</span>`;
+	} else if ( swayedNpc == "chVal" ) {
+		passageText += `<span @style=$chVal.colorStyleKey>//"Are you feeling so strongly about it to ask for my help? Fine, sweetheart, but I'll be asking you to return me the favor later."//</span>
+		
+		<span @style=$chPlayerCharacter.colorStyleKey>//"Of course, that would only be fair."//</span>`;
+	} else { // Swayed Npc == "chAte"
+		passageText += `<span @style=$chAte.colorStyleKey>//"You want me to change my vote...? I could agree to that, as long as you agree to come to my aid in the future."//</span>
+		
+		<span @style=$chPlayerCharacter.colorStyleKey>//"Sounds like a good deal. You can count on me."//</span>`;
+	}
+
+	passageText += "\n\n" + colorText("You owe 20 favors to " + gC(swayedNpc).name + ".","khaki");
+
+	State.variables.temp = passageText;
+}
+window.seCandidatesNegotiationCountVotes = function() {
+	var votesYes = 0;
+	var votesNo = 0;
+	for ( var i of State.variables.StVars.check1 ) {
+		if ( i >= 0 ) {
+			votesYes++;
+		} else {
+			votesNo++;
+		}
+	}
+	if ( State.variables.StVars.check7 == "votesYes" ) { votesYes++; }
+    else { votesNo++; }
+	
+	var passageText = "";
+	if ( votesYes >= 3 ) { // Proposal wins
+		passageText = `<span style="color:mediumvioletred">//"With ` + votesYes + ` favorable votes, the proposal wins. I will now be somewhat more lenient in the matters of the Candidates, granting you further freedom to prove your responsibility. I hope you use it wisely."//</span>
+		
+		__Proposal wins__
+		` + "Special relationships duration: " + gSettings().relationshipsDuration + " > " + (gSettings().relationshipsDuration + 1) + "\n"
+		  + "Imposed equipment duration: " + gSettings().equipmentDuration + " > " + (gSettings().equipmentDuration + 1) + "\n"
+		  + "Infamy limit: " + gSettings().infamyLimit + " > " + (gSettings().infamyLimit + 5) + "\n";
+		  
+		  State.variables.settings.relationshipsDuration++;
+		  State.variables.settings.equipmentDuration++;
+		  State.variables.settings.infamyLimit += 5;
+	} else { // Proposal loses
+		passageText = `<span style="color:mediumvioletred">//"With only ` + votesYes + ` favorable votes, the proposal fails to pass. I will continue watching over the matters of the Candidates, making sure no one imposes their will and allowing everyone a fair chance to grow. I hope this doesn't become a testament to a lack of maturity from your part."//</span>
+		
+		__Proposal loses__
+		No changes will take place.` + "\n"
+	}
+	
+	State.variables.temp = passageText;
+	for ( var i of ["check1","check2","check3","check4","check5","check6","check7","check8","check9"] ) {
+		State.variables.StVars[i] = "";
+	}
+}
+
+// Variables for Candidates Negotiation
+/*
+// Candidates Order: chNash, chMir, chClaw, chVal, chAte
+// check1: vote inclination
+// check2: vote may be seen
+
+// Function checks:
+// Is the player submissive to someone? Do they want the player to vote a certain way?
+// check3: Dom asks player to vote
+// Otherwise, may any other character attempt to influence the player?
+// check4: Other character attempts to influence player
+// check5: Link to different passage
+// check6: Dynamic sway texts
+// check7: Player has changed their vote, and to what
+// check8: Has succeded or failed in influencing other Candidates
+// check9: Proposed changes
+// check10: Votes to yes vs Votes to no
+
+// Later
+// check3: NPC swayed by player
+// check4: Player's sway direction
+*/
+
+window.initializeRulersResponsibility = function() { // RuRe
+	State.variables.StVars.check1 = gCstat("chPlayerCharacter","intelligence") + gCstat("chPlayerCharacter","empathy");
+	State.variables.StVars.check2 = gCstat("chPlayerCharacter","intelligence") + gCstat("chPlayerCharacter","empathy") + gCstat("chPlayerCharacter","perception");
+}
 
 

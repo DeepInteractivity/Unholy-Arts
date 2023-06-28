@@ -145,6 +145,9 @@ window.ktn = function(charKey) { // Returns the stdName of a character given its
 window.dickWord = function() {
 	return randomFromList(["dick","dick","dick","dick","dick","cock","cock","cock","prick","shaft","member","penis"]);
 }
+window.pluralDickWord = function() {
+	return randomFromList(["dicks","dicks","dicks","dicks","dicks","cocks","cocks","cocks","pricks","shafts","members","penises"]);
+}
 window.pussyWord = function() {
 	return randomFromList(["pussy","pussy","pussy","pussy","pussy","cherry","cherry","snatch","clam","kitty"]);
 }

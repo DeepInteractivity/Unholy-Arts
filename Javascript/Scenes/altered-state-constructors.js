@@ -29,6 +29,7 @@ window.getInAeDuration = function(intensity) {
 	var duration = 3 + limitedRandomInt(2); // 3 ~ 5
 	return duration;
 }
+	// General Mechanics AS
 window.createASinvigoratedAether = function(intensity) {
 	// Stats gain (phy,res,will) , increased lust resistance
 	var sgm = 0.05 * intensity; // 
@@ -80,6 +81,41 @@ window.createASmissingSleep = function(days) {
 	return as;
 }
 
+window.createASusedRecoveries = function(intensity) {
+	// Used by recovery actions to determine recovery reduction. Intensity should normally start at 1
+	var provokeEffect = function(charKey) {
+	}
+	var cancelEffect = function(charKey) {
+	}
+	var description = "The use of recovery actions in combat brings diminishing returns.";
+	var as = new alteredState("Used Recoveries","UsRe","scene",1000,provokeEffect,cancelEffect,description);
+	as.intensity = intensity;
+	as.type = "genDebuff";
+	return as;
+}
+window.applyUsedRecoveries = function(charKey) {
+	if ( doesCharHaveAlteredState(charKey,"UsRe") == false ) { // Create AS
+		applyAlteredState([charKey],createASusedRecoveries(1));
+	} else { // Increase Intensity
+		for ( var as of gC(charKey).alteredStates ) {
+			if ( as.acr == "UsRe" ) {
+				as.intensity++;
+			}
+		}
+	}
+}
+window.getUsedRecoveriesIntensity = function(charKey) {
+	var intensity = 0;
+	for ( var as of gC(charKey).alteredStates ) {
+		if ( as.acr == "UsRe" ) {
+			intensity = as.intensity;
+		}
+	}
+	if ( intensity >= 10 ) { intensity = 10; }
+	return intensity;
+}
+
+	// Specific Altered States
 window.createASfrozenFeet = function(intensity) {
 	// Extra energy cost, control recovery reduction, agility loss (sum, mult) // Turns
 	var eec = 5 + intensity * 1; // 5 ~ 15

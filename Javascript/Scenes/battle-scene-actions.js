@@ -1542,7 +1542,7 @@ window.createSaKick = function() {
 	
 	sa.tags.push("bs");
 	sa.tags.push("sUse");
-	sa.reqTags.push("diffTarget","control");
+	sa.reqTags.push("diffTarget");
 	sa.actorBpReqs.push("legs");
 	
 	sa.requiresFree = true;
@@ -1552,11 +1552,22 @@ window.createSaKick = function() {
 	
 	sa.description = "The character focuses their energy on their leg and foot to land a hit on their target.\n"
 				   + "This attack damages the target and erodes their control.\nCosts 2 energy.\n\nSingle target action."
-				   + "Actor requires control and free legs."
+				   + "Actor requires free legs. The actor must have control or target the character pinning them down."
 				   + "\n\nPhysical hit attack."
 				   + "\n\n__Influences__:\nDamage: Actor's physique x5, actor's resilience x3, target's resilience x-2."
 				   + "\nEvasion: Actor's agility x5, actor's perception x5, actor's control.\nTarget's agility x7, target's perception x7, target's control.";
-				   
+	
+	sa.getIsCustomAllowed = function(actionKey,actorKey,targetsKeys,skipLinkedCheck) {
+		var isAllowed = false;
+		if ( gC(actorKey).control > 0 ) {
+			isAllowed = true;
+		} else if ( gC(actorKey).position.type == "passive" ) {
+			if ( gC(actorKey).position.initiator == targetsKeys[0] ) {
+				isAllowed = true;
+			}
+		}
+		return isAllowed;
+	}
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"agility") * 0.25 + gCstat(actor,"perception") * 0.25 + gC(actor).control * 4;
 		var evasionMinus = gCstat(target,"agility") * 0.35 + gCstat(target,"perception") * 0.35 + gC(target).control * 4;
@@ -1572,9 +1583,16 @@ window.createSaKick = function() {
 		var evResults = this.doesHitLand(actor,target);
 		
 		if ( evResults.hit ) { // Hit lands
+			var isTargetPinner = false;
+			if ( gC(actor).position.type == "passive" ) {
+				if ( gC(actor).position.initiator == target ) {
+					isTargetPinner = true;
+				}
+			}
 			// Damage
 			var inDamValue = gCstat(actor,"physique") * 0.25 + gCstat(actor,"resilience") * 0.15 - gCstat(target,"resilience") * 0.1;
 			inDamValue = addLuckFactor(inDamValue,0.1,gCstat(actor,"luck"));
+			if ( isTargetPinner ) { inDamValue *= 0.7; }
 			var damage = calculateAttackEffects("lust",actor,target,this.affinities,inDamValue);
 			var dmgEffMsg = getWeaknessToAttackText(this.affinities,target);
 			// Control damage
@@ -1585,11 +1603,19 @@ window.createSaKick = function() {
 			attackControl(target,controlDamage);
 			results.value = damage;
 			// Description
-			results.description += randomFromList( [
+			if ( isTargetPinner ) {
+				results.description += randomFromList( [
+										(ktn(actor) + " hits " + ktn(target) + "'s guts with " + gC(actor).posPr + " knee."),
+										(ktn(actor) + " revolves against " + ktn(target) + ", landing a desperate kick."),
+										(ktn(actor) + " kicks and screams against " + ktn(target) + ".")
+									] ) + " //The compromised position reduces the damage of the attack.//";
+			} else {
+				results.description += randomFromList( [
 										(ktn(actor) + " landed a clean kick on " + ktn(target) + "."),
 										(ktn(actor) + " struck a kick on " + ktn(target) + "."),
 										(ktn(actor) + "'s foot provoked some ugly damage against " + ktn(target) + ".")
 									] );
+			}
 			results.description += " " + dmgEffMsg + ktn(target) + " received " + textLustDamage(damage) + " and " + controlDamage.toFixed(1)
 								 + " control damage. " + generateSaCostsText(this,actor)
 								 + ".\n" + evResults.explanation;
@@ -3530,7 +3556,7 @@ window.createSaChannelAether = function() {
 	sa.tags.push("bs");
 	sa.tags.push("sUse");
 	
-	sa.strategyTags.push("magic","recoverWillpower");
+	sa.strategyTags.push("magic","recovery","recoverWillpower");
 	sa.affinities.push("weapon");
 	
 	sa.description = "The character focuses on the energies surrounding them, absorbing unleashed aether.\n"
@@ -3552,7 +3578,12 @@ window.createSaChannelAether = function() {
 		var evResults = this.doesHitLand(actor,target);
 		
 		if ( evResults.hit ) { // Hit lands
-			var recoveredWillpower = gC(actor).willpower.max * ( (luckedDiceThrow(gCstat(actor,"luck"))) * 0.004 + gCstat(actor,"will") * 0.007 + gCstat(actor,"intelligence") * 0.003 );
+			var usReIntensity = getUsedRecoveriesIntensity(actor); // Used Recoveries intensity
+			applyUsedRecoveries(actor); // Extend used recoveries
+			var recMod = 1 - (0.1 * usReIntensity);
+			if ( recMod <= 0 ) { recMod = 0; }
+		
+			var recoveredWillpower = recMod * gC(actor).willpower.max * ( (luckedDiceThrow(gCstat(actor,"luck"))) * 0.004 + gCstat(actor,"will") * 0.007 + gCstat(actor,"intelligence") * 0.003 );
 			gC(actor).willpower.changeValue(recoveredWillpower);
 			results.value = recoveredWillpower;
 			// Description

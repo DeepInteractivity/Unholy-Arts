@@ -694,9 +694,9 @@ window.createCandidateGlobalAi = function(charKey) {
 					weight *= 3;
 				}
 				
-				if ( this.attackedToday ) {
-					mChoice1.weight *= 0.1;
-					mChoice2.weight *= 0.1;
+				if ( gC(this.charKey).hasOwnProperty("attackedToday") ) {
+					mChoice1.weight *= 0.2;
+					mChoice2.weight *= 0.2;
 				}
 				
 				if ( mChoice1.weight < 0 ) { mChoice1.weight = 0; }

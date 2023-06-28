@@ -37,16 +37,23 @@ window.countRequiredPunishmentsOnTarget = function(charKey) {
 // Apply punishments
 window.applyPunishmentsToCandidates = function() {
 	for ( var charKey of getRandomizedActiveSimulationCharactersArray() ) {
-		var reqPunishments = countRequiredPunishmentsOnTarget(charKey);
+		var reqPunishments = countRequiredPunishmentsOnTarget(charKey) - countPunishmentBondageOnTarget(charKey);
 		if ( reqPunishments > 0 ) {
-			if ( reqPunishments > countPunishmentBondageOnTarget(charKey) ) {
-				applyPunishmentBondageOnCharacter(charKey);
-				//State.variables.logL1.push(charKey + " was punished on day " + State.variables.daycycle.day + ".");
+			var appliedPunishments = 0;
+			while ( appliedPunishments < reqPunishments ) {
+				var appliedPunishment = applyPunishmentBondageOnCharacter(charKey);
+				if ( appliedPunishment == false ) {
+					appliedPunishments = 99;
+				} else {
+					appliedPunishments++;
+				}
+				State.variables.logL2.push(charKey + " was punished on day " + State.variables.daycycle.day + ".");
 			}
 		}
 	}
 }
 window.applyPunishmentBondageOnCharacter = function(charKey) {
+	var appliedPunishment = false;
 	var validPunishments = getItemListEquippableOnChar(charKey,getCharsUnusedBondage("chDummy"));
 	if ( gSettings().chastity == "disable" ) {
 		validPunishments = purgeChastityItemsFromItemList(validPunishments);
@@ -55,7 +62,9 @@ window.applyPunishmentBondageOnCharacter = function(charKey) {
 		var selectedPunishment = randomFromList(validPunishments)
 		equipObjectOnWearer(selectedPunishment,charKey,gSettings().equipmentDuration + 1);
 		State.variables.personalRoom.prMessages += gC("chDummy").getFormattedName() + " has locked " + getEquipDataById(selectedPunishment).name + " on " + gC(charKey).getFormattedName() + " as a punishment for " + gC(charKey).posPr + " infamous deeds. This will last for " + gSettings().equipmentDuration + " days after tonight.\n";
+		appliedPunishment = true;
 	}
+	return appliedPunishment;
 }
 
 /*

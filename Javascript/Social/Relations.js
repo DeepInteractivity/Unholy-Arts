@@ -446,6 +446,10 @@ window.getCharEnemies = function(charKey) {
 	var xRels = getSpecialRelationshipsOfXtypes(charKey,["rivalry"]);
 	return xRels;
 }
+window.getCharServitudeRels = function(charKey) {
+	var xRels = getSpecialRelationshipsOfXtypes(charKey,["servitude"]);
+	return xRels;
+}
 
 ////////// RELATIONSHIPTYPE CLASS  //////////
 // A relationship type is a specific form or relationship that follows specific rules

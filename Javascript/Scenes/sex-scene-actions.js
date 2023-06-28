@@ -1707,13 +1707,39 @@ window.createSaRealHypnoticGlance = function() {
 		else {
 			var multAr = getSexDamageMult(actorKey,target,this.key);
 			var willpowerDamage = ((getChar(actorKey).charisma.getValue() / 5) + (getChar(actorKey).will.getValue()) / 10) * multAr[0];
+			
+			var isAlly = false;
+			if ( getCharEnemies(target).includes(actorKey) == false && gC(target).egaChars.includes(actorKey) ) {
+				isAlly = true;
+				willpowerDamage *= 1.25;
+			}	
+			var lockedNeck = false;
+			if ( charHasLockedBodypart(target,"neck") ) {
+				lockedNeck = true;
+				willpowerDamage *= 1.25;
+			}
+			var areKissing = false;
+			for ( var ca of State.variables.sc.continuedActions ) {
+				if ( ca.key == "frenchKissing" ) {
+					if ( (ca.initiator == actorKey && ca.targetsList.includes(target)) || (ca.initiator == target && ca.targetsList.includes(actorKey)) ) {
+						areKissing = true;
+						willpowerDamage *= 1.25;
+					}
+				}
+			}
+		
 			getChar(targetActors[0]).willpower.changeValue(-willpowerDamage);
 			results.value += willpowerDamage;
+			
+			// Description
 			results.description += randomFromList( [
 										(ktn(actorKey) + " enraptured " + ktn(target) + "'s eyes, and " + gC(target).perPr
 										+ " felt " + gC(target).posPr + " willpower slipping away."),
 										(ktn(actorKey) + "'s eyes captured " + ktn(target) + "'s attention, and " + gC(target).perPr
 										+ " felt " + gC(target).refPr + " getting lost in them.") ] );
+			if ( isAlly ) { results.description += " //" + ktn(target) + " lets " + gC(target).posPr + " defenses down upon looking at the eyes of " + gC(target).posPr + " companion, increasing the willpower damage.//"; }
+			if ( lockedNeck ) { results.description += " //The pressure on " + ktn(target) + "'s neck makes " + gC(target).comPr + " weak to the influence of hypnosis, increasing the willpower damage.//"; }
+			if ( areKissing ) { results.description += " //While sharing a kiss, " + ktn(target) + " looks intensely at " + ktn(actorKey) + ", empowering the hypnosis' willpower damage.//"; }
 			results.description += " " + ktn(target) + " received " + textWillpowerDamage(willpowerDamage) + ". " + multAr[1];
 		}
 							   
@@ -1755,14 +1781,32 @@ window.createSaSpanking = function() {
 		var target = targetActors[0];
 		
 		var multAr = getSexDamageMult(actorKey,target,this.key);
-		var lustDamage = ((gC(actorKey).physique.getValue() + gC(actorKey).resilience.getValue()) / 20) * multAr[0];
-		var willpowerDamage = ((gC(actorKey).physique.getValue() + gC(actorKey).resilience.getValue()) / 8) * multAr[0];
+		var lockedLimbsMult = 1 + returnCharsLockedLimbs(target).length * 0.25;
+		var lustDamage = ((gC(actorKey).physique.getValue() + gC(actorKey).resilience.getValue()) / 20) * multAr[0] * lockedLimbsMult;
+		var willpowerDamage = ((gC(actorKey).physique.getValue() + gC(actorKey).resilience.getValue()) / 8) * multAr[0] * lockedLimbsMult;
+		var isEnemy = false;
+		if ( getCharEnemies(target).includes(actorKey) ) {
+			isEnemy = true;
+			willpowerDamage *= 1.5;
+		}
+		var isSubmissive = false;
+		if ( gC(target).domChar == actorKey ) {
+			isSubmissive = true;
+			willpowerDamage *= 1.25;
+			lustDamage *= 1.5;
+		}
+		
 		gC(target).lust.changeValue(-lustDamage);
 		gC(target).willpower.changeValue(-willpowerDamage);
+		
+		// Description
 		results.description += randomFromList( [
 									(ktn(actorKey) + " slapped " + ktn(target) + "'s " + assWord() + " with all " + gC(actorKey).posPr + " might."),
 									(ktn(actorKey) + " punished " + ktn(target) + "'s " + assWord() + "."),
 									(ktn(actorKey) + " spanked " + ktn(target) + " like a child.") ] );
+		if ( isEnemy ) { results.description += " //The humilliation of being spanked by " + gC(target).posPr + " enemy increases the willpower damage.//"; }
+		if ( isSubmissive ) { results.description += " //Being spanked by " + gC(target).posPr + " dominant increases the lust and willpower damage.//"; }
+		if ( lockedLimbsMult > 1 ) { results.description += " //The powerlessness of being spanked with locked limbs increases the lust and willpower damage.//"; }
 		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1];
 		results.description += ktn(target) + " received " + textWillpowerDamage(willpowerDamage) + "." + multAr[1];
 		
