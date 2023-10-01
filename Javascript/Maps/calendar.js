@@ -1001,6 +1001,209 @@ setup.eventsMetaInfo["RuRe"].clairvoyanceData = new emiClaivoyanceData(
 	null // Hints
 );
 
+setup.eventsMetaInfo["OwGr"] = new eventMetaInfo( // "Owed Gratitutde"
+	true,true,
+	"Owed Gratitutde",
+	"OwGr",
+	initializeOwedGratitude, // initFunc
+	"SE OwedResp WIR Start",
+	function() { // Reqs
+		var allowed = false;
+		
+		// Hope is guest in the Temple ; Player has free mouth ; Claw has either free dick or pussy
+		if ( (getGuestsList().includes("chHope") ) && gC("chPlayerCharacter").hasFreeBodypart("mouth") ) {
+			if ( gC("chClaw").hasFreeBodypart("dick") || gC("chClaw").hasFreeBodypart("pussy") ) {
+				if ( isCharAtTemple("chHope") || ( State.variables.daycycle.month == 2 && State.variables.daycycle.day >= 13 ) ) {
+					allowed = true;
+				}
+			}
+		}
+		
+		return allowed;
+	},
+	function() { // Weight
+		var weight = 1000;
+		
+		return weight;
+	}
+);
+setup.eventsMetaInfo["OwGr"].clairvoyanceData = new emiClaivoyanceData(
+	"When you are told of your debt", // Cryptic Name
+	function() { // Reqs to be shown
+		var result = false;
+		if ( getGuestsList().includes("chHope") ) {
+			result = true;
+		}
+		return result; // 
+	},
+	function() { // Reqs to appear
+		var reqsText = formatClairvoyanceCheck("Requisites (1)",30,formatRequisiteForClairvoyance("Hope is a guest at the Passion Temple", function() {
+			var b = false;
+			if ( getGuestsList().includes("chHope") ) { b = true; } 
+			return b;
+		})) + formatClairvoyanceCheck("Requisites (2)",40,formatRequisiteForClairvoyance("Hope is currently training at the Passion Temple", function() {
+			var b = false;
+			if ( isCharAtTemple("chHope") ) { b = true; } 
+			return b;
+		})) + formatClairvoyanceCheck("Requisites (3)",70,formatRequisiteForClairvoyance("Your mouth is free", function() {
+			var b = false;
+			if ( gC("chPlayerCharacter").hasFreeBodypart("mouth") ) { b = true; } 
+			return b;
+		})) + formatClairvoyanceCheck("Requisites (4)",120,formatRequisiteForClairvoyance("Claw has free genitals", function() {
+			var b = false;
+			if ( gC("chClaw").hasFreeBodypart("dick") || gC("chClaw").hasFreeBodypart("pussy") ) { b = true; } 
+			return b;
+		})) + formatClairvoyanceCheck("Hints",50,formatHintForClairvoyance("Rock might also be present during this event.")) + formatClairvoyanceCheck("Hints",100,formatHintForClairvoyance("Your relationship with Claw may open or block different paths.")) + formatClairvoyanceCheck("Hints",150,formatHintForClairvoyance("If Claw or you is required by your relationship to be submissive towards the other, different paths will be opened or blocked for you."));
+		return reqsText;
+	},
+	null // Hints
+);
+
+setup.eventsMetaInfo["CgLb"] = new eventMetaInfo( // "Caged Lovebirds"
+	true,true,
+	"Caged Lovebirds",
+	"CgLb",
+	initializeCagedLovebirds, // initFunc
+	"SE CagedLovebirds Start",
+	function() { // Reqs
+		var allowed = false;
+		
+		if ( State.variables.eventsCalendar.playedStoryEvents.includes("OwGr") && gSettings().lewdMales == "enable" ) {
+		if ( gC("chHope") != undefined && gC("chRock") != undefined ) {
+				if ( isCharAtTemple("chHope") && isCharAtTemple("chRock") ) { // Hope and Rock are at the Temple
+					if ( getCharServitudeRels("chPlayerCharacter").includes("chHope") && getCharServitudeRels("chPlayerCharacter").includes("chRock") ) {
+						var hopesGenitals = false;
+						var rocksGenitals = false;
+						var dormantRelationship = true;
+						if ( gC("chHope").body.hasOwnProperty("pussy") ) {
+							if ( gC("chHope").hasFreeBodypart("pussy") ) {
+								hopesGenitals = true;
+							} else if ( gC("chHope").body.pussy.state == "locked" ) {
+								if ( getEquipById(gC("chHope").body.pussy.bondage).owner == "chPlayerCharacter" ) {
+									hopesGenitals = true;
+								}
+							}
+						}
+						if ( gC("chRock").body.hasOwnProperty("dick") ) {
+							if ( gC("chRock").hasFreeBodypart("dick") ) {
+								rocksGenitals = true;
+							} else if ( gC("chRock").body.dick.state == "locked" ) {
+								if ( getEquipById(gC("chRock").body.dick.bondage).owner == "chPlayerCharacter" ) {
+									rocksGenitals = true;
+								}
+							}
+						}
+						if ( ( (rLvlAbt("chHope","chRock","romance") + rLvlAbt("chHope","chRock","sexualTension") ) >= 4) || (rLvlAbt("chRock","chHope","romance") + rLvlAbt("chRock","chHope","sexualTension") >= 4) ) {
+							dormantRelationship = false;
+						}
+						if ( hopesGenitals && rocksGenitals && dormantRelationship ) {
+							allowed = true;
+						}
+					}
+				}
+			}
+		}
+		
+		return allowed;
+	},
+	function() { // Weight
+		var weight = 1000;
+		
+		return weight;
+	}
+);
+setup.eventsMetaInfo["CgLb"].clairvoyanceData = new emiClaivoyanceData(
+	"When you are beset by curiosity about the Beastkin pair's relationship", // Cryptic Name
+	function() { // Reqs to be shown
+		var result = false;
+		var dormantRelationship = true;
+		if ( gC("chHope") != undefined && gC("chRock") != undefined ) {
+			if ( ( (rLvlAbt("chHope","chRock","romance") + rLvlAbt("chHope","chRock","sexualTension") ) >= 4) || (rLvlAbt("chRock","chHope","romance") + rLvlAbt("chRock","chHope","sexualTension") >= 4) && gSettings().lewdMales == "enable" ) {
+				dormantRelationship = false;
+			}
+			if ( getGuestsList().includes("chHope") && getGuestsList().includes("chRock") && State.variables.storyState < storyState.fifthAdventure && dormantRelationship ) {
+				result = true;
+			}
+		}
+		return result; // 
+	},
+	function() { // Reqs to appear
+		var reqsText = formatClairvoyanceCheck("Requisites (1)",30,formatRequisiteForClairvoyance("Hope and Rock do not hold a romantic bond", function() {
+			var b = true;
+			if ( ( (rLvlAbt("chHope","chRock","romance") + rLvlAbt("chHope","chRock","sexualTension") ) >= 4) || (rLvlAbt("chRock","chHope","romance") + rLvlAbt("chRock","chHope","sexualTension") >= 4) ) {
+				b = false;
+			}
+			return b;
+		})) + formatClairvoyanceCheck("Requisites (2)",40,formatRequisiteForClairvoyance("Hope and Rock are present at the Passion Temple", function() {
+			var b = false;
+			if ( isCharAtTemple("chHope") && isCharAtTemple("chRock") ) {
+				b = true;
+			}
+			return b;
+		})) + formatClairvoyanceCheck("Requisites (3)",65,formatRequisiteForClairvoyance("Hope is your servant", function() {
+			var b = false;
+			if ( getCharServitudeRels("chPlayerCharacter").includes("chHope") ) {
+				b = true;
+			}
+			return b;
+		})) + formatClairvoyanceCheck("Requisites (4)",65,formatRequisiteForClairvoyance("Rock is your servant", function() {
+			var b = false;
+			if ( getCharServitudeRels("chPlayerCharacter").includes("chRock") ) {
+				b = true;
+			}
+			return b;
+		})) + formatClairvoyanceCheck("Requisites (5)",85,formatRequisiteForClairvoyance("You have been told of your debt", function() {
+			var b = false;
+			if ( State.variables.eventsCalendar.playedStoryEvents.includes("OwGr") ) {
+				b = true;
+			}
+			return b;
+		})) + formatClairvoyanceCheck("Requisites (6)",120,formatRequisiteForClairvoyance("Hope's pussy is accessible to you", function() {
+			var b = false;
+			if ( gC("chHope").body.hasOwnProperty("pussy") ) {
+				if ( gC("chHope").hasFreeBodypart("pussy") ) {
+					b = true;
+				} else if ( gC("chHope").body.pussy.state == "locked" ) {
+					if ( getEquipById(gC("chHope").body.pussy.bondage).owner == "chPlayerCharacter" ) {
+						b = true;
+					}
+				}
+			}
+			return b;
+		})) + formatClairvoyanceCheck("Requisites (7)",120,formatRequisiteForClairvoyance("Rock's dick is accesible to you", function() {
+			var b = false;
+			if ( gC("chRock").body.hasOwnProperty("dick") ) {
+				if ( gC("chRock").hasFreeBodypart("dick") ) {
+					b = true;
+				} else if ( gC("chRock").body.dick.state == "locked" ) {
+					if ( getEquipById(gC("chRock").body.dick.bondage).owner == "chPlayerCharacter" ) {
+						b = true;
+					}
+				}
+			}
+			return b;
+		})) + formatClairvoyanceCheck("Requisites (8)",140,formatRequisiteForClairvoyance("Time is fleeting", function() {
+			var b = false;
+			if ( gC("chRock").body.hasOwnProperty("dick") ) {
+				if ( gC("chRock").hasFreeBodypart("dick") ) {
+					b = true;
+				} else if ( gC("chRock").body.dick.state == "locked" ) {
+					if ( getEquipById(gC("chRock").body.dick.bondage).owner == "chPlayerCharacter" ) {
+						b = true;
+					}
+				}
+			}
+			return b;
+		})) + formatClairvoyanceCheck("Hints (1)",75,formatHintForClairvoyance("Perception or empathy may give you extra insights.")) + formatClairvoyanceCheck("Hints (2)",95,formatHintForClairvoyance("Intelligence, perception, charisma or empathy may open new paths.")) + formatClairvoyanceCheck("Hints (3)",110,formatHintForClairvoyance("Your deeds may reach unintended ears.")) + formatClairvoyanceCheck("Hints (4)",150,formatHintForClairvoyance("Owning chastity devices may open new paths.")) + formatClairvoyanceCheck("Hints (5)",165,formatHintForClairvoyance("Hope's and Rock's virginities might make them more liable to be affected."));
+		
+		// Format hints
+		
+		return reqsText;
+	},
+	null // Hints
+);
+
+
 /*
 setup.eventsMetaInfo["gd3"] = new eventMetaInfo( // "A Sacrifice of Aether"
 	true,false,

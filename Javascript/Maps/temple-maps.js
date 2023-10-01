@@ -547,23 +547,29 @@ setup.mapTrainingGrounds.starsTower = new RoomInfo(
 );
 setup.mapTrainingGrounds.starsTower.getCustomActionsText = function(characters) {
 	var cText = "";
+	State.variables.logL1.push(1);
 	if ( State.variables.StVarsList.includes("go0") && quantifyCharacterVacuumStrength("chPlayerCharacter") < (16*9) ) {
 		cText = getButtonMapMenuRespec() + "<sup><span title='You will have a one-time opportunity to switch the values of three pairs of stats.'>(?)</span></sup> " + "\n";
 	}
-	
+	State.variables.logL1.push(2);
 	var eventCardsAvailable = false; // There are event info cards available for clairvoyance
 	for ( var se in setup.eventsMetaInfo ) {
+		State.variables.logL1.push(setup.eventsMetaInfo[se].key);
 		if ( setup.eventsMetaInfo[se] instanceof eventMetaInfo ) { // Is an eventMetaInfo object
+		State.variables.logL1.push("a");
 			if ( setup.eventsMetaInfo[se].validClairvoyanceCard && setup.eventsMetaInfo[se].clairvoyanceData != null ) { // Has a valid clairvoyance card
+			State.variables.logL1.push("b");
 				if ( State.variables.eventsCalendar.playedStoryEvents.includes(setup.eventsMetaInfo[se].key) == false ) { // Event hasn't been played
+				State.variables.logL1.push("c");
 					if ( setup.eventsMetaInfo[se].clairvoyanceData.reqsToBeShown() ) {
+						State.variables.logL1.push("d");
 						eventCardsAvailable = true;
 					}
 				}
 			}
 		}
 	}
-	
+	State.variables.logL1.push(3);
 	if ( State.variables.daycycle.day > 9 || State.variables.daycycle.month > 1 ) {
 		if ( State.variables.storyState == storyState.secondLoop && State.variables.daycycle.day < 18 && eventCardsAvailable ) {
 			cText = getButtonClairvoyance() + "<sup><span title='The orb might contain hints about the challenges the future holds for you, if you are capable of clawing your way into them.\nTaototh is not here, but he has left the orb of clairvoyance unlocked for all to use.'>(?)</span></sup> " + "\n";
@@ -577,6 +583,7 @@ setup.mapTrainingGrounds.starsTower.getCustomActionsText = function(characters) 
 	} else {
 		cText += colorText("Locked:","firebrick") + " The orb remains pitch-dark. It holds no secrets to show you, yet.\n";
 	}
+	State.variables.logL1.push(4);
 	return cText;
 }
 setup.mapTrainingGrounds.fulfillmentCorridor.combatAllowed = false;

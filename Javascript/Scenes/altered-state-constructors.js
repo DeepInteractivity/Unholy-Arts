@@ -81,6 +81,18 @@ window.createASmissingSleep = function(days) {
 	return as;
 }
 
+window.createASallowedCA = function(turns) {
+	var provokeEffect = function(charKey) {
+	}
+	var cancelEffect = function(charKey) {
+	}
+	var description = "This character has been allowed to initiate continued actions on their own.";
+	var as = new alteredState("CA Allowed","CAal","scene",turns,provokeEffect,cancelEffect,description);
+	as.type = "comm";
+	return as;
+	
+}
+
 window.createASusedRecoveries = function(intensity) {
 	// Used by recovery actions to determine recovery reduction. Intensity should normally start at 1
 	var provokeEffect = function(charKey) {
@@ -233,7 +245,7 @@ window.createASteased = function(intensity, type) {
 	// Sex weakness, sex strength, random sex type weakness // Turns
 	var sType = "target" + firstToCap(type);
 	var esw = 15 + intensity * 1; // 15 - 25
-	var ess = 5 + intensity * 0.5; // 5 - 01
+	var ess = 5 + intensity * 0.5; // 5 - 10
 	var etw = 10 + intensity * 1; // 10 - 20
 	var turns = 4 + limitedRandomInt(2); // 4 ~ 6
 	var provokeEffect = function(charKey) {
@@ -368,16 +380,22 @@ window.createASearthWall = function(intensity) {
 
 window.createAStaintedControlRecovery = function(intensity) {
 	// Control recovery reduction, agility loss (sum, mult) // Turns
+	var als = 3 + intensity * 0.3; // 3 ~ 6
+	var alm = 0.08 + intensity * 0.008; // 0.08 ~ 0.16
 	var crc = 0.1 + intensity * 0.01; // 0.1 ~ 0.2
 	var turns = 4 + limitedRandomInt(2); // 4 ~ 6
 	var provokeEffect = function(charKey) {
 		gC(charKey).controlRecovery -= crc;
+		gC(charKey).agility.sumModifier -= als;
+		gC(charKey).agility.multModifier -= alm;
 	}
 	var cancelEffect = function(charKey) {
 		gC(charKey).controlRecovery += crc;
+		gC(charKey).agility.sumModifier += als;
+		gC(charKey).agility.multModifier += alm;
 	}
 	var description = "Damage in the limbs of this character has provoked a reduction in control recovery.\n"
-					+ "Loss of agility, weakened control recovery, energy becomes tainted.";
+					+ "Loss of agility, weakened control recovery.";
 	var as = new alteredState("Tainted control recovery","TCRc","scene",turns,provokeEffect,cancelEffect,description);
 	as.type = "debuff";
 	return as;
@@ -593,17 +611,25 @@ window.createASvinesLockArms = function(intensity) {
 	var provokeEffect = function(charKey) {
 		gC(charKey).agility.sumModifier -= sls;
 		gC(charKey).agility.multModifier -= slm;
+		gC(charKey).physique.sumModifier -= sls * 0.5;
+		gC(charKey).physique.multModifier -= slm * 0.5;
+		gC(charKey).resilience.sumModifier -= sls * 0.5;
+		gC(charKey).resilience.multModifier -= slm * 0.5;
 		gC(charKey).controlRecovery -= dcr;
 		gC(charKey).body.arms.state = "locked";
 	}
 	var cancelEffect = function(charKey) {
 		gC(charKey).agility.sumModifier += sls;
 		gC(charKey).agility.multModifier += slm;
+		gC(charKey).physique.sumModifier += sls * 0.5;
+		gC(charKey).physique.multModifier += slm * 0.5;
+		gC(charKey).resilience.sumModifier += sls * 0.5;
+		gC(charKey).resilience.multModifier += slm * 0.5;
 		gC(charKey).controlRecovery += dcr;
 		gC(charKey).body.arms.state = "free";
 	}
 	var description = "Vines are locking the arms of this character.\n"
-					+ "Arms locked, loss of agility and control recovery.";
+					+ "Arms locked, loss of agility, physique, resilience and control recovery.";
 	var as = new alteredState("Vines Lock Arms","VnLk","scene",turns,provokeEffect,cancelEffect,description);
 	as.type = "debuff";
 	return as;
@@ -778,12 +804,14 @@ window.createASborrowedIdentity = function(intensity, target) {
 
 window.createASconfusedIdentities = function(intensity) {
 	// Stats loss
-	var sls = 5 + intensity * 0.5; // 5 ~ 10
+	var sls = 3 + intensity * 0.6; // 3 ~ 6
 	var slm = 0.1 + intensity * 0.01; // 0.1 ~ 0.20
 	var turns = 4; // 4
 	var provokeEffect = function(charKey) {
 		gC(charKey).perception.sumModifier -= sls;
 		gC(charKey).perception.multModifier -= slm;
+		gC(charKey).will.sumModifier -= sls;
+		gC(charKey).will.multModifier -= slm;
 		gC(charKey).empathy.sumModifier -= sls;
 		gC(charKey).empathy.multModifier -= slm;
 		gC(charKey).charisma.sumModifier -= sls;
@@ -792,6 +820,8 @@ window.createASconfusedIdentities = function(intensity) {
 	var cancelEffect = function(charKey) {
 		gC(charKey).perception.sumModifier += sls;
 		gC(charKey).perception.multModifier += slm;
+		gC(charKey).will.sumModifier += sls;
+		gC(charKey).will.multModifier += slm;
 		gC(charKey).empathy.sumModifier += sls;
 		gC(charKey).empathy.multModifier += slm;
 		gC(charKey).charisma.sumModifier += sls;
@@ -834,8 +864,8 @@ window.createASslimed = function(intensity) {
 window.createASrelaxingScent = function(intensity) {
 	// Stats loss
 	var sls = 2 + intensity * 0.3; // 2 ~ 5
-	var slm = 0.04 + intensity * 0.004; // 0.05 ~ 0.10
-	var turns = 4 + limitedRandomInt(1); // 4 ~ 5
+	var slm = 0.06 + intensity * 0.006; // 0.06 ~ 0.12
+	var turns = 4 + limitedRandomInt(2); // 4 ~ 5
 	if ( intensity > 5 ) { turns++; } // ~ - 6
 	var provokeEffect = function(charKey) {
 		gC(charKey).physique.sumModifier -= sls;

@@ -55,16 +55,20 @@ window.NpcMapAi = function(charKey) {
 					gC(this.charKey).globalAi.generalEvaluations();
 				}
 				if ( this.state == "idle" && gC(this.charKey).followingTo == "" ) { // General evaluations may make the character join an ongoing event
-					if ( this.tryNewGoal() ) { // Try new mission
-					}
-					else { // New mission couldn't be executed
-						this.goalsList = [];
-						if ( this.createNewMission != null ) {	// TO EDIT IN THE FUTURE
-							this.getNewGoals();
-							if ( this.goalsList.length > 0 ) {
-								this.tryNewGoal();
+					if ( State.variables.sc.flagSceneActive == true && State.variables.sc.teamAcharKeys.includes(this.charKey) || State.variables.sc.teamBcharKeys.includes(this.charKey) ) {
+						// Character is involved in a scene. Do not bother them
+					} else {
+						if ( this.tryNewGoal() ) { // Try new mission
+						}
+						else { // New mission couldn't be executed
+							this.goalsList = [];
+							if ( this.createNewMission != null ) {	// TO EDIT IN THE FUTURE
+								this.getNewGoals();
+								if ( this.goalsList.length > 0 ) {
+									this.tryNewGoal();
+								}
+								// this.createNewMission(getCurrentMap().key,[charKey])); // Provisional name? Generates a new list of goals
 							}
-							// this.createNewMission(getCurrentMap().key,[charKey])); // Provisional name? Generates a new list of goals
 						}
 					}
 				}

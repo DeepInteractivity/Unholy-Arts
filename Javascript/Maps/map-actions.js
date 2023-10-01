@@ -355,7 +355,7 @@ window.createSystemEventBattle = function(charactersTeamA,charactersTeamB,specta
 			State.variables.sc.startScene("bs","none",this.charactersTeamA,this.charactersTeamB,desc,endConditionStandardBattle,0,"Map");
 			for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
 				if ( charKey != "chPlayerCharacter" ) {
-					gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+					gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
 				}
 			}
 			if ( this.characters.includes("chPlayerCharacter") == false ) {
@@ -384,7 +384,7 @@ window.createSystemEventStandardAssault = function(charactersTeamA,charactersTea
 			State.variables.sc.endSceneScript = processGenericMapBattleEffects; // Set generic battle effects
 			for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
 				if ( charKey != "chPlayerCharacter" ) {
-					gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+					gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
 				}
 			}
 			for ( var extraMessage of this.extraMessages ) {
@@ -416,7 +416,7 @@ window.createSystemEventStandardChallenge = function(charactersTeamA,charactersT
 			State.variables.sc.endSceneScript = processGenericMapBattleEffects; // Set generic battle effects
 			for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
 				if ( charKey != "chPlayerCharacter" ) {
-					gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+					gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
 				}
 			}
 			for ( var extraMessage of this.extraMessages ) {
@@ -449,7 +449,7 @@ window.createSystemEventLiberationChallenge = function(charactersTeamA,character
 			State.variables.sc.endSceneScript = processLiberationChallengeEffects; // Set generic battle effects
 			for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
 				if ( charKey != "chPlayerCharacter" ) {
-					gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+					gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
 				}
 			}
 			if ( this.characters.includes("chPlayerCharacter") == false ) {

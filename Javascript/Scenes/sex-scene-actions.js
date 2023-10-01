@@ -1,5 +1,76 @@
 ////////// SEX SCENE ACTIONS //////////
 
+	// Communication
+window.createSaEncourageInitiative = function() {
+	var sa = new sceneAction();
+	sa.name = "Encourage initiative";
+	sa.key = "encInit";
+	sa.targetType = "single";
+	sa.tags.push("ss","sUse");
+	sa.actorBpReqs.push("mouth");
+	
+	sa.flavorTags.push("bottom");
+	
+	sa.getIsCustomAllowed = function(actionKey,actorKey,targetsKeys,skipLinkedCheck) {
+		var isAllowed = true;
+		if ( gC(actorKey).hasLead == false || gC(targetsKeys[0]).hasLead == true || doesCharHaveAlteredState(targetsKeys[0],"CAal") == true ) {
+			isAllowed = false;
+		}
+		return isAllowed;
+	}
+	sa.getCustomWeightMultiplier = function(actionKey,actor,targetsKeys) {
+		var target = targetsKeys[0];
+		var mult = 1;
+		var flagIncLeadSwap = false;
+		
+		for ( var cK of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
+			if ( gC(cK).lead > 87 && gC(cK).hasLead == false ) {
+				if ( gC(cK).willpower.current >= 5 ) {
+					flagIncLeadSwap = true;
+				}
+			}
+		}
+		
+		if ( flagIncLeadSwap ) {
+			mult = 0;
+		}
+		
+		return mult;
+	}
+	
+	sa.description = "The actor tells the target to take some initiative.\n"
+				   + "This will allow the target to initiate some continued actions, even if they do not have the lead.\n"
+				   + "Actor requires free mouth, and must have the lead.\n\nCommunication.";
+	
+	sa.execute = function(actorKey,targetActors) {
+		var results = new saResults;
+		var actor = actorKey;
+		var target = targetActors[0];
+		
+		// Altered state
+		applyAlteredState([target],createASallowedCA(10));
+		
+		results.value = 0;
+		if ( State.variables.sc.enabledLead == "dynamic" ) {
+			results.description = randomFromList( [
+										(ktn(actor) + " suggested to " + ktn(target) + " to take some initiative."),
+										(ktn(actor) + " invited " + ktn(target) + " to be more assertive."),
+										(ktn(actor) + " told " + ktn(target) + " " + gC(actor).perPr + "'d like " + gC(target).comPr + " to be more proactive.")
+											] );
+		} else {
+			results.description = randomFromList( [
+										(ktn(actor) + " gave permission to " + ktn(target) + " to take some initiative."),
+										(ktn(actor) + " will allow " + ktn(target) + " to be more assertive."),
+										(ktn(actor) + " told " + ktn(target) + " that " + gC(target).perPr + " can be more proactive.")
+											] );
+		}
+		results.description += "\n" + ktn(target) + " will now be able to use continued actions without the lead.";
+		
+		return results;
+	}
+	return sa;
+}
+
 	// Stroking
 
 window.createSaStrokePussy = function() {
@@ -32,7 +103,7 @@ window.createSaStrokePussy = function() {
 			
 			if ( doesCharHaveAlteredState(target,"Pus+") == false ) {
 				// Sensitized pussy
-				var intensity = 0.05 + gCstat(actorKey,"agility") * 0.005 + limitedRandomInt(5) * 0.01;
+				var intensity = 0.1 + gCstat(actorKey,"agility") * 0.005 + limitedRandomInt(10) * 0.01;
 				var turns = 4 + limitedRandomInt(4) + (gCstat(actorKey,"agility") * 0.04) - ((gCstat(actorKey,"agility") * 0.04) % 1);
 				var as = createSensitizedTag(intensity,"usePussy","Sensitized pussy","Pus+",turns,"The pussy of this character will receive extra damage.");
 				applyAlteredState([target],as);
@@ -60,11 +131,11 @@ window.createSaStrokeBreasts = function() {
 	sa.actorBpReqs.push("arms");
 	sa.targetBpReqs.push("breasts");
 	sa.unvalidRelationalPositions.push(["standing","kneeling"]);
-	
 	sa.unvalidRelationalPositions.push(["spitroastTarget","spitroastFront"]);
 	sa.unvalidRelationalPositions.push(["spitroastTarget","spitroastBehind"]);
 	sa.unvalidRelationalPositions.push(["spitroastFront","spitroastBehind"],["spitroastBehind","spitroastFront"]);
 	sa.unvalidRelationalPositions.push(["mountedFromBehind","mountingFromBehind"],["mountedFromBehind","mountingAndMounted"]);
+	sa.unvalidRelationalPositions.push(["mountingFaceToGroin","mountedFaceToGroin"],["mountedFaceToGroin","mountingFaceToGroin"]);
 	
 	sa.flavorTags.push("foreplay","useHands","targetBreasts");
 	
@@ -76,7 +147,7 @@ window.createSaStrokeBreasts = function() {
 		
 		if ( doesCharHaveAlteredState(target,"Bre+") == false ) {
 			// Sensitized breasts
-			var intensity = 0.05 + gCstat(actorKey,"agility") * 0.005 + limitedRandomInt(5) * 0.01;
+			var intensity = 0.1 + gCstat(actorKey,"agility") * 0.005 + limitedRandomInt(10) * 0.01;
 			var turns = 4 + limitedRandomInt(4) + (gCstat(actorKey,"agility") * 0.04) - ((gCstat(actorKey,"agility") * 0.04) % 1);
 			var as = createSensitizedTag(intensity,"useBreasts","Sensitized breasts","Bre+",turns,"The breasts of this character will receive extra damage.");
 			applyAlteredState([target],as);
@@ -121,7 +192,7 @@ window.createSaStrokeDick = function() {
 		
 		if ( doesCharHaveAlteredState(target,"Dic+") == false ) {
 			// Sensitized dick
-			var intensity = 0.05 + gCstat(actorKey,"agility") * 0.005 + limitedRandomInt(5) * 0.01;
+			var intensity = 0.1 + gCstat(actorKey,"agility") * 0.005 + limitedRandomInt(10) * 0.01;
 			var turns = 4 + limitedRandomInt(4) + (gCstat(actorKey,"agility") * 0.04) - ((gCstat(actorKey,"agility") * 0.04) % 1);
 			var as = createSensitizedTag(intensity,"useDick","Sensitized dick","Dic+",turns,"The dick of this character will receive extra damage.");
 			applyAlteredState([target],as);
@@ -177,7 +248,7 @@ window.createSaStrokeAss = function() {
 		
 		if ( doesCharHaveAlteredState(target,"Ass+") == false ) {
 			// Sensitized ass
-			var intensity = 0.05 + gCstat(actorKey,"agility") * 0.005 + limitedRandomInt(5) * 0.01;
+			var intensity = 0.1 + gCstat(actorKey,"agility") * 0.005 + limitedRandomInt(10) * 0.01;
 			var turns = 4 + limitedRandomInt(4) + (gCstat(actorKey,"agility") * 0.04) - ((gCstat(actorKey,"agility") * 0.04) % 1);
 			var as = createSensitizedTag(intensity,"useAnus","Sensitized ass","Ass+",turns,"The ass of this character will receive extra damage.");
 			applyAlteredState([target],as);
@@ -226,7 +297,7 @@ window.createSaDickFootjob = function() {
 			
 			if ( doesCharHaveAlteredState(target,"Dic+") == false ) {
 				// Sensitized dick
-				var intensity = 0.05 + gCstat(actorKey,"agility") * 0.005 + limitedRandomInt(5) * 0.01;
+				var intensity = 0.1 + gCstat(actorKey,"agility") * 0.005 + limitedRandomInt(10) * 0.01;
 				var turns = 4 + limitedRandomInt(4) + (gCstat(actorKey,"agility") * 0.04) - ((gCstat(actorKey,"agility") * 0.04) % 1);
 				var as = createSensitizedTag(intensity,"useDick","Sensitized dick","Dic+",turns,"The dick of this character will receive extra damage.");
 				applyAlteredState([target],as);
@@ -271,7 +342,7 @@ window.createSaPussyFootjob = function() {
 			
 			if ( doesCharHaveAlteredState(target,"Pus+") == false ) {
 				// Sensitized pussy
-				var intensity = 0.05 + gCstat(actorKey,"agility") * 0.005 + limitedRandomInt(5) * 0.01;
+				var intensity = 0.1 + gCstat(actorKey,"agility") * 0.005 + limitedRandomInt(10) * 0.01;
 				var turns = 4 + limitedRandomInt(4) + (gCstat(actorKey,"agility") * 0.04) - ((gCstat(actorKey,"agility") * 0.04) % 1);
 				var as = createSensitizedTag(intensity,"usePussy","Sensitized pussy","Pus+",turns,"The pussy of this character will receive extra damage.");
 				applyAlteredState([target],as);
@@ -325,7 +396,7 @@ window.createSaDildoTeaseGenitals = function() {
 			if ( limitedRandomInt(32) < 4 ) {
 				if ( doesCharHaveAlteredState(target,"Dic+") == false ) {
 					// Sensitized dick
-					var intensity = 0.05 + actStatsFactor + limitedRandomInt(5) * 0.01;
+					var intensity = 0.1 + actStatsFactor + limitedRandomInt(10) * 0.01;
 					var turns = 4 + limitedRandomInt(4) + (actStatsFactor - (actStatsFactor % 1));
 					var as = createSensitizedTag(intensity,"useDick","Sensitized dick","Dic+",turns,"The dick of this character will receive extra damage.");
 					applyAlteredState([target],as);
@@ -337,7 +408,7 @@ window.createSaDildoTeaseGenitals = function() {
 			if ( limitedRandomInt(8) < 4 ) {
 				if ( doesCharHaveAlteredState(target,"Pus+") == false ) {
 					// Sensitized pussy
-					var intensity = 0.05 + actStatsFactor + limitedRandomInt(5) * 0.01;
+					var intensity = 0.1 + actStatsFactor + limitedRandomInt(10) * 0.01;
 					var turns = 4 + limitedRandomInt(4) + (actStatsFactor - (actStatsFactor % 1));
 					var as = createSensitizedTag(intensity,"usePussy","Sensitized pussy","Pus+",turns,"The pussy of this character will receive extra damage.");
 					applyAlteredState([target],as);
@@ -349,7 +420,7 @@ window.createSaDildoTeaseGenitals = function() {
 			if ( limitedRandomInt(16) < 4 ) {
 				if ( doesCharHaveAlteredState(target,"Ass+") == false ) {
 					// Sensitized anus
-					var intensity = 0.05 + actStatsFactor + limitedRandomInt(5) * 0.01;
+					var intensity = 0.1 + actStatsFactor + limitedRandomInt(10) * 0.01;
 					var turns = 4 + limitedRandomInt(4) + (actStatsFactor - (actStatsFactor % 1));
 					var as = createSensitizedTag(intensity,"useAnus","Sensitized ass","Ass+",turns,"The ass of this character will receive extra damage.");
 					applyAlteredState([target],as);
@@ -388,6 +459,7 @@ window.createSaKissLips = function() {
 	sa.unvalidRelationalPositions.push(["kneeling","standing"],["takenFromBehind","takingFromBehind"],["spitroastBehind","spitroastTarget"],
 									   ["spitroastTarget","spitroastBehind"]);
 	sa.unvalidRelationalPositions.push(["mountingFromBehind","mountingAndMounted"],["mountingAndMounted","mountingFromBehind"],["mountingAndMounted","mountedFromBehind"],["mountedFromBehind","mountingAndMounted"]);
+	sa.unvalidRelationalPositions.push(["mountingFaceToGroin","mountedFaceToGroin"],["mountedFaceToGroin","mountingFaceToGroin"]);
 	
 	sa.flavorTags.push("foreplay","useMouth","targetMouth","romantic");
 	
@@ -405,7 +477,7 @@ window.createSaKissLips = function() {
 		
 		// Altered state
 		if ( doesCharHaveAlteredState(target,"Mou+") == false ) {
-			var intensity = 0.05 + gCstat(actorKey,"agility") * 0.005 + limitedRandomInt(5) * 0.01;
+			var intensity = 0.1 + gCstat(actorKey,"agility") * 0.005 + limitedRandomInt(10) * 0.01;
 			var turns = 4 + limitedRandomInt(4) + (gCstat(actorKey,"agility") * 0.04) - ((gCstat(actorKey,"agility") * 0.04) % 1);
 			var as = createSensitizedTag(intensity,"useMouth","Sensitized mouth","Mou+",turns,"The mouth of this character will receive extra damage.");
 			applyAlteredState([target],as);
@@ -436,25 +508,120 @@ window.createSaLickLegs = function() {
 	sa.targetRequiredPositions.push("standing","spitroastFront");
 	sa.linkedPositions = true;
 	
-	sa.flavorTags.push("foreplay","useMouth","targetLegs");
+	sa.flavorTags.push("foreplay","submission","useMouth","targetLegs");
 	
 	sa.description = "The character tastes the skin of the target's legs.\n\nSingle target action.\n"
-				   + "Actor requires free mouth, target requires free legs.\n\nForeplay.\n\n__Influences__:\nDamage: Actor's agility x1.";
+				   + "Actor requires free mouth, target requires free legs.\n\nForeplay, submission.\n\n__Influences__:\nDamage: Actor's agility x1.";
 	sa.execute = function(actorKey,targetActors) {
+		var actor = actorKey;
 		var results = new saResults;
 		var target = targetActors[0];
 		
+		var actStatsFactor = (gCstat(actorKey,"agility") + gCstat(actorKey,"perception") + gCstat(actorKey,"charisma")) * 0.02;
+		
+		var targetGenitals = ["groin","private parts"];
+		if ( gC(target).hasFreeBodypart("dick") ) {
+			targetGenitals.push("dick");
+			if ( limitedRandomInt(32) < 4 ) {
+				if ( doesCharHaveAlteredState(target,"Dic+") == false ) {
+					// Sensitized dick
+					var intensity = 0.1 + actStatsFactor + limitedRandomInt(10) * 0.01;
+					var turns = 4 + limitedRandomInt(4) + (actStatsFactor - (actStatsFactor % 1));
+					var as = createSensitizedTag(intensity,"useDick","Sensitized dick","Dic+",turns,"The dick of this character will receive extra damage.");
+					applyAlteredState([target],as);
+				}
+			}
+			if ( limitedRandomInt(32) < 4 ) {
+				if ( doesCharHaveAlteredState(actorKey,"DicT") == false ) {
+					// Desired dick
+					var intensity = 0.1 + actStatsFactor + limitedRandomInt(10) * 0.01;
+					var turns = 4 + limitedRandomInt(4) + (actStatsFactor - (actStatsFactor % 1));
+					var as = createSensitizedTag(intensity,"targetDick","Desired dick","DicT",turns,"This character will receive extra damage when affected by other dicks.");
+					applyAlteredState([actorKey],as);
+				}
+			}
+		}
+		if ( gC(target).hasFreeBodypart("pussy") ) {
+			targetGenitals.push("pussy");
+			if ( limitedRandomInt(32) < 4 ) {
+				if ( doesCharHaveAlteredState(target,"Pus+") == false ) {
+					// Sensitized pussy
+					var intensity = 0.1 + actStatsFactor + limitedRandomInt(10) * 0.01;
+					var turns = 4 + limitedRandomInt(4) + (actStatsFactor - (actStatsFactor % 1));
+					var as = createSensitizedTag(intensity,"usePussy","Sensitized pussy","Pus+",turns,"The pussy of this character will receive extra damage.");
+					applyAlteredState([target],as);
+				}
+			}
+			if ( limitedRandomInt(32) < 4 ) {
+				if ( doesCharHaveAlteredState(actorKey,"PusT") == false ) {
+					// Desired pussy
+					var intensity = 0.1 + actStatsFactor + limitedRandomInt(10) * 0.01;
+					var turns = 4 + limitedRandomInt(4) + (actStatsFactor - (actStatsFactor % 1));
+					var as = createSensitizedTag(intensity,"targetPussy","Desired pussy","PusT",turns,"This character will receive extra damage when affected by other pussies.");
+					applyAlteredState([actorKey],as);
+				}
+			}
+		}
+		if ( limitedRandomInt(32) < 8 ) {
+			if ( doesCharHaveAlteredState(target,"Leg+") == false ) {
+				// Sensitized pussy
+				var intensity = 0.1 + actStatsFactor + limitedRandomInt(10) * 0.01;
+				var turns = 4 + limitedRandomInt(4) + (actStatsFactor - (actStatsFactor % 1));
+				var as = createSensitizedTag(intensity,"useLegs","Sensitized legs","Leg+",turns,"The legs of this character will receive extra damage.");
+				applyAlteredState([target],as);
+			}
+		}
+		if ( limitedRandomInt(32) < 8 ) {
+			if ( doesCharHaveAlteredState(actorKey,"LegT") == false ) {
+				// Desired pussy
+				var intensity = 0.1 + actStatsFactor + limitedRandomInt(10) * 0.01;
+				var turns = 4 + limitedRandomInt(4) + (actStatsFactor - (actStatsFactor % 1));
+				var as = createSensitizedTag(intensity,"targetLegs","Desired legs","LegT",turns,"This character will receive extra damage when affected by other legs.");
+				applyAlteredState([actorKey],as);
+			}
+		}
+		if ( limitedRandomInt(32) < 8 ) {
+			if ( doesCharHaveAlteredState(target,"Dom+") == false ) {
+				// Feeling dominant
+				var intensity = 0.1 + actStatsFactor + limitedRandomInt(10) * 0.01;
+				var turns = 4 + limitedRandomInt(4) + (actStatsFactor - (actStatsFactor % 1));
+				var as = createSensitizedTag(intensity,"domination","Feeling dominant","Dom+",turns,"This character will receive extra damage when acting as dominant.");
+				applyAlteredState([target],as);
+			}
+		}
+		if ( limitedRandomInt(32) < 8 ) {
+			if ( doesCharHaveAlteredState(actor,"Sub+") == false ) {
+				// Feeling dominant
+				var intensity = 0.1 + actStatsFactor + limitedRandomInt(10) * 0.01;
+				var turns = 4 + limitedRandomInt(4) + (actStatsFactor - (actStatsFactor % 1));
+				var as = createSensitizedTag(intensity,"submission","Feeling submissive","Sub+",turns,"This character will receive extra damage when acting as submissive.");
+				applyAlteredState([actor],as);
+			}
+		}
+
+		
 		var multAr = getSexDamageMult(actorKey,target,this.key);
-		var lustDamage = ((getChar(actorKey).agility.getValue() * 2) / 14) * multAr[0];
+		var multAr2 = getSexDamageMultAlt(target,actorKey,["foreplay","domination","targetMouth","useLegs"]);
+		var lustDamage = ((getChar(actorKey).agility.getValue() * 2) / 10) * multAr[0];
+		var lustDamage2 = ((getChar(actorKey).agility.getValue() * 2) / 20) * multAr2[0];
 		getChar(targetActors[0]).lust.changeValue(-lustDamage);
-		getChar(actorKey).lust.changeValue(-(lustDamage/2));
+		getChar(actorKey).lust.changeValue(-lustDamage2);
 		results.value += lustDamage;
 		results.description += randomFromList( [
-									(ktn(actorKey) + " licked " + ktn(target) + "'s thighs."),
-									(ktn(actorKey) + "'s tongue traced a line along " + ktn(target) + "'s leg."),
-									(ktn(actorKey) + " kissed and licked " + ktn(target) + "'s calves.") ] );
+									(ktn(actorKey) + " licked " + ktn(target) + "'s thighs. "),
+									(ktn(actorKey) + "'s tongue traced a line along " + ktn(target) + "'s leg. "),
+									(ktn(actorKey) + " kissed and licked " + ktn(target) + "'s calves. ") ] );
+		var chosenGenWord = randomFromList(targetGenitals);
+		if ( chosenGenWord == "pussy" ) {
+			results.description += "A shiver runs right through " + ktn(target) + "'s " + chosenGenWord + ".";
+		} else if ( chosenGenWord == "dick" ) {
+			results.description += "A shiver runs right through " + ktn(target) + "'s " + dickWord() + ".";
+		} else {
+			results.description += "A shiver runs right through " + ktn(target) + "'s " + pussyWord() + ".";
+			
+		}
 		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + ktn(actorKey)
-							 + " received " + textLustDamage((lustDamage/2)) + ". " + multAr[1];
+							 + " received " + textLustDamage(lustDamage2) + ". " + multAr[1];
 							   
 		return results;
 	}
@@ -472,6 +639,7 @@ window.createSaKissNeck = function() {
 	sa.unvalidRelationalPositions.push(["kneeling","standing"],["takenFromBehind","takingFromBehind"],["spitroastBehind","spitroastTarget"],
 									   ["spitroastTarget","spitroastBehind"]);
 	sa.unvalidRelationalPositions.push(["mountingFromBehind","mountingAndMounted"],["mountingAndMounted","mountingFromBehind"],["mountingAndMounted","mountedFromBehind"],["mountedFromBehind","mountingAndMounted"]);
+	sa.unvalidRelationalPositions.push(["mountingFaceToGroin","mountedFaceToGroin"],["mountedFaceToGroin","mountingFaceToGroin"]);
 	
 	sa.flavorTags.push("foreplay","useMouth","teasing");
 	
@@ -543,6 +711,7 @@ window.createSaFrottage = function() {
 	sa.unvalidRelationalPositions.push(["kneeling","standing"],["standing","kneeling"]);
 	sa.unvalidRelationalPositions.push(["spitroastTarget","spitroastFront"],["spitroastFront","spitroastTarget"]);
 	sa.unvalidRelationalPositions.push(["spitroastFront","spitroastBehind"],["spitroastBehind","spitroastFront"]);
+	sa.unvalidRelationalPositions.push(["mountingFaceToGroin","mountedFaceToGroin"],["mountedFaceToGroin","mountingFaceToGroin"]);
 	
 	sa.flavorTags.push("foreplay","teasing");
 	
@@ -563,7 +732,7 @@ window.createSaFrottage = function() {
 			if ( limitedRandomInt(32) < 4 ) {
 				if ( doesCharHaveAlteredState(actorKey,"Dic+") == false ) {
 					// Sensitized dick
-					var intensity = 0.05 + actStatsFactor + limitedRandomInt(5) * 0.01;
+					var intensity = 0.1 + actStatsFactor + limitedRandomInt(10) * 0.01;
 					var turns = 4 + limitedRandomInt(4) + (actStatsFactor - (actStatsFactor % 1));
 					var as = createSensitizedTag(intensity,"useDick","Sensitized dick","Dic+",turns,"The dick of this character will receive extra damage.");
 					applyAlteredState([actorKey],as);
@@ -572,7 +741,7 @@ window.createSaFrottage = function() {
 			if ( limitedRandomInt(32) < 4 ) {
 				if ( doesCharHaveAlteredState(target,"DicT") == false ) {
 					// Desired dick
-					var intensity = 0.05 + actStatsFactor + limitedRandomInt(5) * 0.01;
+					var intensity = 0.1 + actStatsFactor + limitedRandomInt(10) * 0.01;
 					var turns = 4 + limitedRandomInt(4) + (actStatsFactor - (actStatsFactor % 1));
 					var as = createSensitizedTag(intensity,"targetDick","Desired dick","DicT",turns,"This character will receive extra damage when affected by other dicks.");
 					applyAlteredState([target],as);
@@ -584,7 +753,7 @@ window.createSaFrottage = function() {
 			if ( limitedRandomInt(32) < 4 ) {
 				if ( doesCharHaveAlteredState(actorKey,"Pus+") == false ) {
 					// Sensitized pussy
-					var intensity = 0.05 + actStatsFactor + limitedRandomInt(5) * 0.01;
+					var intensity = 0.1 + actStatsFactor + limitedRandomInt(10) * 0.01;
 					var turns = 4 + limitedRandomInt(4) + (actStatsFactor - (actStatsFactor % 1));
 					var as = createSensitizedTag(intensity,"usePussy","Sensitized pussy","Pus+",turns,"The pussy of this character will receive extra damage.");
 					applyAlteredState([actorKey],as);
@@ -593,7 +762,7 @@ window.createSaFrottage = function() {
 			if ( limitedRandomInt(32) < 4 ) {
 				if ( doesCharHaveAlteredState(target,"PusT") == false ) {
 					// Desired pussy
-					var intensity = 0.05 + actStatsFactor + limitedRandomInt(5) * 0.01;
+					var intensity = 0.1 + actStatsFactor + limitedRandomInt(10) * 0.01;
 					var turns = 4 + limitedRandomInt(4) + (actStatsFactor - (actStatsFactor % 1));
 					var as = createSensitizedTag(intensity,"targetPussy","Desired pussy","PusT",turns,"This character will receive extra damage when affected by other pussies.");
 					applyAlteredState([target],as);
@@ -605,7 +774,7 @@ window.createSaFrottage = function() {
 			if ( limitedRandomInt(32) < 4 ) {
 				if ( doesCharHaveAlteredState(target,"Dic+") == false ) {
 					// Sensitized dick
-					var intensity = 0.05 + actStatsFactor + limitedRandomInt(5) * 0.01;
+					var intensity = 0.1 + actStatsFactor + limitedRandomInt(10) * 0.01;
 					var turns = 4 + limitedRandomInt(4) + (actStatsFactor - (actStatsFactor % 1));
 					var as = createSensitizedTag(intensity,"useDick","Sensitized dick","Dic+",turns,"The dick of this character will receive extra damage.");
 					applyAlteredState([target],as);
@@ -614,7 +783,7 @@ window.createSaFrottage = function() {
 			if ( limitedRandomInt(32) < 4 ) {
 				if ( doesCharHaveAlteredState(actorKey,"DicT") == false ) {
 					// Desired dick
-					var intensity = 0.05 + actStatsFactor + limitedRandomInt(5) * 0.01;
+					var intensity = 0.1 + actStatsFactor + limitedRandomInt(10) * 0.01;
 					var turns = 4 + limitedRandomInt(4) + (actStatsFactor - (actStatsFactor % 1));
 					var as = createSensitizedTag(intensity,"targetDick","Desired dick","DicT",turns,"This character will receive extra damage when affected by other dicks.");
 					applyAlteredState([actorKey],as);
@@ -626,7 +795,7 @@ window.createSaFrottage = function() {
 			if ( limitedRandomInt(32) < 4 ) {
 				if ( doesCharHaveAlteredState(target,"Pus+") == false ) {
 					// Sensitized pussy
-					var intensity = 0.05 + actStatsFactor + limitedRandomInt(5) * 0.01;
+					var intensity = 0.1 + actStatsFactor + limitedRandomInt(10) * 0.01;
 					var turns = 4 + limitedRandomInt(4) + (actStatsFactor - (actStatsFactor % 1));
 					var as = createSensitizedTag(intensity,"usePussy","Sensitized pussy","Pus+",turns,"The pussy of this character will receive extra damage.");
 					applyAlteredState([target],as);
@@ -635,7 +804,7 @@ window.createSaFrottage = function() {
 			if ( limitedRandomInt(32) < 4 ) {
 				if ( doesCharHaveAlteredState(actorKey,"PusT") == false ) {
 					// Desired pussy
-					var intensity = 0.05 + actStatsFactor + limitedRandomInt(5) * 0.01;
+					var intensity = 0.1 + actStatsFactor + limitedRandomInt(10) * 0.01;
 					var turns = 4 + limitedRandomInt(4) + (actStatsFactor - (actStatsFactor % 1));
 					var as = createSensitizedTag(intensity,"targetPussy","Desired pussy","PusT",turns,"This character will receive extra damage when affected by other pussies.");
 					applyAlteredState([actorKey],as);
@@ -674,6 +843,8 @@ window.createSaWhisperSweetNothings = function() {
 	sa.reqTags.push("diffTarget");
 	sa.actorBpReqs.push("mouth");
 	sa.socialdriveCost = 1;
+	
+	sa.unvalidRelationalPositions.push(["mountingFaceToGroin","mountedFaceToGroin"],["mountedFaceToGroin","mountingFaceToGroin"]);
 	
 	sa.flavorTags.push("talk","charm","romantic","teasing");
 	
@@ -973,94 +1144,7 @@ window.createSaPushAssBack = function() {
 	}
 	return sa;
 }
-window.createSaPiston = function() {
-	var sa = new sceneAction();
-	sa.name = "Piston";
-	sa.key = "piston";
-	sa.targetType = "single";
-	sa.tags.push("ss");
-	sa.tags.push("sUse");
-	sa.reqTags.push("diffTarget");
-	sa.requiredActiveCAs.push("takingFromBehind","penetratePussy");
-	sa.energyCost = 2;
-	/*
-	sa.requiredPositions.push("takingFromBehind");
-	sa.targetRequiredPositions.push("takenFromBehind");
-	sa.linkedPositions = true;
-	*/
-	sa.flavorTags.push("fullsex","useDick","targetPussy","top");
-	
-	sa.description = "The character uses all the strength in their legs and abs to fuck their target. The characters must be in position already.\n"
-				   + "Costs 5 energy.\nSingle target action.\n\nFull sex."
-				   + "\n\n__Influences__:\nDamage: Actor's physique x5, actor's resilience x3, actor's agility x2.";
-	sa.execute = function(actorKey,targetActors) {
-		 var results = new saResults;
-		 var actor = actorKey;
-		 var target = targetActors[0];
-		 
-		 applySaCosts(this,actor);
-		 
-		var multAr = getSexDamageMult(actorKey,target,this.key);
-		var multAr2 = getSexDamageMult(actorKey,actorKey,this.key);
-		 var lustDamage = ((getChar(actorKey).physique.getValue() * 5 + getChar(actorKey).agility.getValue() * 2 + getChar(actorKey).resilience.getValue() * 3) / 10);
-		 var lustDamage2 = (lustDamage / 1.5) * multAr2[0];
-		 lustDamage *= multAr[0];
-		getChar(targetActors[0]).lust.changeValue(-lustDamage);
-		getChar(actorKey).lust.changeValue(-lustDamage2);
-		results.value += lustDamage;
-		results.description += randomFromList( [
-									(ktn(actor) + " forcefully went into " + ktn(target) + " with all " + gC(actor).posPr + " strength."),
-									(ktn(actor) + " is repeteadly pushing " + gC(actor).posPr + " " + dickWord() + " into " + ktn(target) + "."),
-									(ktn(actor) + " is dominating " + ktn(target) + "'s " + pussyWord() + ", pushing back and forth.") ] );
-		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1];
-		results.description += ktn(actor) + " received " + textLustDamage(lustDamage2) + ". " + multAr2[1] + generateSaCostsText(this,actor) + ". ";
-		 
-		 return results;
-	}
-	return sa;
-}
-window.createSaFinalPush = function() {
-	var sa = new sceneAction();
-	sa.name = "Final Push";
-	sa.key = "finalPush";
-	sa.targetType = "single";
-	sa.tags.push("ss");
-	sa.tags.push("sUse");
-	sa.reqTags.push("diffTarget");
-	sa.requiredActiveCAs.push("takingFromBehind","penetratePussy");
-	sa.energyCost = 20;
-	
-	sa.flavorTags.push("fullsex","useDick","targetPussy","top");
-	
-	sa.description = "The character pushes the physical limits of their body to pour their whole being into one final fuck.\n"
-				   + "Forces an orgasm on the character and deals a lot of lust damage to their target.\n"
-				   + "The characters must be in position already.\n\nSingle target action.\n"
-				   + "\n\nFull sex."
-				   + "\n\n__Influences__:\nDamage: Actor's physique x3, actor's resilience x2.";
-	sa.execute = function(actorKey,targetActors) {
-		var results = new saResults;
-		var actor = actorKey;
-		var target = targetActors[0];
-		
-		applySaCosts(this,actor);
-		
-		var multAr = getSexDamageMult(actorKey,target,this.key);
-		var lustDamage = ((getChar(actorKey).physique.getValue() * 3 + getChar(actorKey).resilience.getValue() * 2) / 2) * multAr[0];
-		getChar(targetActors[0]).lust.changeValue(-lustDamage);
-		getChar(actorKey).lust.changeValue(-getChar(actorKey).lust.current);
-		results.value += lustDamage;
-		results.description += randomFromList( [
-								(ktn(actor) + " reached as deep as humanly possible within " + ktn(target)
-								+ ", putting " + gC(actor).posPr + " whole being into one final push."),
-								(ktn(actor) + "'s " + dickWord() + " aimed for the final frontier within " + ktn(target) + "'s " + pussyWord() + ".") ] );
-		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1];
-		results.description += ktn(actor) + " received " + colorText("lust damage until reaching orgasm","lightCoral") + ". " + generateSaCostsText(this,actor) + ". ";
-		
-		return results;
-	}
-	return sa;
-	
-}
+
 window.createSaRideDick = function() {
 	var sa = new sceneAction();
 	sa.name = "Ride dick";
@@ -1262,6 +1346,270 @@ window.createSaScissor = function() {
 	return sa;	
 }
 
+window.createSaPiston = function() {
+	var sa = new sceneAction();
+	sa.name = "Piston";
+	sa.key = "piston";
+	sa.targetType = "single";
+	sa.tags.push("ss");
+	sa.tags.push("sUse");
+	sa.reqTags.push("diffTarget");
+	sa.requiredActiveCAs.push("takingFromBehind","penetratePussy");
+	sa.energyCost = 2;
+	
+	sa.customActionAllowed = function(actionKey,actorKey,targetsKeys) {
+		var actor = actorKey;
+		var target = targetsKeys[0];
+		var isAllowed = false;
+		
+		if ( actor == "chGoddessHerald" ) {
+			isAllowed = true;
+		} else {
+			if ( getBarPercentage(actor,"energy") >= 0.4 ) { // Actor must have plenty of energy
+				if ( (gCstat(actor,"physique") + gCstat(actor,"resilience")) >= 36 ) {
+					isAllowed = true;
+				}
+			}
+		}
+		
+		return isAllowed;
+	}
+	
+	sa.flavorTags.push("fullsex","useDick","targetPussy","top");
+	
+	sa.description = "The character uses all the strength in their legs and abs to fuck their target.\nThe characters must be in position already.\n"
+				   + "The character must have at least 40% of their max energy, and a sum of 36 physique+resilience.\n"
+				   + "Excessive dryness may have unsatisfying results.\n"
+				   + "Costs 2 energy.\nSingle target action.\n\nFull sex."
+				   + "\n\n__Influences__:\nDamage: Actor's physique x5, actor's resilience x3, actor's agility x2.";
+	sa.execute = function(actorKey,targetActors) {
+		 var results = new saResults;
+		 var actor = actorKey;
+		 var target = targetActors[0];
+		 
+		 applySaCosts(this,actor);
+		 
+		var dryPenalty = true;
+		var multAr = getSexDamageMult(actorKey,target,this.key);
+		var multAr2 = getSexDamageMult(actorKey,actorKey,this.key);
+		
+		if ( State.variables.sc.currentTurn >= 6 || getBarPercentage(target,"lust") <= 0.75 ) {
+			dryPenalty = false;
+		}
+		
+		var lustDamage = ((getChar(actorKey).physique.getValue() * 5 + getChar(actorKey).agility.getValue() * 2 + getChar(actorKey).resilience.getValue() * 3) / 10);
+		if ( dryPenalty ) { lustDamage *= 0.5; } // Dry penalty
+		var lustDamage2 = (lustDamage / 3) * multAr2[0];
+		lustDamage *= multAr[0];
+		getChar(targetActors[0]).lust.changeValue(-lustDamage);
+		getChar(actorKey).lust.changeValue(-lustDamage2);
+		if ( dryPenalty ) { getChar(actorKey).energy.changeValue(-this.energyCost); } // Dry penalty
+		results.value += lustDamage;
+		
+		results.description += randomFromList( [
+									(ktn(actor) + " forcefully went into " + ktn(target) + " with all " + gC(actor).posPr + " strength."),
+									(ktn(actor) + " is repeteadly pushing " + gC(actor).posPr + " " + dickWord() + " into " + ktn(target) + "."),
+									(ktn(actor) + " is dominating " + ktn(target) + "'s " + pussyWord() + ", pushing back and forth.") ] );
+		if ( dryPenalty ) { results.description += "// " + ktn(target) + " doesn't seem to be wet enough, diminishing lust damage and increasing energy cost.//"; }
+		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1];
+		results.description += ktn(actor) + " received " + textLustDamage(lustDamage2) + ". " + multAr2[1] + generateSaCostsText(this,actor) + ". ";
+		if ( dryPenalty ) { results.description += " " + generateSaCostsText(this,actor) + " again."; }
+		 
+		return results;
+	}
+	return sa;
+}
+window.createSaGallopOnDick = function() {
+	var sa = new sceneAction();
+	sa.name = "Gallop on Dick";
+	sa.key = "gallopDick";
+	sa.targetType = "single";
+	sa.tags.push("ss");
+	sa.tags.push("sUse");
+	sa.reqTags.push("diffTarget");
+	sa.requiredActiveCAs.push("mountDick");
+	sa.energyCost = 2;
+	
+	sa.unvalidRelationalPositions.push(["mountedFromBehind","mountingFromBehind"]);
+	
+	sa.customActionAllowed = function(actionKey,actorKey,targetsKeys) {
+		var actor = actorKey;
+		var target = targetsKeys[0];
+		var isAllowed = false;
+		
+		if ( actor == "chGoddessHerald" ) {
+			isAllowed = true;
+		} else {
+			if ( getBarPercentage(actor,"energy") >= 0.4 ) { // Actor must have plenty of energy
+				if ( (gCstat(actor,"physique") + gCstat(actor,"resilience")) >= 36 ) {
+					isAllowed = true;
+				}
+			}
+		}
+		
+		return isAllowed;
+	}
+	
+	sa.flavorTags.push("fullsex","targetDick","usePussy","top");
+	
+	sa.description = "The character bounces once and again on the target's dick, voraciously impaling their pussy.\nThe characters must be in position already.\n"
+				   + "The character must have at least 40% of their max energy, and a sum of 36 physique+resilience.\n"
+				   + "Excessive dryness may have unsatisfying results.\n"
+				   + "Costs 2 energy.\nSingle target action.\n\nFull sex."
+				   + "\n\n__Influences__:\nDamage: Actor's resilience x5, actor's physique x3, actor's agility x2.";
+	sa.execute = function(actorKey,targetActors) {
+		 var results = new saResults;
+		 var actor = actorKey;
+		 var target = targetActors[0];
+		 
+		 applySaCosts(this,actor);
+		 
+		var dryPenalty = true;
+		var multAr = getSexDamageMult(actorKey,target,this.key);
+		var multAr2 = getSexDamageMult(actorKey,actorKey,this.key);
+		
+		if ( State.variables.sc.currentTurn >= 6 || getBarPercentage(actor,"lust") <= 0.75 ) {
+			dryPenalty = false;
+		}
+		
+		var lustDamage = ((getChar(actorKey).physique.getValue() * 3 + getChar(actorKey).agility.getValue() * 2 + getChar(actorKey).resilience.getValue() * 5) / 10);
+		if ( dryPenalty ) { lustDamage *= 0.5; } // Dry penalty
+		var lustDamage2 = (lustDamage / 3) * multAr2[0];
+		lustDamage *= multAr[0];
+		getChar(targetActors[0]).lust.changeValue(-lustDamage);
+		getChar(actorKey).lust.changeValue(-lustDamage2);
+		if ( dryPenalty ) { getChar(actorKey).energy.changeValue(-this.energyCost); } // Dry penalty
+		results.value += lustDamage;
+		
+		results.description += randomFromList( [
+									(ktn(actor) + " lets all the weight of " + gC(actor).posPr + " body fall on " + ktn(target) + "'s " + dickWord() + "."),
+									(ktn(actor) + "'s " + pussyWord() + " cannot get enough of " + ktn(target) + "'s " + dickWord() + "."),
+									(ktn(actor) + " keeps dominating " + ktn(target) + "'s " + dickWord() + ", bouncing up and down.") ] );
+		if ( dryPenalty ) { results.description += "// " + ktn(actor) + " doesn't seem to be wet enough, diminishing lust damage and increasing energy cost.//"; }
+		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1];
+		results.description += ktn(actor) + " received " + textLustDamage(lustDamage2) + ". " + multAr2[1] + generateSaCostsText(this,actor) + ". ";
+		if ( dryPenalty ) { results.description += " " + generateSaCostsText(this,actor) + " again."; }
+		 
+		return results;
+	}
+	return sa;
+}
+window.createSaGallopOnPussy = function() {
+	var sa = new sceneAction();
+	sa.name = "Gallop on Pussy";
+	sa.key = "gallopPussy";
+	sa.targetType = "single";
+	sa.tags.push("ss");
+	sa.tags.push("sUse");
+	sa.reqTags.push("diffTarget");
+	sa.requiredActiveCAs.push("interlockLegs");
+	sa.energyCost = 2;
+	
+	sa.customActionAllowed = function(actionKey,actorKey,targetsKeys) {
+		var actor = actorKey;
+		var target = targetsKeys[0];
+		var isAllowed = false;
+		
+		if ( actor == "chGoddessHerald" ) {
+			isAllowed = true;
+		} else {
+			if ( getBarPercentage(actor,"energy") >= 0.4 ) { // Actor must have plenty of energy
+				if ( (gCstat(actor,"agility") + gCstat(actor,"resilience")) >= 36 ) {
+					isAllowed = true;
+				}
+			}
+		}
+		
+		return isAllowed;
+	}
+	
+	sa.flavorTags.push("fullsex","targetDick","usePussy","top");
+	
+	sa.description = "The character bounces once and again on the target's dick, voraciously impaling their pussy.\nThe characters must be in position already.\n"
+				   + "The character must have at least 40% of their max energy, and a sum of 36 agility+resilience.\n"
+				   + "Excessive dryness may have unsatisfying results.\n"
+				   + "Costs 2 energy.\nSingle target action.\n\nFull sex."
+				   + "\n\n__Influences__:\nDamage: Actor's agility x5, actor's resilience x3, actor's physique x2.";
+	sa.execute = function(actorKey,targetActors) {
+		 var results = new saResults;
+		 var actor = actorKey;
+		 var target = targetActors[0];
+		 
+		 applySaCosts(this,actor);
+		 
+		var dryPenalty = true;
+		var multAr = getSexDamageMult(actorKey,target,this.key);
+		var multAr2 = getSexDamageMult(actorKey,actorKey,this.key);
+		
+		if ( State.variables.sc.currentTurn >= 6 || getBarPercentage(target,"lust") <= 0.75 ) {
+			dryPenalty = false;
+		}
+		
+		var lustDamage = ((getChar(actorKey).physique.getValue() * 2 + getChar(actorKey).agility.getValue() * 5 + getChar(actorKey).resilience.getValue() * 3) / 10);
+		if ( dryPenalty ) { lustDamage *= 0.5; } // Dry penalty
+		var lustDamage2 = (lustDamage / 3) * multAr2[0];
+		lustDamage *= multAr[0];
+		getChar(targetActors[0]).lust.changeValue(-lustDamage);
+		getChar(actorKey).lust.changeValue(-lustDamage2);
+		if ( dryPenalty ) { getChar(actorKey).energy.changeValue(-this.energyCost); } // Dry penalty
+		results.value += lustDamage;
+		
+		results.description += randomFromList( [
+									(ktn(actor) + " roughly rides " + ktn(target) + "'s " + pussyWord() + ", leaving fire on " + gC(actor).posPr + " path."),
+									(ktn(actor) + " scissors up and down through " + gC(actor).posPr + " partner's clit, as if " + gC(actor).perPr + " was trying to put down a fire."),
+									(ktn(actor) + " gallops on " + ktn(target) + "'s " + pussyWord() + ", masterfully impulsing " + gC(actor).refPr + " with " + gC(actor).posPr + " legs.") ] );
+		if ( dryPenalty ) { results.description += "// " + ktn(target) + " doesn't seem to be wet enough, diminishing lust damage and increasing energy cost.//"; }
+		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1];
+		results.description += ktn(actor) + " received " + textLustDamage(lustDamage2) + ". " + multAr2[1] + generateSaCostsText(this,actor) + ". ";
+		if ( dryPenalty ) { results.description += " " + generateSaCostsText(this,actor) + " again."; }
+		 
+		return results;
+	}
+	return sa;
+}
+window.createSaFinalPush = function() {
+	var sa = new sceneAction();
+	sa.name = "Final Push";
+	sa.key = "finalPush";
+	sa.targetType = "single";
+	sa.tags.push("ss");
+	sa.tags.push("sUse");
+	sa.reqTags.push("diffTarget");
+	sa.requiredActiveCAs.push("takingFromBehind","penetratePussy");
+	sa.energyCost = 20;
+	
+	sa.flavorTags.push("fullsex","useDick","targetPussy","top");
+	
+	sa.description = "The character pushes the physical limits of their body to pour their whole being into one final fuck.\n"
+				   + "Forces an orgasm on the character and deals a lot of lust damage to their target.\n"
+				   + "The characters must be in position already.\n\nSingle target action.\n"
+				   + "\n\nFull sex."
+				   + "\n\n__Influences__:\nDamage: Actor's physique x3, actor's resilience x2.";
+	sa.execute = function(actorKey,targetActors) {
+		var results = new saResults;
+		var actor = actorKey;
+		var target = targetActors[0];
+		
+		applySaCosts(this,actor);
+		
+		var multAr = getSexDamageMult(actorKey,target,this.key);
+		var lustDamage = ((getChar(actorKey).physique.getValue() * 3 + getChar(actorKey).resilience.getValue() * 2) / 2) * multAr[0];
+		getChar(targetActors[0]).lust.changeValue(-lustDamage);
+		getChar(actorKey).lust.changeValue(-getChar(actorKey).lust.current);
+		results.value += lustDamage;
+		results.description += randomFromList( [
+								(ktn(actor) + " reached as deep as humanly possible within " + ktn(target)
+								+ ", putting " + gC(actor).posPr + " whole being into one final push."),
+								(ktn(actor) + "'s " + dickWord() + " aimed for the final frontier within " + ktn(target) + "'s " + pussyWord() + ".") ] );
+		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1];
+		results.description += ktn(actor) + " received " + colorText("lust damage until reaching orgasm","lightCoral") + ". " + generateSaCostsText(this,actor) + ". ";
+		
+		return results;
+	}
+	return sa;
+	
+}
+
 window.createSaLickGroin = function() {
 	var sa = new sceneAction();
 	sa.name = "Lick Groin";
@@ -1272,16 +1620,19 @@ window.createSaLickGroin = function() {
 	sa.reqTags.push("diffTarget");
 	sa.actorBpReqs.push("mouth");
 	
-	sa.requiredPositions.push("kneeling","spitroastTarget");
-	sa.targetRequiredPositions.push("standing","spitroastFront");
+	sa.requiredPositions.push("kneeling","spitroastTarget","mountingFaceToGroin","mountedFaceToGroin");
+	sa.targetRequiredPositions.push("standing","spitroastFront","mountedFaceToGroin","mountingFaceToGroin");
 	sa.linkedPositions = true;
 	
 	sa.flavorTags.push("oral","useMouth","targetPussy","targetDick");
 	
-	sa.description = "The character lick the erogenous parts of their target's groin.\n\nSingle target action.\n"
-				   + "\nOral.\n\n__Influences__:\nDamage: Actor's agility x1, target's free genitals.";
+	sa.description = "The character lick the erogenous parts of their target's groin.\nMay sometimes increase the sensitivity and desire for various available genitals."
+				   + "\n\nSingle target action.\n"
+				   + "\nOral.\n\n__Influences__:\nDamage: Actor's agility x1, target's free genitals.\n\nBonus if kneeling in front of standing target."
+				   + "\nPotential distraction malus if the actor's genitals are in use with low resilience, will, perception.";
 	sa.execute = function(actorKey,targetActors) {
 		var results = new saResults;
+		var actor = actorKey;
 		var target = targetActors[0];
 		
 		var targetGenitals = ["groin","private parts"];
@@ -1289,16 +1640,85 @@ window.createSaLickGroin = function() {
 		if ( gC(target).hasFreeBodypart("pussy") ) { targetGenitals.push("pussy","pussy"); }
 		
 		var multAr = getSexDamageMult(actorKey,target,this.key);
-		var lustDamage = (getChar(actorKey).agility.getValue() * 3) / 10;
-		lustDamage *= ((targetGenitals.length + 1) * 0.2) * multAr[0];
+		var posMult = 1;
+		var exTags = [];
+		if ( gC(target).position.key == "standing" && gC(actor).position.key == "kneeling" ) {
+			posMult += 0.2;
+			exTags = "kneeling";
+		}
+		if ( true ) {
+			var distractionFlag = false;
+			for ( var ca of State.variables.sc.continuedActions ) {
+				if ( (ca.initiator == actor && ( ca.initiatorBodyparts.includes("dick") || ca.initiatorBodyparts.includes("pussy") || ca.initiatorBodyparts.includes("anus") ) ) || (ca.targetsList.includes(actor) && ( ca.targetsBodyparts.includes("dick") || ca.targetsBodyparts.includes("pussy") || ca.targetsBodyparts.includes("anus") ) ) ) {
+					distractionFlag = true;
+				}
+			}
+			if ( distractionFlag && limitedRandomInt(100) > ( gCstat(actor,"will") + gCstat(actor,"perception") + gCstat(actor,"resilience") ) ) {
+				posMult -= 0.3;
+				exTags = "distractionMalus";
+			}
+		}
+		
+		var lustDamage = (getChar(actorKey).agility.getValue() * 2) / 10;
+		lustDamage *= ((targetGenitals.length + 1) * 0.2) * posMult * multAr[0];
 		getChar(targetActors[0]).lust.changeValue(-lustDamage);
 		results.value += lustDamage;
+		
+		var actStatsFactor = (gCstat(actorKey,"agility") + gCstat(actorKey,"perception")) * 0.03;
+		if ( gC(target).hasFreeBodypart("dick") ) {
+			if ( limitedRandomInt(32) < 6 ) {
+				if ( doesCharHaveAlteredState(target,"Dic+") == false ) {
+					// Sensitized dick
+					var intensity = 0.1 + actStatsFactor + limitedRandomInt(10) * 0.01;
+					var turns = 4 + limitedRandomInt(4) + (actStatsFactor - (actStatsFactor % 1));
+					var as = createSensitizedTag(intensity,"useDick","Sensitized dick","Dic+",turns,"The dick of this character will receive extra damage.");
+					applyAlteredState([target],as);
+				}
+			}
+			if ( limitedRandomInt(32) < 6 ) {
+				if ( doesCharHaveAlteredState(actorKey,"DicT") == false ) {
+					// Desired dick
+					var intensity = 0.1 + actStatsFactor + limitedRandomInt(10) * 0.01;
+					var turns = 4 + limitedRandomInt(4) + (actStatsFactor - (actStatsFactor % 1));
+					var as = createSensitizedTag(intensity,"targetDick","Desired dick","DicT",turns,"This character will receive extra damage when affected by other dicks.");
+					applyAlteredState([actorKey],as);
+				}
+			}
+		}
+		if ( gC(target).hasFreeBodypart("pussy") ) {
+			targetGenitals.push("pussy");
+			if ( limitedRandomInt(32) < 6 ) {
+				if ( doesCharHaveAlteredState(target,"Pus+") == false ) {
+					// Sensitized pussy
+					var intensity = 0.1 + actStatsFactor + limitedRandomInt(10) * 0.01;
+					var turns = 4 + limitedRandomInt(4) + (actStatsFactor - (actStatsFactor % 1));
+					var as = createSensitizedTag(intensity,"usePussy","Sensitized pussy","Pus+",turns,"The pussy of this character will receive extra damage.");
+					applyAlteredState([target],as);
+				}
+			}
+			if ( limitedRandomInt(32) < 6 ) {
+				if ( doesCharHaveAlteredState(actorKey,"PusT") == false ) {
+					// Desired pussy
+					var intensity = 0.1 + actStatsFactor + limitedRandomInt(10) * 0.01;
+					var turns = 4 + limitedRandomInt(4) + (actStatsFactor - (actStatsFactor % 1));
+					var as = createSensitizedTag(intensity,"targetPussy","Desired pussy","PusT",turns,"This character will receive extra damage when affected by other pussies.");
+					applyAlteredState([actorKey],as);
+				}
+			}
+		}
+		
 		results.description += randomFromList( [
 								(ktn(actorKey) + " licked " + ktn(target) + "'s " + randomFromList(targetGenitals) + "."),
 								(ktn(actorKey) + " pleasured " + ktn(target) + "'s " + randomFromList(targetGenitals) + " with "
 								+ gC(actorKey).posPr + " tongue."),
 								(ktn(actorKey) + " throughly cleaned " + ktn(target) + "'s " + randomFromList(targetGenitals)
 								+ " with " + gC(actorKey).posPr + " mouth.") ] );
+		if ( exTags.includes("kneeling") ) {
+			results.description += " //" + ktn(actor) + " has ample freedom to move " + gC(actor).posPr + " head, increasing the lust damage.//";
+		}
+		if ( exTags.includes("distractionMalus") ) {
+			results.description += " //A distraction in " + gC(actor).posPr + " groin is getting " + ktn(actor) + " distracted, reducing lust damage.//";
+		}
 		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1];
 		
 		return results;
@@ -1318,7 +1738,8 @@ window.createSaSuckDick = function() {
 	
 	sa.description = "The character sucks their target's dick.\n"
 				   + "The actor must be giving a blowjob to their target.\n\nSingle target action.\n"
-				   + "\nOral.\n\n__Influences__:\nDamage: Actor's agility x1.";
+				   + "\nOral.\n\n__Influences__:\nDamage: Actor's agility x1.\n\nBonus if kneeling in front of standing target."
+				   + "\nPotential distraction malus if the actor's genitals are in use with low resilience, will, perception.";
 				   
 	sa.execute = function(actorKey,targetActors) {
 		var results = new saResults;
@@ -1326,13 +1747,39 @@ window.createSaSuckDick = function() {
 		var target = targetActors[0];
 		
 		var multAr = getSexDamageMult(actorKey,target,this.key);
-		var lustDamage = (getChar(actorKey).agility.getValue() / 3) * multAr[0];
+		var posMult = 1;
+		var exTags = [];
+		if ( gC(target).position.key == "standing" && gC(actor).position.key == "kneeling" ) {
+			posMult += 0.2;
+			exTags = "kneeling";
+		}
+		if ( true ) {
+			var distractionFlag = false;
+			for ( var ca of State.variables.sc.continuedActions ) {
+				if ( (ca.initiator == actor && ( ca.initiatorBodyparts.includes("dick") || ca.initiatorBodyparts.includes("pussy") || ca.initiatorBodyparts.includes("anus") ) ) || (ca.targetsList.includes(actor) && ( ca.targetsBodyparts.includes("dick") || ca.targetsBodyparts.includes("pussy") || ca.targetsBodyparts.includes("anus") ) ) ) {
+					distractionFlag = true;
+				}
+			}
+			if ( distractionFlag && limitedRandomInt(100) > ( gCstat(actor,"will") + gCstat(actor,"perception") + gCstat(actor,"resilience") ) ) {
+				posMult -= 0.3;
+				exTags = "distractionMalus";
+			}
+		}
+		
+		var lustDamage = (getChar(actorKey).agility.getValue() / 3) * posMult * multAr[0];
 		gC(target).lust.changeValue(-lustDamage);
+		
 		results.value += lustDamage;
 		results.description += randomFromList( [
 								(ktn(actor) + " sucked " + ktn(target) + "'s " + dickWord() + "."),
 								(ktn(actor) + " throughly licked " + ktn(target) + "'s " + dickWord() + " within " + gC(actor).posPr + " mouth."),
 								(ktn(actor) + " ran " + gC(actor).posPr + " tongue through " + ktn(target) + "'s " + dickWord() + "'s skin.") ] );
+		if ( exTags.includes("kneeling") ) {
+			results.description += " //" + ktn(actor) + " has ample freedom to move " + gC(actor).posPr + " head, increasing the lust damage.//";
+		}
+		if ( exTags.includes("distractionMalus") ) {
+			results.description += " //A distraction in " + gC(actor).posPr + " groin is getting " + ktn(actor) + " distracted, reducing lust damage.//";
+		}
 		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1];
 		
 		return results;
@@ -1352,7 +1799,7 @@ window.createSaFuckFace = function() {
 	
 	sa.description = "The character penetrates their target's mouth with their dick.\n"
 				   + "The actor must be receiving a blowjob from their target.\n\nSingle target action.\n"
-				   + "\nOral.\n\n__Influences__:\nDamage: Actor's physique x1, actor's agility x1.";
+				   + "\nOral.\n\n__Influences__:\nDamage: Actor's physique x1, actor's agility x1.\n\nBonus if standing in front of kneeling target.";
 				   
 	sa.execute = function(actorKey,targetActors) {
 		// Lust to actor, lust to target, willpower to target
@@ -1362,9 +1809,16 @@ window.createSaFuckFace = function() {
 		
 		var multAr = getSexDamageMult(actorKey,actorKey,this.key);
 		var multAr2 = getSexDamageMult(actorKey,target,this.key);
-		var lustDamageSelf = (getChar(actorKey).physique.getValue() / 10 + getChar(actorKey).agility.getValue() / 10) * multAr[0];
-		var lustDamageTarget = (getChar(actorKey).physique.getValue() / 14 + getChar(actorKey).agility.getValue() / 14) * multAr2[0];
-		var willpowerDamageTarget = (getChar(actorKey).physique.getValue() / 20 + getChar(actorKey).agility.getValue() / 20) * multAr2[0];
+		var posMult = 1;
+		var exTags = [];
+		if ( gC(actor).position.key == "standing" && gC(target).position.key == "kneeling" ) {
+			posMult += 0.2;
+			exTags = "kneeling";
+		}
+		
+		var lustDamageSelf = (getChar(actorKey).physique.getValue() + getChar(actorKey).agility.getValue()) / 12 * posMult * multAr[0];
+		var lustDamageTarget = (getChar(actorKey).physique.getValue() + getChar(actorKey).agility.getValue()) / 17 * posMult * multAr2[0];
+		var willpowerDamageTarget = (getChar(actorKey).physique.getValue() + getChar(actorKey).agility.getValue()) / 24 * posMult * multAr2[0];
 		gC(actor).lust.changeValue(-lustDamageSelf);
 		gC(target).lust.changeValue(-lustDamageTarget);
 		gC(target).willpower.changeValue(-willpowerDamageTarget);
@@ -1375,6 +1829,9 @@ window.createSaFuckFace = function() {
 								(ktn(target) + " struggles to breathe due to " + ktn(actor) + "'s enthusiam in fucking " + gC(target).posPr + " throat."),
 								(ktn(actor) + "'s " + dickWord() + " is looking for treasure within " + ktn(target) + "'s mouth."),
 								(ktn(actor) + " keeps pushing " + gC(actor).posPr + " " + dickWord() + " into " + ktn(target) + "'s mouth.") ] );
+		if ( exTags.includes("kneeling") ) {
+			results.description += " //The ample freedom to enjoy " + ktn(target) + "'s " + randomFromList(["mouth","throat","lips"]) + " increases the lust and willpower damage.//";
+		}
 		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamageTarget) + " and " + textWillpowerDamage(willpowerDamageTarget)
 							 + ". " + multAr2[1] + ktn(actor) + " received " + textLustDamage(lustDamageSelf) + ". " + multAr[1];
 		
@@ -1395,7 +1852,8 @@ window.createSaLickPussy = function() {
 	
 	sa.description = "The character sucks their target's pussy.\n"
 				   + "The actor must be eating out their target's pussy.\n\nSingle target action.\n"
-				   + "\nOral.\n\n__Influences__:\nDamage: Actor's agility x1.";
+				   + "\nOral.\n\n__Influences__:\nDamage: Actor's agility x1.\n\nBonus if kneeling in front of standing target."
+				   + "\nPotential distraction malus if the actor's genitals are in use with low resilience, will, perception.";
 				   
 	sa.execute = function(actorKey,targetActors) {
 		var results = new saResults;
@@ -1403,13 +1861,37 @@ window.createSaLickPussy = function() {
 		var target = targetActors[0];
 		
 		var multAr = getSexDamageMult(actorKey,target,this.key);
-		var lustDamage = (getChar(actorKey).agility.getValue() / 3) * multAr[0];
+		var posMult = 1;
+		var exTags = [];
+		if ( gC(target).position.key == "standing" && gC(actor).position.key == "kneeling" ) {
+			posMult += 0.2;
+			exTags = "kneeling";
+		}
+		if ( true ) {
+			var distractionFlag = false;
+			for ( var ca of State.variables.sc.continuedActions ) {
+				if ( (ca.initiator == actor && ( ca.initiatorBodyparts.includes("dick") || ca.initiatorBodyparts.includes("pussy") || ca.initiatorBodyparts.includes("anus") ) ) || (ca.targetsList.includes(actor) && ( ca.targetsBodyparts.includes("dick") || ca.targetsBodyparts.includes("pussy") || ca.targetsBodyparts.includes("anus") ) ) ) {
+					distractionFlag = true;
+				}
+			}
+			if ( distractionFlag && limitedRandomInt(100) > ( gCstat(actor,"will") + gCstat(actor,"perception") + gCstat(actor,"resilience") ) ) {
+				posMult -= 0.3;
+				exTags = "distractionMalus";
+			}
+		}
+		var lustDamage = (getChar(actorKey).agility.getValue() / 3) * posMult * multAr[0];
 		gC(target).lust.changeValue(-lustDamage);
 		results.value += lustDamage;
 		results.description += randomFromList( [
 								(ktn(actor) + " is eating " + ktn(target) + "'s " + pussyWord() + "."),
 								(ktn(actor) + " throughly licked " + ktn(target) + "'s " + pussyWord() + "'s folds."),
 								(ktn(actor) + " ran " + gC(actor).posPr + " tongue through every corner of " + ktn(target) + "'s " + pussyWord() + ".") ] );
+		if ( exTags.includes("kneeling") ) {
+			results.description += " //" + ktn(actor) + " has ample freedom to move " + gC(actor).posPr + " head, increasing the lust damage.//";
+		}
+		if ( exTags.includes("distractionMalus") ) {
+			results.description += " //A distraction in " + gC(actor).posPr + " groin is getting " + ktn(actor) + " distracted, reducing lust damage.//";
+		}
 		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1];
 		
 		return results;
@@ -1429,7 +1911,7 @@ window.createSaRideFace = function() {
 	
 	sa.description = "The character masturbates their own pussy against their target's face.\n"
 				   + "The target must be eating out the actor's pussy.\n\nSingle target action.\n"
-				   + "\nOral.\n\n__Influences__:\nDamage: Actor's physique x1, actor's agility x1.";
+				   + "\nOral.\n\n__Influences__:\nDamage: Actor's physique x1, actor's agility x1.\n\nBonus if mounting face to groin.";
 				   
 	sa.execute = function(actorKey,targetActors) {
 		var results = new saResults;
@@ -1438,9 +1920,16 @@ window.createSaRideFace = function() {
 		
 		var multAr = getSexDamageMult(actorKey,actorKey,this.key);
 		var multAr2 = getSexDamageMult(actorKey,target,this.key);
-		var lustDamageSelf = (getChar(actorKey).physique.getValue() / 10 + getChar(actorKey).agility.getValue() / 10) * multAr[0];
-		var lustDamageTarget = (getChar(actorKey).physique.getValue() / 14 + getChar(actorKey).agility.getValue() / 14) * multAr2[0];
-		var willpowerDamageTarget = (getChar(actorKey).physique.getValue() / 20 + getChar(actorKey).agility.getValue() / 20) * multAr2[0];
+		var posMult = 1;
+		var exTags = [];
+		if ( gC(actor).position.key == "mountingFaceToGroin" && gC(target).position.key == "mountedFaceToGroin" ) {
+			posMult += 0.3;
+			exTags = "straddle";
+		}
+		
+		var lustDamageSelf = (getChar(actorKey).physique.getValue() + getChar(actorKey).agility.getValue()) / 12 * posMult * multAr[0];
+		var lustDamageTarget = (getChar(actorKey).physique.getValue() + getChar(actorKey).agility.getValue()) / 17 * posMult * multAr2[0];
+		var willpowerDamageTarget = (getChar(actorKey).physique.getValue() + getChar(actorKey).agility.getValue()) / 24 * posMult * multAr2[0];
 		gC(actor).lust.changeValue(-lustDamageSelf);
 		gC(target).lust.changeValue(-lustDamageTarget);
 		gC(target).willpower.changeValue(-willpowerDamageTarget);
@@ -1450,6 +1939,9 @@ window.createSaRideFace = function() {
 								(ktn(actor) + "'s riding of " + ktn(target) + "'s face is going to light fire."),
 								(ktn(actor) + " is pulling " + ktn(target) + "'s face against " + gC(actor).posPr + " own groin."),
 								(ktn(target) + " has no choice to but swallow " + ktn(actor) + "'s vaginal fluids.") ] );
+		if ( exTags.includes("straddle") ) {
+			results.description += " //The entrapment below " + ktn(actor) + "'s legs increases the lust and willpower damage.//";
+		}
 		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamageTarget) + " and " + textWillpowerDamage(willpowerDamageTarget)
 							 + ". " + multAr2[1] + ktn(actor) + " received " + textLustDamage(lustDamageSelf) + ". " + multAr[1];
 		
@@ -1595,6 +2087,7 @@ window.createSaHypnoticGlance = function() {
 	sa.unvalidRelationalPositions.push(["mountingAndMounted","mountingFromBehind"]);
 	sa.unvalidRelationalPositions.push(["mountingAndMounted","mountedFromBehind"]);
 	sa.unvalidRelationalPositions.push(["mountedFromBehind","mountingAndMounted"]);
+	sa.unvalidRelationalPositions.push(["mountingFaceToGroin","mountedFaceToGroin"],["mountedFaceToGroin","mountingFaceToGroin"]);
 	
 	sa.flavorTags.push("hypnosis","useEyes","targetEyes");
 	
@@ -1644,6 +2137,7 @@ window.createSaLustfulGlance = function() {
 	sa.unvalidRelationalPositions.push(["mountingAndMounted","mountingFromBehind"]);
 	sa.unvalidRelationalPositions.push(["mountingAndMounted","mountedFromBehind"]);
 	sa.unvalidRelationalPositions.push(["mountedFromBehind","mountingAndMounted"]);
+	sa.unvalidRelationalPositions.push(["mountingFaceToGroin","mountedFaceToGroin"],["mountedFaceToGroin","mountingFaceToGroin"]);
 	
 	sa.flavorTags.push("charm","useEyes","targetEyes");
 	
@@ -1687,6 +2181,7 @@ window.createSaRealHypnoticGlance = function() {
 	sa.unvalidRelationalPositions.push(["mountingAndMounted","mountingFromBehind"]);
 	sa.unvalidRelationalPositions.push(["mountingAndMounted","mountedFromBehind"]);
 	sa.unvalidRelationalPositions.push(["mountedFromBehind","mountingAndMounted"]);
+	sa.unvalidRelationalPositions.push(["mountingFaceToGroin","mountedFaceToGroin"],["mountedFaceToGroin","mountingFaceToGroin"]);
 	
 	sa.flavorTags.push("hypnosis","useEyes","targetEyes","domination");
 	
@@ -1773,12 +2268,53 @@ window.createSaSpanking = function() {
 		return isAllowed;
 	}
 	
-	sa.description = "The character punishes their target by hitting their ass with an open hand.\n\n"
+	sa.description = "The character punishes their target by hitting their ass with an open hand.\n"
+				   + "This action may increase the desire for pain and submission in the target, and for inflicting pain and domination in the acting character.\n\n"
 				   + "Single target action.\n\nDomination.\n\n__Influences__:\nDamage: Actor's physique x1, actor's resilience x1.";
 	
 	sa.execute = function(actorKey,targetActors) {
+		var actor = actorKey;
 		var results = new saResults;
 		var target = targetActors[0];
+		
+		var actStatsFactor = (gCstat(actorKey,"physique") + gCstat(actorKey,"resilience")) * 0.03;
+		
+		if ( limitedRandomInt(32) < 8 ) {
+			if ( doesCharHaveAlteredState(target,"RPn+") == false ) {
+				// Feeling dominant
+				var intensity = 0.1 + actStatsFactor + limitedRandomInt(10) * 0.01;
+				var turns = 4 + limitedRandomInt(4) + (actStatsFactor - (actStatsFactor % 1));
+				var as = createSensitizedTag(intensity,"receivePain","Feeling masochistic","RPn+",turns,"This character will receive extra damage when receiving pain.");
+				applyAlteredState([target],as);
+			}
+		}
+		if ( limitedRandomInt(32) < 8 ) {
+			if ( doesCharHaveAlteredState(actor,"GPn+") == false ) {
+				// Feeling submissive
+				var intensity = 0.1 + actStatsFactor + limitedRandomInt(10) * 0.01;
+				var turns = 4 + limitedRandomInt(4) + (actStatsFactor - (actStatsFactor % 1));
+				var as = createSensitizedTag(intensity,"usePain","Feeling sadistic","GPn+",turns,"This character will receive extra damage when dealing pain.");
+				applyAlteredState([actor],as);
+			}
+		}
+		if ( limitedRandomInt(32) < 8 ) {
+			if ( doesCharHaveAlteredState(actor,"Dom+") == false ) {
+				// Feeling dominant
+				var intensity = 0.1 + actStatsFactor + limitedRandomInt(10) * 0.01;
+				var turns = 4 + limitedRandomInt(4) + (actStatsFactor - (actStatsFactor % 1));
+				var as = createSensitizedTag(intensity,"domination","Feeling dominant","Dom+",turns,"This character will receive extra damage when acting as dominant.");
+				applyAlteredState([actor],as);
+			}
+		}
+		if ( limitedRandomInt(32) < 8 ) {
+			if ( doesCharHaveAlteredState(target,"Sub+") == false ) {
+				// Feeling submissive
+				var intensity = 0.1 + actStatsFactor + limitedRandomInt(10) * 0.01;
+				var turns = 4 + limitedRandomInt(4) + (actStatsFactor - (actStatsFactor % 1));
+				var as = createSensitizedTag(intensity,"submission","Feeling submissive","Sub+",turns,"This character will receive extra damage when acting as submissive.");
+				applyAlteredState([target],as);
+			}
+		}
 		
 		var multAr = getSexDamageMult(actorKey,target,this.key);
 		var lockedLimbsMult = 1 + returnCharsLockedLimbs(target).length * 0.25;
@@ -1808,7 +2344,7 @@ window.createSaSpanking = function() {
 		if ( isSubmissive ) { results.description += " //Being spanked by " + gC(target).posPr + " dominant increases the lust and willpower damage.//"; }
 		if ( lockedLimbsMult > 1 ) { results.description += " //The powerlessness of being spanked with locked limbs increases the lust and willpower damage.//"; }
 		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1];
-		results.description += ktn(target) + " received " + textWillpowerDamage(willpowerDamage) + "." + multAr[1];
+		results.description += ktn(target) + " received " + textWillpowerDamage(willpowerDamage) + ". " + multAr[1];
 		
 		return results;
 	}
@@ -1886,6 +2422,7 @@ window.createSaFrenchKiss = function() {
 	sa.unvalidRelationalPositions.push(["mountingAndMounted","mountingFromBehind"]);
 	sa.unvalidRelationalPositions.push(["mountingAndMounted","mountedFromBehind"]);
 	sa.unvalidRelationalPositions.push(["mountedFromBehind","mountingAndMounted"]);
+	sa.unvalidRelationalPositions.push(["mountingFaceToGroin","mountedFaceToGroin"],["mountedFaceToGroin","mountingFaceToGroin"]);
 	
 	sa.flavorTags.push("oral","useMouth","targetMouth","romantic","continuedAction");
 	
@@ -2003,6 +2540,8 @@ window.createLegHoldHead = function() {
 	
 	sa.requiredPositions.push("standing","spitroastFront");
 	sa.targetRequiredPositions.push("kneeling","spitroastTarget");
+	sa.requiredPositions.push("mountingFaceToGroin","mountedFaceToGroin");
+	sa.targetRequiredPositions.push("mountedFaceToGroin","mountingFaceToGroin");
 	sa.linkedPositions = true;
 	
 	sa.flavorTags.push("oral","useLegs","targetMouth","domination","continuedAction");
@@ -2084,8 +2623,10 @@ window.createGiveCunnilingus = function() {
 	sa.actorBpReqs.push("mouth");
 	sa.caRank = 2;
 	
-	sa.targetRequiredPositions.push("standing","spitroastFront");
 	sa.requiredPositions.push("kneeling","spitroastTarget");
+	sa.targetRequiredPositions.push("standing","spitroastFront");
+	sa.requiredPositions.push("mountingFaceToGroin","mountedFaceToGroin");
+	sa.targetRequiredPositions.push("mountedFaceToGroin","mountingFaceToGroin");
 	sa.linkedPositions = true;
 	
 	sa.flavorTags.push("oral","useMouth","targetPussy","continuedAction");
@@ -2289,8 +2830,8 @@ window.createSaMountDick = function() {
 	sa.targetBpReqs.push("dick");
 	sa.caRank = 2;
 	
-	sa.requiredPositions = ["mountingFaceToFace","mountingAndMounted"];
-	sa.targetRequiredPositions = ["mountedFaceToFace","mountedFaceToFace"];
+	sa.requiredPositions = ["mountingFaceToFace","mountingAndMounted","mountedFromBehind","mountingAndMounted"];
+	sa.targetRequiredPositions = ["mountedFaceToFace","mountedFaceToFace","mountingFromBehind","mountingFromBehind"];
 	sa.linkedPositions = true;
 	
 	sa.flavorTags.push("fullsex","usePussy","targetDick","top","continuedAction");
@@ -2307,14 +2848,25 @@ window.createSaMountDick = function() {
 		var lustDamage = ((getChar(actorKey).physique.getValue() * 3 + getChar(actorKey).agility.getValue() * 1) / 10) * multAr[0];
 		getChar(targetActors[0]).lust.changeValue(-lustDamage);
 		results.value += lustDamage;
-		results.description += randomFromList( [
-								(ktn(actorKey) + " started fucking " + ktn(target) + "'s " + dickWord() + "."),
-								(ktn(actorKey) + " mounted " + ktn(target) + "'s " + dickWord() + "."),
-								(ktn(actorKey) + " fell upon " + ktn(target) + "'s " + dickWord() + ".") ] );
+		if ( gC(target).position.key != "mountingFromBehind" ) {
+			results.description += randomFromList( [
+									(ktn(actorKey) + " started fucking " + ktn(target) + "'s " + dickWord() + "."),
+									(ktn(actorKey) + " mounted " + ktn(target) + "'s " + dickWord() + "."),
+									(ktn(actorKey) + " fell upon " + ktn(target) + "'s " + dickWord() + ".") ] );
+		} else {
+			results.description += randomFromList( [
+									(ktn(actorKey) + " aligned " + gC(actorKey).refPr + " with " + ktn(target) + "'s " + dickWord() + " and impaled " + gC(actorKey).refPr + " with it."),
+									(ktn(actorKey) + " directed " + ktn(target) + "'s " + dickWord() + " to enter " + gC(actorKey).comPr + "."),
+									(ktn(actorKey) + " pushed " + gC(actorKey).posPr + " bottom against " + ktn(target) + ", getting " + gC(target).comPr + " inside.") ] );
+		}
 		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1];
 		
 		// Continued Action
-		State.variables.sc.continuedActions.push(createCaMountDick(actorKey,targetActors));
+		if ( gC(actorKey).position.key == "mountedFromBehind" || gC(target).position.key == "mountingFromBehind" ) {
+			State.variables.sc.continuedActions.push(createCaPenetratePussy(targetActors[0],[actorKey]));
+		} else {
+			State.variables.sc.continuedActions.push(createCaMountDick(actorKey,targetActors));
+		}
 		
 		// Try virginities
 		if ( getChar(targetActors[0]).virginities.dick.taken == false ) {
@@ -2341,8 +2893,8 @@ window.createSaAnalMountDick = function() {
 	sa.targetBpReqs.push("dick");
 	sa.caRank = 2;
 	
-	sa.requiredPositions = ["mountingFaceToFace","mountingAndMounted"];
-	sa.targetRequiredPositions = ["mountedFaceToFace","mountedFaceToFace"];
+	sa.requiredPositions = ["mountingFaceToFace","mountingAndMounted","mountedFromBehind","mountingAndMounted"];
+	sa.targetRequiredPositions = ["mountedFaceToFace","mountedFaceToFace","mountingFromBehind","mountingFromBehind"];
 	sa.linkedPositions = true;
 	
 	sa.flavorTags.push("fullsex","useAnus","targetDick","top","continuedAction");
@@ -2371,10 +2923,17 @@ window.createSaAnalMountDick = function() {
 		getChar(targetActors[0]).lust.changeValue(-lustDamage);
 		getChar(targetActors[0]).energy.changeValue(-energyDamage);
 		results.value += lustDamage;
-		results.description += randomFromList( [
-								(ktn(actorKey) + " started fucking " + ktn(target) + "'s " + dickWord() + " with " + gC(actorKey).posPr + " " + assWord() + "."),
-								(ktn(actorKey) + " envolved " + ktn(target) + "'s " + dickWord() + " with " + gC(actorKey).posPr + " " + assWord() + "."),
-								(ktn(actorKey) + "'s " + assWord() + " fell upon " + ktn(target) + "'s " + dickWord() + ".") ] );
+		if ( gC(target).position.key != "mountingFromBehind" ) {
+			results.description += randomFromList( [
+									(ktn(actorKey) + " started fucking " + ktn(target) + "'s " + dickWord() + " with " + gC(actorKey).posPr + " " + assWord() + "."),
+									(ktn(actorKey) + " envolved " + ktn(target) + "'s " + dickWord() + " with " + gC(actorKey).posPr + " " + assWord() + "."),
+									(ktn(actorKey) + "'s " + assWord() + " fell upon " + ktn(target) + "'s " + dickWord() + ".") ] );
+		} else {
+			results.description += randomFromList( [
+									(ktn(actorKey) + " aligned " + gC(actorKey).refPr + " with " + ktn(target) + "'s " + dickWord() + " and impaled " + gC(actorKey).refPr + " with it."),
+									(ktn(actorKey) + " directed " + ktn(target) + "'s " + dickWord() + " to enter " + gC(actorKey).comPr + "."),
+									(ktn(actorKey) + " pushed " + gC(actorKey).posPr + " bottom against " + ktn(target) + ", getting " + gC(target).comPr + " inside.") ] );
+		}
 		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + " and " + textEnergyDamage(energyDamage) + ". " + multAr[1];
 		
 		// Continued Action
@@ -2486,6 +3045,8 @@ window.createSaGetBlowjob = function() {
 	
 	sa.requiredPositions = ["standing","spitroastFront"]; // If the list contains anything, the actor requires one of these positions
 	sa.targetRequiredPositions = ["kneeling","spitroastTarget"]; // If the list contains anything, the targets require one of these positions
+	sa.requiredPositions.push("mountingFaceToGroin","mountedFaceToGroin");
+	sa.targetRequiredPositions.push("mountedFaceToGroin","mountingFaceToGroin");
 	sa.linkedPositions = false; // If true, the actor and its targets require to be referenced as initiator or target in their respective positions
 	
 	sa.flavorTags.push("oral","useDick","targetMouth","top","domination","continuedAction");
@@ -2531,6 +3092,8 @@ window.createSaGiveBlowjob = function() {
 	
 	sa.targetRequiredPositions = ["standing","spitroastFront"]; // If the list contains anything, the actor requires one of these positions
 	sa.requiredPositions = ["kneeling","spitroastTarget"]; // If the list contains anything, the targets require one of these positions
+	sa.requiredPositions.push("mountingFaceToGroin","mountedFaceToGroin");
+	sa.targetRequiredPositions.push("mountedFaceToGroin","mountingFaceToGroin");
 	sa.linkedPositions = false; // If true, the actor and its targets require to be referenced as initiator or target in their respective positions
 	
 	sa.flavorTags.push("oral","targetDick","useMouth","top","domination","continuedAction");
@@ -2775,12 +3338,13 @@ window.createSaHoldArms = function() {
 	sa.targetRequiredPositions.push("mountedFaceToFace","mountedFromBehind","mountingAndMounted");
 	sa.linkedPositions = true;
 	
-	sa.flavorTags.push("domination");
+	sa.flavorTags.push("domination", "bondage");
 	
 	sa.description = "The character grabs the target's arms and holds them in place, preventing their use.\n"
 				   + "Actor and target must have free arms. They must share valid positions.\n\nSingle target continued action.\n"
 				   + "\nDomination."
-				   + "\n\n__Influences__:\nContinued willpower damage: Actor's physique x1, actor's resilience x1.";
+				   + "\n\n__Influences__:\nContinued willpower damage: Actor's physique x1, actor's resilience x1."
+				   + "\n\nBonus when the involved characters have the corresponding BDSM inclinations.\nBonus when the target has lost considerable willpower.";
 				   
 	sa.execute = function(actorKey,targetActors) {
 		var results = new saResults;
@@ -2813,14 +3377,15 @@ window.createSaVinesHoldArms = function() {
 	sa.caRank = 1;
 	
 	sa.requiredRace = [ "leirien" ];
-	sa.willpowerCost = 3;
+	sa.willpowerCost = 2;
 	
 	sa.flavorTags.push("domination","bondage");
 	
 	sa.description = "The character uses their vines to restrain the target's arms.\n"
-				   + "Actor will consume 3 willpower points.\nTarget must have free arms.\n\nSingle target continued action.\n"
+				   + "Actor will consume 2 willpower points.\nTarget must have free arms.\n\nSingle target continued action.\n"
 				   + "\nDomination, bondage."
-				   + "\n\n__Influences__:\nContinued willpower damage: Actor's intelligence x1, actor's resilience x1.";
+				   + "\n\n__Influences__:\nContinued willpower damage: Actor's intelligence x1, actor's resilience x1."
+				   + "\n\nBonus when the involved characters have the corresponding BDSM inclinations.\nBonus when the target has lost considerable willpower.";
 				   
 	sa.execute = function(actorKey,targetActors) {
 		var results = new saResults;
@@ -2848,24 +3413,33 @@ window.createSaVinesHoldArms = function() {
 
 window.createSaEtherealChains = function() {
 	var sa = new sceneAction();
-	sa.name = "Ethereal Chains";
+	sa.name = "Aethereal Chains (CA)";
 	sa.key = "etherealChains";
 	sa.targetType = "single";
-	sa.tags.push("ss","sUse");
+	sa.tags.push("ss","cAct");
 	sa.reqTags.push("diffTarget","hasLead");
 	sa.targetBpReqs.push("arms");
 	sa.caRank = 1;
 	
+	sa.willpowerCost = 3;
+	
+	sa.unvalidRelationalPositions.push(["mountingFaceToGroin","mountedFaceToGroin"],["mountedFaceToGroin","mountingFaceToGroin"]);
+	
 	sa.flavorTags.push("domination","bondage");
 	
 	sa.description = "The character casts ethereal chains to lock their target's arms with them.\n"
-				   + "Target must have free arms. Actor must be leading.\n\nSingle target action.\n"
-				   + "\nDomination, bondage.";
+				   + "\Actor will consume 3 willpower points.\nTarget must have free arms. Actor must be leading.\n\nSingle target action.\n"
+				   + "\nDomination, bondage."
+				   + "\n\n__Influences__:\nContinued willpower damage: Actor's intelligence x1, actor's will x1, actor's resilience x1."
+				   + "\n\nBonus when the involved characters have the corresponding BDSM inclinations.\nBonus when the target has lost considerable willpower.";
 	
 	sa.execute = function(actor,targetActors) {
 		if ( actor == "chPlayerCharacter" ) { addToStVarsList("monActUs"); }
 		var results = new saResults;
 		var target = targetActors[0];
+		
+		// Bar costs
+		gC(actor).willpower.current -= this.willpowerCost;
 		
 		results.value += 0;
 		results.description += randomFromList( [
@@ -2873,8 +3447,8 @@ window.createSaEtherealChains = function() {
 									(ktn(actor) + " ties " + ktn(target) + "'s arms with magical chains.")
 								] );
 		
-		var altState = createASaetherialChainsArms(1);
-		applyAlteredState([target],altState);
+		// Continued Action
+		State.variables.sc.continuedActions.push(createCaAetherialChains(actor,targetActors));
 		
 		return results;
 	}
@@ -2993,6 +3567,7 @@ window.createSaEnergyDrainingKiss = function() {
 	sa.unvalidRelationalPositions.push(["mountingAndMounted","mountingFromBehind"]);
 	sa.unvalidRelationalPositions.push(["mountingAndMounted","mountedFromBehind"]);
 	sa.unvalidRelationalPositions.push(["mountedFromBehind","mountingAndMounted"]);
+	sa.unvalidRelationalPositions.push(["mountingFaceToGroin","mountedFaceToGroin"],["mountedFaceToGroin","mountingFaceToGroin"]);
 	
 	sa.flavorTags.push("oral","useMouth","targetMouth","romantic","continuedAction","draining");
 	
@@ -3029,51 +3604,6 @@ window.createSaEnergyDrainingKiss = function() {
 	return sa;
 }
 
-/* Cunnilingus postponed until required
-window.createSaGetCunnilingus = function() {
-	var sa = new sceneAction();
-	sa.name = "Get Cunnilingus (CA)";
-	sa.key = "getCunnilingus";
-	sa.targetType = "single";
-	sa.tags.push("ss");
-	sa.tags.push("cAct");
-	sa.reqTags.push("diffTarget");
-	sa.actorBpReqs.push("pussy");
-	sa.targetBpReqs.push("mouth");
-	
-	sa.requiredPositions = ["standing"]; // If the list contains anything, the actor requires one of these positions
-	sa.targetRequiredPositions = ["kneeling"]; // If the list contains anything, the targets require one of these positions
-	sa.linkedPositions = false; // If true, the actor and its targets require to be referenced as initiator or target in their respective positions
-	
-	sa.flavorTags.push("oral","usePussy","targetMouth","top","domination","continuedAction");
-	
-	sa.description = "The character gets their target to start sucking their pussy.\n"
-				   + "Actor must have a free pussy, target must have a free mouth.\n\nSingle target continued action.\n"
-				   + "Influenced by actor's charisma and resilience, and target's agility.\n\nOral.";
-	
-	sa.execute = function(actorKey,targetActors) {
-		var results = new saResults;
-		var target = targetActors[0];
-		
-		var lustDamage = gC(actorKey).charisma.getValue() / 5;
-		gC(target).lust.changeValue(-lustDamage);
-		results.value += lustDamage;
-		results.description += randomFromList( [
-								(ktn(actorKey) + " told " + ktn(target) + " to start eating " + ktn(actorKey).posPr + " " + pussyWord() + "."),
-								(ktn(actorKey) + " got " + ktn(target) + " to start licking " + ktn(actorKey).posPr + " " + pussyWord() + "."),
-								(ktn(target) + " was made to suck " + ktn(actorKey) + "'s " + pussyWord() + ".") ] );
-		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ".";
-		
-		// Continued Action
-		State.variables.sc.continuedActions.push(createCaGetBlowjob(actorKey,targetActors));
-		
-		return results;
-	}
-	
-	return sa;
-}
-*/
-
 // Position-related actions
 window.createSaMountFromBehind = function() {
 	var sa = new sceneAction();
@@ -3107,7 +3637,6 @@ window.createSaMountFromBehind = function() {
 	}
 	return sa;
 }
-
 window.createSaMountFaceToFace = function() {
 	var sa = new sceneAction();
 	
@@ -3142,6 +3671,96 @@ window.createSaMountFaceToFace = function() {
 	
 	return sa;
 }
+window.createSaMountFaceToGroin = function() {
+	var sa = new sceneAction();
+	
+	sa.name = "Mount face to groin (POS)";
+	sa.key = "mountFaceToGroin";
+	sa.targetType = "single";
+	sa.tags.push("ss","pos");
+	sa.positionResults = ["mountingFaceToGroin","mountedFaceToGroin"];
+	sa.reqTags.push("diffTarget");
+	
+	sa.flavorTags.push("position");
+	
+	sa.customPositionInit = function(actionKey,actor,targets) {
+		var result = false;
+		var target = targets[0];
+		
+		if ( areCharactersLinked(actor,target) ) {
+			if ( gC(actor).position.key == "standing" && gC(target).position.key == "kneeling" ) {
+				if ( gC(actor).position.targetsList.length == 1 ) {
+					result = true;
+				}
+			}
+		}
+		
+		return result;
+	}
+	
+	sa.description = "The character straddles their target's face and bends over towards their groin.\n\nSingle target positional action.\n"
+				   + "Might be used on a target kneeling before the actor.";
+	
+	sa.execute = function(actorKey,targetActors) {
+		var results = new saResults;
+		var target = targetActors[0];
+		
+		results.value += 0;
+		results.description = randomFromList( [
+								(ktn(actorKey) + " straddled " + ktn(target) + "'s face and arched " + gC(target).posPr + " back."),
+								(ktn(actorKey) + " mounted " + ktn(target) + "'s face."),
+								(ktn(actorKey) + " mounted " + ktn(target) + " and formed a 69 position.") ] );
+								
+		// Position
+		createPosMountFaceToGroin(actorKey,targetActors);
+		
+		return results;
+	}
+	
+	return sa;
+}
+
+window.createSaAskMountFromBehind = function() {
+	var sa = new sceneAction();
+	sa.name = "Ask to mount from behind (POS)";
+	sa.key = "askMountFromBehind";
+	sa.targetType = "single";
+	sa.tags.push("ss","pos");
+	sa.positionResults = ["mountedFromBehind","mountingFromBehind"];
+	sa.reqTags.push("diffTarget");
+	
+	sa.flavorTags.push("position");
+	
+	sa.strategyTags.push("tfMinus");
+	
+	sa.description = "The character asks their target to grab them from behind and bend them over.\n\nSingle target positional action.\n";
+	
+	sa.execute = function(actor,targetActors) {
+		var results = new saResults;
+		var target = targetActors[0];
+		
+		results.value += 0;
+		if ( State.variables.sc.enabledLead == "fixed" ) {
+			results.description = randomFromList( [
+								(ktn(actor) + " ordered " + ktn(target) + " to mount " + gC(actor).comPr + " from behind."),
+								(ktn(actor) + " turned " + gC(actor).comPr + " back on " + ktn(target) + " and told " + gC(target).comPr + " to take " + gC(actor).comPr + "."),
+								(ktn(actor) + " got in all fours and commanded " + ktn(target) + " to kneel behind " + gC(actor).comPr + ".") ] );
+		} else {
+			results.description = randomFromList( [
+								(ktn(actor) + " invited " + ktn(target) + " to mount " + gC(actor).comPr + " from behind."),
+								(ktn(actor) + " turned " + gC(actor).comPr + " back on " + ktn(target) + " and asked " + gC(target).comPr + " to take " + gC(actor).comPr + "."),
+								(ktn(actor) + " got in all fours and wiggled " + gC(actor).posPr + " bottom, enticing " + ktn(target) + " to mount " + gC(actor).comPr + ".") ] );
+		}
+		
+								
+		// Position
+		createPosMountFromBehind(target,[actor]);
+		
+		return results;
+	}
+	return sa;
+}
+
 
 window.createSaKneel = function() {
 	
@@ -3392,6 +4011,91 @@ window.createSaExtraMakeKneel = function() {
 	
 	return sa;
 }
+window.createSaExtraAskMountFromBehind = function() {
+	var sa = new sceneAction();
+	
+	sa.name = "Ask to mount from behind (CPOS)";
+	sa.key = "extraAskMountFromBehind";
+	sa.targetType = "single";
+	sa.tags.push("ss","cpos");
+	sa.positionResults = ["mountingAndMounted","mountingFromBehind"];
+	sa.reqTags.push("diffTarget");
+	sa.getRequiredPositioning = function(actor,target) {
+		var validFlag = false;
+		if ( gC(target).position.key == "free" ) {
+			if ( gC(actor).position.key == "kneeling" ) {
+				if ( gC(actor).position.hasOwnProperty("secondaryInitiator") == false ) {
+					validFlag = true;
+				}
+			} else if ( gC(actor).position.key == "mountingFaceToFace" ) {
+				if ( gC(actor).position.hasOwnProperty("secondaryInitiator") == false ) {
+					validFlag = true;
+				}
+			} else if ( gC(actor).position.key == "mountingFromBehind" ) {
+				if ( gC(actor).position.hasOwnProperty("secondaryInitiator") == false ) {
+					validFlag = true;
+				}
+			}
+		}
+		return validFlag;
+	}
+	
+	sa.flavorTags.push("position");
+	
+	sa.description = "The character asks their target to grab them from behind.\nThe character must have an appropriate position and the target must be free.\n\nSingle target composite positional action.\n";
+	
+	sa.execute = function(actorKey,targetActors) {
+		var actor = actorKey;
+		var results = new saResults;
+		var target = targetActors[0];
+		var type = "";
+		
+		// Get type
+		if ( gC(actor).position.key == "kneeling" ) {
+			if ( gC(actor).position.hasOwnProperty("secondaryInitiator") == false ) {
+				type = "spitroast";
+			}
+		} else if ( gC(actor).position.key == "mountingFaceToFace" ) {
+			if ( gC(actor).position.hasOwnProperty("secondaryInitiator") == false ) {
+				type = "mountingAndMounted";
+			}
+		} else if ( gC(actor).position.key == "mountingFromBehind" ) {
+			if ( gC(actor).position.hasOwnProperty("secondaryInitiator") == false ) {
+				type = "mountingAndMountedAlt";
+			}
+		}
+		results.value += 0;
+		
+		
+		switch(type) {
+			case "spitroast":
+				results.description = randomFromList( [
+								(ktn(actor) + " asked " + ktn(target) + " to take " + gC(actor).posPr + " hips from behind, leaving " + gC(actor).comPr + " spitroasted."),
+								(ktn(target) + " notices " + ktn(actor) + " beckoning " + gC(target).comPr + " to take " + gC(actor).comPr + " from behind."),
+								(ktn(actor) + " raises " + gC(actor).posPr + " backside and wiggles it, inviting " + ktn(target) + " to come to take it.") ] );
+				createComPosSpitroast(target,actorKey);
+				break;
+			case "mountingAndMounted":
+				results.description = randomFromList( [
+								(ktn(actor) + " wiggles " + gC(actor).posPr + " back for " + ktn(target) + ", inviting " + gC(target).comPr + " to get behind."),
+								(ktn(actor) + " asks " + ktn(target) + " to mount " + gC(actor).comPr + " from behind."),
+								(ktn(actor) + " tells " + ktn(target) + " " + gC(actor).posPr + " backside is ripe for the taking.") ] );
+				createComPosMountingAndMounted(target,actorKey);
+				break;
+			case "mountingAndMountedAlt":
+				results.description = randomFromList( [
+								(ktn(actor) + " wiggles " + gC(actor).posPr + " back for " + ktn(target) + ", inviting " + gC(target).comPr + " to get behind."),
+								(ktn(actor) + " asks " + ktn(target) + " to mount " + gC(actor).comPr + " from behind."),
+								(ktn(actor) + " tells " + ktn(target) + " " + gC(actor).posPr + " backside is ripe for the taking.") ] );
+				createComPosMountingAndMountedAlt(target,actorKey);
+				break;
+		}
+				
+		return results;
+	}
+	
+	return sa;
+}
 
 	// Denial
 window.createSaDenyOrgasm = function() {
@@ -3600,6 +4304,7 @@ window.createSaSculptingKiss = function() {
 	sa.unvalidRelationalPositions.push(["kneeling","standing"],["takenFromBehind","takingFromBehind"],["spitroastBehind","spitroastTarget"],
 									   ["spitroastTarget","spitroastBehind"]);
 	sa.unvalidRelationalPositions.push(["mountingFromBehind","mountingAndMounted"],["mountingAndMounted","mountingFromBehind"],["mountingAndMounted","mountedFromBehind"],["mountedFromBehind","mountingAndMounted"]);
+	sa.unvalidRelationalPositions.push(["mountingFaceToGroin","mountedFaceToGroin"],["mountedFaceToGroin","mountingFaceToGroin"]);
 	
 	sa.flavorTags.push("useMouth");
 	
@@ -3653,6 +4358,7 @@ window.createSaSculptChest = function() {
 	sa.unvalidRelationalPositions.push(["spitroastTarget","spitroastBehind"]);
 	sa.unvalidRelationalPositions.push(["spitroastFront","spitroastBehind"],["spitroastBehind","spitroastFront"]);
 	sa.unvalidRelationalPositions.push(["mountedFromBehind","mountingFromBehind"],["mountedFromBehind","mountingAndMounted"]);
+	sa.unvalidRelationalPositions.push(["mountingFaceToGroin","mountedFaceToGroin"],["mountedFaceToGroin","mountingFaceToGroin"]);
 	
 	sa.flavorTags.push("foreplay","useHands","targetBreasts");
 	
@@ -3667,7 +4373,7 @@ window.createSaSculptChest = function() {
 		
 		if ( doesCharHaveAlteredState(target,"Bre+") == false ) {
 			// Sensitized breasts
-			var intensity = 0.05 + gCstat(actorKey,"agility") * 0.005 + limitedRandomInt(5) * 0.01;
+			var intensity = 0.1 + gCstat(actorKey,"agility") * 0.005 + limitedRandomInt(10) * 0.01;
 			var turns = 4 + limitedRandomInt(4) + (gCstat(actorKey,"agility") * 0.04) - ((gCstat(actorKey,"agility") * 0.04) % 1);
 			var as = createSensitizedTag(intensity,"useBreasts","Sensitized breasts","Bre+",turns,"The breasts of this character will receive extra damage.");
 			applyAlteredState([target],as); 
@@ -3728,6 +4434,7 @@ window.createSaSculptBody = function() {
 	sa.unvalidRelationalPositions.push(["spitroastTarget","spitroastBehind"]);
 	sa.unvalidRelationalPositions.push(["spitroastFront","spitroastBehind"],["spitroastBehind","spitroastFront"]);
 	sa.unvalidRelationalPositions.push(["mountedFromBehind","mountingFromBehind"],["mountedFromBehind","mountingAndMounted"]);
+	sa.unvalidRelationalPositions.push(["mountingFaceToGroin","mountedFaceToGroin"],["mountedFaceToGroin","mountingFaceToGroin"]);
 	
 	sa.flavorTags.push("foreplay","useHands");
 	
@@ -3810,7 +4517,7 @@ window.createSaFormDick = function() {
 		
 		if ( doesCharHaveAlteredState(target,"Dic+") == false ) {
 			// Sensitized dick
-			var intensity = 0.05 + gCstat(actorKey,"agility") * 0.005 + limitedRandomInt(5) * 0.01;
+			var intensity = 0.1 + gCstat(actorKey,"agility") * 0.005 + limitedRandomInt(10) * 0.01;
 			var turns = 4 + limitedRandomInt(4) + (gCstat(actorKey,"agility") * 0.04) - ((gCstat(actorKey,"agility") * 0.04) % 1);
 			var as = createSensitizedTag(intensity,"useDick","Sensitized dick","Dic+",turns,"The dick of this character will receive extra damage.");
 			applyAlteredState([target],as);
@@ -3878,7 +4585,7 @@ window.createSaFormPussy = function() {
 		
 		if ( doesCharHaveAlteredState(target,"Pus+") == false ) {
 			// Sensitized pussy
-			var intensity = 0.05 + gCstat(actorKey,"agility") * 0.005 + limitedRandomInt(5) * 0.01;
+			var intensity = 0.1 + gCstat(actorKey,"agility") * 0.005 + limitedRandomInt(10) * 0.01;
 			var turns = 4 + limitedRandomInt(4) + (gCstat(actorKey,"agility") * 0.04) - ((gCstat(actorKey,"agility") * 0.04) % 1);
 			var as = createSensitizedTag(intensity,"usePussy","Sensitized pussy","Pus+",turns,"The pussy of this character will receive extra damage.");
 			applyAlteredState([target],as);

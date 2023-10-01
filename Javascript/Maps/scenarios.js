@@ -133,13 +133,13 @@ window.initTrainingPeriodPassionTempleTests = function() {
 	gC("chNash").relations.chPlayerCharacter.romance.level = 3;
 	gC("chNash").relations.chVal.sexualTension.level = 3;
 	gC("chNash").relations.chVal.romance.level = 3;
-	createRelTypeServitudeDom("chNash","chPlayerCharacter",3);
-	createRelTypeServitudeSub("chPlayerCharacter","chNash",3);
+	//createRelTypeServitudeDom("chNash","chPlayerCharacter",3);
+	//createRelTypeServitudeSub("chPlayerCharacter","chNash",3);
 	
 	State.variables.compass.allCharsCheckMapAi();
 	
 	// Stablish period duration
-	var periodMins = State.variables.simCycPar.templeTrainingHours * 60;
+	var periodMins = 60; //State.variables.simCycPar.templeTrainingHours * 60;
 	State.variables.compass.ongoingEvents.push(createTrainingEndEvent(periodMins));
 	State.variables.compass.periodEndsTip = getRelativeTimeString(periodMins);
 	

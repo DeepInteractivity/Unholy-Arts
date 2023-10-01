@@ -694,7 +694,7 @@ window.createGcRandomMonsterEncounterEvent = function(minutes,initialCharacters)
 			State.variables.sc.initialCharacters = this.initialCharactersTeamA;
 			for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
 				if ( charKey != "chPlayerCharacter" ) {
-					gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+					gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
 				}
 			}
 			for ( var extraMessage of this.extraMessages ) {

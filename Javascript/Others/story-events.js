@@ -1181,7 +1181,7 @@ window.gCaddSelectedGuests = function() {
 	removeRelationshipDataWithRemovedCharacters();
 }
 
-	// Return from GC
+	// Second Loop
 	
 window.initializeTributeForTheGoddess = function() {
 	setPasChars([getPresentCharByKey("chMir")]);
@@ -1396,7 +1396,6 @@ window.initializeSeCandidatesNegotiation = function() { // CNe0
 			while ( gC("chPlayerCharacter").domChar != npcs[i] ) {
 				i++;
 			}
-			State.variables.logL2.push(i);
 			if ( State.variables.StVars.check1[i] <= -20 || State.variables.StVars.check1[i] >= 20 ) { // Player has an opinionated dominant, who will try and sway the player
 				State.variables.StVars.check3 = gC("chPlayerCharacter").domChar;
 			}
@@ -1701,6 +1700,8 @@ window.seCandidatesNegotiationCountVotes = function() {
 	}
 }
 
+
+
 // Variables for Candidates Negotiation
 /*
 // Candidates Order: chNash, chMir, chClaw, chVal, chAte
@@ -1724,9 +1725,170 @@ window.seCandidatesNegotiationCountVotes = function() {
 // check4: Player's sway direction
 */
 
+// Ruler's Responsibility
 window.initializeRulersResponsibility = function() { // RuRe
 	State.variables.StVars.check1 = gCstat("chPlayerCharacter","intelligence") + gCstat("chPlayerCharacter","empathy");
 	State.variables.StVars.check2 = gCstat("chPlayerCharacter","intelligence") + gCstat("chPlayerCharacter","empathy") + gCstat("chPlayerCharacter","perception");
 }
+
+// Owed Gratitude
+window.initializeOwedGratitude = function() { // OwGr
+	setRoomIntro("mapTrainingGrounds","dummies");
+	// Is Rock a guest?
+	State.variables.StVars.check1 = getGuestsList().includes("chRock");
+	// What's Claw's relationship with the player?
+	State.variables.StVars.check2 = "none";
+	if ( gC("chClaw").domChar == "chPlayerCharacter" ) {
+		State.variables.StVars.check2 = "clSub";
+	} else if ( gC("chPlayerCharacter").domChar == "chClaw" ) {
+		State.variables.StVars.check2 = "clDom";
+	}
+	// Does Claw have a free dick or a free pussy?
+	State.variables.StVars.check3 = "";
+	if ( gC("chClaw").hasFreeBodypart("dick") ) {
+		State.variables.StVars.check3 = "dick";
+	} else if ( gC("chClaw").hasFreeBodypart("pussy") ) {
+		State.variables.StVars.check3 = "pussy";
+	}
+}
+
+// Caged Lovebirds
+window.initializeCagedLovebirds = function() { // CgLb
+	setRoomIntro("mapTrainingGrounds","playerRoom");
+	State.variables.StVars.check1 = [false,false]; // State of Hope's pussy , State of Rock's dick
+	State.variables.StVars.check1[0] = gC("chHope").body.pussy.state;
+	State.variables.StVars.check1[1] = gC("chRock").body.dick.state;
+	State.variables.StVars.check2 = [false,false]; // State of Hope's vaginal virginity , State of Rock's penile virginity
+	State.variables.StVars.check1[0] = gC("chHope").virginities.pussy.taken;
+	State.variables.StVars.check1[1] = gC("chRock").virginities.dick.taken;
+	// Stat checks
+	State.variables.StVars.check3 = (gCstat("chPlayerCharacter","perception") >= 16 || gCstat("chPlayerCharacter","empathy") >= 16);
+	State.variables.StVars.check4 = [false,false,false,false,false];
+	if ( gCstat("chPlayerCharacter","intelligence") >= 16 || gCstat("chPlayerCharacter","will") >= 16 || gCstat("chPlayerCharacter","charisma") >= 16 || gCstat("chPlayerCharacter","empathy") ) {
+		State.variables.StVars.check4[1] = true;
+	}
+	// Chastity devices checks
+	var cBelt = false;
+	var cCage = false;
+	for ( var eq of State.variables.equipmentList ) {
+		if ( eq.owner == "chPlayerCharacter" ) {
+			if ( eq.type == equipmentType.CHASTITYBELT ) {
+				if ( eq.equippedOn == null || eq.equippedOn == "chHope" ) {
+					cBelt = true;
+					State.variables.StVars.check4[3] = true;
+				}
+			} else if ( eq.type == equipmentType.CHASTITYCAGE ) {
+				if ( eq.equippedOn == null || eq.equippedOn == "chRock" ) {
+					cCage = true;
+					State.variables.StVars.check4[4] = true;
+				}
+			}
+		}
+	}
+	if ( cBelt && cCage ) {
+		State.variables.StVars.check4[2] = true;
+	}
+	
+	State.variables.StVars.check5 = [gC("chHope").virginities.pussy.taken,gC("chRock").virginities.dick.taken];
+}
+window.cgLbPrisonersDilemmaEquips = function() {
+	var eqCb = gC("chHope").body.pussy.bondage;
+	if ( eqCb != -1 ) {
+		unequipObject(eqCb);
+	}
+	var eqCg = gC("chRock").body.dick.bondage;
+	if ( eqCg != -1 ) {
+		unequipObject(eqCg);
+	}
+	
+	var chBlId = 0; // ID for chosen chastity belt
+	var chCgId = 0; // ID for chosen chastity cage
+	
+	for ( var eq of State.variables.equipmentList ) {
+		if ( eq.owner == "chPlayerCharacter" ) {
+			if ( eq.type == equipmentType.CHASTITYBELT ) {
+				if ( eq.equippedOn == null ) {
+					chBlId = eq.id;
+				}
+			} else if ( eq.type == equipmentType.CHASTITYCAGE ) {
+				if ( eq.equippedOn == null ) {
+					chCgId = eq.id;
+				}
+			}
+		}
+	}
+	
+	equipObjectOnWearer(chBlId,"chHope",7);
+	equipObjectOnWearer(chCgId,"chRock",7);
+}
+window.cgLbUpdateCages = function() {
+	State.variables.StVars.check1[0] = gC("chHope").body.pussy.state; // "locked" or "free"
+	State.variables.StVars.check1[1] = gC("chRock").body.dick.state;
+}
+window.cgLbLockHope = function() {
+	var chBlId = -1;
+	for ( var eq of State.variables.equipmentList ) {
+		if ( eq.owner == "chPlayerCharacter" ) {
+			if ( eq.type == equipmentType.CHASTITYBELT ) {
+				if ( eq.equippedOn == null ) {
+					chBlId = eq.id;
+				}
+			}
+		}
+	}
+	equipObjectOnWearer(chBlId,"chHope",gSettings().equipmentDuration);
+}
+window.cbLbUnlockHope = function() {
+	var eqCb = gC("chHope").body.pussy.bondage;
+	if ( eqCb != -1 ) {
+		unequipObject(eqCb);
+	}
+}
+window.cgLbLockRock = function() {
+	var chCgId = -1;
+	for ( var eq of State.variables.equipmentList ) {
+		if ( eq.owner == "chPlayerCharacter" ) {
+			if ( eq.type == equipmentType.CHASTITYCAGE ) {
+				if ( eq.equippedOn == null ) {
+					chCgId = eq.id;
+				}
+			}
+		}
+	}
+	equipObjectOnWearer(chCgId,"chRock",gSettings().equipmentDuration);
+}
+window.cbLbUnlockRock = function() {
+	var eqCg = gC("chRock").body.dick.bondage;
+	if ( eqCg != -1 ) {
+		unequipObject(eqCg);
+	}
+}
+window.cbLbInfamyPenalty = function() {
+	gC("chHope").willpower.current -= gC("chHope").willpower.max * 0.7;
+	gC("chRock").willpower.current -= gC("chRock").willpower.max * 0.7;
+	gC("chPlayerCharacter").changeInfamy(5);
+	gC("chClaw").relations.chPlayerCharacter.enmity.stv += 300;
+	gC("chClaw").relations.chPlayerCharacter.rivalry.stv += 300;
+	gC("chVal").relations.chPlayerCharacter.rivalry.stv += 500;
+	gC("chMir").relations.chPlayerCharacter.enmity.stv += 500;
+	addCharsSpecialExperience("chPlayerCharacter","sadismScore",1);
+}
+window.cgLbUpdateRockVirginityVar = function() {
+	State.variables.StVars.check6 = false;
+	if ( State.variables.StVars.check5[1] == false ) {
+		State.variables.StVars.check6 = true;
+	}
+}
+window.cgLbUpdateHopeVirginityVar = function() {
+	State.variables.StVars.check6 = false;
+	if ( State.variables.StVars.check5[0] == false ) {
+		State.variables.StVars.check6 = true;
+	}
+}
+
+
+
+
+
 
 

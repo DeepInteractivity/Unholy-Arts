@@ -96,9 +96,15 @@ window.formatNersmiasSocialBattleMainPassage = function(isFirstRound) {
 		}
 	}
 	
+	State.variables.temp = "endingNotReached";
+	if ( endedScene == true || contractedMenu == true ) {
+		State.variables.temp = "endingReached";
+	}
+	/*
 	if ( contractedMenu == false && endedScene == false ) {	
 		// Reached ending?
 		var reachedEnding = true;
+		State.variables.temp = "endingReached";
 		if ( gC("chPlayerCharacter").willpower.current <= 0 ) {
 			if ( State.variables.nerLocConviction <= 20 ) {
 				pT += "\n\n" + nsbGetEndingNWPLC();
@@ -115,6 +121,58 @@ window.formatNersmiasSocialBattleMainPassage = function(isFirstRound) {
 			pT += "\n\n" + nsbGetEndingZC();
 		} else {
 			reachedEnding = false;
+			State.variables.temp = "endingNotReached";
+		}
+		
+		if ( reachedEnding == false ) {
+			// Display Nersmias status
+			pT += '<<s' + 'cript>>getNersmiasConvictionDescription(); getNersmiasTrustDescription();<</s' + 'cript>>'
+				+ '$nsbcDesc \n'
+				+ '$nsbtDesc';
+			// getNersmiasConvictionDescription() + "\n" + getNersmiasTrustDescription();
+				
+			// Use hypnosis option
+				// Textbox: check to use hypnosis if possible. Using hypnosis consumes willpower
+			if ( gC("chPlayerCharacter").saList.includes("baHypnoticGlance") && gC("chPlayerCharacter").willpower.current >= 5 ) {
+				pT += "\n\nYou may use hypnosis to erode Nersmias' conviction, at the expense of your own willpower.\n" + `<<checkbox "$nerSocPlayerHypno" false true>> Use hypnosis.`
+			}
+			
+			// Generate topic choices
+			pT += "\n\n" + getNSBlinksToRandomTopics();
+			pT += "\n" + getLinkToNSBpassageNname("skipRound","Skip round and re-roll interactions") + hoverText("^^(?)^^","Will worsen the attitude of Nersmias.");
+				// Option to leave
+			pT += "\n\n[[Finish the conversation, and make demands or leave|FaSe NSB LeavingConversation]]";
+		}
+	} */
+	
+	return pT;
+}
+window.formatNersmiasSocialBattleMainPassageSecondPart = function(isFirstRound) {
+	var pT = "";
+	
+	var contractedMenu = false;
+	var endedScene = false;
+	if ( State.variables.nerSocTopic != "csbhp" ) {
+		// Reached ending?
+		var reachedEnding = true;
+		State.variables.temp = "endingReached";
+		if ( gC("chPlayerCharacter").willpower.current <= 0 ) {
+			if ( State.variables.nerLocConviction <= 20 ) {
+				pT += nsbGetEndingNWPLC();
+			} else {
+				pT += nsbGetEndingNWPHC();
+			}
+		} else if ( State.variables.nerLocTrust <= 0 ) {
+			if ( gC("chPlayerCharacter").willpower.current <= 20 ) {
+				pT += nsbGetEndingZTLWP();
+			} else {
+				pT += nsbGetEndingZTHWP();
+			}
+		} else if ( State.variables.nerLocConviction <= 0 ) {
+			pT += nsbGetEndingZC();
+		} else {
+			reachedEnding = false;
+			State.variables.temp = "endingNotReached";
 		}
 		
 		if ( reachedEnding == false ) {
@@ -137,7 +195,7 @@ window.formatNersmiasSocialBattleMainPassage = function(isFirstRound) {
 			pT += "\n\n[[Finish the conversation, and make demands or leave|FaSe NSB LeavingConversation]]";
 		}
 	}
-	
+			
 	return pT;
 }
 

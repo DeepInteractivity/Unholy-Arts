@@ -112,3 +112,8 @@ window.v0318ScenePatches = function() {
 		}
 	}
 }
+
+window.v0323GeneralPatches = function() {
+	charactersLearnSceneActions(["chPlayerCharacter","chNash","chClaw","chVal","chMir","chAte"],["encInit"]);
+	charactersLearnSceneActions(getGuestsList(),["encInit"]);
+}

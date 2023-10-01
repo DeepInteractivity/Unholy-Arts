@@ -528,7 +528,7 @@ window.btifFirstBattleInit = function() {
 		State.variables.chAte.aiAlgorythm.fixedTarget = "chMir";/*
 	for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
 		if ( charKey != "chPlayerCharacter" ) {
-			gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+			gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
 		}
 	}*/
 	State.variables.sc.customScript = ccsBtifFirstBattleScript;
@@ -589,7 +589,7 @@ window.ccsBtifNashVsClawBattleInit = function() {
 	"SE BKIF Nash Victory");
 	for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
 		if ( charKey != "chPlayerCharacter" ) {
-			gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+			gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
 		}
 	}
 	State.variables.sc.formatScenePassage();
@@ -613,7 +613,7 @@ window.ccsBtifPlayerVsClawBattleInit = function() {
 	"SE BKIF Player Victory");
 	for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
 		if ( charKey != "chPlayerCharacter" ) {
-			gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+			gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
 		}
 	}
 	State.variables.sc.customScript = function(turns) {
@@ -636,7 +636,7 @@ window.ccsBtifTeamfightBattleInit = function() {
 	"SE BKIF Player Victory");
 	for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
 		if ( charKey != "chPlayerCharacter" ) {
-			gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+			gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
 		}
 	}
 	State.variables.sc.customScript = function(turns) {
@@ -701,7 +701,7 @@ window.ccsLuMaPlayerVsTwoBattleInit = function() {
 	"Luring Masquerade Miracle Victory");
 	for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
 		if ( charKey != "chPlayerCharacter" ) {
-			gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+			gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
 		}
 	}
 	State.variables.sc.formatScenePassage();
@@ -713,7 +713,7 @@ window.ccsLuMaTwoVsValBattleInit = function() {
 	"Luring Masquerade Miracle Victory");
 	for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
 		if ( charKey != "chPlayerCharacter" ) {
-			gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+			gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
 		}
 	}
 	State.variables.sc.formatScenePassage();
@@ -725,7 +725,7 @@ window.ccsLuMaPlayerVsValBattleInit = function() {
 	"Luring Masquerade Miracle Victory");
 	for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
 		if ( charKey != "chPlayerCharacter" ) {
-			gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+			gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
 		}
 	}
 	State.variables.sc.formatScenePassage();
@@ -918,7 +918,7 @@ window.cssTgolValVsPlayer = function() {
 	"SE TGoL Defy Valtan Player Victory");
 	for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
 		if ( charKey != "chPlayerCharacter" ) {
-			gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+			gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
 		}
 	}
 	State.variables.sc.formatScenePassage();
@@ -1238,7 +1238,7 @@ window.bbCfightingClaw = function() {
 	"FASE BbC Fight Victory");
 	for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
 		if ( charKey != "chPlayerCharacter" ) {
-			gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+			gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
 		}
 	}
 	State.variables.sc.formatScenePassage();
@@ -1677,7 +1677,7 @@ window.tfHelpingMirAgainstValtan = function() {
 	"TwistedFest PlayMiddleTurnTables2");
 	for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
 		if ( charKey != "chPlayerCharacter" ) {
-			gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+			gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
 		}
 	}
 	State.variables.sc.formatScenePassage();
@@ -1734,7 +1734,7 @@ window.tfMultiBattleTenCandidates = function() {
 	// AIs
 	for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
 		if ( charKey != "chPlayerCharacter" ) {
-			gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+			gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
 		}
 	}
 	
@@ -1806,7 +1806,7 @@ window.gCepFirstBattleLizardlins = function() {
 	// AIs
 	for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
 		if ( charKey != "chPlayerCharacter" ) {
-			gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+			gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
 		}
 	}
 	
@@ -1858,7 +1858,7 @@ window.gCepSecondBattleLizardlins = function() {
 	// AIs
 	for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
 		if ( charKey != "chPlayerCharacter" ) {
-			gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+			gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
 		}
 	}
 	
@@ -1918,7 +1918,7 @@ window.gCepBossBattleLizardlins = function() {
 	// AIs
 	for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
 		if ( charKey != "chPlayerCharacter" ) {
-			gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+			gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
 		}
 	}
 	
@@ -2123,4 +2123,499 @@ window.cleanSillansAppearance = function() {
 		gC(charA).avatarL = "img/portraits/sillan-avatar.png";
 	}
 }
+
+// Owed Gratitutde
+window.owGrDomGropingClaw = function() {
+	State.variables.sc.startScene(
+	"ss","fixed",["chPlayerCharacter"],["chClaw"],"All the dummies in the training grounds look at you, astonished.",endConditionTurns,gSettings().stdSxScDur,
+	"SE OwedResp GropeDom End");
+	
+	createPosMountFromBehind("chPlayerCharacter",["chClaw"]);
+	
+	State.variables.sc.sceneConditions.push("cantCancelPositions","cantInitiatePos");
+	State.variables.chPlayerCharacter.hasLead = true;
+	State.variables.chClaw.hasLead = false;
+	
+	// AI
+	State.variables.chClaw.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chClaw.aiAlgorythm.setRoleCompetition();
+	State.variables.sc.endSceneScript = endSceneScriptUnconditionalCleanLust;
+	
+	State.variables.sc.customScript = function() {
+		var hDesc = "";
+		
+		if ( State.variables.StVars.check1 == true ) {
+			switch (State.variables.sc.currentTurn) {
+				case 2:
+					hDesc = `You take a glance far beyond Claw, and find the pair of Beastkin, their eyes still wandering stray.`;
+					break;
+				case 3:
+					hDesc = `<span @style=$chPlayerCharacter.colorStyleKey>//"Are you two enjoying the spectacle?"//</span> You ask sarcastic, well aware that Hope and Rock are trying far too hard not to look in your direction.`;
+					break;
+				case 4:
+					hDesc = `<span @style=$chClaw.colorStyleKey>//"You cannot blame them... For all her arrogance, she is still a child."//</span> Claw says between gasps.`;
+					break;
+				case 5:
+					hDesc = `<span @style=$chPlayerCharacter.colorStyleKey>//"What are you saying, Claw? Don't tell me those two don't..."//</span>`;
+					break;
+				case 6:
+					hDesc = `<span @style=$chClaw.colorStyleKey>//"They're a pair of cowards, the both of them. Nngh."//</span>`;
+					break;
+				case 7:
+					hDesc = `Your eyes wander again towards them. They're the same age as you, perhaps a little older, but their behavior cannot fool anyone. They have as much sexual experience as an ant knows about the matters of the Goddess.`;
+					break;
+				case 8:
+					hDesc = `<span @style=$chPlayerCharacter.colorStyleKey>//"Then this really is quite a reward for you, isn't it? Getting to flaunt it like this to them is one chance in a lifetime."//</span>`;
+					break;
+				case 9:
+					hDesc = `<span @style=$chClaw.colorStyleKey>//"You can do as you want to me... Watching them squirm is delicious anyway."//</span>`;
+					break;
+				case 10:
+					hDesc = `<span @style=$chPlayerCharacter.colorStyleKey>//"Wonderful."//</span>`;
+					break;
+			}
+		} else {
+			switch (State.variables.sc.currentTurn) {
+				case 2:
+					hDesc = `You take a glance far beyond Claw, and find the foxgirl, her eyes still wandering stray.`;
+					break;
+				case 3:
+					hDesc = `<span @style=$chPlayerCharacter.colorStyleKey>//"Enjoying the spectacle?"//</span> You ask sarcastic, well aware that Hope is trying far too hard not to look in your direction, in a manner fairly unbefitting of her usual demeanor. `;
+					break;
+				case 4:
+					hDesc = `<span @style=$chClaw.colorStyleKey>//"You cannot blame her... For all her arrogance, she is still a child."//</span> Claw says between gasps.`;
+					break;
+				case 5:
+					hDesc = `<span @style=$chPlayerCharacter.colorStyleKey>//"What are you saying, Claw? Don't tell me she and Rock don't..."//</span>`;
+					break;
+				case 6:
+					hDesc = `<span @style=$chClaw.colorStyleKey>//"They're a pair of cowards, the both of them. Nngh."//</span>`;
+					break;
+				case 7:
+					hDesc = `Your eyes wander again towards Hope. She's the same age as you, perhaps a little older, but her behavior cannot fool anyone. She has as much sexual experience as an ant knows about the matters of the Goddess.`;
+					break;
+				case 8:
+					hDesc = `<span @style=$chPlayerCharacter.colorStyleKey>//"Then this really is quite a reward for you, isn't it? Getting to flaunt it like this to her is one chance in a lifetime."//</span>`;
+					break;
+				case 9:
+					hDesc = `<span @style=$chClaw.colorStyleKey>//"You can do as you want to me... Watching her squirm is delicious anyway."//</span>`;
+					break;
+				case 10:
+					hDesc = `<span @style=$chPlayerCharacter.colorStyleKey>//"Wonderful."//</span>`;
+					break;
+			}
+		}
+		
+		if ( hDesc == "" ) {
+			hDesc = "All the dummies in the training grounds look at you, astonished.";
+		}
+		State.variables.sc.headingDescription = hDesc;
+	}
+}
+
+window.owGrEgaGropingClaw = function() {
+	State.variables.sc.startScene(
+	"ss","dynamic",["chPlayerCharacter"],["chClaw"],"All the dummies in the training grounds look at you, astonished.",endConditionTurns,gSettings().stdSxScDur,
+	"SE OwedResp GropeEga End");
+	
+	// AI
+	State.variables.chClaw.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chClaw.aiAlgorythm.setRoleCompetition();
+	State.variables.sc.endSceneScript = endSceneScriptUnconditionalCleanLust;
+	
+	State.variables.sc.customScript = function() {
+		var hDesc = "";
+		
+		if ( State.variables.StVars.check1 == true ) {
+			switch (State.variables.sc.currentTurn) {
+				case 2:
+					hDesc = `It happens very briefly, but often enough for you to notice Claw's eyes looking far behind you.`;
+					break;
+				case 3:
+					hDesc = `Curiosity bests you, and soon you too find yourself sending not too discreet looks behind. Hope and Rock are neither leaving nor clearly contemplating the scene, far too embarrassed to even act in accordance with their shyness.`;
+					break;
+				case 4:
+					hDesc = `<span @style=$chPlayerCharacter.colorStyleKey>//"Are you two enjoying the spectacle?"//</span> You ask, sarcastic.`;
+					break;
+				case 5:
+					hDesc = `<span @style=$chClaw.colorStyleKey>//"You cannot blame them... For all her arrogance, she is still a child."//</span> Claw says between gasps.`;
+					break;
+				case 6:
+					hDesc = `<span @style=$chPlayerCharacter.colorStyleKey>//"What are you saying, Claw? Don't tell me those two don't..."//</span>`;
+					break;
+				case 7:
+					hDesc = `<span @style=$chClaw.colorStyleKey>//"They're a pair of cowards, the both of them. Nngh."//</span>`;
+					break;
+				case 8:
+					hDesc = `Your eyes wander once again towards them. They're the same age as you, perhaps a little older, but their behavior cannot fool anyone. They have as much sexual experience as an ant knows about the matters of the Goddess.`;
+					break;
+				case 9:
+					hDesc = `<span @style=$chPlayerCharacter.colorStyleKey>//"Then this really is quite a reward for you, isn't it? Getting to flaunt it like this to them is one chance in a lifetime."//</span>`;
+					break;
+				case 10:
+					hDesc = `<span @style=$chClaw.colorStyleKey>//"That's why I'm forgiving you for not dropping to your knees... Watching them squirm is delicious enough."//</span>`;
+					break;
+				case 11:
+					hDesc = `<span @style=$chPlayerCharacter.colorStyleKey>//"Wonderful."//</span>`;
+					break;
+			}
+		} else {
+			switch (State.variables.sc.currentTurn) {
+				case 2:
+					hDesc = `It happens very briefly, but often enough for you to notice Claw's eyes looking far behind you.`;
+					break;
+				case 3:
+					hDesc = `Curiosity bests you, and soon you too find yourself sending not too discreet looks behind. Hope is neither leaving nor clearly contemplating the scene, far too embarrassed to even act in accordance with her sudden shyness.`;
+					break;
+				case 4:
+					hDesc = `<span @style=$chPlayerCharacter.colorStyleKey>//"Are you enjoying the spectacle?"//</span> You ask, sarcastic.`;
+					break;
+				case 5:
+					hDesc = `<span @style=$chClaw.colorStyleKey>//"You cannot blame her... For all her arrogance, she is still a child."//</span> Claw says between gasps.`;
+					break;
+				case 6:
+					hDesc = `<span @style=$chPlayerCharacter.colorStyleKey>//"What are you saying, Claw? Don't tell me she and Rock don't..."//</span>`;
+					break;
+				case 7:
+					hDesc = `<span @style=$chClaw.colorStyleKey>//"They're a pair of cowards, the both of them. Nngh."//</span>`;
+					break;
+				case 8:
+					hDesc = `Your eyes wander once again towards her. She's the same age as you, perhaps a little older, but her behavior cannot fool anyone. She has as much sexual experience as an ant knows about the matters of the Goddess.`;
+					break;
+				case 9:
+					hDesc = `<span @style=$chPlayerCharacter.colorStyleKey>//"Then this really is quite a reward for you, isn't it? Getting to flaunt it like this to her is one chance in a lifetime."//</span>`;
+					break;
+				case 10:
+					hDesc = `<span @style=$chClaw.colorStyleKey>//"That's why I'm forgiving you for not dropping to your knees... Watching her squirm is delicious enough."//</span>`;
+					break;
+				case 11:
+					hDesc = `<span @style=$chPlayerCharacter.colorStyleKey>//"Wonderful."//</span>`;
+					break;
+			}
+		}
+		
+		if ( hDesc == "" ) {
+			hDesc = "All the dummies in the training grounds look at you, astonished.";
+		}
+		State.variables.sc.headingDescription = hDesc;
+	}
+}
+
+window.owGrSubKneelClaw = function() {
+	State.variables.sc.startScene(
+	"ss","fixed",["chPlayerCharacter"],["chClaw"],"All the dummies in the training grounds look at you, astonished.",endConditionTurns,gSettings().stdSxScDur,
+	"SE OwedResp KneelSub End");
+	
+	createPosKneel("chClaw",["chPlayerCharacter"]);
+	
+	State.variables.sc.sceneConditions.push("cantCancelPositions","cantInitiatePos");
+	State.variables.chPlayerCharacter.hasLead = false;
+	State.variables.chClaw.hasLead = true;
+	
+	// AI
+	State.variables.chClaw.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chClaw.aiAlgorythm.setRoleDomination();
+	State.variables.sc.endSceneScript = endSceneScriptUnconditionalCleanLust;
+	
+	State.variables.sc.customScript = function() {
+		var hDesc = "";
+		
+		if ( State.variables.StVars.check1 == true ) {
+			switch (State.variables.sc.currentTurn) {
+				case 2:
+					hDesc = `Your gaze frequently moves upwards, misguidedly trying to find some compassion, but there's only Claw. You notice her taking her eyes far behind you.`;
+					break;
+				case 3:
+					hDesc = `<span @style=$chClaw.colorStyleKey>//"You can come closer to take a better look, you know?"//</span> Claw tells the pair of Beastkin. You manage to spot a very mild smirk.`;
+					break;
+				case 4:
+					hDesc = `<span @style=$chHope.colorStyleKey>//"Shut... Shut up! I can't... I can't believe..."//</span> You aren't having trouble to hear Hope, it is her who is having trouble to form coherent sentences.`;
+					break;
+				case 5:
+					hDesc = `<span @style=$chClaw.colorStyleKey>//"Feeling weak in your knees? There's room here if you want to sit besides $chPlayerCharacter.name."//</span>`;
+					break;
+				case 6:
+					hDesc = `<span @style=$chRock.colorStyleKey>//"Huh... That is..."//</span>`;
+					break;
+				case 7:
+					hDesc = `<span @style=$chPlayerCharacter.colorStyleKey>//"Claw, don't tell me those two don't have..."//</span> You manage to say when you don't have your mouth full, astounded by Hope's sudden shyness.`;
+					break;
+				case 8:
+					hDesc = `<span @style=$chClaw.colorStyleKey>//"No way. They're a pair of cowards. And don't you stop."//</span> She chastises you.`;
+					break;
+				case 9:
+					hDesc = `<span @style=$chPlayerCharacter.colorStyleKey>//"Was the real reward you wanted to see them like that?"//</span>`;
+					break;
+				case 10:
+					if ( State.variables.StVars.check3 == "dick" ) {
+						hDesc = `<span @style=$chClaw.colorStyleKey>//"You don't need to be so smart to suck dick."//</span>`;
+					} else {
+						hDesc = `<span @style=$chClaw.colorStyleKey>//"You don't need to be so smart to eat pussy."//</span>`;
+					}
+					break;
+				case 11:
+					hDesc = `You smirk as you get your mouth full again.`;
+					break;
+			}
+		} else {
+			switch (State.variables.sc.currentTurn) {
+				case 2:
+					hDesc = `Your gaze frequently moves upwards, misguidedly trying to find some compassion, but there's only Claw. You notice her taking her eyes far behind you.`;
+					break;
+				case 3:
+					hDesc = `<span @style=$chClaw.colorStyleKey>//"You can come closer to take a better look, you know?"//</span> Claw tells the foxgirl. You manage to spot a very mild smirk.`;
+					break;
+				case 4:
+					hDesc = `<span @style=$chHope.colorStyleKey>//"Shut... Shut up! I can't... I can't believe..."//</span> You aren't having trouble to hear Hope, it is her who is having trouble to form coherent sentences.`;
+					break;
+				case 5:
+					hDesc = `<span @style=$chClaw.colorStyleKey>//"Feeling weak in your knees? There's room here if you want to sit besides $chPlayerCharacter.name."//</span>`;
+					break;
+				case 6:
+					hDesc = `<span @style=$chHope.colorStyleKey>//"What a- What a ludicrous idea."//</span>`;
+					break;
+				case 7:
+					hDesc = `<span @style=$chPlayerCharacter.colorStyleKey>//"Claw, don't tell me she and Rock don't have..."//</span> You manage to say when you don't have your mouth full, astounded by Hope's sudden shyness.`;
+					break;
+				case 8:
+					hDesc = `<span @style=$chClaw.colorStyleKey>//"No way. They're a pair of cowards. And don't you stop."//</span> She chastises you.`;
+					break;
+				case 9:
+					hDesc = `<span @style=$chPlayerCharacter.colorStyleKey>//"Was the real reward you wanted to see her like that?"//</span>`;
+					break;
+				case 10:
+					if ( State.variables.StVars.check3 == "dick" ) {
+						hDesc = `<span @style=$chClaw.colorStyleKey>//"You don't need to be so smart to suck dick."//</span>`;
+					} else {
+						hDesc = `<span @style=$chClaw.colorStyleKey>//"You don't need to be so smart to eat pussy."//</span>`;
+					}
+					break;
+				case 11:
+					hDesc = `You smirk as you get your mouth full again.`;
+					break;
+			}
+		}
+		
+		if ( hDesc == "" ) {
+			hDesc = "All the dummies in the training grounds look at you, astonished.";
+		}
+		State.variables.sc.headingDescription = hDesc;
+	}
+}
+
+window.owGrEgaKneelClaw = function() {
+	State.variables.sc.startScene(
+	"ss","dynamic",["chPlayerCharacter"],["chClaw"],"All the dummies in the training grounds look at you, astonished.",endConditionTurns,gSettings().stdSxScDur,
+	"SE OwedResp KneelNControl End");
+	
+	createPosKneel("chClaw",["chPlayerCharacter"]);
+	
+	State.variables.sc.sceneConditions.push("cantCancelPositions","cantInitiatePos");
+	
+	// AI
+	State.variables.chClaw.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chClaw.aiAlgorythm.setRoleDomination();
+	State.variables.sc.endSceneScript = endSceneScriptUnconditionalCleanLust;
+	
+	State.variables.sc.customScript = function() {
+		var hDesc = "";
+		
+		if ( State.variables.StVars.check1 == true ) {
+			switch (State.variables.sc.currentTurn) {
+				case 2:
+					hDesc = `When Claw breaks eye contact with you, she sends fast glances far behind you. The gesture doesn't go unnoticed.`;
+					break;
+				case 3:
+					hDesc = `Curiosity bests you, and soon you too find yourself sending not too discreet looks behind. Hope and Rock are neither leaving nor clearly contemplating the scene, far too embarrassed to even act in accordance with their shyness.`;
+					break;
+				case 4:
+					hDesc = `<span @style=$chPlayerCharacter.colorStyleKey>//"Are you two enjoying the spectacle?"//</span> You ask, sarcastic.`;
+					break;
+				case 5:
+					hDesc = `<span @style=$chClaw.colorStyleKey>//"You cannot blame them... For all her arrogance, she is still a child."//</span> Claw says between gasps.`;
+					break;
+				case 6:
+					hDesc = `<span @style=$chPlayerCharacter.colorStyleKey>//"What are you saying, Claw? Don't tell me those two don't..."//</span>`;
+					break;
+				case 7:
+					hDesc = `<span @style=$chClaw.colorStyleKey>//"They're a pair of cowards, the both of them. Nngh."//</span>`;
+					break;
+				case 8:
+					hDesc = `You turn once again towards them. They're the same age as you, perhaps a little older, but their behavior cannot fool anyone. They have as much sexual experience as an ant knows about the matters of the Goddess.`;
+					break;
+				case 9:
+					hDesc = `<span @style=$chPlayerCharacter.colorStyleKey>//"Then this really is quite a reward for you, isn't it? Getting to flaunt it like this to them is one chance in a lifetime."//</span>`;
+					break;
+				case 10:
+					hDesc = `<span @style=$chClaw.colorStyleKey>//"That's why I'm going so easy on you... Watching them squirm is delicious enough."//</span>`;
+					break;
+				case 11:
+					hDesc = `<span @style=$chPlayerCharacter.colorStyleKey>//"Wonderful."//</span>`;
+					break;
+			}
+		} else {
+			switch (State.variables.sc.currentTurn) {
+				case 2:
+					hDesc = `When Claw breaks eye contact with you, she sends fast glances far behind you. The gesture doesn't go unnoticed.`;
+					break;
+				case 3:
+					hDesc = `Curiosity bests you, and soon you too find yourself sending not too discreet looks behind. Hope is neither leaving nor clearly contemplating the scene, far too embarrassed to even act in accordance with her sudden shyness.`;
+					break;
+				case 4:
+					hDesc = `<span @style=$chPlayerCharacter.colorStyleKey>//"Are you enjoying the spectacle?"//</span> You ask, sarcastic.`;
+					break;
+				case 5:
+					hDesc = `<span @style=$chClaw.colorStyleKey>//"You cannot blame her... For all her arrogance, she is still a child."//</span> Claw says between gasps.`;
+					break;
+				case 6:
+					hDesc = `<span @style=$chPlayerCharacter.colorStyleKey>//"What are you saying, Claw? Don't tell me she and Rock don't..."//</span>`;
+					break;
+				case 7:
+					hDesc = `<span @style=$chClaw.colorStyleKey>//"They're a pair of cowards, the both of them. Nngh."//</span>`;
+					break;
+				case 8:
+					hDesc = `You turn once again towards her. She's the same age as you, perhaps a little older, but her behavior cannot fool anyone. She has as much sexual experience as an ant knows about the matters of the Goddess.`;
+					break;
+				case 9:
+					hDesc = `<span @style=$chPlayerCharacter.colorStyleKey>//"Then this really is quite a reward for you, isn't it? Getting to flaunt it like this to them is one chance in a lifetime."//</span>`;
+					break;
+				case 10:
+					hDesc = `<span @style=$chClaw.colorStyleKey>//"That's why I'm going so easy on you... Watching her squirm is delicious enough."//</span>`;
+					break;
+				case 11:
+					hDesc = `<span @style=$chPlayerCharacter.colorStyleKey>//"Wonderful."//</span>`;
+					break;
+			}
+		}
+		
+		if ( hDesc == "" ) {
+			hDesc = "All the dummies in the training grounds look at you, astonished.";
+		}
+		State.variables.sc.headingDescription = hDesc;
+	}
+}
+
+
+window.cbLbTiedHopeRockAutoSex = function() {
+	State.variables.sc.startScene(
+	"ss","dynamic",["chHope"],["chRock"],"Why are you seeing this?",endConditionTurns,gSettings().stdSxScDur,
+	"Disclaimer");
+	createPosMountFaceToFace("chRock",["chHope"]);
+	
+	State.variables.chHope.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chRock.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chHope.aiAlgorythm.setRoleRomantic();
+	State.variables.chRock.aiAlgorythm.setRoleRomantic();
+	
+	setRefreshLustScript();
+	
+	State.variables.sc.autoResolveScene();
+}
+window.cbLbTakeRockScene = function() {
+	State.variables.sc.startScene(
+	"ss","fixed",["chPlayerCharacter"],["chRock"],"The tears flow quietly.",endConditionTurns,gSettings().stdSxScDur,
+	"SE CagedLovebirds TakeRock 2");
+	
+	State.variables.sc.enabledDialogues = false;
+	
+	State.variables.chPlayerCharacter.hasLead = true;
+	State.variables.chRock.hasLead = false;
+	createPosMountFaceToFace("chPlayerCharacter",["chRock"]);
+	
+	// Assign choices
+	State.variables.chRock.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chRock.aiAlgorythm.setRoleSubmission();
+	//
+	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
+}
+window.cbLbTakeHopeScene = function() {
+	State.variables.sc.startScene(
+	"ss","fixed",["chPlayerCharacter"],["chHope"],"The tears flow quietly.",endConditionTurns,gSettings().stdSxScDur,
+	"SE CagedLovebirds TakeHope 3");
+	
+	State.variables.sc.enabledDialogues = false;
+	
+	State.variables.chPlayerCharacter.hasLead = true;
+	State.variables.chHope.hasLead = false;
+	createPosMountFaceToFace("chPlayerCharacter",["chHope"]);
+	
+	// Assign choices
+	State.variables.chHope.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chHope.aiAlgorythm.setRoleSubmission();
+	//
+	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
+}
+
+window.cbLbKneelingThreesome = function() {
+	State.variables.sc.startScene(
+	"ss","dynamic",["chPlayerCharacter"],["chHope","chRock"],"The water flows quietly.",endConditionTurns,gSettings().stdSxScDur,
+	"SE CagedLovebirds TakeHope 3B");
+	
+	State.variables.chPlayerCharacter.hasLead = true;
+	State.variables.chHope.hasLead = false;
+	State.variables.chRock.hasLead = false;
+	
+	gC("chHope").lead = 50;
+	gC("chRock").lead = 0;
+	
+	createPosKneel("chPlayerCharacter",["chHope"]);
+	createComPosDoubleKneeling("chPlayerCharacter","chRock");
+	
+	// Assign choices
+	State.variables.chRock.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chRock.aiAlgorythm.setRoleRomantic();
+	State.variables.chHope.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chHope.aiAlgorythm.setRoleRomantic();
+	//
+	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
+	
+	State.variables.sc.customScript = function() {
+		if ( limitedRandomInt(100) > 65 ) {
+			gC("chHope").aiAlgorythm.fixedTarget = "chRock";
+		} else {
+			gC("chHope").aiAlgorythm.fixedTarget = undefined;
+		}
+		if ( limitedRandomInt(100) > 65 ) {
+			gC("chRock").aiAlgorythm.fixedTarget = "chHope";
+		} else {
+			gC("chRock").aiAlgorythm.fixedTarget = undefined;
+		}
+	}
+}
+window.cbLbThreesome = function() {
+	State.variables.sc.startScene(
+	"ss","dynamic",["chPlayerCharacter"],["chHope","chRock"],"The water flows quietly.",endConditionTurns,gSettings().stdSxScDur,
+	"SE CagedLovebirds Threesome End");
+	
+	// Assign choices
+	State.variables.chRock.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chRock.aiAlgorythm.setRoleRomantic();
+	State.variables.chHope.aiAlgorythm = createAiWeightedMissionsByTaste();
+	State.variables.chHope.aiAlgorythm.setRoleRomantic();
+	//
+	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
+	
+	State.variables.sc.customScript = function() {
+		if ( limitedRandomInt(100) > 65 ) {
+			gC("chHope").aiAlgorythm.fixedTarget = "chRock";
+		} else {
+			gC("chHope").aiAlgorythm.fixedTarget = undefined;
+		}
+		if ( limitedRandomInt(100) > 65 ) {
+			gC("chRock").aiAlgorythm.fixedTarget = "chHope";
+		} else {
+			gC("chRock").aiAlgorythm.fixedTarget = undefined;
+		}
+	}
+	
+}
+
+
+/*
+
+*/
 

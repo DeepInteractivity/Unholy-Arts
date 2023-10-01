@@ -343,7 +343,7 @@ window.createAiRandomActionRandomOpponent = function() {
 window.createAiEarlyStrategic = function() { 
 	var ai = new aiAlgorithm();
 	ai.key = "earlyStrategy";
-	ai. callAction = function(character,allyCharacters,enemyCharacters,currentTurn) {
+	ai.callAction = function(character,allyCharacters,enemyCharacters,currentTurn) {
 		var results = new aiResults();
 		var validEnemies = [];
 		for ( var enem of enemyCharacters ) {
@@ -710,7 +710,7 @@ window.createAiWeightedMissionsByTasteOld = function() {
 	return ai;
 }
 
-// NEW GENERIC AI ALGORITHM - SEX SCENES - 06-2021 - Last updated: 01-2021
+// NEW GENERIC AI ALGORITHM - SEX SCENES - 06-2021 - Last updated: Jul-2023
 window.createAiWeightedMissionsByTaste = function() {
 	var ai = new aiAlgorithm();
 	ai.key = "weightedMissions";
@@ -728,7 +728,7 @@ window.createAiWeightedMissionsByTaste = function() {
 				tfScAlMs = false;
 			}
 		}
-		if ( gC(character).hasLead && State.variables.sc.sceneConditions.includes("cantChangePositions") == false && State.variables.sc.sceneConditions.includes("cantCancelPositions") == false && tfScAlMs == true ) {
+		if ( gC(character).hasLead && State.variables.sc.sceneConditions.includes("cantChangePositions") == false && State.variables.sc.sceneConditions.includes("cantCancelPositions") == false && (tfScAlMs == true || State.variables.sc.hasOwnProperty("tfFlag") == false) ) {
 			if ( this.missionCommands.length > 0 ) {
 				// At this point "cancel" and "stay" commands shouldn't remain
 				results.actionKey = this.missionCommands[0][0];
@@ -795,7 +795,7 @@ window.createAiWeightedMissionsByTaste = function() {
 	return ai;
 }
 
-// BASIC BATTLE AI ALGORITHM - SEX BATTLE SCENES - 08-2020
+// OLD BASIC BATTLE AI ALGORITHM - SEX BATTLE SCENES - 08-2020
 /*
 window.createAiRandomActions = function() {
 	var ai = new aiAlgorithm();
@@ -859,7 +859,6 @@ window.chooseValidBasicAction = function(actor,allyCharacters,enemyCharacters) {
 			results.actionKey = wE[1];
 		}
 	}
-	
 	
 	return results;
 }
@@ -990,6 +989,10 @@ window.assignWeightToActionFromActorToTargetWithDesires = function(action,actor,
 		} else if ( setup.saList[action].strategyTags.includes("tfMinus") ) {
 			weight /= 5;
 		}
+	}
+	
+	if ( setup.saList[action].hasOwnProperty("getCustomMultiplier") ) {
+		weight *= setup.saList[action].getCustomWeightMultiplier(action,actor,[target]);
 	}
 	
 	return weight;

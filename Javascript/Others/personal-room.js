@@ -585,7 +585,9 @@ PersonalRoom.prototype.getStnResultsPassage = function() {
 PersonalRoom.prototype.initPersonalRoom = function() {
 		State.variables.compass.currentMap = "none";
 		State.variables.personalRoom.autosavePossible = true;
-		applyPunishmentsToCandidates();
+		if ( isCurrentStoryStateInMainLoop() == true ) {
+			applyPunishmentsToCandidates();
+		}
 		spawnMerchants();
 		npcsBuyItems();
 		npcsEquipBondage();
@@ -858,6 +860,10 @@ window.resetItemsStatesAndStats = function() {
 */
 // Sex preferences
 
+window.gCtasteRank = function(cK,taste) {
+	return gC(cK).tastes[taste].r;
+}
+
 window.checkCharListForSexTastesRebalance = function(charList) {
 	for ( var charKey of charList ) {
 		if ( limitedRandomInt(16) < 4 ) {
@@ -1010,7 +1016,7 @@ window.guestsEnterAndLeavePassionTemple = function() {
 							}
 						}
 					} else {
-						if ( enabledByStory && (-100 + gC(ch).daysOutOfTemple * 20 + limitedRandomInt(100)) >= 100 ) {
+						if ( (enabledByStory && (-100 + gC(ch).daysOutOfTemple * 20 + limitedRandomInt(100)) >= 100) || ( State.variables.daycycle.month == 2 && State.variables.daycycle.day == 14 ) ) {
 							guestEntersTemple(ch);
 							if ( State.variables.chRock != null ) {
 								guestEntersTemple("chRock");

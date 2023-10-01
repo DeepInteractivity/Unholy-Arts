@@ -748,12 +748,12 @@ setup.mapGleamingCaverns.unionLakeUpper = new RoomInfo(
 				} else {
 					sceneDesc = "A man, mounting a woman.";
 				}
-				State.variables.compass.setMapActionsMessage("You spot a couple of shapes down below... " + sceneDesc + " " + colorText("Check PASSED","green") + ": Stats (" + baseChance.toFixed(1) + ")" + hoverText("^^(?)^^","Agility * 2 + + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
+				State.variables.compass.setMapActionsMessage("You spot a couple of shapes down below... " + sceneDesc + " " + colorText("Check PASSED","green") + ": Stats (" + baseChance.toFixed(1) + ")" + hoverText("^^(?)^^","Perception * 2 + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
 			}
 		} else {
 			voyeurAction.requirements = function(cG) { return false; }
 			if ( characters[0] == "chPlayerCharacter" ) {
-				State.variables.compass.setMapActionsMessage("The caverns look lonely... " + colorText("Check FAILED","red") + ": Stats (" + baseChance.toFixed(1) + ")" + hoverText("^^(?)^^","Agility * 2 + + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
+				State.variables.compass.setMapActionsMessage("The caverns look lonely... " + colorText("Check FAILED","red") + ": Stats (" + baseChance.toFixed(1) + ")" + hoverText("^^(?)^^","Perception * 2 + Luck") + " + Dice 200 (" + dice200 + ") < Difficulty (" + difficulty + ")");
 			}
 		}
 		actions.push(voyeurAction);

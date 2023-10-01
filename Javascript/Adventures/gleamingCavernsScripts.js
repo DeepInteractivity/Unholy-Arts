@@ -339,7 +339,7 @@ window.ccsFAplayerAteFightOneSucker = function() {
 	"FA BeatenSucker 1");
 	for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
 		if ( charKey != "chPlayerCharacter" ) {
-			gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+			gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
 		}
 	}
 	State.variables.sc.formatScenePassage();
@@ -354,7 +354,7 @@ window.ccsFAplayerAteFightTwoSuckers = function() {
 	"FA BeatenSucker 2");
 	for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
 		if ( charKey != "chPlayerCharacter" ) {
-			gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+			gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
 		}
 	}
 	
@@ -385,7 +385,7 @@ window.ccsFAplayerFightsFlyingLookout = function() {
 	"FA EntersArtume");
 	for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
 		if ( charKey != "chPlayerCharacter" ) {
-			gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+			gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
 		}
 	}
 	
@@ -715,7 +715,7 @@ window.getNersmiasConvictionDescription = function() {
 		} else if ( perceivedConvictionQuantity >= 55 ) {
 			description = "Nersmias' voice is clearly determined and full of conviction.";
 		} else if ( perceivedConvictionQuantity >= 30 ) {
-			description = "Nersmias is sometimes forced to act defensively, stopping to weight the value of your positions.";
+			description = "Nersmias is sometimes forced to act defensively, stopping to weigh the value of your positions.";
 		} else {
 			description = "The priest is now more reflexive than combative, arguing not only with you, but also himself.";
 		}

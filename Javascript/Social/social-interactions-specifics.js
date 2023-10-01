@@ -2056,7 +2056,7 @@ window.createSistOfferCompanionship = function() {
 		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Competition: " + competitionFactor.toFixed(2) + ", Willpower cost: " + willpowerCostFactor.toFixed(2) + ", Drives factor: " + drivesFactor.toFixed(2) + ", Luck: " + luckFactor.toFixed(2) + alignmentData[1]	
 					  + ", Intimacy: " + intimacyFactor.toFixed(1) + ", Amount of allies: " + nAlliesFactor.toFixed(1) + " -> Result: " + finalValue.toFixed(2) + " VS Difficulty: " + baseDifficulty;
 		
-		secondStringResult = gC(actor).getFormattedName() + " invited " + gC(target).getFormattedName() + " to become " + gC(target).posPr + " companion and ";
+		secondStringResult = gC(actor).getFormattedName() + " invited " + gC(target).getFormattedName() + " to become " + gC(actor).posPr + " companion and ";
 		if ( result ) { secondStringResult += gC(target).perPr + " accepted."; }
 		else 		  { secondStringResult += gC(target).perPr + " refused."; }
 		
@@ -2200,7 +2200,7 @@ window.createSistOfferIntimacyRel = function() {
 		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Competition: " + competitionFactor.toFixed(2) + ", Willpower cost: " + willpowerCostFactor.toFixed(2) + ", Drives factor: " + drivesFactor.toFixed(2) + ", Luck: " + luckFactor.toFixed(2) + alignmentData[1]	
 					  + ", Intimacy: " + intimacyFactor.toFixed(1) + ", Amount of allies: " + nAlliesFactor.toFixed(1) + ", Are already companions?: " + areCompanionsFactor + " -> Result: " + finalValue.toFixed(2) + " VS Difficulty: " + baseDifficulty;
 		
-		secondStringResult = gC(actor).getFormattedName() + " invited " + gC(target).getFormattedName() + " to become " + gC(target).posPr + " intimate and ";
+		secondStringResult = gC(actor).getFormattedName() + " invited " + gC(target).getFormattedName() + " to become " + gC(actor).posPr + " intimate and ";
 		if ( result ) { secondStringResult += gC(target).perPr + " accepted."; }
 		else 		  { secondStringResult += gC(target).perPr + " refused."; }
 		
@@ -2396,7 +2396,7 @@ window.createSistUnlockActorsGenitals = function() {
 		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Drives factor: " + drivesFactor.toFixed(2) + ", Luck: " + luckFactor.toFixed(2)
 					  + " -> Result: " + finalValue.toFixed(2) + " VS Difficulty: " + baseDifficulty + alignmentData[1];
 		
-		secondStringResult = gC(actor).getFormattedName() + " asked " + gC(target).getFormattedName() + " to free " + gC(target).posPr + " lower parts and " + gC(target).perPr;
+		secondStringResult = gC(actor).getFormattedName() + " asked " + gC(target).getFormattedName() + " to free " + gC(actor).posPr + " lower parts and " + gC(target).perPr;
 		if ( result ) { secondStringResult += gC(target).perPr + " accepted."; }
 		else 		  { secondStringResult += gC(target).perPr + " refused."; }
 		
@@ -2470,7 +2470,7 @@ window.createSistUnlockActorsGenitals = function() {
 		}
 	}
 	sist.askToPlayer = function(actor,target,sisKey) {
-		var promptText = gC(actor).getFormattedName() + " is asking you to free " + gC(target).posPr + " private parts.\n\n"
+		var promptText = gC(actor).getFormattedName() + " is asking you to free " + gC(actor).posPr + " private parts.\n\n"
 					   + this.getButtonPlayerAccepts(actor);
 		State.variables.compass.sisList[sisKey].setSisPlayerPrompt(promptText,"default",this.getWillpowerRejectCost(actor,target),actor,target,this.sT);
 	}

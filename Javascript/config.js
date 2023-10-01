@@ -107,7 +107,7 @@ setup.tfExtraSettingsNames = [ "No transformations", "Temporary", "Permanent", "
 
 ////////// GAME SETTINGS CLASS //////////
 
-setup.versionName = "Unholy Arts v0.3.21";
+setup.versionName = "Unholy Arts v0.3.23";
 
 setup.infamySecondThreshold = 1.2;
 setup.infamyThirdThreshold = 1.4;
@@ -804,7 +804,16 @@ Settings.prototype.toJSON = function() {
 const storyState = {
 	firstLoop: 0,
 	firstAdventure: 1,
-	secondLoop: 2
+	secondLoop: 2,
+	secondAdventure: 3,
+	thirdLoop: 4,
+	thirdAdventure: 5,
+	fourthLoop: 6,
+	fourthAdventure: 7,
+	fifthLoop: 8,
+	fifthAdventure: 9,
+	sixthLoop: 10,
+	sixthAdventure: 11
 }
 
 State.variables.storyState = storyState.firstLoop;

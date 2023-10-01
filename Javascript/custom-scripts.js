@@ -318,13 +318,17 @@ window.configureBattleTestsRoomScene = function() {
 		["chPlayerCharacter"], [State.variables.tsr.character],
 		"wow such testz",endConditionTurns,100,
 		"Testing Scenes Room");
-	State.variables[State.variables.tsr.character].aiAlgorythm = createAiEarlyStrategic();
+	State.variables[State.variables.tsr.character].aiAlgorythm = createAiBattleAlgorithm();
 }
 
 window.setUpTestScenesRoom = function() {
+	gC("chPlayerCharacter").tastes["domination"].r = 1;
+	gC("chNash").tastes["submission"].r = 1;
+	gC("chPlayerCharacter").tastes["bondage"].r = 1;
+	gC("chNash").tastes["bondage"].r = 1;
 	charactersLearnSceneActions(getCandidatesKeysArray(),["strokePussy","strokeBreasts","kissLips","frottage","frenchKiss","kneel","makeKneel","lickGroin",
 	"legHoldHead","mountFromBehind","penetratePussy","thrust","piston","finalPush","mountFaceToFace","getBlowjob","suckDick","lickPussy","interlockLegs",
-	"scissor","strokeAss","penetrateAss","analThrust","holdArms","vinesHoldArms","dickFootjob","pussyFootjob","lickLegs","rideDick","pushDickBack","extraMountFromBehind","analMountDick","analRideDick","analPushDickBack","holdHands","kissNeck","whisperSNs"]);
+	"scissor","strokeAss","penetrateAss","analThrust","holdArms","vinesHoldArms","dickFootjob","pussyFootjob","lickLegs","rideDick","pushDickBack","extraMountFromBehind","analMountDick","analRideDick","analPushDickBack","holdHands","kissNeck","whisperSNs","giveCunnilingus","giveBlowjob","mountFaceToGroin","askMountFromBehind","extraAskMountFromBehind","gallopDick","gallopPussy","spanking"]);
 	
 	gC("chPlayerCharacter").race = "shapeshifter";
 	
@@ -336,10 +340,13 @@ window.setUpTestScenesRoom = function() {
 									,"energyDrainingKiss"
 									,"baEtherealChains","etherealChains",
 									"denyOrgasm","teaseLockedPussy","teaseLockedDick",
-									"doublePenetration"
+									"doublePenetration","encInit"
 		]);
 	charactersLearnSceneActions(["chVal"],[
 									"denyOrgasm","teaseLockedPussy","teaseLockedDick"
+		]);
+	charactersLearnSceneActions(["chNash"],[
+									"encInit"
 		]);
 }
 
@@ -427,9 +434,9 @@ window.setUpMultiBattleTest = function() {
 		["chPlayerCharacter","chAte"], ["chNash","chVal"],
 		"wow such testz",endConditionStandardBattle,100,
 		"Testing Scenes Room");
-	State.variables.chAte.aiAlgorythm = createAiEarlyStrategic();
-	State.variables.chNash.aiAlgorythm = createAiEarlyStrategic();
-	State.variables.chVal.aiAlgorythm = createAiEarlyStrategic();
+	State.variables.chAte.aiAlgorythm = createAiBattleAlgorithm();
+	State.variables.chNash.aiAlgorythm = createAiBattleAlgorithm();
+	State.variables.chVal.aiAlgorythm = createAiBattleAlgorithm();
 	
 	//State.variables.chNash.lust.current = 1;
 	//State.variables.chVal.lust.current = 25;
@@ -439,9 +446,13 @@ window.setUpMultiSexTest = function() {
 	gC("chPlayerCharacter").addBodypart("dick","dick");
 	gC("chVal").addBodypart("dick","dick");
 	gC("chMir").addBodypart("dick","dick");
+	gC("chPlayerCharacter").tastes["domination"].r = 2;
+	gC("chNash").tastes["submission"].r = 2;
+	gC("chPlayerCharacter").tastes["bondage"].r = 1;
+	gC("chNash").tastes["submission"].r = 1;
 	charactersLearnSceneActions(getCandidatesKeysArray(),["strokePussy","strokeBreasts","kissLips","frottage","frenchKiss","kneel","makeKneel","lickGroin",
 	"legHoldHead","mountFromBehind","penetratePussy","thrust","piston","finalPush","mountFaceToFace","getBlowjob","suckDick","lickPussy","interlockLegs",
-	"scissor","strokeAss","penetrateAss","analThrust","holdArms","vinesHoldArms","dickFootjob","pussyFootjob","lickLegs","rideDick","pushDickBack","extraMountFromBehind"]);
+	"scissor","strokeAss","penetrateAss","analThrust","holdArms","vinesHoldArms","dickFootjob","pussyFootjob","lickLegs","rideDick","pushDickBack","extraMountFromBehind","analMountDick","analRideDick","analPushDickBack","holdHands","kissNeck","whisperSNs","giveCunnilingus","giveBlowjob","mountFaceToGroin","askMountFromBehind","extraAskMountFromBehind"]);
 	
 	//addSceneTagToChar("noLead","chMir");
 	
@@ -466,7 +477,7 @@ window.setUpMultiSexTestAlt = function() {
 	gC("chMir").addBodypart("dick","dick");
 	charactersLearnSceneActions(getCandidatesKeysArray(),["strokePussy","strokeBreasts","kissLips","frottage","frenchKiss","kneel","makeKneel","lickGroin",
 	"legHoldHead","mountFromBehind","penetratePussy","thrust","piston","finalPush","mountFaceToFace","getBlowjob","suckDick","lickPussy","interlockLegs",
-	"scissor","strokeAss","penetrateAss","analThrust","holdArms","vinesHoldArms","dickFootjob","pussyFootjob","lickLegs","rideDick","pushDickBack","extraMountFromBehind","extraKneel","extraMakeKneel","extraLegHoldHead","giveCunnilingus","giveBlowjob"]);
+	"scissor","strokeAss","penetrateAss","analThrust","holdArms","vinesHoldArms","dickFootjob","pussyFootjob","lickLegs","rideDick","pushDickBack","extraMountFromBehind","analMountDick","analRideDick","analPushDickBack","holdHands","kissNeck","whisperSNs","giveCunnilingus","giveBlowjob","mountFaceToGroin","askMountFromBehind","extraAskMountFromBehind","gallopDick"]);
 	
 	addSceneTagToChar("noLead","chMir");
 	addSceneTagToChar("noLead","chVal");

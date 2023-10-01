@@ -131,7 +131,7 @@ window.createBdemandHumillitation = function() {
 		if ( getCharEnemies(actor).includes(target) ) {
 			generalMultiplier *= 2;
 		}
-		var meritTaken = 1 * generalMultiplier;
+		var meritTaken = 2 * generalMultiplier;
 		var dominationApplied = 50 * generalMultiplier;
 		var rivalryApplied = 35 * generalMultiplier;
 		// Merit

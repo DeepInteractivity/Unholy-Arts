@@ -47,7 +47,6 @@ window.applyPunishmentsToCandidates = function() {
 				} else {
 					appliedPunishments++;
 				}
-				State.variables.logL2.push(charKey + " was punished on day " + State.variables.daycycle.day + ".");
 			}
 		}
 	}

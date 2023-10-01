@@ -124,7 +124,7 @@ window.createScrollGleamingCaverns = function() {
 window.getScrollShapeshifterCustomsContent = function() {
 	var content = "The most characteristic trait of the Shapeshifters is, naturally, their ability to change their forms, which is in turn the central stone of their social customs. Those members of the tribe who supplant someone else's identity must only do it for limited periods of time, and the consequent deception, if it exists, must be repaired shortly. Those who decide to take different forms for long periods of time must not hide their identity. Those who break these rules will be shunned by the community, those who break them with the intent of perverting the consent or decisions of others will be severely punished - those who target the whole tribe will be subjected to exile.\n\n" +
 	"These severe rules are relaxed during the Twisted Festival, a semiperiodic festivity where everyone is allowed to use anyone's form to prank others - and everyone is expected to avoid taking anything seriously. The main activity of this festival is a theater play which has a central theme and a few script guidelines, but the performers are allowed to improvise, change roles, and significantly alter the story. When a new generation of Candidates to High Priestess is being trained, they're expected to participate as performers.\n\n" +
-	"Their economic activities may be summed up in these four activities: the collecting of minerals, crystals and dyes through the Gleaming Caverns and its surrounding zones, the crafting of ceramics and tools, the construction and repairing of buildings and paths, and the recharging of gleaming crystals. It is first attempted to distribute these tasks among all the Shapeshifters that want them.\n\n" +
+	"Their economic activities may be summed up in these four: the collecting of minerals, crystals and dyes through the Gleaming Caverns and its surrounding zones, the crafting of ceramics and tools, the construction and repairing of buildings and paths, and the recharging of gleaming crystals. It is first attempted to distribute these tasks among all the Shapeshifters that want them the most, and the rest of the work ends up falling upon the hands of those without clear preferences.\n\n" +
 	"Whenever there are small disputes or important events that require action by the whole tribe, a resolution will be settled by a council of judges, which are randomly selected among all adult Shapeshifters every three years, or, in the case of matters of extraordinary gravity, by the whole tribe in assembly.";
 	return content;
 }
@@ -143,6 +143,74 @@ window.createScrollShapeshifterCustoms = function() {
 	scr.mayBeFound = function(characters) {
 		var flag = false;
 		if ( State.variables.daycycle.day > 12 || State.variables.daycycle.month > 1 ) {
+			flag = true;
+		}
+		return flag;
+	}
+	return scr;
+}
+
+// The Shartrish Slopes
+window.getScrollShartrishSlopesContent = function() {
+	var content = `I find myself at the northwestern border of the Confined Valley, enjoying the hospitability of the human tribe, or the 'Ashwalkers' as they call their own clan. They haven't been here for longer than two generations, and my old roots cannot help but feel amazed at how fast they've gone from being a tribe mistrusting and alien to becoming one that worships the Goddess and wants to join the rest of us in our customs, to the point that I no longer see the idea of an Ashwalker Candidate being sent to the Passion Temple, at some point in the future, outside of the realm of possibility.
+
+If I were to translate the name by which they call this area to the common language, that would be 'the Shartrish Slopes'. As one leaves my home forests in this direction, the trees first become uncommon, and the soil increasingly arid, and finally the earth turns uneven and capricious, forming hills and ridges quite adverse for travel. While many of them are rocky and by all means infertile, there are also some zones where it's possible to find bushes, weeds and other smaller plants, or even large patches of grass, though often dry to the point that I'm still surprised by the fact that they keep growing back. When I asked the youths why they chose a location as contrarian to animal and plant life to settle, they argued that monsters are less common here, and that the hills provide protections that one can only dream of in the plains; yet the old have a completely different answer: that this climate is favorable for the livestock that they've brought from their native home.
+
+This is a place that has, for the longest time, been derided by the children of the Goddess as barren and uninteresting, worth of no one's time and even uncapable of sustaining any form of society. All in all, I'm glad that these newcomers have proven these perceptions wrong and brought a grand blow of fresh air. Perhaps I, too, am falling fond of the view of these mounds, ever intersected by shades of yellow and green.
+
+- Extract from the Diaries of Lerezure, Leirien priest.
+
+Note: The notes of Lerezure appear to paint the Shartrish Slopes as a moderately more arid place than it currently really is. It is unclear if the region's flora has changed across the centuries, or if the author had an extreme impression on account of him being a Leirien.`;
+	return content;
+}
+window.createScrollShartrishSlopes = function() {
+	var scr = new Scroll("shSlopes","Shartrish Slopes","lore");
+	scr.firstTimeEffect = function(characters) {
+		var textResults = "";
+		var expPoints = 150;
+		for ( var character of characters ) {
+			gC(character).perception.addExperience(expPoints);
+			textResults += gC(character).getFormattedName() + " gained " + (expPoints * gC(character).perception.affinity).toFixed(1) + " perception experience points.\n";
+		}
+		return textResults;
+	}
+	scr.getContent = getScrollShartrishSlopesContent;
+	scr.mayBeFound = function(characters) {
+		var flag = false;
+		if ( (State.variables.daycycle.day > 12 && State.variables.daycycle.month == 2) || State.variables.daycycle.month > 2 ) {
+			flag = true;
+		}
+		return flag;
+	}
+	return scr;
+}
+
+// Ashwalker Customs
+window.getScrollAshwalkerCustomsContent = function() {
+	var content = `People from all tribes hear at one point or another about the Martial Competition of the Ashwalkers, a yearly event that sometimes brings curious Beastkin and Gaanidans to test their mettle. Because the tournament bans magical attacks and even the use of sex to bring the opponent to exhaustion, it has been argued that the event serves more to maintain the disciplines of weapon handling and hand to hand combat alive as forms of art than to prepare the tribe for real conflict. In line with this idea, another discipline that brings recognition among them is dancing, favoring a style that favors long movements across a stage along with twirls and pirouettes. While an Ashwalker dancing spectacle is an impressive sight for any outsider, the style itself demands an amount of training and coordination that makes it impractical to be learned for anyone who isn't willing to spend months or even years living in the tribe.
+
+Another art favored is crafting, although with a clear focus on the work of metal, to the point that almost all tribes across the Valley have at least a handful of tools created by Ashwalker smiths, even if the origin isn't always widely known. It may perhaps be their ample smithing tradition what made these humans so accustomed to the use of bondage as an outlet for pleasure. Moved exclusively by scholarly vocation, I have made personal inquiries on the matter, and I have found an interesting contradiction on the fact that, while older Ashwalker texts seem to decry the use of bondage as an activity favored by 'grotesque perverts' and other unfavorable descriptions, modern Ashwalkers don't have any moral predisposition against its use, although the old are far more discreet about it than the young.
+
+When it comes to social organization, the tribe elects their chieftain by following the principle of 'one person, one vote', with all people who are least 13 years old being allowed to participate. This position, often occupied by mature men or women who aren't excessively old, is held until either the person holding it is called by the Goddess at the end of their life, retires, or their authority is called into question. Many other positions of authority, such as military leaders, are elected directly by the chietfain themself, although the majority of the minor ones are passed down by seniority.
+
+The Temple of Flux, branch of the Passion Temple in this tribe, was formed as a compromise between the old tribes of the Valley and the first generations of Ashwalkers that settled it, allowing them to maintain some of their traditional beliefs as long as these were incorporated to the worship of the Goddess. The 'flux' refers to the never stopping flow of energy, of strength, of ambition, of desire, and the belief that these manifestations of people and nature can only be channeled, but never fully contained. Thus, the older generations must be wise enough to notice when it's time to relegate power and responsibilities to the newer ones, the idea of ever-lasting permanence is rejected as an unreal ideal, and conflicts must be allowed to burst, but ultimately redirected into a renewed state of things.`;
+	return content;
+}
+window.createScrollAshwalkerCustoms = function() {
+	var scr = new Scroll("ashCustoms","Ashwalker Customs","lore");
+	scr.firstTimeEffect = function(characters) {
+		var textResults = "";
+		var expPoints = 150;
+		for ( var character of characters ) {
+			gC(character).empathy.addExperience(expPoints);
+			textResults += gC(character).getFormattedName() + " gained " + (expPoints * gC(character).perception.affinity).toFixed(1) + " empathy experience points.\n";
+		}
+		return textResults;
+	}
+	scr.getContent = getScrollAshwalkerCustomsContent;
+	scr.mayBeFound = function(characters) {
+		var flag = false;
+		if ( (State.variables.daycycle.day > 12 && State.variables.daycycle.month == 2) || State.variables.daycycle.month > 2 ) {
 			flag = true;
 		}
 		return flag;
@@ -425,6 +493,78 @@ window.createScrollTributeForTheGoddess = function() {
 	return scr;
 }
 
+// Forbidden Love
+window.getScrollForbiddenLove = function() {
+	var content = `"The phantom has visited me again tonight. No matter how strong I shut the doors, how vehemently I reject its advances and ignore its cries, it just keeps coming. How can you, after all, forbid the visits of a ghost that lives in your own head?
+
+And to be entirely honest with myself... I have been clinging onto it, no matter how much that nail burns. I keep telling myself that the pain it brings isn't worth it, but how can I survive the pain of knowing I will never see you again, that I'll have to continue living on without the reminiscence of your smile? Every night, when I'm about to cry myself to sleep, a little part of me leaves a small crack open in the door, and so the phantom manages to enter. This ghost is the living memory of your laugh bright and full of joy, of your hand gently caressing my face, of your mouth seducing mine in a slow dance... It is a fire that warms my desolate soul, and in my weakness, I welcome its destructive embrace, its merciless visits that burn my skin.
+
+Why must our families be so foolish, feuding over ages old disputes? Who cares if you're Ashwalker and me, Gaanidan? If our love could flourish in such brief encounters, shouldn't the world respect and protect its beauty? Why must the hate of our tribes get in the way of our affection? Our soul-penetrating stares, prelude to the symphony of our kiss, the warm embrace of our hands, and their fingers seeking the union with each other, our skin turning open to each other's touch and massage, as if we were going to fuse ourselves... Why must all of that hold less weight than the rivalry of long dead corpses?"
+
+[A few words have been crossed out to the point of no longer being readable. The text continues long below, with a fairly different handwriting, sometimes firm, but sometimes shaken.]
+
+"Today is the day when the new Gaanidan Candidate is chosen. I have already submitted myself to my fate, resigned to the powerless frustration of not being capable of defying men and women who value the dead over myself... But if by some chance... The Goddess is aware of my pain... Please, listen to my plea... Please send me to the Passion Temple, and send her as well. My hands are trembling, and my face bathed in tears... I cannot leave home like this... Please..."
+
+Segments of the personal diary of Iuno, High Priestess of the Passion Temple.`;
+	return content;
+}
+window.createScrollForbiddenLove = function() {
+	var scr = new Scroll("forbiddenLove","A Forbidden Love","shortStory");
+	scr.firstTimeEffect = function(characters) {
+		var textResults = charactersLearnSceneActions(characters,['whisperSNs','kissNeck','holdHands']);
+		return textResults;
+	}
+	
+	scr.getContent = getScrollForbiddenLove;
+	scr.mayBeFound = function(characters) {
+		var flag = false;
+		if ( State.variables.daycycle.month > 1 ) {
+			flag = true;
+		}
+		return flag;
+	}
+	return scr;
+}
+
+// Punishment Report
+window.getScrollPunishmentReport = function() {
+	var content = `Tags: Orgy, (Futa x Female x Male), Teasing, Vaginal, Oral, Threesome, Femdom, Femsub, Domination, Orgasm Denial
+
+"To our most merciful High Priestess, Elegant Victory:
+
+I write this report to communicate the results and details of the punishment you dictated to be committed against Lereshir, human Priestess, whom, unable to accept the wise decision of the other Candidates to grant you the title of High Priestess, has been slandering your good name ever since.
+
+She initially received the news with some mild resistance, once again pouring sour words against your person and casting doubt on your good judgement, but ultimately complied to accompany the other priestesses and priest, after she was told that her punishment would be being subjected to enough orgasms to leave her aether weak and shattered for a few weeks.
+
+Fellow ex-Candidate Lereimes started the session, in a calm mood, laying Lereshir on her back and slowly riding her member for a good fraction of an hour, continuously edging the human and sometimes achieving relief herself. Then, she commanded Velsin and Messin, the Shapeshifter priest and the Leirien priestess in training, to continue in her stead.
+
+Lereshir was ordered to assume a mutual face to groin position Messin, the latter's tongue taking care of the human's dick while Velsin her. Due to the couple's lack of experience, they weren't capable or expected to continue subjecting her to orgasm denial. I offered them to take a rest, and I proceeded to stimulate all of Lereshir's genitals, as well as her breasts and anus, and applied a more direct whipping on her aether, while she feigned impassive stoicism.
+
+When Lereimes came back, she took my place and I left her to continue agitating Lereshir's body. At this moment, there was a clear error of communication on her part, as she later claimed to have asked me to come back after an hour, although she actually implied that she intended to take my next turn after Messin and Velsin. Whatever the case, she left Lereshir alone with the new priest and priestess. It wasn't until a couple of hours later that we realized that neither of us had supervised them in far too long.
+
+What we found next was a flawed situation. Lereshir was clearly dominating the room, vigorously pushing against Messin's vaginal entrance and letting a clearly not as vigorous Velsin penetrate her from behind, commanding him to be more forceful and berating him for his weakness. Naturally, we had no choice but to put a stop to the situation, as the new priests were found to be incapable of imposing themselves on Lereshir, which left us undermanned to continue the punishment until a point where it would have had favourable effects.
+
+At the moment, we find ourselves with the inconvenient situation that Velsin and Messin would accept our orders in theory, but it isn't difficult for Lereshir to manipulate them into avoiding their responsibilities or even obstructing our own, so we do not have the resources to attempt the punishment again as of this moment. I understand that our most merciful High Priestess is currently busy with personal matters outside the Passion Temple, but I'm afraid that your continued absence might shift the balance of power in an undesirable direction. I humbly suggest that you reconsider the options at your disposal at the moment to conclude the conflict with a favorable conclusion."`;
+	return content;
+}
+window.createScrollPunishmentReport = function() {
+	var scr = new Scroll("punReport","Punishment Report","shortStory");
+	scr.firstTimeEffect = function(characters) {
+		var textResults = charactersLearnSceneActions(characters,["encInit","piston","gallopDick","gallopPussy","mountFaceToGroin","askMountFromBehind","extraAskMountFromBehind"]);
+		return textResults;
+	}
+	
+	scr.getContent = getScrollPunishmentReport;
+	scr.mayBeFound = function(characters) {
+		var flag = false;
+		if ( State.variables.daycycle.month > 1 ) {
+			flag = true;
+		}
+		return flag;
+	}
+	return scr;
+}
+
 
 	// GAMEPLAY
 // The basics of combat
@@ -613,6 +753,7 @@ window.createScrollDeeperRelationships = function() {
 	}
 	return scr;
 }
+
 // Relationships Nuance
 window.getScrollRelationshipsNuance = function() {
 	var content = `Your relationships with your fellow Candidates will grow, evolve and mutate during your preparation as a potential High Priestess, and thus, it is fundamental for you to pay attention to the nuances they may take with enough anticipation so that you may properly direct them towards the most fruitful stream.
@@ -644,38 +785,6 @@ window.createScrollRelationshipsNuance = function() {
 	return scr;
 }
 
-// Forbidden Love
-window.getScrollForbiddenLove = function() {
-	var content = `"The phantom has visited me again tonight. No matter how strong I shut the doors, how vehemently I reject its advances and ignore its cries, it just keeps coming. How can you, after all, forbid the visits of a ghost that lives in your own head?
-
-And to be entirely honest with myself... I have been clinging onto it, no matter how much that nail burns. I keep telling myself that the pain it brings isn't worth it, but how can I survive the pain of knowing I will never see you again, that I'll have to continue living on without the reminiscence of your smile? Every night, when I'm about to cry myself to sleep, a little part of me leaves a small crack open in the door, and so the phantom manages to enter. This ghost is the living memory of your laugh bright and full of joy, of your hand gently caressing my face, of your mouth seducing mine in a slow dance... It is a fire that warms my desolate soul, and in my weakness, I welcome its destructive embrace, its merciless visits that burn my skin.
-
-Why must our families be so foolish, feuding over ages old disputes? Who cares if you're Ashwalker and me, Gaanidan? If our love could flourish in such brief encounters, shouldn't the world respect and protect its beauty? Why must the hate of our tribes get in the way of our affection? Our soul-penetrating stares, prelude to the symphony of our kiss, the warm embrace of our hands, and their fingers seeking the union with each other, our skin turning open to each other's touch and massage, as if we were going to fuse ourselves... Why must all of that hold less weight than the rivalry of long dead corpses?"
-
-[A few words have been crossed out to the point of no longer being readable. The text continues long below, with a fairly different handwriting, sometimes firm, but sometimes shaken.]
-
-"Today is the day when the new Gaanidan Candidate is chosen. I have already submitted myself to my fate, resigned to the powerless frustration of not being capable of defying men and women who value the dead over myself... But if by some chance... The Goddess is aware of my pain... Please, listen to my plea... Please send me to the Passion Temple, and send her as well. My hands are trembling, and my face bathed in tears... I cannot leave home like this... Please..."
-
-Segments of the personal diary of Iuno, High Priestess of the Passion Temple.`;
-	return content;
-}
-window.createScrollForbiddenLove = function() {
-	var scr = new Scroll("forbiddenLove","A Forbidden Love","shortStory");
-	scr.firstTimeEffect = function(characters) {
-		var textResults = charactersLearnSceneActions(characters,['whisperSNs','kissNeck','holdHands']);
-		return textResults;
-	}
-	
-	scr.getContent = getScrollForbiddenLove;
-	scr.mayBeFound = function(characters) {
-		var flag = false;
-		if ( State.variables.daycycle.month > 1 ) {
-			flag = true;
-		}
-		return flag;
-	}
-	return scr;
-}
 
 
 setup.scrollsList = [];
@@ -692,13 +801,16 @@ setup.scrollsList.pillowFeetFight = createScrollPillowFeetFight();
 setup.scrollsList.punishingTheTraitors = createScrollPunishingTheTraitors();
 setup.scrollsList.theBasicsOfCombat = createScrollTheBasicsOfCombat();
 setup.scrollsList.tributeForTheGoddess = createScrollTributeForTheGoddess();
+setup.scrollsList.forbiddenLove = createScrollForbiddenLove();
+setup.scrollsList.punReport = createScrollPunishmentReport();
 setup.scrollsList.aProperCandidate = createScrollAProperCandidate();
 setup.scrollsList.artsSocializing = createScrollTheArtsOfSocializing();
 setup.scrollsList.artsBed = createScrollTheArtsOfBed();
 setup.scrollsList.artsCombat = createScrollTheArtsOfCombat();
 setup.scrollsList.deeperRelationships = createScrollDeeperRelationships();
 setup.scrollsList.relsNuance = createScrollRelationshipsNuance();
-setup.scrollsList.forbiddenLove = createScrollForbiddenLove();
+setup.scrollsList.shSlopes = createScrollShartrishSlopes();
+setup.scrollsList.ashCustoms = createScrollAshwalkerCustoms();
 
 window.getScrollsStringList = function() {
 	var scrollsList = [];

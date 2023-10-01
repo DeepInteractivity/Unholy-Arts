@@ -2,6 +2,7 @@
 
 window.scene = function() {
 	this.sceneLog = ""; // Debug console
+	this.logAi = false; // TODO: Set to false
 	
 	this.scenePassage = "";
 	
@@ -55,6 +56,7 @@ window.scene = function() {
 	
 	this.cancelActionButtons = []; // Each element is a list [ID,CommandScript,Description]
 	this.cabID = 0; // ID for each cancelActionButton. It's assigned to the new cab, then incremented. Should be cleaned at the end of the scene.
+	this.testingActionChances = false;
 	
 	this.provisionalInfo = "";
 	
@@ -348,6 +350,11 @@ window.scene = function() {
 	scene.prototype.assignNewLead = function() {
 		this.giveLeadToChar(randomFromList(this.askedForLead));
 	}
+	scene.prototype.removeNonleadPermissions = function() {
+		for ( var cK of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
+			removeAlteredStateByAcr(cK,"CAal");
+		}
+	}
 	
 	scene.prototype.giveLeadToChar = function(charKey) {
 		var charKeys = this.teamAcharKeys.concat(this.teamBcharKeys);
@@ -400,6 +407,7 @@ window.scene = function() {
 			getChar(key).orgasmSceneCounter = 0;
 			gC(key).mindblowingOrgasmSC = 0;
 			getChar(key).ruinedOrgasmSceneCounter = 0;
+			gC(key).conNMbOrgSC = 0;
 		}		
 	}
 	scene.prototype.cleanAccumulatedDamages = function() {
@@ -412,8 +420,14 @@ window.scene = function() {
 		var affectedChars = findAllConnectedCharsByPositionMinusList(charKey,[]);
 		for ( var cK of affectedChars ) {
 			getChar(cK).position.free();
+			if ( State.variables.sc.sceneType == "bs" ) {
+				if ( cK != "chPlayerCharacter" ) {
+					gainControlBack(cK);
+					//gC(cK).lostControlTurns = 0;
+					//gC(cK).control = gC(cK).maxControl / 2;
+				}
+			}
 		}
-		
 	}
 	scene.prototype.cleanAllPositions = function() {
 		var charList = this.teamAcharKeys.concat(this.teamBcharKeys);
@@ -714,6 +728,18 @@ window.scene = function() {
 		
 		return list;
 	}
+	scene.prototype.listValidActionTargetCombinationsByChar = function(actor) {
+		var list = []; // [[action,target],[action,target]...]
+		for ( var target of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
+			var actionsBatch = this.listUsableActionsOnTarget(actor,target);
+			for ( var action of actionsBatch ) {
+				if ( action != "doNothing" ) {
+					list.push([action,target]);
+				}					
+			}
+		}
+		return list;
+	}
 	
 	scene.prototype.checkUnvalidContinuedActions = function() {
 		// Checks every continued action on the scene. If any of them has unvalid positions, they are canceled
@@ -823,12 +849,16 @@ window.scene = function() {
 			var actionsInfo = new weightedList(); 
 			var charKeys = this.teamAcharKeys.concat(this.teamBcharKeys);
 			for ( var actK of this.teamAchosenActions ) {
-				actionsInfo[this.teamAcharKeys[i]] = [ this.teamAcharKeys[i] , actK , this.teamAchosenTargets[i] ];
+				if ( actK != "" ) {
+					actionsInfo[this.teamAcharKeys[i]] = [ this.teamAcharKeys[i] , actK , this.teamAchosenTargets[i] ];
+				}
 				i++;
 			}
 			i = 0;
 			for ( var actK of this.teamBchosenActions ) {
-				actionsInfo[this.teamBcharKeys[i]] = [ this.teamBcharKeys[i] , actK , this.teamBchosenTargets[i] ];
+				if ( actK != "" ) {
+					actionsInfo[this.teamBcharKeys[i]] = [ this.teamBcharKeys[i] , actK , this.teamBchosenTargets[i] ];
+				}
 				i++;
 			}
 			// Divide actions to execute by blocks of priority
@@ -1117,6 +1147,11 @@ window.scene = function() {
 	}
 	
 	scene.prototype.executeTurn = function() {	
+		this.sceneLog = "";
+		if ( this.logAi == true ) {
+			this.sceneLog += "Logging previous turn's AI data:\n";
+		}
+	
 		this.teamAchosenActions = [];  // Clean the stacks
 		this.teamAchosenTargets = [];
 		this.teamBchosenActions = [];
@@ -1137,6 +1172,8 @@ window.scene = function() {
 		
 		
 		// Choose actions
+		State.variables.sc.testingActionChances = true;
+		State.variables.sc.strategicAiData = this.generateStrategicAiData();
 		var aiResults;
 		for ( var character of this.teamAcharKeys ) { // Player character
 			if ( gC(character).koed ) { // Ko'ed characters can't act
@@ -1176,6 +1213,8 @@ window.scene = function() {
 				this.teamBchosenTargets.push([]);
 			}
 		}
+		delete this.strategicAiData;
+		State.variables.sc.testingActionChances = false;		
 		
 		// Pre-execute actions
 		this.cancelActionButtons = [];
@@ -1199,6 +1238,7 @@ window.scene = function() {
 		this.addTurnLeadPoints();
 		if ( this.askedForLead.length > 0 ) {
 			this.assignNewLead();
+			this.removeNonleadPermissions();
 		}		
 		
 		// Execute continued action
@@ -1346,9 +1386,12 @@ window.scene = function() {
 				script = '<<link "Cancel Player Position" "Scene">>'
 				   + '<<' + 'script>>'
 				   + 'State.variables.sc.cancelPosition("chPlayerCharacter");'
-				   + 'State.variables.sc.positionsDescription = "";'
+				   + 'State.variables.sc.positionsDescription = "";\n'
+				   + 'State.variables.sc.pcChosenAction = "";\n'
+				   + 'State.variables.sc.pcChosenTargets = [];\n'
+				   + 'State.variables.sc.executeTurn();\n'
 				   + 'State.variables.sc.actionsDescription = "The position was canceled.";\n'
-				   + 'State.variables.sc.formatScenePassage();\n'
+				 //  + 'State.variables.sc.formatScenePassage();\n'
 				   + '<<' + '/script>>'
 				   + '<</link>>\n';
 			}
@@ -1628,7 +1671,7 @@ window.getImmediatelyConnectedCharsToChar = function(charKey) {
 	scene.prototype.logAccumulatedDamage = function() {
 		var charKeys = this.teamAcharKeys.concat(this.teamBcharKeys );
 		for ( var character of charKeys ) {
-			this.sceneLog += " " + getChar(character).textAccumulatedDamages();
+			// this.sceneLog += " " + getChar(character).textAccumulatedDamages();
 		}
 	}
 
@@ -1785,6 +1828,89 @@ window.formatSceneAnimationsHtmlSegment = function() {
 		
 		return dText;
 	}
+	
+	// AI Meta-Data
+	scene.prototype.generateStrategicAiData = function() {
+		var sAiD = [];
+		var teamAp = 0;
+		var teamBp = 0;
+		sAiD.almostDefeated = []; // < 15% max lust
+		sAiD.pinnable = []; // 0 control, no shared position
+		sAiD.needsHelp = []; // < 35% max lust, not pinned down
+		sAiD.losingControl = []; // < 60% max control, not pinned down
+		// Power and altered states
+		for ( var cK of this.teamAcharKeys ) {
+			sAiD[cK] = [];
+			var p = quantifyCharacterStrength(cK); // Char's power
+			sAiD[cK].power = p;
+			sAiD[cK].DeBuffs = 0; // Char's altered states
+			for ( var as of gC(cK).alteredStates ) {
+				if ( as.type == "buff" ) {
+					sAiD[cK].DeBuffs += 1;
+				} else if ( as.type == "minorBuff" ) {
+					sAiD[cK].DeBuffs += 0.5;
+				} else if ( as.type == "debuff" ) {
+					sAiD[cK].DeBuffs -= 1;
+				} else if ( as.type == "minorDebuff" ) {
+					sAiD[cK].DeBuffs -= 0.5;
+				}
+			}
+			if ( gC(cK).koed == false ) {
+				teamAp += p; // Team's power
+			}
+		}
+		for ( var cK of this.teamBcharKeys ) {
+			sAiD[cK] = [];
+			var p = quantifyCharacterStrength(cK); // Char's power
+			sAiD[cK].power = p;
+			sAiD[cK].DeBuffs = 0; // Char's altered states
+			for ( var as of gC(cK).alteredStates ) {
+				if ( as.type == "buff" ) {
+					sAiD[cK].DeBuffs += 1;
+				} else if ( as.type == "minorBuff" ) {
+					sAiD[cK].DeBuffs += 0.5;
+				} else if ( as.type == "debuff" ) {
+					sAiD[cK].DeBuffs -= 1;
+				} else if ( as.type == "minorDebuff" ) {
+					sAiD[cK].DeBuffs -= 0.5;
+				}
+			}
+			if ( gC(cK).koed == false ) {
+				teamBp += p; // Team's power
+			}
+		}
+		sAiD.teamAp = teamAp;
+		sAiD.teamBp = teamBp;
+		// Combat inertia
+		for ( var cK of this.teamAcharKeys.concat(this.teamBcharKeys) ) { // About to be defeated
+			if ( getBarPercentage(cK,"lust") <= 0.15 ) { // About to be defeated
+				sAiD.almostDefeated.push(cK);
+			}
+			if ( gC(cK).control == 0 && gC(cK).position.type == "free" ) { // Out of control, not pinned down
+				sAiD.pinnable.push(cK);
+			}
+			if ( getBarPercentage(cK,"lust") <= 0.35 && gC(cK).position.type != "passive" ) { // Depleting health, not pinned down
+				sAiD.needsHelp.push(cK);
+			}
+			if ( gC(cK).control < gC(cK).maxControl * 0.6 && gC(cK).position.type != "passive" ) { // Losing control, not pinned down
+				sAiD.losingControl.push(cK);
+			}
+		}
+		for ( var cK of this.teamAcharKeys.concat(this.teamBcharKeys) ) { 
+			
+		}
+		
+		if ( State.variables.sc.logAi == true ) {
+			State.variables.sc.sceneLog += "Strategic Scene Data:\n" + "Teams power: " + teamAp + " vs " + teamBp + "\n"
+										 + "Almost defeated: " + sAiD.almostDefeated + "\nPinnable: " + sAiD.pinnable
+										 + "\nNeeds help: " + sAiD.needsHelp + "\nLosing control: " + sAiD.losingControl;
+		}
+		
+		return sAiD;
+	}
+window.getSsAiD = function() {
+	return State.variables.sc.strategicAiData;
+}
 	
 	// Meta-controls
 	scene.prototype.markNextTurnLink = function() {

@@ -1632,7 +1632,7 @@ window.npcConsidersWillingnessToJoinHuntingMission = function(targetKey,actorKey
 		} else {
 			result[1] = gC(targetKey).getName() + " would accept."
 		}
-		result[1] += "\nExpected group strength: " + expectedStrength.toFixed(1) + ". Your combined strength must be high enough to triumph against the monsters."
+		result[1] += "\nExpected group strength: " + (expectedStrength + acceptsFactor).toFixed(1) + ". Your combined strength must be high enough to triumph against the monsters."
 				   + "\nRelationship: " + relationValue.toFixed(1) + ". The character must trust you with their life to accept."
 				   + "\nWants to hunt: " + wantsToHuntMonsterFactor.toFixed(1) + ". The character may or may not see the need to hunt this kind of monster.";
 		if ( owedFavor > 0 ) {

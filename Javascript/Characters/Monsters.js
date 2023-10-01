@@ -165,7 +165,12 @@ window.createOppressiveYoke = function(statVariance,statBuff,number) {
 	character.combatAffinities.magic.resistance += 25;
 	
 	// Moves
-	character.saList = ["doNothing","struggle","baEtherealChains","tackle","sparkingRubbing","baOppressiveEmbrace","savageCrush"];
+	character.saList = ["doNothing","struggle","baEtherealChains","tackle","baOppressiveEmbrace","savageCrush"];
+	if ( gSettings().lewdMonsters == "enable" ) {
+		character.saList.push("sparkingRubbing");
+	} else {
+		character.saList.push("discharge");
+	}
 	
 	// Assign to State.variables and return varName
 	State.variables[nameVar] = character;
@@ -255,7 +260,7 @@ window.ccsTestPlayerAteFightOppressiveYoke = function() {
 	"FA BeatenSucker 2");
 	for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
 		if ( charKey != "chPlayerCharacter" ) {
-			gC(charKey).aiAlgorythm = createAiEarlyStrategic();
+			gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
 		}
 	}
 	

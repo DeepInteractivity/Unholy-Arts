@@ -127,6 +127,7 @@ window.Character = function(name, varName) {
 	this.orgasmSceneCounter = 0;
 	this.ruinedOrgasmSceneCounter = 0;
 	this.mindblowingOrgasmSC = 0;
+	this.conNMbOrgSC = 0; // Continued non-Mindblowing Orgasm Scene Counter -> Amount of normal orgasms since the last non-mindblowing orgasm
 	
 	this.turnPrefTags = [];
 	
@@ -465,10 +466,12 @@ Character.prototype.tryOrgasm = function() {
 					this.lust.current = this.lust.max;
 					this.willpower.changeValue(-this.willpower.max * 0.2);
 					type = "mindblowing";
+					this.conNMbOrgSC = 0;
 				} else {										// Normal orgasm
 					this.orgasmSceneCounter++;
 					this.lust.current = this.lust.max;
 					type = "normal";
+					this.conNMbOrgSC++;
 				}
 			} else { 											// Ruined orgasm
 				this.ruinedOrgasmSceneCounter++;
@@ -610,6 +613,11 @@ Character.prototype.textAlteredStates = function() {
 			if ( i > 0 ) { text += ", "; }
 			if ( as.acr != "BdPt" ) {
 				var tooltip = as.title + ": " + as.description; // + "\nRemaining turns: " + as.remainingTurns;
+				if ( as.hasOwnProperty("tag") ) {
+					if ( as.hasOwnProperty("intensity") ) {
+						tooltip += "\nIntensity: " + (as.intensity * 10).toFixed(1);
+					}
+				}
 				if ( as.scope == "scene" ) {
 					tooltip += "\nRemaining turns: " + as.remainingTurns.toFixed(1);
 				} else if ( as.scope == "days" ) {
@@ -742,6 +750,13 @@ Character.prototype.assignMasculinePronouns = function() {
 		this.refPr = "himself";
 		this.posPr = "his";
 		this.inPosPr = "his";
+	}
+Character.prototype.assignNbPronouns = function() {
+		this.perPr = "they";
+		this.comPr = "them";
+		this.refPr = "themself";
+		this.posPr = "their";
+		this.inPosPr = "theirs";
 	}
 Character.prototype.assignItPronouns = function() {
 		this.perPr = "it";
@@ -1218,8 +1233,24 @@ window.isCharsOrgasmRuined = function(charKey) {
 window.isOrgasmMindblowing = function(charKey) {
 	var flag = false;
 	var overflowPercent = -(gC(charKey).lust.current/gC(charKey).lust.max);
+	var requiredScore = 0;
+	if ( gC(charKey).conNMbOrgSC == 0 ) {
+		requiredScore += 1;
+	} else if ( gC(charKey).conNMbOrgSC == 1 ) {
+		requiredScore += 0.6;
+	} else if ( gC(charKey).conNMbOrgSC == 2 ) {
+		requiredScore += 0.3;
+	} else if ( gC(charKey).conNMbOrgSC == 3 ) {
+		requiredScore += 0.1;
+	}
+	requiredScore += 0.3 - (luckedDiceThrow(gCstat(charKey,"luck")) * 0.6);
+	/*
 	var overflowScore = gC(charKey).orgasmSceneCounter - (gC(charKey).mindblowingOrgasmSC * 3) + (overflowPercent * 1.5);
 	if ( overflowScore > 2.4 ) {
+		flag = true;
+	}
+	*/
+	if ( overflowPercent >= requiredScore ) {
 		flag = true;
 	}
 	return flag;

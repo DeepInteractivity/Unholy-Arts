@@ -276,9 +276,15 @@ window.isActionUsable = function(actionKey,actorKey,targetsKeys,skipLinkedCheck)
 	
 	// Position
 	if ( ( action.tags.includes("pos") || action.actionType == "pounce" ) && skipLinkedCheck == false ) {
-		if ( gC(actorKey).position.key != "free" || gC(targetsKeys[0]).position.key != "free" ) {
-			iAU.isUsable = false;
-			if ( State.variables.settings.debugFunctions ) { iAU.explanation += "The actor and a target should be free to initiate a positional action.\n"; }
+		var bypass = false;
+		if ( action.hasOwnProperty("customPositionInit") ) {
+			bypass = action.customPositionInit(actionKey,actorKey,targetsKeys);
+		}
+		if ( bypass == false ) {
+			if ( gC(actorKey).position.key != "free" || gC(targetsKeys[0]).position.key != "free" ) {
+				iAU.isUsable = false;
+				if ( State.variables.settings.debugFunctions ) { iAU.explanation += "The actor and a target should be free to initiate a positional action.\n"; }
+			}
 		}
 	}
 	if ( action.tags.includes("cpos") ) {
@@ -310,10 +316,16 @@ window.isActionUsable = function(actionKey,actorKey,targetsKeys,skipLinkedCheck)
 	
 	// Lead
 	if ( State.variables.sc.enabledLead != "none" ) {
-		if ( action.tags.includes("cAct") || action.tags.includes("pos") || action.tags.includes("cpos") ) {
+		if ( action.tags.includes("cAct") ) {
+			if ( actor.hasLead == false && doesCharHaveAlteredState(actor.varName,"CAal") == false ) {
+				iAU.isUsable = false;
+				if ( State.variables.settings.debugFunctions ) { iAU.explanation += "Continued actions require the actor to have the lead in this scene.\n"; }
+			}
+		}
+		if ( action.tags.includes("pos") || action.tags.includes("cpos") ) {
 			if ( actor.hasLead == false ) {
 				iAU.isUsable = false;
-				if ( State.variables.settings.debugFunctions ) { iAU.explanation += "Positional and continued actions require the actor to have the lead in this scene.\n"; }
+				if ( State.variables.settings.debugFunctions ) { iAU.explanation += "Positional actions require the actor to have the lead in this scene.\n"; }
 			}
 		}
 	}
@@ -580,7 +592,6 @@ window.sceneAction = function() {
 	this.targetBpReqs = [];	// The targets require these body parts for the action to be possible
 	this.targetLockedBpReqs = []; // The targets require these bodyparts to be locked for the action to be possible
 	this.flavorTags = [];
-	this.strategyTags = [];
 	this.affinities = [];
 	
 	this.getIsAllowedBySettings = null;
@@ -613,7 +624,17 @@ window.sceneAction = function() {
 	this.energyCost = 0;
 	this.socialdriveCost = 0;
 	
+	// this.customActionAllowed = function(actionKey,actorKey,targetsKeys) // Manually added
+	// this.customPositionInit = function(actionKey,actorKey,targetsKeys) // Might allow standard positional requirements to be bypassed
+	
 	this.description = "";
+	
+	// NPC AI
+	this.strategyTags = [];
+	this.actorStatWeights = [0,0,0,0,0,0,0,0,0];
+	this.targetStatWeights = [0,0,0,0,0,0,0,0,0];
+	this.statWeightDivider = 100;
+	this.overallWeightMultiplier = 1;
 	
 	this.execute = null; // Function. Returns a description of the action's effects during that particular use.
 	// this.resultsMessage = null; // Function. Returns a string to be displayed on Sugarcube 2 with proper format.
@@ -735,6 +756,9 @@ sceneAction.prototype.toJSON = function() {
 // Scene Actions will be objects belonging to this object. This will ease the access to actions.
 window.saList = function() {
 	this.doNothing = createSaDoNothing();
+	
+	this.encInit = createSaEncourageInitiative();
+	
 	this.strokePussy = createSaStrokePussy();
 	this.strokeBreasts = createSaStrokeBreasts();
 	this.strokeDick = createSaStrokeDick();
@@ -755,6 +779,8 @@ window.saList = function() {
 	this.analThrust = createSaAnalThrust();
 	this.doubleThrust = createSaDoubleThrust();
 	this.piston = createSaPiston();
+	this.gallopDick = createSaGallopOnDick();
+	this.gallopPussy = createSaGallopOnPussy();
 	this.pushHipsBack = createSaPushHipsBack();
 	this.pushAssBack = createSaPushAssBack();
 	this.finalPush = createSaFinalPush();
@@ -823,6 +849,9 @@ window.saList = function() {
 		// Positions
 	this.mountFromBehind = createSaMountFromBehind();
 	this.mountFaceToFace = createSaMountFaceToFace();
+	this.mountFaceToGroin = createSaMountFaceToGroin();
+	this.askMountFromBehind = createSaAskMountFromBehind();
+	
 	this.kneel = createSaKneel();
 	this.makeKneel = createSaMakeKneel();
 	
@@ -830,6 +859,7 @@ window.saList = function() {
 	this.extraMountFromBehind = createSaExtraMountFromBehind();
 	this.extraKneel = createSaExtraKneel();
 	this.extraMakeKneel = createSaExtraMakeKneel();
+	this.extraAskMountFromBehind = createSaExtraAskMountFromBehind();
 	
 	// Others //
 	this.holdArms = createSaHoldArms();
@@ -914,6 +944,7 @@ window.saList = function() {
 	this.flaringFeint = createFlaringFeint();
 	this.freezeFeet = createSaFreezeFeet();
 	this.sparkingRubbing = createSaSparkingRubbing();
+	this.discharge = createSaDischarge();
 	this.lightningDarts = createSaLightningDarts();
 	this.earthWall = createEarthWall();
 	this.quake = createSaQuake();

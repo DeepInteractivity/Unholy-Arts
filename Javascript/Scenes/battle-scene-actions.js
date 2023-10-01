@@ -5,8 +5,11 @@ window.evasionResults = function(hit,explanation) {
 	this.hit = hit; // True or false
 	this.explanation = explanation; // Text description with brief calculations
 }
-window.calculateEvasion = function(actionType,attacker,target,positiveVariables,negativeVariables) {
+window.calculateEvasion = function(actionType,attacker,target,positiveVariables,negativeVariables,testCalc) { // testCalc is unused, sc.testingActionChances is used instead
 	var hit = false;
+	var testResults = false;
+	if ( testCalc != null ) { if ( testCal == true ) { testResults = true; } }
+	if ( State.variables.sc.testingActionChances == true ) { testResults = true; }
 	
 	switch ( actionType ) {
 		case "pounce":
@@ -52,7 +55,11 @@ window.calculateEvasion = function(actionType,attacker,target,positiveVariables,
 			break;
 	}
 	
-	if ( hit == false ) {
+	if ( testResults == true ) { // Fake calculation, used for AI
+		var testResults = Math.min(50 + positiveVariables - negativeVariables,100);
+		if ( hit == true ) { testResults = 100; }
+		return testResults;
+	} else if ( hit == false ) { // True calculation
 		var dice = luckedDiceThrow((gC(attacker).luck.getValue() - gC(target).luck.getValue()) * 0.5 ) * 100;
 		var total = dice + positiveVariables - negativeVariables;
 		
@@ -120,7 +127,11 @@ window.createSaStruggle = function() {
 	sa.tags.push("bs","sUse");
 	sa.reqTags.push("diffTarget","struggle");
 	
-	sa.strategyTags.push("struggle");
+	sa.strategyTags.push("targetEnemy","struggle");
+	sa.actorStatWeights = [25,25,25,25,0,0,0,0,0];
+	sa.targetStatWeights = [15,15,15,15,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1;
 	
 	sa.description = "The character thrashes against their target to get off the ground.\n"
 				   + "This attack damages the target's control. If it reaches zero, the character will be freed.\n"
@@ -201,8 +212,13 @@ window.createSaBaKissLips = function() {
 	sa.actorBpReqs.push("mouth");
 	sa.targetBpReqs.push("mouth");
 	
-	sa.strategyTags.push("damage","sex","useMouth","targetMouth");
 	sa.affinities.push("sex","useMouth","targetMouth");
+	
+	sa.strategyTags.push("targetEnemy","damage","sex","useMouth","targetMouth");
+	sa.actorStatWeights = [0,100,0,0,0,0,0,0,0];
+	sa.targetStatWeights = [0,0,0,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 0.8;
 	
 	sa.description = "The character holds their target's head and kisses them.\n"
 				   + "This attack damages the target.\n\nSingle target action."
@@ -274,8 +290,13 @@ window.createSaBaStrokeDick = function() {
 	sa.actorBpReqs.push("arms");
 	sa.targetBpReqs.push("dick");
 	
-	sa.strategyTags.push("damage","sex","useArms","targetDick");
 	sa.affinities.push("sex","useArms","targetDick");
+	
+	sa.strategyTags.push("targetEnemy","damage","sex","useArms","targetDick");
+	sa.actorStatWeights = [0,100,0,0,0,0,0,0,0];
+	sa.targetStatWeights = [0,0,0,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1;
 	
 	sa.description = "The character massages a dick.\n"
 				   + "This attack damages the target.\n\nSingle target action."
@@ -338,8 +359,13 @@ window.createSaBaStrokePussy = function() {
 	sa.actorBpReqs.push("arms");
 	sa.targetBpReqs.push("pussy");
 	
-	sa.strategyTags.push("damage","sex","useArms","targetPussy");
 	sa.affinities.push("sex","useArms","targetPussy");
+	
+	sa.strategyTags.push("targetEnemy","damage","sex","useArms","targetPussy");
+	sa.actorStatWeights = [0,100,0,0,0,0,0,0,0];
+	sa.targetStatWeights = [0,0,0,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1;
 	
 	sa.description = "The character strokes a pussy.\n"
 				   + "This attack damages the target.\n\nSingle target action."
@@ -404,8 +430,13 @@ window.createSaBaTeaseLockedDick = function() {
 	sa.actorBpReqs.push("arms");
 	sa.targetLockedBpReqs.push("dick");
 	
-	sa.strategyTags.push("damage","sex","useArms","targetDick");
 	sa.affinities.push("sex","useArms","targetDick");
+	
+	sa.strategyTags.push("targetEnemy","damage","sex","useArms","targetDick");
+	sa.actorStatWeights = [0,50,0,0,0,0,50,0,0];
+	sa.targetStatWeights = [0,0,0,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 2;
 	
 	sa.getIsAllowedBySettings = function() {
 		var isAllowed = true;
@@ -488,8 +519,13 @@ window.createSaBaTeaseLockedPussy = function() {
 	sa.actorBpReqs.push("arms");
 	sa.targetLockedBpReqs.push("pussy");
 	
-	sa.strategyTags.push("damage","sex","useArms","targetPussy");
 	sa.affinities.push("sex","useArms","targetPussy");
+	
+	sa.strategyTags.push("targetEnemy","damage","sex","useArms","targetPussy");
+	sa.actorStatWeights = [0,50,0,0,0,0,50,0,0];
+	sa.targetStatWeights = [0,0,0,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 2;
 	
 	sa.getIsAllowedBySettings = function() {
 		var isAllowed = true;
@@ -573,8 +609,13 @@ window.createSaNeutralFrontalPounce = function() {
 	sa.reqTags.push("diffTarget","control");
 	sa.actorBpReqs.push("legs");
 	
-	sa.strategyTags.push("pounce","bPos","frontal","subpar");
 	sa.affinities.push("pounce","useDick","targetPussy");
+	
+	sa.strategyTags.push("targetEnemy","pounce","bPos","frontal","subpar");
+	sa.actorStatWeights = [75,25,0,0,0,0,0,0,0];
+	sa.targetStatWeights = [0,0,0,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 0.5;
 	
 	sa.description = "The character pushes their target to the ground, taking the initiative.\n"
 				   + "Costs 5 energy.\n\nSingle target action."
@@ -644,8 +685,13 @@ window.createSaD2PfrontalPounce = function() {
 	sa.actorBpReqs.push("legs","dick");
 	sa.targetBpReqs.push("pussy");
 	
-	sa.strategyTags.push("pounce","bPos","useDick","targetPussy","frontal");
 	sa.affinities.push("sex","pounce","useDick","targetPussy");
+	
+	sa.strategyTags.push("targetEnemy","pounce","bPos","useDick","targetPussy","frontal");
+	sa.actorStatWeights = [125,25,50,0,0,0,0,0,0];
+	sa.targetStatWeights = [-60,0,-40,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1;
 	
 	sa.description = "The character pushes their target to the ground and initiates vaginal penetration.\n"
 				   + "Costs 5 energy.\n\nSingle target action."
@@ -723,13 +769,18 @@ window.createSaBaThrust = function() {
 	sa.reqTags.push("diffTarget");
 	sa.requiredActiveCAs.push("baPenetratePussy");
 	
-	sa.strategyTags.push("damage","sex","useDick","targetPussy");
 	sa.affinities.push("sex","useDick","targetPussy");
+	
+	sa.strategyTags.push("targetEnemy","damage","sex","useDick","targetPussy");
+	sa.actorStatWeights = [80,30,10,0,0,0,0,0,0];
+	sa.targetStatWeights = [-10,-10,-20,0,0,0,0,0,0];
+	sa.statWeightDivider = 60;
+	sa.overallWeightMultiplier = 1.2;
 	
 	sa.description = "The character pushes their cock into their target's folds. Actor and target must already be connected.\n"
 				   + "This attack damages the target, and the actor receives some retaliation.\n\nSingle target action."
 				   + "\n\nSexual contact attack."
-				   + "\n\n__Influences__:\nDamage: Actor's physique x3, actor's agility x1, target's resilience x-1.\nSelf damage: Target's physique x1, target's agility x1, actor's resilience x-1.";
+				   + "\n\n__Influences__:\nDamage: Actor's physique x8, actor's agility x3, target's resilience x-2.\nSelf damage: Target's physique x1, target's agility x1, actor's resilience x-1.";
 				   
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = 1;
@@ -748,7 +799,7 @@ window.createSaBaThrust = function() {
 		
 		if ( evResults.hit ) { // Hit lands
 			// Damage
-			var inDamValue = gCstat(actor,"physique") * 0.6 + gCstat(actor,"agility") * 0.2 - gCstat(target,"resilience") * 0.2;
+			var inDamValue = gCstat(actor,"physique") * 0.8 + gCstat(actor,"agility") * 0.3 - gCstat(target,"resilience") * 0.2;
 			inDamValue = addLuckFactor(inDamValue,0.1,gCstat(actor,"luck"));
 			var damage = calculateAttackEffects("lust",actor,target,this.affinities,inDamValue);
 			var dmgEffMsg = getWeaknessToAttackText(this.affinities,target);
@@ -791,14 +842,19 @@ window.createSaBaPushHipsBack = function() {
 	sa.reqTags.push("diffTarget");
 	sa.requiredPassiveCAs.push("baPenetratePussy");
 	
-	sa.strategyTags.push("damage","sex","usePussy","targetDick");
+	sa.strategyTags.push("targetEnemy","damage","sex","usePussy","targetDick");
 	sa.affinities.push("sex","usePussy","targetDick");
+	
+	sa.actorStatWeights = [60,20,10,0,0,0,0,0,0];
+	sa.targetStatWeights = [-10,-10,-10,0,0,0,0,0,0];
+	sa.statWeightDivider = 60;
+	sa.overallWeightMultiplier = 1.2;
 	
 	sa.description = "The character pushes their hips back against someone else's dick. Target must already be penetrating the actor.\n"
 				   + "This attack damages the target, and the actor receives some retaliation.\n\nSingle target action."
 				   + "\n\nInfluenced by physique, agility and resilience."
 				   + "\n\nSexual contact attack."
-				   + "\n\n__Influences__:\nDamage: Actor's physique x4, actor's agility x1, target's resilience x-1.\nSelf damage: Target's physique x1, target's agility x1, actor's resilience x-1.";
+				   + "\n\n__Influences__:\nDamage: Actor's physique x6, actor's agility x2, target's resilience x-1.\nSelf damage: Target's physique x1, target's agility x1, actor's resilience x-1.";
 				   
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = 1;
@@ -817,7 +873,7 @@ window.createSaBaPushHipsBack = function() {
 		
 		if ( evResults.hit ) { // Hit lands
 			// Damage
-			var inDamValue = gCstat(actor,"physique") * 0.4 + gCstat(actor,"agility") * 0.1 - gCstat(target,"resilience") * 0.1;
+			var inDamValue = gCstat(actor,"physique") * 0.6 + gCstat(actor,"agility") * 0.2 - gCstat(target,"resilience") * 0.1;
 			inDamValue = addLuckFactor(inDamValue,0.1,gCstat(actor,"luck"));
 			var damage = calculateAttackEffects("lust",actor,target,this.affinities,inDamValue);
 			var dmgEffMsg = getWeaknessToAttackText(this.affinities,target);
@@ -863,8 +919,13 @@ window.createSaP2PfrontalPounce = function() {
 	sa.actorBpReqs.push("legs","pussy");
 	sa.targetBpReqs.push("pussy");
 	
-	sa.strategyTags.push("pounce","bPos","usePussy","targetPussy","frontal");
 	sa.affinities.push("sex","pounce","usePussy","targetPussy");
+	
+	sa.strategyTags.push("targetEnemy","pounce","bPos","usePussy","targetPussy","frontal");
+	sa.actorStatWeights = [125,25,50,0,0,0,0,0,0];
+	sa.targetStatWeights = [-60,0,-40,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1;
 	
 	sa.description = "The character pushes their target to the ground and initiates scissoring.\n"
 				   + "Costs 5 energy.\n\nSingle target action."
@@ -932,13 +993,18 @@ window.createSaBaScissor = function() {
 	sa.reqTags.push("diffTarget");
 	sa.requiredActiveCAs.push("baScissoring");
 	
-	sa.strategyTags.push("damage","sex","usePussy","targetPussy");
 	sa.affinities.push("sex","usePussy","targetPussy");
+	
+	sa.strategyTags.push("targetEnemy","damage","sex","usePussy","targetPussy");
+	sa.actorStatWeights = [80,30,10,0,0,0,0,0,0];
+	sa.targetStatWeights = [-10,-10,-20,0,0,0,0,0,0];
+	sa.statWeightDivider = 60;
+	sa.overallWeightMultiplier = 1.2;
 	
 	sa.description = "The character rubs their intimate parts against their target's. Actor and target must already be scissoring.\n"
 				   + "This attack damages the target, and the actor receives some retaliation.\n\nSingle target action."
 				   + "\n\nSexual contact attack."
-				   + "\n\n__Influences__:\nDamage: Actor's physique x3, actor's agility x1, target's resilience x-1.\nSelf damage: Target's physique x1, target's agility x1, actor's resilience x-1.";
+				   + "\n\n__Influences__:\nDamage: Actor's physique x8, actor's agility x3, target's resilience x-2.\nSelf damage: Target's physique x1, target's agility x1, actor's resilience x-1.";
 				   
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = 1;
@@ -957,12 +1023,12 @@ window.createSaBaScissor = function() {
 		
 		if ( evResults.hit ) { // Hit lands
 			// Damage
-			var inDamValue = gCstat(actor,"physique") * 0.6 + gCstat(actor,"agility") * 0.2 - gCstat(target,"resilience") * 0.2;
+			var inDamValue = gCstat(actor,"physique") * 0.8 + gCstat(actor,"agility") * 0.3 - gCstat(target,"resilience") * 0.2;
 			inDamValue = addLuckFactor(inDamValue,0.1,gCstat(actor,"luck"));
 			var damage = calculateAttackEffects("lust",actor,target,this.affinities,inDamValue);
 			var dmgEffMsg = getWeaknessToAttackText(this.affinities,target);
 			// Retaliation
-			var altAffinities = [ "sex","usePussy","targetPussy" ];
+			var altAffinities = [ "sex","usePussy","targetPussy"];
 			var inDamValue2 = gCstat(target,"physique") * 0.1 + gCstat(target,"agility") * 0.1 - gCstat(actor,"resilience") * 0.1;
 			inDamValue2 = addLuckFactor(inDamValue2,0.1,gCstat(target,"luck"));
 			var damage2 = calculateAttackEffects("lust",target,actor,altAffinities,inDamValue2);			
@@ -1000,13 +1066,18 @@ window.createSaBaScissorBack = function() {
 	sa.reqTags.push("diffTarget");
 	sa.requiredPassiveCAs.push("baScissoring");
 	
-	sa.strategyTags.push("damage","sex","usePussy","targetPussy");
+	sa.strategyTags.push("targetEnemy","damage","sex","usePussy","targetPussy");
 	sa.affinities.push("sex","usePussy","targetPussy");
+	
+	sa.actorStatWeights = [60,20,10,0,0,0,0,0,0];
+	sa.targetStatWeights = [-10,-10,-10,0,0,0,0,0,0];
+	sa.statWeightDivider = 60;
+	sa.overallWeightMultiplier = 1.2;
 	
 	sa.description = "The character pushes their groin back against their target's in retaliation. Target and actor must be scissoring.\n"
 				   + "This attack damages the target, and the actor receives some retaliation.\n\nSingle target action."
 				   + "\n\nSexual contact attack."
-				   + "\n\n__Influences__:\nDamage: Actor's physique x3, actor's agility x1, target's resilience x-1.\nSelf damage: Target's physique x1, target's agility x1, actor's resilience x-1.";
+				   + "\n\n__Influences__:\nDamage: Actor's physique x6, actor's agility x2, target's resilience x-1.\nSelf damage: Target's physique x1, target's agility x1, actor's resilience x-1.";
 				   
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = 1;
@@ -1025,7 +1096,7 @@ window.createSaBaScissorBack = function() {
 		
 		if ( evResults.hit ) { // Hit lands
 			// Damage
-			var inDamValue = gCstat(actor,"physique") * 0.4 + gCstat(actor,"agility") * 0.1 - gCstat(target,"resilience") * 0.1;
+			var inDamValue = gCstat(actor,"physique") * 0.6 + gCstat(actor,"agility") * 0.2 - gCstat(target,"resilience") * 0.1;
 			inDamValue = addLuckFactor(inDamValue,0.1,gCstat(actor,"luck"));
 			var damage = calculateAttackEffects("lust",actor,target,this.affinities,inDamValue);
 			var dmgEffMsg = getWeaknessToAttackText(this.affinities,target);
@@ -1055,7 +1126,6 @@ window.createSaBaScissorBack = function() {
 	return sa;
 }
 
-
 window.createSaP2DfrontalPounce = function() {
 	var sa = new sceneAction();
 	sa.name = "Frontal Pounce P2D";
@@ -1070,8 +1140,13 @@ window.createSaP2DfrontalPounce = function() {
 	sa.actorBpReqs.push("legs","pussy");
 	sa.targetBpReqs.push("dick");
 	
-	sa.strategyTags.push("pounce","bPos","usePussy","targetDick","frontal");
 	sa.affinities.push("sex","pounce","usePussy","targetDick");
+	
+	sa.strategyTags.push("targetEnemy","pounce","bPos","usePussy","targetDick","frontal");
+	sa.actorStatWeights = [125,25,50,0,0,0,0,0,0];
+	sa.targetStatWeights = [-60,0,-40,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1;
 	
 	sa.description = "The character pushes their target to the ground and rides their target's dick.\n"
 				   + "Costs 5 energy.\n\nSingle target action."
@@ -1149,8 +1224,13 @@ window.createSaBaRideDick = function() {
 	sa.reqTags.push("diffTarget");
 	sa.requiredActiveCAs.push("baRidingDick");
 	
-	sa.strategyTags.push("damage","sex","usePussy","targetDick");
+	sa.strategyTags.push("targetEnemy","damage","sex","usePussy","targetDick");
 	sa.affinities.push("sex","usePussy","targetDick");
+	
+	sa.actorStatWeights = [75,25,12,0,0,0,0,0,0];
+	sa.targetStatWeights = [12,12,25,0,0,0,0,0,0];
+	sa.statWeightDivider = 112;
+	sa.overallWeightMultiplier = 1;
 	
 	sa.description = "The character forces their target's dick within themself. The character must already be riding their target.\n"
 				   + "This attack damages the target, and the actor receives some retaliation.\n\nSingle target action."
@@ -1217,13 +1297,18 @@ window.createSaBaPushDickBack = function() {
 	sa.reqTags.push("diffTarget");
 	sa.requiredPassiveCAs.push("baRidingDick");
 	
-	sa.strategyTags.push("damage","sex","useDick","targetPussy");
+	sa.strategyTags.push("targetEnemy","damage","sex","useDick","targetPussy");
 	sa.affinities.push("sex","useDick","targetPussy");
+	
+	sa.actorStatWeights = [80,30,10,0,0,0,0,0,0];
+	sa.targetStatWeights = [-10,-10,-20,0,0,0,0,0,0];
+	sa.statWeightDivider = 60;
+	sa.overallWeightMultiplier = 1.2;
 	
 	sa.description = "The character pushes their dick back against their target's in retaliation. Target must be riding the character.\n"
 				   + "This attack damages the target, and the actor receives some retaliation.\n\nSingle target action."
 				   + "\n\nSexual contact attack."
-				   + "\n\n__Influences__:\nDamage: Actor's physique x3, actor's agility x1, target's resilience x-1.\nSelf damage: Target's physique x1, target's agility x1, actor's resilience x-1.";
+				   + "\n\n__Influences__:\nDamage: Actor's physique x8, actor's agility x3, target's resilience x-2.\nSelf damage: Target's physique x1, target's agility x1, actor's resilience x-1.";
 				   
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = 1;
@@ -1242,7 +1327,7 @@ window.createSaBaPushDickBack = function() {
 		
 		if ( evResults.hit ) { // Hit lands
 			// Damage
-			var inDamValue = gCstat(actor,"physique") * 0.4 + gCstat(actor,"agility") * 0.1 - gCstat(target,"resilience") * 0.1;
+			var inDamValue = gCstat(actor,"physique") * 0.8 + gCstat(actor,"agility") * 0.3 - gCstat(target,"resilience") * 0.2;
 			inDamValue = addLuckFactor(inDamValue,0.1,gCstat(actor,"luck"));
 			var damage = calculateAttackEffects("lust",actor,target,this.affinities,inDamValue);
 			var dmgEffMsg = getWeaknessToAttackText(this.affinities,target);
@@ -1291,8 +1376,13 @@ window.createSaBaEnergyDrainingKiss = function() {
 	sa.actorBpReqs.push("mouth");
 	sa.targetBpReqs.push("mouth");
 	
-	sa.strategyTags.push("damage","sex","useMouth","targetMouth","drain","damageEnergy");
+	sa.strategyTags.push("targetEnemy","damage","sex","useMouth","targetMouth","drain","drainEnergy","recoverEnergy","damageEnergy");
 	sa.affinities.push("sex","useMouth","targetMouth","drain");
+	
+	sa.actorStatWeights = [0,60,0,0,0,0,40,0,0];
+	sa.targetStatWeights = [0,0,0,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1;
 	
 	sa.getIsCustomAllowed = function(actionKey,actorKey,targetsKeys,skipLinkedCheck) {
 		var isAllowed = true;
@@ -1383,8 +1473,13 @@ window.createSaBaDrainingKiss = function() {
 	sa.actorBpReqs.push("mouth");
 	sa.targetBpReqs.push("mouth");
 	
-	sa.strategyTags.push("damage","sex","useMouth","targetMouth","drain");
+	sa.strategyTags.push("targetEnemy","damage","sex","useMouth","targetMouth","drain","drainLust");
 	sa.affinities.push("sex","useMouth","targetMouth","drain");
+	
+	sa.actorStatWeights = [0,60,0,0,0,0,40,0,0];
+	sa.targetStatWeights = [0,0,0,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1.4;
 	
 	sa.getIsCustomAllowed = function(actionKey,actorKey,targetsKeys,skipLinkedCheck) {
 		var isAllowed = true;
@@ -1472,8 +1567,13 @@ window.createTackle = function() {
 	
 	sa.requiresFree = true;
 	
-	sa.strategyTags.push("damage","physical","consumeEnergy","physicalDamage","damageControl");
+	sa.strategyTags.push("targetEnemy","damage","physical","physicalDamage","damageControl");
 	sa.affinities.push("physical");
+	
+	sa.actorStatWeights = [30,20,50,0,0,0,0,0,0];
+	sa.targetStatWeights = [0,20,20,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1.3;
 	
 	sa.description = "The character charges with their whole body, attempting to use their weight to throw their target to the ground. Risky.\n"
 				   + "This attack damages the target and their control if it lands, but damages the actor's control otherwise.\nCosts 3 energy.\n\nSingle target action."
@@ -1547,8 +1647,13 @@ window.createSaKick = function() {
 	
 	sa.requiresFree = true;
 	
-	sa.strategyTags.push("damage","physical","consumeEnergy","physicalDamage","damageControl","useLegs");
+	sa.strategyTags.push("targetEnemy","damage","physical","consumeEnergy","physicalDamage","damageControl","useLegs");
 	sa.affinities.push("physical","kick");
+	
+	sa.actorStatWeights = [60,0,40,0,0,0,0,0,0];
+	sa.targetStatWeights = [0,0,20,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1.1;
 	
 	sa.description = "The character focuses their energy on their leg and foot to land a hit on their target.\n"
 				   + "This attack damages the target and erodes their control.\nCosts 2 energy.\n\nSingle target action."
@@ -1643,8 +1748,13 @@ window.createSaColdGuts = function() {
 	
 	sa.actorDisabledByAs = [ "CoGu" ];
 	
-	sa.strategyTags.push("buff","physical","alteredState","buffResilience","buffPhysique","buffWillpower","buffResistanceSex");
+	sa.strategyTags.push("targetSelf","buff","physical","alteredState","buffResilience","buffPhysique","buffWillpower","buffResistanceSex","sexOffensive","sexDefensive","eitherSexStrategy");
 	sa.affinities.push();
+	
+	sa.actorStatWeights = [34,0,33,33,0,0,0,0,0];
+	sa.targetStatWeights = [0,0,0,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1;
 	
 	sa.description = "The character focuses their inner energy to gain higher resistance against any trial.\n"
 				   + "The action increases the actor's physique, resilience, willpower and resistance to sex actions.\n\nSelf targeted action."
@@ -1708,8 +1818,13 @@ window.createSaCatAspect = function() {
 	sa.requiredRace = [ "beastkin" ];
 	sa.actorDisabledByAs = [ "CaAs" ];
 	
-	sa.strategyTags.push("buff","physical","alteredState","buffAgility","buffPerception","buffControlRecovery");
+	sa.strategyTags.push("targetSelf","buff","physical","alteredState","buffAgility","buffPerception","buffControlRecovery","highControls");
 	sa.affinities.push();
+	
+	sa.actorStatWeights = [0,50,0,25,0,25,0,0,0];
+	sa.targetStatWeights = [0,0,0,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1;
 	
 	sa.description = "The character enters in contact with their feline self, increasing their capabilities.\n"
 				   + "The action increases the actor's agility, perception, control recovery and pounce affinity.\n\nSelf targeted action."
@@ -1769,8 +1884,13 @@ window.createSavageCrush = function() {
 	
 	sa.requiresFree = true;
 	
-	sa.strategyTags.push("damage","physical","consumeEnergy","physicalDamage","damageControl","consumeControl","painDamage");
+	sa.strategyTags.push("targetEnemy","damage","physical","consumeEnergy","physicalDamage","damageControl","consumeControl","painDamage","controlGambit");
 	sa.affinities.push("physical");
+	
+	sa.actorStatWeights = [25,0,75,0,0,0,0,0,0];
+	sa.targetStatWeights = [0,0,30,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1.5;
 	
 	sa.description = "The characters thrashes violently against their target, attemtping to crush them against a solid surface.\n"
 				   + "This attack damages the target and erodes their control, consuming control from the own user.\nCosts 5 energy.\n\n"
@@ -1844,8 +1964,13 @@ window.createDaringAssault = function() {
 	sa.reqTags.push("diffTarget");
 	sa.reqTags.push("control");
 	
-	sa.strategyTags.push("damage","physical","consumeEnergy","physicalDamage","damageControl");
+	sa.strategyTags.push("targetEnemy","damage","physical","consumeEnergy","physicalDamage","damageControl","minorBuff");
 	sa.affinities.push("physical");
+	
+	sa.actorStatWeights = [44,33,22,0,0,0,0,0,0];
+	sa.targetStatWeights = [0,-10,-10,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1.5;
 	
 	sa.description = "The character recklessly jumps against an enemy, gaining inertia.\n"
 				   + "Physical damage, damages control, moderately low precision, increases the actor's physique and agility for a short period. Requires control.\nCosts 3 energy.\n\nSingle target action."
@@ -1921,8 +2046,13 @@ window.createSaBaScratch = function() {
 	sa.reqTags.push("diffTarget");
 	sa.actorBpReqs.push("arms");
 	
-	sa.strategyTags.push("damage","physical","consumeEnergy","painDamage","stackPain","useArms","debuff");
+	sa.strategyTags.push("targetEnemy","damage","physical","consumeEnergy","painDamage","stackPain","useArms","minorDebuff");
 	sa.affinities.push("pain");
+	
+	sa.actorStatWeights = [16,55,8,0,0,20,0,0,0];
+	sa.targetStatWeights = [0,25,-8,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1;
 	
 	sa.description = "The character cuts their target with their claws.\n"
 				   + "This attack damages the target's lust and energy, erodes their agility, increases their energy cost and weakness to pain damage.\nCosts 1 energy.\n\nSingle target action."
@@ -2004,8 +2134,13 @@ window.createHolyBlast = function() {
 		return isAllowed;
 	}
 	
-	sa.strategyTags.push("damage","magic","holy");
+	sa.strategyTags.push("targetEnemy","damage","magic","holy","holyAttack");
 	sa.affinities.push("magic","holy");
+	
+	sa.actorStatWeights = [0,0,0,0,0,0,0,0,0];
+	sa.targetStatWeights = [0,0,0,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1;
 	
 	sa.description = "The character sacrifices their energy to launch a blast of aether against their target.\n"
 				   + "This attack damages the target, using the own actor's vitality.\nCosts 5% lust.\n\nSingle target action."
@@ -2070,8 +2205,13 @@ window.createSaEmbers = function() {
 	sa.tags.push("sUse");
 	sa.reqTags.push("diffTarget");
 	
-	sa.strategyTags.push("damage","magic","fire");
+	sa.strategyTags.push("targetEnemy","damage","magic","fire");
 	sa.affinities.push("magic","fire");
+	
+	sa.actorStatWeights = [0,0,0,33,66,0,0,0,0];
+	sa.targetStatWeights = [0,0,0,-33,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1.2;
 	
 	sa.description = "The character casts ignited dust and throws it against their target.\n"
 				   + "This attack damages the target.\nCosts 1 willpower.\n\nSingle target action."
@@ -2135,8 +2275,13 @@ window.createSaFlamingFan = function() {
 	sa.tags.push("sUse");
 	sa.reqTags.push("diffTarget");
 	
-	sa.strategyTags.push("damage","magic","fire");
+	sa.strategyTags.push("targetEnemy","damage","magic","fire","multipleEnemies");
 	sa.affinities.push("magic","fire");
+	
+	sa.actorStatWeights = [0,0,0,40,60,0,0,0,0];
+	sa.targetStatWeights = [0,0,0,40,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 0.7;
 	
 	sa.description = "The character casts a wave of fire, dealing collateral damage to allies of the target.\n"
 				   + "This attack damages the target and their allies. High chance of hitting.\nCosts 2 willpower.\n\nMultiple targets action."
@@ -2209,8 +2354,13 @@ window.createSaFreezeFeet = function() {
 	sa.tags.push("sUse");
 	sa.reqTags.push("diffTarget");
 	
-	sa.strategyTags.push("debuff","damage","magic","ice","control","damageEnergy","damageControl","alteredState");
+	sa.strategyTags.push("targetEnemy","debuff","damage","magic","ice","control","damageEnergy","damageControl");
 	sa.affinities.push("magic","ice");
+	
+	sa.actorStatWeights = [0,0,0,20,80,0,0,0,0];
+	sa.targetStatWeights = [0,10,0,-20,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1.15;
 	
 	sa.description = "The character casts a frozen air stream aimed at their target's legs.\n"
 				   + "This attack damages the target and reduces their energy, control and agility.\n\nSingle target action."
@@ -2288,8 +2438,13 @@ window.createSaSparkingRubbing = function() {
 	sa.tags.push("sUse");
 	sa.reqTags.push("diffTarget");
 	
-	sa.strategyTags.push("debuff","damage","sex","magic","thunder","provokeWeaknessSex","alteredState");
+	sa.strategyTags.push("targetEnemy","debuff","damage","sex","magic","thunder","provokeWeaknessSex","alteredState","fullSex","sexOffensive");
 	sa.affinities.push("sex","magic","thunder");
+	
+	sa.actorStatWeights = [0,20,0,0,80,0,0,0,0];
+	sa.targetStatWeights = [0,0,-15,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1.1;
 	
 	sa.description = "The character rubs their target's erogenous zones with small electric shocks, increasing their sensitivity.\n"
 				   + "This attack damages the target and increases their weakness against sex actions.\n\nSingle target action."
@@ -2379,6 +2534,80 @@ window.createSaSparkingRubbing = function() {
 	return sa;
 }
 
+window.createSaDischarge = function() {
+	var sa = new sceneAction();
+	sa.name = "Discharge";
+	sa.key = "discharge";
+	sa.actionType = "contact";
+	sa.targetType = "single";
+	sa.willpowerCost = 3;
+	
+	sa.tags.push("bs");
+	sa.tags.push("sUse");
+	sa.reqTags.push("diffTarget");
+	
+	sa.strategyTags.push("targetEnemy","damage","magic","thunder");
+	sa.affinities.push("magic","thunder");
+	
+	sa.actorStatWeights = [0,0,0,90,50,0,0,0,0];
+	sa.targetStatWeights = [0,0,-30,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1;
+	
+	sa.description = "The character turns their vital energy into a dangerous electric discharge, damaging close enemies."
+				   + "\n\nSingle target action."
+				   + "\n\nMagical thunder contact attack."
+				   + "\n\n__Influences__:\nDamage: Actor's will x9, actor's intelligence x5, target's will x-3.\nEvasion: Actor's agility x5, actor's will x5, target's agility x-7, target's will x-4, target's perception x-3, actor's and target's control."; 
+				   
+	sa.doesHitLand = function(actor,target) {
+		var evasionPlus = gCstat(actor,"agility") * 0.25 + gCstat(actor,"will") * 0.25 + gC(actor).control * 6;
+		var evasionMinus = gCstat(target,"agility") * 0.35 + gCstat(target,"perception") * 0.15 + gCstat(target,"will") * 0.20 + gC(target).control * 4 + 15;
+		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+	}		   			
+				   
+	sa.execute = function(actor,targetActors) {
+		applySaCosts(this,actor);
+		
+		var results = new saResults;
+		var target = targetActors[0];
+		
+		// Evasion
+		var evResults = this.doesHitLand(actor,target);
+		
+		if ( evResults.hit ) { // Hit lands
+			var completeAffinities = this.affinities;
+			
+			
+			var damageMultiplier = 1;
+			
+			// Damage
+			var inDamValue = (gCstat(actor,"will") * 0.45 + gCstat(actor,"intelligence") * 0.25 - gCstat(target,"will") * 0.15) * damageMultiplier;
+			inDamValue = addLuckFactor(inDamValue,0.1,gCstat(actor,"luck"));
+			var damage = calculateAttackEffects("lust",actor,target,completeAffinities,inDamValue);
+			var dmgEffMsg = getWeaknessToAttackText(completeAffinities,target);
+			// Apply
+			applyBarDamage(target,"lust",-damage);
+			results.value = damage;
+			
+			// Description
+			results.description += randomFromList( [
+									(ktn(actor) + " reaches " + ktn(target) + " and bursts into a thunderous attack."),
+									("An electric explosion envelops " + ktn(target) + ", after " + ktn(actor) + " manages to make contact.")
+								] );
+			results.description += " " + dmgEffMsg + ktn(target) + " received " + textLustDamage(damage) + ". "
+								 + generateSaCostsText(this,actor) + ".\n" + evResults.explanation;
+		} else { // Hit fails
+			results.value = 0;
+			results.description = ktn(actor) + " explodes into a burst of electricity, but the attack misses " + ktn(target) + ".\n" + evResults.explanation;
+		}
+		
+		return results;
+		
+	}
+	return sa;
+
+}
+
 window.createSaLightningDarts = function() {
 	var sa = new sceneAction();
 	sa.name = "Lightning darts";
@@ -2391,8 +2620,13 @@ window.createSaLightningDarts = function() {
 	sa.tags.push("sUse");
 	sa.reqTags.push("diffTarget");
 	
-	sa.strategyTags.push("damage","magic","thunder","control","damageEnergy","damageWillpower","damageControl");
+	sa.strategyTags.push("targetEnemy","damage","magic","thunder","control","damageEnergy","damageWillpower","damageControl");
 	sa.affinities.push("magic","thunder");
+	
+	sa.actorStatWeights = [0,0,0,33,66,0,0,0,0];
+	sa.targetStatWeights = [0,0,0,-40,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1;
 	
 	sa.description = "The character casts lightning rays, zapping their target and damaging their muscles.\n"
 				   + "This attack damages the target's lust, energy, willpower and control.\n\nSingle target action."
@@ -2466,8 +2700,13 @@ window.createSaQuake = function() {
 	sa.tags.push("sUse");
 	sa.reqTags.push("diffTarget");
 	
-	sa.strategyTags.push("damage","magic","physical","damage","damageControl","group");
+	sa.strategyTags.push("targetEnemy","damage","magic","physical","damage","damageControl","multipleEnemies");
 	sa.affinities.push("physical");
+	
+	sa.actorStatWeights = [0,0,60,40,0,0,0,0,0];
+	sa.targetStatWeights = [0,0,-30,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1.4;
 	
 	sa.description = "The actor provokes a tremor on the ground, damaging the control of their enemies.\n"
 				   + "This attack damages the all enemy targets and their control. High chance of hitting.\nCosts 4 willpower.\n\nMultiple targets action."
@@ -2549,8 +2788,13 @@ window.createSaFireBreath = function() {
 	sa.reqTags.push("diffTarget");
 	sa.reqTags.push("control");
 	
-	sa.strategyTags.push("damage","magic","fire","group");
+	sa.strategyTags.push("targetEnemy","damage","magic","fire","multipleEnemies");
 	sa.affinities.push("magic","fire");
+	
+	sa.actorStatWeights = [0,0,35,65,0,0,0,0,0];
+	sa.targetStatWeights = [0,0,-35,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1.1;
 	
 	sa.description = "The character exhales a fan of flames from their own mouth, potentially hitting several enemies.\n"
 				   + "This attack damages the target and their allies.\nCosts 3 willpower.\n\nMultiple targets action."
@@ -2628,8 +2872,13 @@ window.createFlaringFeint = function() {
 	sa.tags.push("sUse");
 	sa.reqTags.push("control");
 	
-	sa.strategyTags.push("buff","magic","fire");
+	sa.strategyTags.push("targetSelf","buff","magic","fire","selfProtection");
 	sa.affinities.push("magic","fire");
+	
+	sa.actorStatWeights = [0,0,30,40,30,0,0,0,0];
+	sa.targetStatWeights = [20,20,20,-10,-10,-10,-10,-10,-10];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1;
 	
 	sa.description = "The actor ignites themself, charging their following attacks. Characters who enter in contact with the actor will be burnt.\n"
 				   + "The action increases the agility, willpower, control recovery and fire strength of the character.\nCosts 2 willpower and 2 energy.\n\nSelf targeted action."
@@ -2736,8 +2985,13 @@ window.createEarthWall = function() {
 	sa.tags.push("sUse");
 	sa.reqTags.push("control");
 	
-	sa.strategyTags.push("buff","physical");
+	sa.strategyTags.push("targetSelf","buff","physical","multipleEnemies","multipleAllies","teamProtection");
 	sa.affinities.push("physical");
+	
+	sa.actorStatWeights = [0,0,50,50,0,0,0,0,0];
+	sa.targetStatWeights = [20,20,20,-10,-10,-10,-10,-10,-10];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 0.15;
 	
 	sa.description = "The actor builds earth walls with magic, protecting themself and their allies.\n"
 				   + "For one turn, the whole team of the actor receives increased resilience and will, decreased perception, greatly increased pounce and physical resistances, slightly increased social and magical resistances.\nAdditionally, enemies using hit or pounce attacks will receive damage.\nCosts 2 willpower.\n\nSelf targeted action."
@@ -2842,8 +3096,13 @@ window.createSaBaEtherealChains = function() {
 	sa.reqTags.push("diffTarget","control");
 	sa.targetBpReqs.push("arms");
 	
-	sa.strategyTags.push("magic","control","damageControl","alteredState","bondage");
+	sa.strategyTags.push("targetEnemy","magic","control","damageControl","alteredState","bondage");
 	sa.affinities.push("magic");
+	
+	sa.actorStatWeights = [0,0,0,0,50,0,0,0,0];
+	sa.targetStatWeights = [25,25,0,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1.65;
 	
 	sa.description = "The character casts chains out of aether, and launches them against their target, aiming at locking their arms.\n"
 				   + "Locks the enemy's arms, damages their control and reduces their physique and agility.\n"
@@ -2908,17 +3167,23 @@ window.createSaBaVineArmLock = function() {
 	sa.key = "baVineArmLock";
 	sa.actionType = "projectile";
 	sa.targetType = "single";
-	sa.willpowerCost = 5;
+	sa.energyCost = 2;
+	sa.willpowerCost = 2;
 	
 	sa.tags.push("bs","sUse");
 	sa.reqTags.push("diffTarget","control");
 	sa.targetBpReqs.push("arms");
 	
-	sa.strategyTags.push("control","damageControl","alteredState","bondage","debuff");
+	sa.strategyTags.push("targetEnemy","control","damageControl","alteredState","bondage","debuff");
 	sa.affinities.push("physical");
 	
+	sa.actorStatWeights = [0,0,30,20,0,0,0,0,0];
+	sa.targetStatWeights = [12,25,13,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1.35;
+	
 	sa.description = "The character hits their target with a vine whip, attempting to bind their arms with it.\n"
-				   + "Locks the enemy's arms, damages their control, and reduces their agility and control recovery.\n"
+				   + "Locks the enemy's arms, damages their control, and reduces their agility and control recovery, and their physique and resilience to a minor extent.\n"
 				   + "Costs 5 willpower.\n\nSingle target action."
 				   + "\nTarget requires freed arms."
 				   + "\n\nPhysical projectile bondage attack."
@@ -2985,8 +3250,6 @@ window.createSaRelaxingScent = function() {
 	sa.targetType = "area";
 	sa.willpowerCost = 3;
 	
-	// sa.actorDisabledByAs = [ "CoId" ];
-	
 	sa.requiredRace = [ "leirien" ];
 	
 	sa.tags.push("bs");
@@ -3002,8 +3265,13 @@ window.createSaRelaxingScent = function() {
 		return isAllowed;
 	}
 	
-	sa.strategyTags.push("social","alteredState","debuff");
+	sa.strategyTags.push("targetEnemy","social","alteredState","debuff","multipleEnemies","targetsAllOtherChars");
 	sa.affinities.push("social");
+	
+	sa.actorStatWeights = [0,0,30,20,0,0,0,0,0];
+	sa.targetStatWeights = [12,12,0,12,0,12,0,0,0];
+	sa.statWeightDivider = 98;
+	sa.overallWeightMultiplier = 1;
 	
 	sa.description = "The character releases special spores that induce those that breath them into a state of relaxation.\n"
 				   + "Everyone but the actor will lose physique, agility, will and perception.\n"
@@ -3068,8 +3336,13 @@ window.createSaTaunt = function() {
 	sa.tags.push("sUse");
 	sa.reqTags.push("diffTarget");
 	
-	sa.strategyTags.push("social","alteredState");
+	sa.strategyTags.push("targetEnemy","social","alteredState","debuff");
 	sa.affinities.push("social","taunt");
+	
+	sa.actorStatWeights = [0,0,0,0,0,0,16,33,0];
+	sa.targetStatWeights = [-50,16,0,16,0,16,0,0,16];
+	sa.statWeightDivider = 98;
+	sa.overallWeightMultiplier = 1;
 	
 	sa.description = "The character insults their target's honor.\n"
 				   + "If successful, the target will lose luck, perception, agility and willpower, but will gain physique and physical damage.\n\nSingle target action."
@@ -3132,8 +3405,13 @@ window.createSaBaTease = function() {
 	sa.tags.push("sUse");
 	sa.reqTags.push("diffTarget");
 	
-	sa.strategyTags.push("social","seduction","alteredState","damage","debuff");
+	sa.strategyTags.push("targetEnemy","social","seduction","alteredState","damage","debuff","sexOffensive","onlySexOffensive");
 	sa.affinities.push("social","seduction");
+	
+	sa.actorStatWeights = [0,0,0,0,0,0,33,67,0];
+	sa.targetStatWeights = [0,0,0,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 0.8;
 	
 	sa.description = "The character attempts to distract the enemy with sexual fantasies.\n"
 				   + "The target will receive and deal increased sex damage."
@@ -3157,7 +3435,7 @@ window.createSaBaTease = function() {
 		
 		if ( evResults.hit ) { // Hit lands
 			// Damage
-			var inDamValue = gCstat(actor,"charisma") * 0.075 + gCstat(actor,"empathy") * 0.025;
+			var inDamValue = gCstat(actor,"charisma") * 0.13 + gCstat(actor,"empathy") * 0.07;
 			inDamValue = addLuckFactor(inDamValue,0.1,gCstat(actor,"luck"));
 			var damage = calculateAttackEffects("lust",actor,target,this.affinities,inDamValue);
 			var dmgEffMsg = getWeaknessToAttackText(this.affinities,target);
@@ -3233,8 +3511,13 @@ window.createSaBaHypnoticGlance = function() {
 	sa.actorBpReqs.push("eyes");
 	sa.targetBpReqs.push("eyes");
 	
-	sa.strategyTags.push("social","hypnosis","alteredState","control","damageWillpower","damageControl",);
+	sa.strategyTags.push("targetEnemy","social","hypnosis","alteredState","control","damageWillpower","damageControl","willpowerOffensive");
 	sa.affinities.push("social","hypnosis");
+	
+	sa.actorStatWeights = [0,0,0,30,0,0,0,70,0];
+	sa.targetStatWeights = [0,0,0,-25,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 0.92;
 	/* No doggy style yet
 	sa.unvalidRelationalPositions.push(["takingFromBehind","takenFromBehind"]);
 	sa.unvalidRelationalPositions.push(["spitroastTarget","spitroastBehind"]);
@@ -3337,8 +3620,13 @@ window.createBorrowedIdentity = function() {
 		return isAllowed;
 	}
 	
-	sa.strategyTags.push("social","seduction","alteredState","buff","debuff");
+	sa.strategyTags.push("targetEnemy","targetAllyOtherThanSelf","social","seduction","alteredState","buff","debuff","targetsAllOtherChars");
 	sa.affinities.push("social");
+	
+	sa.actorStatWeights = [0,0,0,12,0,0,12,25,0];
+	sa.targetStatWeights = [0,0,0,12,0,12,12,12,0];
+	sa.statWeightDivider = 94;
+	sa.overallWeightMultiplier = 1;
 	
 	sa.description = "The character transforms their shape to reselve that of someone else, trying to provoke chaos.\n"
 				   + "The actor will gain charisma, other combatants will lose perception, empathy and charisma."
@@ -3368,10 +3656,12 @@ window.createBorrowedIdentity = function() {
 			var asIntensity = fixIntensity(asIntensity);
 			
 			var altState = createASborrowedIdentity(asIntensity,borrowedIdentity);
-			var altState2 = createASconfusedIdentities(asIntensity);
-			// Apply
 			applyAlteredState([actor],altState);
-			applyAlteredState(confusedTargets,altState2);
+			for ( var tg of confusedTargets ) {
+				var altState2 = createASconfusedIdentities(asIntensity);
+				applyAlteredState([tg],altState2);
+			}
+			
 			results.value = 1;
 			// Description
 				results.description += randomFromList( [
@@ -3408,8 +3698,13 @@ window.createStaffSwipe = function() {
 	
 	sa.requiresFree = true;
 	
-	sa.strategyTags.push("damage","physical","consumeEnergy","physicalDamage","damageControl");
+	sa.strategyTags.push("targetEnemy","damage","physical","consumeEnergy","physicalDamage","damageControl","recoverControl");
 	sa.affinities.push("physical","weapon");
+	
+	sa.actorStatWeights = [40,0,60,0,0,0,0,0,0];
+	sa.targetStatWeights = [0,0,-15,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1.5;
 	
 	sa.description = "The character swipes their staff against their opponent, aiming to gain positional advantage.\n"
 				   + "This attack damages the target and their control, and recovers the actor's control.\nCosts 3 energy.\n\nSingle target action."
@@ -3485,8 +3780,13 @@ window.createBoldJab = function() {
 	
 	sa.requiresFree = true;
 	
-	sa.strategyTags.push("damage","physical","consumeEnergy","physicalDamage","damageControl");
+	sa.strategyTags.push("targetEnemy","damage","physical","consumeEnergy","physicalDamage","damageControl","controlGambit");
 	sa.affinities.push("physical","weapon");
+	
+	sa.actorStatWeights = [50,20,30,0,0,0,0,0,0];
+	sa.targetStatWeights = [0,-5,-5,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1.55;
 	
 	sa.description = "The character leaps around to land a punch at their target's sides. Risky.\n"
 				   + "This attack damages the target and their control if it lands, but damages the actor's control otherwise.\nCosts 2 energy.\n\nSingle target action."
@@ -3556,8 +3856,13 @@ window.createSaChannelAether = function() {
 	sa.tags.push("bs");
 	sa.tags.push("sUse");
 	
-	sa.strategyTags.push("magic","recovery","recoverWillpower");
+	sa.strategyTags.push("targetSelf","magic","recovery","recoverWillpower");
 	sa.affinities.push("weapon");
+	
+	sa.actorStatWeights = [0,0,0,40,70,0,0,0,0];
+	sa.targetStatWeights = [0,0,0,0,0,0,0,0,0];
+	sa.statWeightDivider = 110;
+	sa.overallWeightMultiplier = 1;
 	
 	sa.description = "The character focuses on the energies surrounding them, absorbing unleashed aether.\n"
 				   + "The action makes the actor recover a portion of their maximum willpower.\n\nSelf targeted action."
@@ -3620,8 +3925,13 @@ window.createSaFlaunt = function() {
 	
 	sa.actorDisabledByAs = [ "Flnt" ];
 	
-	sa.strategyTags.push("buff","social","alteredState");
+	sa.strategyTags.push("targetSelf","buff","social","alteredState","sexOffensive");
 	sa.affinities.push("weapon");
+	
+	sa.actorStatWeights = [8,8,0,8,0,0,0,25,0];
+	sa.targetStatWeights = [10,10,0,10,0,10,0,10,0];
+	sa.statWeightDivider = 99;
+	sa.overallWeightMultiplier = 1.2;
 	
 	sa.description = "The character shows proudly exposes their body, hitting their opponents with raw sex appeal.\n"
 				   + "The action increases the actor's physique, agility, will, perception, charisma and damage dealt with sex actions.\n\nSelf targeted action."
@@ -3686,8 +3996,13 @@ window.createDisablingShot = function() {
 	
 	sa.requiresFree = true;
 	
-	sa.strategyTags.push("damage","physical","consumeEnergy","physicalDamage","damageControl");
+	sa.strategyTags.push("targetEnemy","damage","physical","consumeEnergy","physicalDamage","damageControl","minorDebuff");
 	sa.affinities.push("physical","weapon");
+	
+	sa.actorStatWeights = [10,40,0,0,0,20,0,0,0];
+	sa.targetStatWeights = [0,30,-10,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1.4;
 	
 	sa.description = "The character aims to shoot against the limbs of their target, damaging their control recovery.\n"
 				   + "This attack damages the target, their control and their control recovery.\nCosts 2 energy.\n\nSingle target action."
@@ -3763,8 +4078,13 @@ window.createSaBaDildoPenetratePussy = function() {
 	sa.actorBpReqs.push("arms");
 	sa.targetBpReqs.push("pussy");
 	
-	sa.strategyTags.push("damage","sex","targetPussy");
+	sa.strategyTags.push("targetEnemy","damage","sex","targetPussy");
 	sa.affinities.push("sex","targetPussy");
+	
+	sa.actorStatWeights = [106,73,0,0,0,0,0,0,0];
+	sa.targetStatWeights = [0,0,-58,0,0,0,0,0,0];
+	sa.statWeightDivider = 179;
+	sa.overallWeightMultiplier = 2;
 	
 	sa.description = "The character starts penetrating their target's pussy with their dildo.\n"  
 				   + "\nSingle target continued action.\nRequires an active position over the target, and the target must have a a free pussy."
@@ -3804,10 +4124,9 @@ window.createSaBaDildoPenetratePussy = function() {
 			// Description
 			results.description += randomFromList( [
 										(ktn(actor) + " pushed " + gC(actor).posPr + " dildo against " + ktn(target) + "'s lower entrance, penetrating " + gC(target).comPr + " fully."),
-										(ktn(actor) + " filled " + ktn(target) + "'s " + pussyWord() + " with " + gC(actor).posPr + " " + randomFromList("dildo","weapon","tool","toy") + ", forcing pleasure into " + gC(target).comPr + ".")
+										(ktn(actor) + " filled " + ktn(target) + "'s " + pussyWord() + " with " + gC(actor).posPr + " " + randomFromList(["dildo","weapon","tool","toy"]) + ", forcing pleasure into " + gC(target).comPr + ".")
 									] );
-			results.description += " " + dmgEffMsg + ktn(target) + " received " + textLustDamage(damage) + ". " + generateSaCostsText(this,actor)
-								 + ".\n" + evResults.explanation;
+			results.description += " " + dmgEffMsg + ktn(target) + " received " + textLustDamage(damage) + ". " + evResults.explanation;
 		} else { // Hit fails
 			results.value = 0;
 			results.description = ktn(actor) + " tried to penetrate " + ktn(target) + "'s " + pussyWord() + " with " + gC(actor).posPr + " dildo, but failed! "	+ "\n" + evResults.explanation;
@@ -3830,8 +4149,13 @@ window.createSaBaThrustDildo = function() {
 	sa.reqTags.push("diffTarget");
 	sa.requiredActiveCAs.push("baDildoPenetratePussy");
 	
-	sa.strategyTags.push("damage","sex","targetPussy");
+	sa.strategyTags.push("targetEnemy","damage","sex","targetPussy");
 	sa.affinities.push("sex","targetPussy");
+	
+	sa.actorStatWeights = [50,50,0,0,0,0,0,0,0];
+	sa.targetStatWeights = [0,0,-25,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 0.9;
 	
 	sa.description = "The character pushes their dildo into their target's folds. Actor must be fucking their target with a dildo.\n"
 				   + "This attack damages the target, and the actor receives some retaliation.\n\nSingle target action."
@@ -3896,8 +4220,13 @@ window.createWeaponPlunge = function() {
 	
 	sa.requiresFree = true;
 	
-	sa.strategyTags.push("damage","physical","consumeEnergy","physicalDamage","debuff");
+	sa.strategyTags.push("targetEnemy","damage","physical","consumeEnergy","physicalDamage","minorDebuff");
 	sa.affinities.push("physical","weapon");
+	
+	sa.actorStatWeights = [50,25,25,0,0,0,0,0,0];
+	sa.targetStatWeights = [8,8,8,0,0,0,0,0,0];
+	sa.statWeightDivider = 124;
+	sa.overallWeightMultiplier = 1.4;
 	
 	sa.description = "The character thrusts their weapon against their target's skin, provoking injuries.\n"
 				   + "Deals damage, slightly reduces the target's physique, agility and resilience, applies bleeding and increases physical weakness."
@@ -3967,7 +4296,12 @@ window.createBaMonsterCapture = function() {
 	sa.tags.push("sUse");
 	sa.reqTags.push("diffTarget");
 	
-	sa.strategyTags.push("debuff","damageControl","alteredState","captureMonster");
+	sa.strategyTags.push("targetEnemy","debuff","damageControl","alteredState","captureMonster");
+	
+	sa.actorStatWeights = [0,0,0,0,0,0,0,0,0];
+	sa.targetStatWeights = [0,0,0,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 10;
 	
 	sa.description = "The character casts a net of specially crafted ropes against a monster, aiming to capture it.\n"
 				   + "Only usable on monsters who have lost considerable energy. The actor will lose energy or lust upon use.\n"
@@ -4068,7 +4402,12 @@ window.createBaRunAway = function() {
 	sa.tags.push("bs");
 	sa.tags.push("sUse");
 	
-	sa.strategyTags.push("runAway");
+	sa.strategyTags.push("targetSelf","runAway");
+	
+	sa.actorStatWeights = [0,0,0,0,0,0,0,0,0];
+	sa.targetStatWeights = [0,0,0,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 10;
 	
 	sa.getIsCustomAllowed = function(actionKey,actorKey,targetsKeys,skipLinkedCheck) {
 		var isAllowed = true;
@@ -4185,8 +4524,13 @@ window.createBaOrderKneeling = function() {
 	sa.actorBpReqs.push("eyes");
 	sa.targetBpReqs.push("eyes");
 	
-	sa.strategyTags.push("pounce","bPos","useEyes","targetEyes");
+	sa.strategyTags.push("targetEnemy","pounce","bPos","useEyes","targetEyes","willpowerOffensive");
 	sa.affinities.push("hypnosis","useEyes","targetEyes");
+	
+	sa.actorStatWeights = [0,0,0,50,0,0,0,50,0];
+	sa.targetStatWeights = [0,0,0,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1.1;
 	
 	sa.getIsCustomAllowed = function(actionKey,actorKey,targetsKeys,skipLinkedCheck) {
 		var isAllowed = true;
@@ -4267,8 +4611,13 @@ window.createBaOrderMasturbation = function() {
 	sa.reqTags.push("diffTarget");
 	sa.requiredActiveCAs.push("baMakingKneel");
 	
-	sa.strategyTags.push("damage","sex","hypnosis");
+	sa.strategyTags.push("targetEnemy","damage","sex","hypnosis","targetFreeArms");
 	sa.affinities.push("sex","hypnosis");
+	
+	sa.actorStatWeights = [0,0,0,0,0,0,0,0,0];
+	sa.targetStatWeights = [40,60,0,-20,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1;
 	
 	sa.getIsCustomAllowed = function(actionKey,actorKey,targetsKeys,skipLinkedCheck) {
 		var isAllowed = true;
@@ -4393,11 +4742,13 @@ window.createBaCorrodeMind = function() {
 	sa.reqTags.push("diffTarget");
 	sa.requiredActiveCAs.push("baMakingKneel");
 	
-	sa.strategyTags.push("damage","hypnosis");
+	sa.strategyTags.push("targetEnemy","damage","hypnosis","willpowerOffensive");
 	sa.affinities.push("hypnosis","useEyes","targetEyes");
 	
-	sa.strategyTags.push("damage","hypnosis");
-	sa.affinities.push("hypnosis","useEyes","targetEyes");
+	sa.actorStatWeights = [0,0,0,33,33,0,0,33,0];
+	sa.targetStatWeights = [0,0,0,-16,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1.15;
 	
 	sa.description = "The character perfores the confines of the target's mind, damaging their lust and willpower.\n"
 				   + "\nSingle target action.\n"
@@ -4459,15 +4810,20 @@ window.createBaDrainingRoots = function() {
 	sa.tags.push("sUse");
 	sa.reqTags.push("diffTarget");
 	
-	sa.strategyTags.push("damage","sex","drain");
-	sa.affinities.push("sex","drain");
+	sa.strategyTags.push("targetEnemy","damage","drain","drainLust");
+	sa.affinities.push("drain");
+	
+	sa.actorStatWeights = [0,0,50,40,0,0,0,0,0];
+	sa.targetStatWeights = [0,0,-20,0,0,0,0,0,0];
+	sa.statWeightDivider = 90;
+	sa.overallWeightMultiplier = 1.45;
 	
 	sa.requiredRace = [ "leirien" , "monster" ];
 	
 	sa.description = "The character connects their limbs with their target, sucking their aether.\n"
 				   + "This attack damages the target and drains their lust.\nThe actor must be either a monster or a leirien."
 				   + "\n\nSingle target action."
-				   + "\n\nSexual draining contact attack."
+				   + "\n\nDraining contact attack."
 				   + "\n\n__Influences__:\nDrain damage: Actor's resilience x5, actor's will x4, target's resilience x-2."
 				   + "\nEvasion: Actor's agility x7, actor's perception x3, actor's control.\nTarget's agility x7, target's perception x7, target's control.";
 				   
@@ -4497,14 +4853,14 @@ window.createBaDrainingRoots = function() {
 			applyBarDamage(target,"lust",-damage);
 			results.value = damage;
 			
-			gC(actor).lust.changeValue(damage);
+			gC(actor).lust.changeValue(damage*0.5);
 			// Description
 			results.description += randomFromList( [
 									(ktn(actor) + " inserted " + gC(actor).posPr + " roots in " + ktn(target) + ", and started sucking " + gC(target).posPr + " aether."),
 									(ktn(target) + " runs short of breath as " + ktn(actor) + " sucks " + gC(target).posPr + " aether away."),
 									(ktn(target) + " is pained by the injection of " + ktn(actor) + " roots, which " + randomFromList(["eagerly","irredeemably","mercilessly"]) + " suck away " + gC(target).posPr + " aether.")
 								] );
-			results.description += " " + dmgEffMsg + ktn(actor) + " drained " + textLustDamage(damage) + " from " + ktn(target)
+			results.description += " " + dmgEffMsg + ktn(actor) + " drained " + textLustDamage(damage*0.5) + " from " + ktn(target)
 								 + ".\n" + evResults.explanation;
 		} else { // Hit fails
 			results.value = 0;
@@ -4530,8 +4886,13 @@ window.createBaOppressiveEmbrace = function() {
 	sa.tags.push("bs","bPos");
 	sa.reqTags.push("diffTarget","control");
 	
-	sa.strategyTags.push("pounce","bPos","frontal");
+	sa.strategyTags.push("targetEnemy","pounce","bPos","frontal");
 	sa.affinities.push("pounce");
+	
+	sa.actorStatWeights = [50,0,33,33,33,0,0,0,0];
+	sa.targetStatWeights = [0,0,0,0,0,0,0,0,0];
+	sa.statWeightDivider = 149;
+	sa.overallWeightMultiplier = 2;
 	
 	sa.description = "The character charges against their target, attempting to hold their limbs with aetherial chains.\n"
 				   + "Costs 5 energy and 5 willpower.\n\nSingle target action."

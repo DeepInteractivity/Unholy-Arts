@@ -152,22 +152,41 @@ window.createCaLegHoldHead = function(initiator, targetsList) {
 	ca.targetsBodyparts = [ "mouth" ];
 	ca.occupyBodyparts();
 	ca.rank = 2;
-	ca.flavorTags = ["oral","useLegs","targetMouth","domination","position","continuedAction"];
+	ca.flavorTags = ["oral","useLegs","usePussy","targetMouth","domination","position","continuedAction"];
 	
-	ca.validRelationalPositions.push(["standing","kneeling"],["spitroastFront","spitroastTarget"]);
+	ca.validRelationalPositions.push(["standing","kneeling"],["spitroastFront","spitroastTarget"],["mountingFaceToGroin","mountedFaceToGroin"],["mountedFaceToGroin","mountingFaceToGroin"]);
 	
 	ca.execute = function() {
 		var results = new saResults;
 		
 		var multAr = getSexDamageMultAlt(this.initiator,this.targetsList[0],this.flavorTags);
+		var posMult = 1;
+		var exTags = [];
+		if ( gC(this.initiator).position.key == "mountingFaceToGroin" && gC(this.targetsList[0]).position.key == "mountedFaceToGroin" ) {
+			posMult = 1.3;
+			exTags = "straddle";
+		}
 		// Targets' agility
 		var agiDamage = 0;
 		for ( var t of this.targetsList ) {
 			agiDamage += gCstat(t,"agility") * 3;
 		}
-		agiDamage *= ( (1 + this.targetsList.length) * 0.5 ) / this.targetsList.length;
-		var lustDamage = ((agiDamage + getChar(this.initiator).resilience.getValue() * 2 + getChar(this.initiator).physique.getValue()) / 20) * multAr[0];
-		getChar(initiator).lust.changeValue(-lustDamage);
+		agiDamage *= ( (0.5 + this.targetsList.length) * 0.5 ) / this.targetsList.length;
+		var lustDamage = ((agiDamage + getChar(this.initiator).resilience.getValue() * 2 + getChar(this.initiator).physique.getValue()) / 20) * posMult * multAr[0];
+		getChar(this.initiator).lust.changeValue(-lustDamage);
+		
+		var lustDamages2 = [];
+		var multArs2 = [];
+		var i = 0;
+		for ( var t of this.targetsList ) {
+			var mAr = getSexDamageMultAlt(t,this.initiator,["oral","useMouth","targetPussy","submission","continuedAction"]);
+			multArs2.push(mAr);
+			var ld = gC(this.initiator).resilience.getValue() * 0.1 * posMult * mAr[0];
+			lustDamages2.push(ld);
+			gC(t).lust.changeValue(-ld);
+			i++;
+		}
+		
 		results.value += lustDamage;
 		if ( this.targetsList.length == 1 ) {
 			var target = this.targetsList[0];
@@ -183,22 +202,93 @@ window.createCaLegHoldHead = function(initiator, targetsList) {
 								(getCharNames(this.targetsList) + " take turns to " + randomFromList(["massage","worship","pleasure"]) + " " + ktn(this.initiator) + "'s " + pussyWord() + " with their tongues.") ] );
 		}
 		results.description += " " + ktn(this.initiator) + " received " + textLustDamage(lustDamage) + ". " + multAr[1];
+		i = 0;
+		for ( var t of this.targetsList ) {
+			results.description += " " + ktn(t) + " received " + textLustDamage(lustDamages2[i]) + ". " + multArs2[i][1];
+			i++;
+		}
 		
 		for ( var target of this.targetsList ) {
 			// Submissive loss of willpower
-			if ( gC(target).hasLead == false && gC(target).position.key == "kneeling" ) {
-				var exWillpowerDamage = (gC(this.initiator).charisma.getValue() / Math.max(gC(target).will.getValue(),1)) * (2 - (gC(target).willpower.current / gC(target).willpower.max));
+			if ( gC(target).hasLead == false && ( gC(target).position.key == "kneeling" || gC(target).position.key == "mountedFaceToGroin" ) ) {
+				var exWillpowerDamage = (gC(this.initiator).charisma.getValue() / Math.max(gC(target).will.getValue(),1)) * (2 - (gC(target).willpower.current / gC(target).willpower.max)) * posMult;
 				gC(target).willpower.changeValue(-exWillpowerDamage);
 				results.description += ktn(target) + "'s submissive position made " + gC(target).comPr + " receive " + textWillpowerDamage(exWillpowerDamage) + ". ";
 			}
 			
 			// Submissive extra lust
 			if ( gC(target).hasLead == false && gC(target).willpower.current < (gC(target).willpower.max * 0.8) ) {
-				var exLustDamage = (gC(this.initiator).charisma.getValue() / Math.max(gC(target).will.getValue(),1)) * (2 - (gC(target).willpower.current / gC(target).willpower.max));
+				var exLustDamage = (gC(this.initiator).charisma.getValue() / Math.max(gC(target).will.getValue(),1)) * (2 - (gC(target).willpower.current / gC(target).willpower.max)) * posMult;
 				//var exLustDamage = (gC(this.initiator).charisma.getValue() / Math.max((gC(target).will.getValue()) * (1 - (gC(target).willpower.current / gC(target).willpower.max)) * 2,0.1));
 				gC(target).lust.changeValue(-exLustDamage);
 				results.description += ktn(target) + "'s lack of control aroused " + gC(target).comPr + " and made " + gC(target).comPr + " receive " + textLustDamage(exLustDamage) + ". ";
 			}
+		}
+		if ( exTags.includes("straddle") ) {
+			results.description += " //The entrapment below " + ktn(this.initiator) + "'s legs increases the lust and willpower damage.//";
+		}
+		
+		return results;
+	}
+	return ca;
+}
+
+window.createCaGetBlowjob = function(initiator, targetsList) {
+	var ca = new continuedAction();
+	ca.key = "getBlowjob";
+	ca.name = "Getting Blowjob";
+	ca.initiator = initiator;
+	ca.targetsList = targetsList;
+	ca.initiatorBodyparts = [ "dick" ];
+	ca.targetsBodyparts = [ "mouth" ];
+	ca.occupyBodyparts();
+	ca.rank = 2;
+	ca.flavorTags = ["oral","useDick","targetMouth","top","domination","continuedAction"]
+	
+	ca.validRelationalPositions.push(["standing","kneeling"],["spitroastFront","spitroastTarget"],["mountingFaceToGroin","mountedFaceToGroin"],["mountedFaceToGroin","mountingFaceToGroin"]);
+	
+	ca.execute = function() {
+		var results = new saResults;
+		var target = this.targetsList[0];
+		
+		var multAr2 = getSexDamageMultAlt(this.targetsList[0],this.initiator,this.flavorTags);
+		var multAr = getSexDamageMultAlt(this.initiator,this.targetsList[0],["oral","targetDick","useMouth","bottom","submission","continuedAction"]);
+		var posMult = 1;
+		var exTags = [];
+		if ( gC(initiator).position.key == "standing" && gC(target).position.key == "kneeling" ) {
+			posMult = 1.2;
+			exTags = "kneeling";
+		}
+		
+		var lustDamage2 = (gC(target).agility.getValue() / 5) * posMult * multAr2[0]; // Goes to initiator
+		var lustDamage = (gC(this.initiator).resilience.getValue() / 10) * posMult * multAr[0]; // Goes to target
+		gC(target).lust.changeValue(-lustDamage);
+		gC(this.initiator).lust.changeValue(-lustDamage2);
+		results.value += lustDamage;
+		results.description += randomFromList( [
+								(ktn(target) + " is sucking " + ktn(initiator) + "'s " + dickWord() + "."),
+								(ktn(target) + " is fellating " + ktn(initiator) + "."),
+								(ktn(initiator) + " is making " + ktn(target) + " suck " + gC(initiator).posPr + " " + dickWord() + ".") ] );
+		results.description += " " + ktn(initiator) + " received " + textLustDamage(lustDamage2) + ". " + multAr2[1];
+		results.description += ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1];
+		
+		// Submissive loss of willpower
+		if ( gC(target).hasLead == false && ( gC(target).position.key == "kneeling" || gC(target).position.key == "mountedFaceToGroin" ) ) {
+			var exWillpowerDamage = (gC(this.initiator).charisma.getValue() / Math.max(gC(target).will.getValue(),1)) * (2 - (gC(target).willpower.current / gC(target).willpower.max)) * posMult;
+			//var exWillpowerDamage = ((gC(this.initiator).will.getValue() * 0.5 + gC(this.initiator).charisma.getValue() * 1) / gC(target).will.getValue()) * 1;
+			gC(target).willpower.changeValue(-exWillpowerDamage);
+			results.description += ktn(target) + "'s submissive position made " + gC(target).comPr + " receive " + textWillpowerDamage(exWillpowerDamage) + ". ";
+		}
+		
+		// Submissive extra lust
+		if ( gC(target).hasLead == false && gC(target).willpower.current < (gC(target).willpower.max * 0.8) ) {
+			var exLustDamage = (gC(this.initiator).charisma.getValue() / Math.max(gC(target).will.getValue(),1)) * (2 - (gC(target).willpower.current / gC(target).willpower.max)) * posMult;
+			//var exLustDamage = (gC(this.initiator).charisma.getValue() / gC(target).will.getValue()) * (1 - (gC(target).willpower.current / gC(target).willpower.max)) * 2;
+			gC(target).lust.changeValue(-exLustDamage);
+			results.description += ktn(target) + "'s lack of control aroused " + gC(target).comPr + " and made " + gC(target).comPr + " receive " + textLustDamage(exLustDamage) + ". ";
+		}
+		if ( exTags.includes("kneeling") ) {
+			results.description += "//The ample freedom to enjoy " + ktn(target) + "'s " + randomFromList(["mouth","throat","lips"]) + " increases the lust and willpower damage.//";
 		}
 		
 		return results;
@@ -352,7 +442,7 @@ window.createCaMountDick = function(initiator, targetsList) {
 	ca.rank = 2;
 	ca.flavorTags = [ "fullsex","usePussy","targetDick","top","continuedAction"];
 	
-	ca.validRelationalPositions.push(["mountingFaceToFace","mountedFaceToFace"],["mountingAndMounted","mountedFaceToFace"]);
+	ca.validRelationalPositions.push(["mountingFaceToFace","mountedFaceToFace"],["mountingAndMounted","mountedFaceToFace"],["mountedFromBehind","mountingFromBehind"]);
 	
 	ca.execute = function() {
 		var results = new saResults;
@@ -388,7 +478,7 @@ window.createCaAnalMountDick = function(initiator, targetsList) {
 	ca.rank = 2;
 	ca.flavorTags = [ "fullsex","useAnus","targetDick","top","continuedAction"];
 	
-	ca.validRelationalPositions.push(["mountingFaceToFace","mountedFaceToFace"],["mountingAndMounted","mountedFaceToFace"]);
+	ca.validRelationalPositions.push(["mountingFaceToFace","mountedFaceToFace"],["mountingAndMounted","mountedFaceToFace"],["mountedFromBehind","mountingFromBehind"]);
 	
 	ca.execute = function() {
 		var results = new saResults;
@@ -461,59 +551,6 @@ window.createCaDoublePenetration = function(initiator, targetsList) {
 		
 		return results;
 	}	
-	return ca;
-}
-
-window.createCaGetBlowjob = function(initiator, targetsList) {
-	var ca = new continuedAction();
-	ca.key = "getBlowjob";
-	ca.name = "Getting Blowjob";
-	ca.initiator = initiator;
-	ca.targetsList = targetsList;
-	ca.initiatorBodyparts = [ "dick" ];
-	ca.targetsBodyparts = [ "mouth" ];
-	ca.occupyBodyparts();
-	ca.rank = 2;
-	ca.flavorTags = ["oral","useDick","targetMouth","top","domination","continuedAction"]
-	
-	ca.validRelationalPositions.push(["standing","kneeling"],["spitroastFront","spitroastTarget"]);
-	
-	ca.execute = function() {
-		var results = new saResults;
-		var target = this.targetsList[0];
-		
-		var multAr2 = getSexDamageMultAlt(this.initiator,this.initiator,this.flavorTags);
-		var multAr = getSexDamageMultAlt(this.initiator,this.targetsList[0],this.flavorTags);
-		var lustDamage2 = (gC(target).agility.getValue() / 5) * multAr2[0]; // Goes to initiator
-		var lustDamage = (gC(this.initiator).resilience.getValue() / 10) * multAr[0]; // Goes to target
-		gC(target).lust.changeValue(-lustDamage);
-		gC(this.initiator).lust.changeValue(-lustDamage2);
-		results.value += lustDamage;
-		results.description += randomFromList( [
-								(ktn(target) + " is sucking " + ktn(initiator) + "'s " + dickWord() + "."),
-								(ktn(target) + " is fellating " + ktn(initiator) + "."),
-								(ktn(initiator) + " is making " + ktn(target) + " suck " + gC(initiator).posPr + " " + dickWord() + ".") ] );
-		results.description += " " + ktn(initiator) + " received " + textLustDamage(lustDamage2) + ". " + multAr2[1];
-		results.description += ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1];
-		
-		// Submissive loss of willpower
-		if ( gC(target).hasLead == false && gC(target).position.key == "kneeling" ) {
-			var exWillpowerDamage = (gC(this.initiator).charisma.getValue() / Math.max(gC(target).will.getValue(),1)) * (2 - (gC(target).willpower.current / gC(target).willpower.max));
-			//var exWillpowerDamage = ((gC(this.initiator).will.getValue() * 0.5 + gC(this.initiator).charisma.getValue() * 1) / gC(target).will.getValue()) * 1;
-			gC(target).willpower.changeValue(-exWillpowerDamage);
-			results.description += ktn(target) + "'s submissive position made " + gC(target).comPr + " receive " + textWillpowerDamage(exWillpowerDamage) + ". ";
-		}
-		
-		// Submissive extra lust
-		if ( gC(target).hasLead == false && gC(target).willpower.current < (gC(target).willpower.max * 0.8) ) {
-			var exLustDamage = (gC(this.initiator).charisma.getValue() / Math.max(gC(target).will.getValue(),1)) * (2 - (gC(target).willpower.current / gC(target).willpower.max));
-			//var exLustDamage = (gC(this.initiator).charisma.getValue() / gC(target).will.getValue()) * (1 - (gC(target).willpower.current / gC(target).willpower.max)) * 2;
-			gC(target).lust.changeValue(-exLustDamage);
-			results.description += ktn(target) + "'s lack of control aroused " + gC(target).comPr + " and made " + gC(target).comPr + " receive " + textLustDamage(exLustDamage) + ". ";
-		}
-		
-		return results;
-	}
 	return ca;
 }
 
@@ -767,6 +804,7 @@ window.createCaHoldArms = function(initiator,targetsList) {
 		var target = this.targetsList[0];
 		
 		var multAr = getSexDamageMultAlt(this.initiator,this.targetsList[0],this.flavorTags);
+		var multAr2 = getSexDamageMultAlt(this.targetsList[0],this.initiator,["submission","targetHands","useHands","continuedAction"]);
 		var willpowerDamage = ((gC(this.initiator).physique.getValue() + gC(this.initiator).resilience.getValue() ) / 10) * multAr[0];
 		gC(target).willpower.changeValue(-willpowerDamage);
 		results.value += willpowerDamage;
@@ -776,13 +814,128 @@ window.createCaHoldArms = function(initiator,targetsList) {
 								(ktn(initiator) + " keeps " + ktn(target) + "'s arms in place.") ] );
 		results.description += " " + ktn(target) + " received " + textWillpowerDamage(willpowerDamage) + ". " + multAr[1];
 		
+		// Dominant extra lust
+		var domThrill = gCtasteRank(initiator,"domination") * 2 + gCtasteRank(initiator,"bondage");
+		if ( doesCharHaveAlteredState(initiator,"Dom+") ) { domThrill += 2; }
+		var dtLustFactor = 0;
+		if ( domThrill >= 4 ) { dtLustFactor = 2; }
+		else if ( domThrill >= 2 ) { dtLustFactor = 1; }
+		if ( dtLustFactor > 0 ) {
+			var domLustDamage = quantifyCharacterVacuumStrength(target) / 100 * dtLustFactor * multAr2[0];
+			gC(initiator).lust.changeValue(-domLustDamage);
+			if ( dtLustFactor >= 2 ) {
+				results.description += " " + ktn(initiator) + " is sweating excited from " + gC(initiator).posPr + " control over " + ktn(target) + ", receiving " + textLustDamage(domLustDamage) + ". " + multAr2[1];
+			} else {
+				results.description += " " + ktn(initiator) + " is getting excited from " + gC(initiator).posPr + " control over " + ktn(target) + ", receiving " + textLustDamage(domLustDamage) + ". " + multAr2[1];
+			}
+		}
 		// Submissive extra lust
+		var subThrill = gCtasteRank(target,"submission") * 2 + gCtasteRank(target,"bondage");
+		if ( doesCharHaveAlteredState(target,"Sub+") ) { subThrill += 2; }
+		var stLustFactor = 0;
+		if ( subThrill >= 4 ) { stLustFactor = 2; }
+		else if ( subThrill >= 2 ) { stLustFactor = 1; }
+		if ( stLustFactor > 0 ) {
+			var subLustDamage = (gCstat(initiator,"physique") + gCstat(initiator,"resilience")) / 20 * stLustFactor * multAr[0];
+			gC(target).lust.changeValue(-subLustDamage);
+			if ( stLustFactor >= 2 ) {
+				results.description += " " + ktn(target) + " is uncontrollably gasping due to " + gC(target).posPr + " vulnerability, receiving " + textLustDamage(subLustDamage) + ". " + multAr[1];
+			} else {
+				results.description += " " + ktn(target) + " is getting excited from " + gC(target).posPr + " vulnerability, receiving " + textLustDamage(subLustDamage) + ". " + multAr[1];
+			}
+		}
+		// Waning willpower extra lust
 		if ( gC(target).hasLead == false && gC(target).willpower.current < (gC(target).willpower.max * 0.5) ) {
-			var exLustDamage = ((gC(this.initiator).physique.getValue() + gC(this.initiator).resilience.getValue()) / Math.max(gC(target).will.getValue(),1)) * (2 - (gC(target).willpower.current / gC(target).willpower.max));
+			var exLustDamage = ((gC(this.initiator).physique.getValue() + gC(this.initiator).resilience.getValue())*0.5 / Math.max(gC(target).will.getValue(),1)) * (2 - (gC(target).willpower.current / gC(target).willpower.max)) * multAr[0];
 			//var exLustDamage = ((gC(this.initiator).physique.getValue() + gC(this.initiator).resilience.getValue())
 			//					/ (gC(target).will.getValue() * 2 )) * (1 - (gC(target).willpower.current / gC(target).willpower.max)) * 2;
 			gC(target).lust.changeValue(-exLustDamage);
-			results.description += ktn(target) + "'s lack of control aroused " + gC(target).comPr + " and made " + gC(target).comPr + " receive " + textLustDamage(exLustDamage) + ". ";
+			results.description += " " + ktn(target) + "'s waning willpower aroused " + gC(target).comPr + " and made " + gC(target).comPr + " receive " + textLustDamage(exLustDamage) + ". " + multAr[0];
+		}
+		
+		return results;
+	}
+	return ca;
+}
+
+window.createCaAetherialChains = function(initiator,targetsList) {
+	var ca = new continuedAction();
+	ca.key = "aetherialChains";
+	ca.name = "Aether holding arms";
+	ca.initiator = initiator;
+	ca.targetsList = targetsList;
+	ca.targetsBodyparts = [ "arms" ];
+	ca.occupyBodyparts();
+	ca.flavorTags = ["domination","bondage","continuedAction"];
+									 
+	ca.execute = function() {
+		var results = new saResults;
+		var target = this.targetsList[0];
+		
+		// Willpower damage
+		var multAr = getSexDamageMultAlt(this.initiator,this.targetsList[0],this.flavorTags);
+		var multAr2 = getSexDamageMultAlt(this.targetsList[0],this.initiator,["submission","bondage","continuedAction"]);
+		var generalDamage = ((gC(this.initiator).intelligence.getValue() + gC(this.initiator).will.getValue() + gC(this.initiator).resilience.getValue() ) / 55) * multAr[0];
+		
+		var overflowMsg1 = applyBarDamage(target,"willpower",-generalDamage);
+		var overflowMsg2 = applyBarDamage(target,"energy",-generalDamage);
+		results.value += generalDamage;
+		
+		results.value += generalDamage;
+		
+		// Lead damage
+		var leadDamage = 0;
+		if ( gC(target).lead != 100 ) {
+			leadDamage = ( State.variables.sc.leadGainRate * gC(target).leadMultiplier * (gC(target).willpower.current / gC(target).willpower.max) ) * 0.2;
+			gC(target).lead -= leadDamage;
+		}
+		
+		results.description += randomFromList( [
+								(ktn(target) + "'s arms remain restrainted by " + ktn(initiator) + "'s aetherial chains."),
+								(ktn(target) + " is still immobilized by " + ktn(initiator) + "'s aetherial chains."),
+								(ktn(initiator) + "'s aetherial chains keep " + ktn(target) + "'s arms in place.") ] );
+		results.description += " " + ktn(target) + " received " + textWillpowerDamage(generalDamage) + " and " + textEnergyDamage(generalDamage) + "." + overflowMsg1 + overflowMsg2 + " " + ktn(target) + " is having trouble to keep control. " + multAr[1];
+		
+		
+		// Dominant extra lust
+		var domThrill = gCtasteRank(initiator,"domination") + gCtasteRank(initiator,"bondage") * 2;
+		if ( doesCharHaveAlteredState(initiator,"Dom+") ) { domThrill += 2; }
+		if ( doesCharHaveAlteredState(initiator,"Bon+") ) { domThrill += 2; }
+		var dtLustFactor = 0;
+		if ( domThrill >= 4 ) { dtLustFactor = 2; }
+		else if ( domThrill >= 2 ) { dtLustFactor = 1; }
+		if ( dtLustFactor > 0 ) {
+			var domLustDamage = quantifyCharacterVacuumStrength(target) / 100 * dtLustFactor * multAr2[0];
+			gC(initiator).lust.changeValue(-domLustDamage);
+			if ( dtLustFactor >= 2 ) {
+				results.description += " " + ktn(initiator) + " is sweating excited from " + gC(initiator).posPr + " control over " + ktn(target) + ", receiving " + textLustDamage(domLustDamage) + ". " + multAr2[1];
+			} else {
+				results.description += " " + ktn(initiator) + " is getting excited from " + gC(initiator).posPr + " control over " + ktn(target) + ", receiving " + textLustDamage(domLustDamage) + ". " + multAr2[1];
+			}
+		}
+		// Submissive extra lust
+		var subThrill = gCtasteRank(target,"submission") + gCtasteRank(target,"bondage") * 2;
+		if ( doesCharHaveAlteredState(target,"Sub+") ) { subThrill += 2; }
+		if ( doesCharHaveAlteredState(target,"Bon+") ) { subThrill += 2; }
+		var stLustFactor = 0;
+		if ( subThrill >= 4 ) { stLustFactor = 2; }
+		else if ( subThrill >= 2 ) { stLustFactor = 1; }
+		if ( stLustFactor > 0 ) {
+			var subLustDamage = (gCstat(initiator,"intelligence") + gCstat(initiator,"will") + gCstat(initiator,"resilience")) / 30 * stLustFactor * multAr[0];
+			gC(target).lust.changeValue(-subLustDamage);
+			if ( stLustFactor >= 2 ) {
+				results.description += " " + ktn(target) + " is uncontrollably gasping due to " + gC(target).posPr + " vulnerability, receiving " + textLustDamage(subLustDamage) + ". " + multAr[1];
+			} else {
+				results.description += " " + ktn(target) + " is getting excited from " + gC(target).posPr + " vulnerability, receiving " + textLustDamage(subLustDamage) + ". " + multAr[1];
+			}
+		}
+		// Waning willpower extra lust
+		if ( gC(target).hasLead == false && gC(target).willpower.current < (gC(target).willpower.max * 0.5) ) {
+			var exLustDamage = ((gC(this.initiator).intelligence.getValue() + gC(this.initiator).will.getValue() + gC(this.initiator).resilience.getValue()) * 0.33 / Math.max(gC(target).will.getValue(),1)) * (2 - (gC(target).willpower.current / gC(target).willpower.max));
+			//var exLustDamage = ((gC(this.initiator).intelligence.getValue() + gC(this.initiator).resilience.getValue())
+			//					/ (gC(target).will.getValue() * 2 )) * (1 - (gC(target).willpower.current / gC(target).willpower.max)) * 2;
+			gC(target).lust.changeValue(-exLustDamage);
+			results.description += ktn(target) + "'s waning willpower aroused " + gC(target).comPr + " and made " + gC(target).comPr + " receive " + textLustDamage(exLustDamage) + ". ";
 		}
 		
 		return results;
@@ -806,6 +959,7 @@ window.createCaVinesHoldArms = function(initiator,targetsList) {
 		
 		// Willpower damage
 		var multAr = getSexDamageMultAlt(this.initiator,this.targetsList[0],this.flavorTags);
+		var multAr2 = getSexDamageMultAlt(this.targetsList[0],this.initiator,["submission","bondage","continuedAction"]);
 		var generalDamage = ((gC(this.initiator).intelligence.getValue() + gC(this.initiator).resilience.getValue() ) / 40) * multAr[0];
 		
 		var overflowMsg1 = applyBarDamage(target,"willpower",-generalDamage);
@@ -827,13 +981,46 @@ window.createCaVinesHoldArms = function(initiator,targetsList) {
 								(ktn(initiator) + "'s vines keep " + ktn(target) + "'s arms in place.") ] );
 		results.description += " " + ktn(target) + " received " + textWillpowerDamage(generalDamage) + " and " + textEnergyDamage(generalDamage) + "." + overflowMsg1 + overflowMsg2 + " " + ktn(target) + " is having trouble to keep control. " + multAr[1];
 		
+		
+		// Dominant extra lust
+		var domThrill = gCtasteRank(initiator,"domination") + gCtasteRank(initiator,"bondage") * 2;
+		if ( doesCharHaveAlteredState(initiator,"Dom+") ) { domThrill += 2; }
+		if ( doesCharHaveAlteredState(initiator,"Bon+") ) { domThrill += 2; }
+		var dtLustFactor = 0;
+		if ( domThrill >= 4 ) { dtLustFactor = 2; }
+		else if ( domThrill >= 2 ) { dtLustFactor = 1; }
+		if ( dtLustFactor > 0 ) {
+			var domLustDamage = quantifyCharacterVacuumStrength(target) / 100 * dtLustFactor * multAr2[0];
+			gC(initiator).lust.changeValue(-domLustDamage);
+			if ( dtLustFactor >= 2 ) {
+				results.description += " " + ktn(initiator) + " is sweating excited from " + gC(initiator).posPr + " control over " + ktn(target) + ", receiving " + textLustDamage(domLustDamage) + ". " + multAr2[1];
+			} else {
+				results.description += " " + ktn(initiator) + " is getting excited from " + gC(initiator).posPr + " control over " + ktn(target) + ", receiving " + textLustDamage(domLustDamage) + ". " + multAr2[1];
+			}
+		}
 		// Submissive extra lust
+		var subThrill = gCtasteRank(target,"submission") + gCtasteRank(target,"bondage") * 2;
+		if ( doesCharHaveAlteredState(target,"Sub+") ) { subThrill += 2; }
+		if ( doesCharHaveAlteredState(target,"Bon+") ) { subThrill += 2; }
+		var stLustFactor = 0;
+		if ( subThrill >= 4 ) { stLustFactor = 2; }
+		else if ( subThrill >= 2 ) { stLustFactor = 1; }
+		if ( stLustFactor > 0 ) {
+			var subLustDamage = (gCstat(initiator,"intelligence") + gCstat(initiator,"resilience")) / 20 * stLustFactor * multAr[0];
+			gC(target).lust.changeValue(-subLustDamage);
+			if ( stLustFactor >= 2 ) {
+				results.description += " " + ktn(target) + " is uncontrollably gasping due to " + gC(target).posPr + " vulnerability, receiving " + textLustDamage(subLustDamage) + ". " + multAr[1];
+			} else {
+				results.description += " " + ktn(target) + " is getting excited from " + gC(target).posPr + " vulnerability, receiving " + textLustDamage(subLustDamage) + ". " + multAr[1];
+			}
+		}
+		// Waning willpower extra lust
 		if ( gC(target).hasLead == false && gC(target).willpower.current < (gC(target).willpower.max * 0.5) ) {
-			var exLustDamage = ((gC(this.initiator).intelligence.getValue() + gC(this.initiator).resilience.getValue()) / Math.max(gC(target).will.getValue(),1)) * (2 - (gC(target).willpower.current / gC(target).willpower.max));
+			var exLustDamage = ((gC(this.initiator).intelligence.getValue() + gC(this.initiator).resilience.getValue())*0.5 / Math.max(gC(target).will.getValue(),1)) * (2 - (gC(target).willpower.current / gC(target).willpower.max));
 			//var exLustDamage = ((gC(this.initiator).intelligence.getValue() + gC(this.initiator).resilience.getValue())
 			//					/ (gC(target).will.getValue() * 2 )) * (1 - (gC(target).willpower.current / gC(target).willpower.max)) * 2;
 			gC(target).lust.changeValue(-exLustDamage);
-			results.description += ktn(target) + "'s lack of control aroused " + gC(target).comPr + " and made " + gC(target).comPr + " receive " + textLustDamage(exLustDamage) + ". ";
+			results.description += ktn(target) + "'s waning willpower aroused " + gC(target).comPr + " and made " + gC(target).comPr + " receive " + textLustDamage(exLustDamage) + ". ";
 		}
 		
 		return results;
@@ -906,7 +1093,7 @@ window.createCaEnergyDrainingKiss = function(initiator, targetsList) {
 	ca.occupyBodyparts();
 	ca.flavorTags = ["oral","useMouth","targetMouth","romantic","continuedAction","draining"];
 	
-	ca.unvalidRelationalPositions.push(["standing","kneeling"],["kneeling","standing"]);
+	ca.unvalidRelationalPositions.push(["standing","kneeling"],["kneeling","standing"],["mountingFaceToGroin","mountedFaceToGroin"],["mountedFaceToGroin","mountingFaceToGroin"]);
 	
 	ca.execute = function() {
 		var results = new saResults;
@@ -961,6 +1148,19 @@ window.createPosMountFaceToFace = function(initiator, targetsList) {
 	getChar(targetsList[0]).position.name = "Being mounted face to face";
 	getChar(targetsList[0]).position.description = getChar(initiator).formattedName + " is holding " + getChar(targetsList[0]).formattedName
 											+ " down.";
+}
+window.createPosMountFaceToGroin = function(initiator, targetsList) {
+	getChar(initiator).position.makeActive(targetsList);
+	getChar(initiator).position.key = "mountingFaceToGroin";
+	getChar(initiator).position.name = "Mounting face to groin";
+	getChar(initiator).position.description = getChar(initiator).formattedName + "'s groin is atop " + getChar(targetsList[0]).formattedName
+											+ " face.";
+											
+	getChar(targetsList[0]).position.makePassive(initiator);
+	getChar(targetsList[0]).position.key = "mountedFaceToGroin";
+	getChar(targetsList[0]).position.name = "Being mounted face to groin";
+	getChar(targetsList[0]).position.description = getChar(initiator).formattedName + "'s groin is atop " + getChar(targetsList[0]).formattedName
+											+ " face.";
 }
 
 window.createPosKneel = function(initiator, targetsList) {

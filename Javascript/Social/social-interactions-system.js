@@ -140,8 +140,17 @@ window.SocIntSys = function(key,charList) {
 			this.moodChangesDescription = "";
 			this.descriptionsText = "";
 			
-			// Is player alone?
-			if ( this.flagPlayerLeftAlone == false || this.charList.length > 1 ) {  // Player not alone
+			// Extra check: Scenario is dead
+			var deadScenario = true;
+			for ( var sEvent of State.variables.compass.ongoingEvents ) {
+				if ( sEvent.title == "scenarioEnd" ) {
+					deadScenario = false;
+				}
+			}
+			if ( deadScenario == true ) {
+				this.passageText += "\n" + this.getButtonEndDeadSis();
+			} // Is player alone?
+			else if ( this.flagPlayerLeftAlone == false || this.charList.length > 1 ) {  // Player not alone
 				this.flagPlayerLeftAlone = false;
 				
 				if ( this.charList.includes("chPlayerCharacter") ) {
