@@ -218,6 +218,49 @@ window.createScrollAshwalkerCustoms = function() {
 	return scr;
 }
 
+// Intertribal Socialising
+window.getScrollIntertribalCommunicationContent = function() {
+	var content = `Before I first ever set foot in the Passion Temple, I had often heard there was plenty separating us Leirien from the other tribes, not just in the form of our bodies, but even at a more fundamental level as well. However, when I inquired about the details of these fundamental differences, I couldn't get answers than went anywhere beyond vague generalities. They were a warning about the difficulties of forming bonds with those far different than anyone I had ever met, passed down through generations and eventually distorted as myths. These differences, however, are not insurmountable, and the wealth of knowledge I have gained during my life as High Priestess might as well serve the coming generations.
+
+It is common knowledge for everyone in the Valley that one who possesses charm and blarney will be a more effective speaker, capable of drawing and maintaining the attention of others in their words, and better communicate their thoughts and feelings. But most will be surprised to learn that this alledgedly basic fact of life has fairly different connotations from tribe to tribe, as some rely on their gestures, words and tone far more than others.
+
+For the Leirien, my own tribe, the tone of words and body language are methods of communication that lose importance as we leave youth and head onto the autumn of our lives, as we gain mastery on the control of our scents and fragrances and lean further and further into accentuating our speech with the most appropriate smells, taking the whole room to the desired headspace.
+
+When it comes to Beastkin and humans, they rely on charisma the most, although their bodies tend to betray their true feelings in the form of odors. Since the Beastkin are the most sensitive tribe to smell, they have innate ease to detect the lies of humans and other members of their own tribe, provided they do not have hardened enough hearts to keep all their emotions in check, but are in turn the most easily influenceable by Leirien.
+
+Shapeshifters are an extreme of their own, as their sense of smell is insubstantial, and their body odors, almost constant, and are thus not only forced to rely on charm, but completely blocked from smell-based forms of communication. On the other hand, their characteristic bodies grant them the largest control and awareness over their own expressions.
+
+The Aiishen, the last tribe, are perhaps the most particular case, as their very forms are between the material and the purely aethereal. In consequence, the vast majority of them tend to rely on reading each other's aether to discern how they're feeling, rather than using gestural or smell-based cues. All other tribes consider this method strange and obfuscated, yet those who develop certain mastery of magic may be able to engage in it with ease. As a curiosity, some Aiishen go through great lengths to learn singing, which might very rarely turn into a stepping stone to develop human-like charisma, although the Aiishen who are chosen to become Candidates are vetoed from learning music in their tribe.
+
+The most important lesson that you should learn from this scroll is that many of the instincts you learned in your own tribe to understand others will come short when it comes to the people of other tribes, and you should take a non-judgemental stance towards them for a long while, until you better learn their peculiarities.
+
+- Elendrel, High Priestess`;
+	return content;
+}
+window.createScrollIntertribalCommunication = function() {
+	var scr = new Scroll("intCom","Intertribal Communication","lore");
+	scr.firstTimeEffect = function(characters) {
+		var textResults = "";
+		var expPoints = 100;
+		for ( var character of characters ) {
+			gC(character).empathy.addExperience(expPoints);
+			textResults += gC(character).getFormattedName() + " gained " + (expPoints * gC(character).perception.affinity).toFixed(1) + " empathy experience points.\n";
+			gC(character).perception.addExperience(expPoints);
+			textResults += gC(character).getFormattedName() + " gained " + (expPoints * gC(character).perception.affinity).toFixed(1) + " perception experience points.\n";
+		}
+		return textResults;
+	}
+	scr.getContent = getScrollIntertribalCommunicationContent;
+	scr.mayBeFound = function(characters) {
+		var flag = false;
+		if ( State.variables.daycycle.month > 1 ) {
+			flag = true;
+		}
+		return flag;
+	}
+	return scr;
+}
+
 		// SHORT STORIES
 // Basic of sex
 window.getScrollTheBasicsOfSexContent = function() {
@@ -481,7 +524,7 @@ window.createScrollTributeForTheGoddess = function() {
 		var textResults = charactersLearnSceneActions(characters,['extraMountFromBehind','extraKneel','extraMakeKneel','extraLegHoldHead']);
 		return textResults;
 	}
-	
+		
 	scr.getContent = getScrollTributeForTheGoddess;
 	scr.mayBeFound = function(characters) {
 		var flag = false;
@@ -786,7 +829,6 @@ window.createScrollRelationshipsNuance = function() {
 }
 
 
-
 setup.scrollsList = [];
 setup.scrollsList.onAether = createScrollOnAether();
 setup.scrollsList.onFamily = createScrollOnFamily();
@@ -811,6 +853,7 @@ setup.scrollsList.deeperRelationships = createScrollDeeperRelationships();
 setup.scrollsList.relsNuance = createScrollRelationshipsNuance();
 setup.scrollsList.shSlopes = createScrollShartrishSlopes();
 setup.scrollsList.ashCustoms = createScrollAshwalkerCustoms();
+setup.scrollsList.intCom = createScrollIntertribalCommunication();
 
 window.getScrollsStringList = function() {
 	var scrollsList = [];
@@ -825,7 +868,7 @@ window.getScrollsCharMayFind = function(character) {
 	var scrollsList = getScrollsStringList();
 	var newScrollsList = [];
 	for ( var scr of scrollsList ) {
-		if ( gC(character).foundScrolls.includes(scr) == false && setup.scrollsList[scr].mayBeFound(character) ) {
+		if ( gC(character).getFoundScrolls().includes(scr) == false && setup.scrollsList[scr].mayBeFound(character) ) {
 			newScrollsList.push(scr);
 		}
 	}
@@ -849,6 +892,57 @@ window.getScrollTypeText = function(scr) {
 			break;
 	}
 	return txt;
+}
+
+
+setup.scrollsKeywords = [
+	["1ls", // First loop scrolls
+	["onAether","onFamily","theWilds","gleamingCaverns","shapeshifterCustoms","theBasicsOfSex","theBasicsOfCombat","theTasteOfPleasure","surprisedInTheRear","paybackForTheThief","pillowFeetFight","punishingTheTraitors","tributeForTheGoddess","aProperCandidate","artsSocializing","artsBed","artsCombat","deeperRelationships"]],
+	["2ls", // Second loop scrolls
+	["forbiddenLove","punReport","relsNuance","shSlopes","ashCustoms","intCom"]]
+];
+
+window.compressScrollsList = function(sL) {
+	// Returns a compressed list of scrolls
+	var cSlist = [];
+	var cScrolls = [];
+	// Add all potential keywords
+	for ( var kw of setup.scrollsKeywords ) {
+		var validKw = true;
+		for ( var sc of kw[1] ) {
+			if ( sL.includes(sc) == false ) {
+				validKw = false;
+			}
+		}
+		if ( validKw ) {
+			cSlist.push(kw[0]);
+			cScrolls = cScrolls.concat(kw[1]);
+		}
+	}
+	// Add single scrolls
+	for ( var sc of sL ) {
+		if ( cScrolls.includes(sc) == false ) {
+			cSlist.push(sc);
+		}
+	}
+	return cSlist;
+}
+window.decompressScrollsList = function(sL) {
+	// Returns a decompressed list of scrolls
+	var dSlist = [];
+	for ( var sc of sL ) {
+		var foundKeyword = false;
+		for ( var kw of setup.scrollsKeywords ) {
+			if ( sc == kw[0] ) {
+				dSlist = dSlist.concat(kw[1]);
+				foundKeyword = true;
+			}
+		}
+		if ( foundKeyword == false ) {
+			dSlist.push(sc);
+		}
+	}
+	return dSlist;
 }
 
 // Constructors, serializers, etc.

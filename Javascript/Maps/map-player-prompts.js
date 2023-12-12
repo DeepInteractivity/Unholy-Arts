@@ -15,6 +15,7 @@ window.getButtonRejectConversation = function(askingCharacter) {
 	var bText = "<<l" + "ink [[Reject|Map]]>><<s" + "cript>>\n";
 	bText	 += "State.variables.compass.finishPlayerPrompt();\n";
 	bText	 += "State.variables." + askingCharacter + ".mapAi.state = 'idle';\n";
+	bText	 += "State.variables." + askingCharacter + ".addCharToRejectedChatBy('chPlayerCharacter');\n";
 	bText	 += "State.variables.compass.pushAllTimeToAdvance();\n";
 	bText	 += "<</s" + "cript>><</l" + "ink>>";
 	return bText;
@@ -34,6 +35,7 @@ window.getButtonRejectConversationInterrupted = function(askingCharacter) {
 	var bText = "<<l" + "ink [[Reject|Map]]>><<s" + "cript>>\n";
 	bText	 += "State.variables.compass.finishPlayerPrompt();\n";
 	bText	 += "State.variables." + askingCharacter + ".mapAi.state = 'idle';\n";
+	bText	 += "State.variables." + askingCharacter + ".addCharToRejectedChatBy('chPlayerCharacter');\n";
 	bText	 += "State.variables.compass.pushAllTimeToAdvance();\n";
 	bText	 += "<</s" + "cript>><</l" + "ink>>";
 	return bText;

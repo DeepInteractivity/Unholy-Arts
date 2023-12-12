@@ -468,6 +468,7 @@ window.createSaKissLips = function() {
 	sa.execute = function(actorKey,targetActors) {
 		var results = new saResults;
 		var target = targetActors[0];
+		var actor = actorKey;
 		
 		// Damage
 		var multAr = getSexDamageMult(actorKey,target,this.key);
@@ -482,6 +483,16 @@ window.createSaKissLips = function() {
 			var as = createSensitizedTag(intensity,"useMouth","Sensitized mouth","Mou+",turns,"The mouth of this character will receive extra damage.");
 			applyAlteredState([target],as);
 		}
+		
+		// Try virginities
+		if ( gC(target).virginities.fKiss.taken == false ) {
+			var vd3 = colorText((gC(actor).name + " has taken " + gC(target).name + "'s first kiss! "),"red") + provokeVirginityBonusRelationship(actor,target);
+			gC(target).virginities.fSex.tryTakeVirginity(actor,"kissLips",vd3);
+		}
+		if ( gC(actor).virginities.fKiss.taken == false ) {
+			var vd4 = colorText((gC(target).name + " has taken " + gC(actor).name + "'s first kiss! "),"red") + provokeVirginityBonusRelationship(target,actor);
+			gC(actor).virginities.fSex.tryTakeVirginity(target,"kissLips",vd4);
+		}		
 		
 		results.description += randomFromList( [
 									(ktn(actorKey) + " kissed " + ktn(target) + "'s lips."),
@@ -2191,7 +2202,7 @@ window.createSaRealHypnoticGlance = function() {
 	
 	sa.execute = function(actorKey,targetActors) {
 	var actor = actorKey;
-		if ( actor == "chPlayerCharacter" ) { addToStVarsList("monActUs"); }
+		if ( actor == "chPlayerCharacter" && State.variables.storyState == storyState.firstLoop ) { addToStVarsList("monActUs"); }
 		var results = new saResults;
 		var target = targetActors[0];
 		
@@ -2434,6 +2445,7 @@ window.createSaFrenchKiss = function() {
 	sa.execute = function(actorKey,targetActors) {
 		var results = new saResults;
 		var target = targetActors[0];
+		var actor = actorKey;
 		
 		// Relationship strength
 		var relStr = rLvlAbt(actorKey,target,"sexualTension") * 1 + rLvlAbt(target,actorKey,"sexualTension") * 1 + rLvlAbt(actorKey,target,"romance") * 3 + rLvlAbt(target,actorKey,"romance") * 3;
@@ -2451,6 +2463,17 @@ window.createSaFrenchKiss = function() {
 		var multAr = getSexDamageMult(actorKey,target,this.key);
 		var lustDamage = ((getChar(actorKey).agility.getValue() * 1 + getChar(actorKey).empathy.getValue() * 1) / 14) * relInt * openEyes * multAr[0];
 		getChar(targetActors[0]).lust.changeValue(-lustDamage);
+		
+		// Try virginities
+		if ( gC(target).virginities.fKiss.taken == false ) {
+			var vd3 = colorText((gC(actor).name + " has taken " + gC(target).name + "'s first kiss! "),"red") + provokeVirginityBonusRelationship(actor,target);
+			gC(target).virginities.fSex.tryTakeVirginity(actor,"frenchKiss",vd3);
+		}
+		if ( gC(actor).virginities.fKiss.taken == false ) {
+			var vd4 = colorText((gC(target).name + " has taken " + gC(actor).name + "'s first kiss! "),"red") + provokeVirginityBonusRelationship(target,actor);
+			gC(actor).virginities.fSex.tryTakeVirginity(target,"frenchKiss",vd4);
+		}	
+		
 		results.value += lustDamage;
 		results.description += randomFromList( [
 									(ktn(actorKey) + " captured " + ktn(target) + "'s lips and trapped them in a deep kiss."),
@@ -2696,6 +2719,14 @@ window.createSaPenetratePussy = function() {
 		State.variables.sc.continuedActions.push(createCaPenetratePussy(actorKey,targetActors));
 		
 		// Try virginities
+		if ( getChar(targetActors[0]).virginities.fSex.taken == false ) {
+			var vd3 = colorText((getChar(actorKey).name + " has taken " + getChar(targetActors[0]).name + "'s first virginity! "),"red") + provokeVirginityBonusRelationship(actorKey,targetActors[0]);
+			getChar(targetActors[0]).virginities.fSex.tryTakeVirginity(actorKey,"takeFromBehind",vd3);
+		}
+		if ( getChar(actorKey).virginities.fSex.taken == false ) {
+			var vd4 = colorText((getChar(targetActors[0]).name + " has taken " + getChar(actorKey).name + "'s first virginity! "),"red") + provokeVirginityBonusRelationship(targetActors[0],actorKey);
+			getChar(actorKey).virginities.fSex.tryTakeVirginity(targetActors[0],"takeFromBehind",vd4);
+		}
 		if ( getChar(targetActors[0]).virginities.pussy.taken == false ) {
 			var vd2 = colorText((getChar(actorKey).name + " has taken " + getChar(targetActors[0]).name + "'s vaginal virginity! "),"red") + provokeVirginityBonusRelationship(actorKey,targetActors[0]);
 			getChar(targetActors[0]).virginities.pussy.tryTakeVirginity(actorKey,"takeFromBehind",vd2);
@@ -2763,6 +2794,14 @@ window.createSaPenetrateAss = function() {
 		State.variables.sc.continuedActions.push(createCaPenetrateAss(actorKey,targetActors));
 		
 		// Try virginities
+		if ( getChar(targetActors[0]).virginities.fSex.taken == false ) {
+			var vd3 = colorText((getChar(actorKey).name + " has taken " + getChar(targetActors[0]).name + "'s first virginity! "),"red") + provokeVirginityBonusRelationship(actorKey,targetActors[0]);
+			getChar(targetActors[0]).virginities.fSex.tryTakeVirginity(actorKey,"takeFromBehind",vd3);
+		}
+		if ( getChar(actorKey).virginities.fSex.taken == false ) {
+			var vd4 = colorText((getChar(targetActors[0]).name + " has taken " + getChar(actorKey).name + "'s first virginity! "),"red") + provokeVirginityBonusRelationship(targetActors[0],actorKey);
+			getChar(actorKey).virginities.fSex.tryTakeVirginity(targetActors[0],"takeFromBehind",vd4);
+		}
 		if ( getChar(targetActors[0]).virginities.anal.taken == false ) {
 			var vd2 = colorText((getChar(actorKey).name + " has taken " + getChar(targetActors[0]).name + "'s anal virginity! "),"red") + provokeVirginityBonusRelationship(actorKey,targetActors[0]);
 			getChar(targetActors[0]).virginities.anal.tryTakeVirginity(actorKey,"takeFromBehind",vd2);
@@ -2814,6 +2853,24 @@ window.createSaInterlockLegs = function() {
 		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1];
 		
 		State.variables.sc.continuedActions.push(createCaInterlockLegs(actorKey,targetActors));
+		
+		// Try virginities
+		if ( getChar(targetActors[0]).virginities.fSex.taken == false ) {
+			var vd3 = colorText((getChar(actorKey).name + " has taken " + getChar(targetActors[0]).name + "'s first virginity! "),"red") + provokeVirginityBonusRelationship(actorKey,targetActors[0]);
+			getChar(targetActors[0]).virginities.fSex.tryTakeVirginity(actorKey,"interlockLegs",vd3);
+		}
+		if ( getChar(actorKey).virginities.fSex.taken == false ) {
+			var vd4 = colorText((getChar(targetActors[0]).name + " has taken " + getChar(actorKey).name + "'s first virginity! "),"red") + provokeVirginityBonusRelationship(targetActors[0],actorKey);
+			getChar(actorKey).virginities.fSex.tryTakeVirginity(targetActors[0],"interlockLegs",vd4);
+		}
+		if ( getChar(targetActors[0]).virginities.tribbing.taken == false ) {
+			var vd2 = colorText((getChar(actorKey).name + " has taken " + getChar(targetActors[0]).name + "'s tribbing virginity! "),"red") + provokeVirginityBonusRelationship(actorKey,targetActors[0]);
+			getChar(targetActors[0]).virginities.tribbing.tryTakeVirginity(actorKey,"interlockLegs",vd2);
+		}
+		if ( getChar(actorKey).virginities.tribbing.taken == false ) {
+			var vd1 = colorText((getChar(targetActors[0]).name + " has taken " + getChar(actorKey).name + "'s tribbing virginity! "),"red") + provokeVirginityBonusRelationship(targetActors[0],actorKey);
+			getChar(actorKey).virginities.tribbing.tryTakeVirginity(targetActors[0],"interlockLegs",vd1);
+		}
 		
 		return results;
 	}
@@ -2869,6 +2926,14 @@ window.createSaMountDick = function() {
 		}
 		
 		// Try virginities
+		if ( getChar(targetActors[0]).virginities.fSex.taken == false ) {
+			var vd3 = colorText((getChar(actorKey).name + " has taken " + getChar(targetActors[0]).name + "'s first virginity! "),"red") + provokeVirginityBonusRelationship(actorKey,targetActors[0]);
+			getChar(targetActors[0]).virginities.fSex.tryTakeVirginity(actorKey,"mountDick",vd3);
+		}
+		if ( getChar(actorKey).virginities.fSex.taken == false ) {
+			var vd4 = colorText((getChar(targetActors[0]).name + " has taken " + getChar(actorKey).name + "'s first virginity! "),"red") + provokeVirginityBonusRelationship(targetActors[0],actorKey);
+			getChar(actorKey).virginities.fSex.tryTakeVirginity(targetActors[0],"mountDick",vd4);
+		}
 		if ( getChar(targetActors[0]).virginities.dick.taken == false ) {
 			var vd2 = colorText((getChar(actorKey).name + " has taken " + getChar(targetActors[0]).name + "'s penile virginity! "),"red") + provokeVirginityBonusRelationship(actorKey,targetActors[0]);
 			getChar(targetActors[0]).virginities.dick.tryTakeVirginity(actorKey,"mountDick",vd2);
@@ -2940,6 +3005,14 @@ window.createSaAnalMountDick = function() {
 		State.variables.sc.continuedActions.push(createCaAnalMountDick(actorKey,targetActors));
 		
 		// Try virginities
+		if ( getChar(targetActors[0]).virginities.fSex.taken == false ) {
+			var vd3 = colorText((getChar(actorKey).name + " has taken " + getChar(targetActors[0]).name + "'s first virginity! "),"red") + provokeVirginityBonusRelationship(actorKey,targetActors[0]);
+			getChar(targetActors[0]).virginities.fSex.tryTakeVirginity(actorKey,"analMountDick",vd3);
+		}
+		if ( getChar(actorKey).virginities.fSex.taken == false ) {
+			var vd4 = colorText((getChar(targetActors[0]).name + " has taken " + getChar(actorKey).name + "'s first virginity! "),"red") + provokeVirginityBonusRelationship(targetActors[0],actorKey);
+			getChar(actorKey).virginities.fSex.tryTakeVirginity(targetActors[0],"analMountDick",vd4);
+		}
 		if ( getChar(targetActors[0]).virginities.dick.taken == false ) {
 			var vd2 = colorText((getChar(actorKey).name + " has taken " + getChar(targetActors[0]).name + "'s penile virginity! "),"red") + provokeVirginityBonusRelationship(actorKey,targetActors[0]);
 			getChar(targetActors[0]).virginities.dick.tryTakeVirginity(actorKey,"analMountDick",vd2);
@@ -3013,6 +3086,14 @@ window.createSaDoublePenetration = function() {
 		State.variables.sc.continuedActions.push(createCaDoublePenetration(actorKey,targetActors));
 		
 		// Try virginities
+		if ( getChar(targetActors[0]).virginities.fSex.taken == false ) {
+			var vd4 = colorText((getChar(actorKey).name + " has taken " + getChar(targetActors[0]).name + "'s first virginity! "),"red") + provokeVirginityBonusRelationship(actorKey,targetActors[0]);
+			getChar(targetActors[0]).virginities.fSex.tryTakeVirginity(actorKey,"doublePenetration",vd4);
+		}
+		if ( getChar(actorKey).virginities.fSex.taken == false ) {
+			var vd5 = colorText((getChar(targetActors[0]).name + " has taken " + getChar(actorKey).name + "'s first virginity! "),"red") + provokeVirginityBonusRelationship(targetActors[0],actorKey);
+			getChar(actorKey).virginities.fSex.tryTakeVirginity(targetActors[0],"doublePenetration",vd5);
+		}
 		if ( getChar(targetActors[0]).virginities.pussy.taken == false ) {
 			var vd2 = colorText((getChar(actorKey).name + " has taken " + getChar(targetActors[0]).name + "'s vaginal virginity! "),"red") + provokeVirginityBonusRelationship(actorKey,targetActors[0]);
 			getChar(targetActors[0]).virginities.pussy.tryTakeVirginity(actorKey,"doublePenetration",vd2);
@@ -3434,7 +3515,7 @@ window.createSaEtherealChains = function() {
 				   + "\n\nBonus when the involved characters have the corresponding BDSM inclinations.\nBonus when the target has lost considerable willpower.";
 	
 	sa.execute = function(actor,targetActors) {
-		if ( actor == "chPlayerCharacter" ) { addToStVarsList("monActUs"); }
+		if ( actor == "chPlayerCharacter" && State.variables.storyState == storyState.firstLoop ) { addToStVarsList("monActUs"); }
 		var results = new saResults;
 		var target = targetActors[0];
 		
@@ -3579,14 +3660,28 @@ window.createSaEnergyDrainingKiss = function() {
 	sa.execute = function(actorKey,targetActors) {
 		var results = new saResults;
 		var target = targetActors[0];
+		var actor = actorKey;
 		
+		var energyCap = gC(target).energy.current; // Drained energy cannot be higher than this
 		var multAr = getSexDamageMult(actorKey,target,this.key);
 		var lustDamage = ((getChar(actorKey).agility.getValue() * 1) / 8) * multAr[0];
 		var drainedEnergy = ((getChar(actorKey).agility.getValue() * 1) / 10) * multAr[0];
 		getChar(targetActors[0]).lust.changeValue(-lustDamage);
+		
 		gC(target).energy.changeValue(-drainedEnergy);
-		gC(actorKey).energy.changeValue(drainedEnergy);
+		gC(actorKey).energy.drain(drainedEnergy,energyCap);
+		
 		results.value += lustDamage;
+		
+		// Try virginities
+		if ( gC(target).virginities.fKiss.taken == false ) {
+			var vd3 = colorText((gC(actor).name + " has taken " + gC(target).name + "'s first kiss! "),"red") + provokeVirginityBonusRelationship(actor,target);
+			gC(target).virginities.fSex.tryTakeVirginity(actor,"energyDrainingKiss",vd3);
+		}
+		if ( gC(actor).virginities.fKiss.taken == false ) {
+			var vd4 = colorText((gC(target).name + " has taken " + gC(actor).name + "'s first kiss! "),"red") + provokeVirginityBonusRelationship(target,actor);
+			gC(actor).virginities.fSex.tryTakeVirginity(target,"energyDrainingKiss",vd4);
+		}	
 		
 		results.description += randomFromList( [
 									(ktn(actorKey) + " trapped " + ktn(target) + "'s lips, and drained " + gC(target).posPr + " energy through them."),

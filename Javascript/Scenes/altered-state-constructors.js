@@ -159,10 +159,10 @@ window.createASsensitizedGenitals = function(intensity) {
 	var esw = 10 + intensity * 1; // 10 - 20
 	var turns = 4 + limitedRandomInt(2); // 4 ~ 6
 	var provokeEffect = function(charKey) {
-		gC(charKey).combatAffinities.sex.weakness += esw;
+		gC(charKey).combatAffinities.sex.wkn += esw;
 	}
 	var cancelEffect = function(charKey) {
-		gC(charKey).combatAffinities.sex.weakness -= esw;
+		gC(charKey).combatAffinities.sex.wkn -= esw;
 	}
 	var description = "The contact with electric shocks have sensitized the genitals of this character.\n"
 					+ "Increased damage from sex attacks.";
@@ -184,7 +184,7 @@ window.createAScoldGuts = function(intensity) {
 		gC(charKey).resilience.multModifier += sgm;
 		gC(charKey).will.sumModifier += sgs;
 		gC(charKey).will.multModifier += sgm;
-		gC(charKey).combatAffinities.sex.resistance += isr;
+		gC(charKey).combatAffinities.sex.rst += isr;
 	}
 	var cancelEffect = function(charKey) {
 		gC(charKey).physique.sumModifier -= sgs;
@@ -193,7 +193,7 @@ window.createAScoldGuts = function(intensity) {
 		gC(charKey).resilience.multModifier -= sgm;
 		gC(charKey).will.sumModifier -= sgs;
 		gC(charKey).will.multModifier -= sgm;
-		gC(charKey).combatAffinities.sex.resistance -= isr;
+		gC(charKey).combatAffinities.sex.rst -= isr;
 	}
 	var description = "This character is focused in the proper use of their inner energy.\n"
 					+ "Increased physique, resilience, will and resistance to sex actions.";
@@ -249,17 +249,17 @@ window.createASteased = function(intensity, type) {
 	var etw = 10 + intensity * 1; // 10 - 20
 	var turns = 4 + limitedRandomInt(2); // 4 ~ 6
 	var provokeEffect = function(charKey) {
-		gC(charKey).combatAffinities.sex.weakness += esw;
+		gC(charKey).combatAffinities.sex.wkn += esw;
 		gC(charKey).combatAffinities.sex.strength += ess;
 		if ( sType != "targetNone" ) {
-			gC(charKey).combatAffinities[sType].weakness += etw;
+			gC(charKey).combatAffinities[sType].wkn += etw;
 		}
 	}
 	var cancelEffect = function(charKey) {
-		gC(charKey).combatAffinities.sex.weakness -= esw;
+		gC(charKey).combatAffinities.sex.wkn -= esw;
 		gC(charKey).combatAffinities.sex.strength -= ess;
 		if ( sType != "targetNone" ) {
-			gC(charKey).combatAffinities[sType].weakness -= etw;
+			gC(charKey).combatAffinities[sType].wkn -= etw;
 		}
 	}
 	var description = "This character has their head filled with erotic fantasies.\n"
@@ -322,7 +322,7 @@ window.createASflaringFeint = function(intensity) {
 		gC(charKey).will.multModifier += sgm;
 		gC(charKey).controlRecovery += icr;
 		gC(charKey).combatAffinities.fire.strength += ipa;
-		gC(charKey).combatAffinities.fire.resistance += ipa;
+		gC(charKey).combatAffinities.fire.rst += ipa;
 	}
 	var cancelEffect = function(charKey) {
 		gC(charKey).agility.sumModifier -= sgs;
@@ -331,7 +331,7 @@ window.createASflaringFeint = function(intensity) {
 		gC(charKey).will.multModifier -= sgm;
 		gC(charKey).controlRecovery -= icr;
 		gC(charKey).combatAffinities.fire.strength -= ipa;
-		gC(charKey).combatAffinities.fire.resistance -= ipa;
+		gC(charKey).combatAffinities.fire.rst -= ipa;
 	}
 	var description = "The inner fire of this character is empowered.\n"
 					+ "Increased agility, will, control recovery and fire affinity.";
@@ -354,10 +354,10 @@ window.createASearthWall = function(intensity) {
 		gC(charKey).will.multModifier += sgm;
 		gC(charKey).perception.sumModifier -= sgs;
 		gC(charKey).perception.multModifier -= sgm;
-		gC(charKey).combatAffinities.pounce.resistance += iPr;
-		gC(charKey).combatAffinities.physical.resistance += ipr;
-		gC(charKey).combatAffinities.magic.resistance += imr;
-		gC(charKey).combatAffinities.social.resistance += imr;
+		gC(charKey).combatAffinities.pounce.rst += iPr;
+		gC(charKey).combatAffinities.physical.rst += ipr;
+		gC(charKey).combatAffinities.magic.rst += imr;
+		gC(charKey).combatAffinities.social.rst += imr;
 	}
 	var cancelEffect = function(charKey) {
 		gC(charKey).resilience.sumModifier -= sgs;
@@ -366,10 +366,10 @@ window.createASearthWall = function(intensity) {
 		gC(charKey).will.multModifier -= sgm;
 		gC(charKey).perception.sumModifier += sgs;
 		gC(charKey).perception.multModifier += sgm;
-		gC(charKey).combatAffinities.pounce.resistance -= iPr;
-		gC(charKey).combatAffinities.physical.resistance -= ipr;
-		gC(charKey).combatAffinities.magic.resistance -= imr;
-		gC(charKey).combatAffinities.social.resistance -= imr;
+		gC(charKey).combatAffinities.pounce.rst -= iPr;
+		gC(charKey).combatAffinities.physical.rst -= ipr;
+		gC(charKey).combatAffinities.magic.rst -= imr;
+		gC(charKey).combatAffinities.social.rst -= imr;
 	}
 	var description = "This character is protected by earth walls.\n"
 					+ "Increased resilience, will, decreased perception.\nGreatly increased pounce and physical resistances, slightly increased magical and social resistances.";
@@ -438,7 +438,7 @@ window.createASbleedingInjury = function(intensity) {
 		gC(charKey).resilience.multModifier -= slm;
 		gC(charKey).agility.sumModifier -= sls;
 		gC(charKey).agility.multModifier -= slm;
-		gC(charKey).combatAffinities.physical.weakness += ipw;
+		gC(charKey).combatAffinities.physical.wkn += ipw;
 	}
 	var cancelEffect = function(charKey) {
 		gC(charKey).physique.sumModifier += sls;
@@ -447,7 +447,7 @@ window.createASbleedingInjury = function(intensity) {
 		gC(charKey).resilience.multModifier += slm;
 		gC(charKey).agility.sumModifier += sls;
 		gC(charKey).agility.multModifier += slm;
-		gC(charKey).combatAffinities.physical.weakness -= ipw;
+		gC(charKey).combatAffinities.physical.wkn -= ipw;
 	}
 	var description = "This character is bleeding from an injury, yet healing rapidly.\n"
 					+ "Loss of physique, agility, resilience. Increased physical weakness.";
@@ -723,13 +723,13 @@ window.createASscratched = function(intensity) {
 		gC(charKey).energy.tainted += eec;
 		gC(charKey).agility.sumModifier -= als;
 		gC(charKey).agility.multModifier -= alm;
-		gC(charKey).combatAffinities.pain.weakness += epd;
+		gC(charKey).combatAffinities.pain.wkn += epd;
 	}
 	var cancelEffect = function(charKey) {
 		gC(charKey).energy.tainted -= eec;
 		gC(charKey).agility.sumModifier += als;
 		gC(charKey).agility.multModifier += alm;
-		gC(charKey).combatAffinities.pain.weakness -= epd;
+		gC(charKey).combatAffinities.pain.wkn -= epd;
 	}
 	var description = "This character has the mark of a scratch causing pain in their skin.\n"
 					+ "Loss of agility, receives extra pain damage, energy becomes tainted.";
@@ -754,7 +754,7 @@ window.createAScatAspect = function(intensity) {
 		gC(charKey).perception.multModifier += sgm;
 		gC(charKey).controlRecovery += icr;
 		gC(charKey).combatAffinities.pounce.strength += ipa;
-		gC(charKey).combatAffinities.pounce.resistance += ipa;
+		gC(charKey).combatAffinities.pounce.rst += ipa;
 	}
 	var cancelEffect = function(charKey) {
 		gC(charKey).agility.sumModifier -= sgs;
@@ -763,7 +763,7 @@ window.createAScatAspect = function(intensity) {
 		gC(charKey).perception.multModifier -= sgm;
 		gC(charKey).controlRecovery -= icr;
 		gC(charKey).combatAffinities.pounce.strength -= ipa;
-		gC(charKey).combatAffinities.pounce.resistance -= ipa;
+		gC(charKey).combatAffinities.pounce.rst -= ipa;
 	}
 	var description = "This character is channeling a cat spirit, gaining physical capabilities.\n"
 					+ "Increased agility, perception, control recovery and pounce affinity.";
@@ -1030,7 +1030,7 @@ window.createHasCaptureNetAs = function() {
 	var cancelEffect = function(charKey) {
 		charactersForgetSceneActions([charKey],["monsterCapture"]);
 	}
-	var description = "This character has a especial net for capturing monsters.\nCan only be used against a monster target close to being defeated.";
+	var description = "This character has a special net for capturing monsters.\nCan only be used against a monster target close to being defeated.";
 	var as = new alteredState("Has Capturing Net","CaNt","days",turns,provokeEffect,cancelEffect,description);
 	as.type = "action";
 	as.remainingDays = 1;
@@ -1087,7 +1087,7 @@ window.createBodyPainting = function(bdPntTag,actor,target,levels,resistance) {
 	as.target = target;
 	as.tag = bdPntTag;
 	as.level = levels;
-	as.resistance = resistance;
+	as.rst = resistance;
 	as.type = "bdPnt";
 	return as;
 }
@@ -1141,13 +1141,13 @@ window.createInjury = function() {
 window.createHypnosisResistanceBoon = function() {
 	var provokeEffect = function(charKey) {
 		gC(charKey).will.sumModifier += 5;
-		gC(charKey).combatAffinities.hypnosis.resistance += 50;
+		gC(charKey).combatAffinities.hypnosis.rst += 50;
 	}
 	var cancelEffect = function(charKey) {
 		gC(charKey).will.sumModifier -= 5;
 		gC(charKey).will.value -= 2;
-		gC(charKey).combatAffinities.hypnosis.resistance -= 50;
-		gC(charKey).combatAffinities.hypnosis.weakness += 20;
+		gC(charKey).combatAffinities.hypnosis.rst -= 50;
+		gC(charKey).combatAffinities.hypnosis.wkn += 20;
 	}
 	var description = "This character has been booned with higher willpower, raising their will and their resistance to hypnosis attacks. A reverse effect may take place when it ends.";
 	var as = new alteredState("Hypnosis Resistance","HyRe","days",5,provokeEffect,cancelEffect,description);
@@ -1190,7 +1190,7 @@ window.createTatteredBody = function(intensity,remainingDays) {
 			gC(charKey)[st].multModifier -= 0.1 * this.intensity;
 		}
 		gC(charKey).energy.tainted += 10 * this.intensity;
-		gC(charKey).energy.weakness += 10 * this.intensity;
+		gC(charKey).energy.wkn += 10 * this.intensity;
 	}
 	var cancelEffect = function(charKey) {
 		for ( var st of ["physique","agility","resilience","will","intelligence","perception"] ) {
@@ -1198,7 +1198,7 @@ window.createTatteredBody = function(intensity,remainingDays) {
 			gC(charKey)[st].multModifier += 0.1 * this.intensity;
 		}
 		gC(charKey).energy.tainted -= 10 * this.intensity;
-		gC(charKey).energy.weakness -= 10 * this.intensity;
+		gC(charKey).energy.wkn -= 10 * this.intensity;
 	}
 	var description = "This character has pushed their body to its absolute limits, and requires several days of rest.";
 	var as = new alteredState("Tattered Body","TaBo","days",remainingDays,provokeEffect,cancelEffect,description);

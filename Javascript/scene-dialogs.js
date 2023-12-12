@@ -1378,6 +1378,297 @@ setup.dialogDB.csDialogs.push(new dialog( // Flirty 4
 		return weight;
 	}));
 	
+// Rivalry declaration dialogues
+	// Merit
+setup.dialogDB.rdMeritDialogs = [];
+setup.dialogDB.rdMeritDialogs.push(new dialog( // Merit 1
+	function(context) {
+		var dText = "You seem to be shining at full bright. You should learn to share the spotlight.";
+		return dText;
+	},
+	function(context) {
+		var flagValid = false;
+		if ( true ) { flagValid = true; }
+		return flagValid;
+	},
+	function(context) {
+		var weight = 60; 
+		if ( getCharsDrivePercent(context.actor,"dPleasure") > 0.16 ) {
+			weight *= 2;
+		}
+		if ( getCharsDrivePercent(context.actor,"dPleasure") > 0.2 ) {
+			weight *= 1.5;
+		}
+		return weight;
+	}));
+setup.dialogDB.rdMeritDialogs.push(new dialog( // Merit 2
+	function(context) {
+		var dText = "It looks like I'll have to fight you head-on, if I want to prove myself.";
+		return dText;
+	},
+	function(context) {
+		var flagValid = false;
+		if ( true ) { flagValid = true; }
+		return flagValid;
+	},
+	function(context) {
+		var weight = 100;
+		return weight;
+	}));
+setup.dialogDB.rdMeritDialogs.push(new dialog( // Merit 3
+	function(context) {
+		var dText = "If I want to become High Priestess... I'll have to make merits defeating you.";
+		return dText;
+	},
+	function(context) {
+		var flagValid = false;
+		if ( getCandidatesKeysArray().includes(context.actor) && getCandidatesKeysArray().includes(context.target) ) {
+			flagValid = true;
+		}
+		return flagValid;
+	},
+	function(context) {
+		var weight = 100;
+		return weight;
+	}));
+	// Infamy
+setup.dialogDB.rdInfamyDialogs = [];
+setup.dialogDB.rdInfamyDialogs.push(new dialog( // Infamy 1
+	function(context) {
+		var dText = "You have been drawing a lot of attention lately, and not in a good way.";
+		return dText;
+	},
+	function(context) {
+		var flagValid = false;
+		if ( true ) { flagValid = true; }
+		return flagValid;
+	},
+	function(context) {
+		var weight = 100;
+		return weight;
+	}));
+setup.dialogDB.rdInfamyDialogs.push(new dialog( // Infamy 2
+	function(context) {
+		var dText = "You've been a little too aggressive these days. I think I'll teach you some restrain.";
+		return dText;
+	},
+	function(context) {
+		var flagValid = false;
+		if ( true ) { flagValid = true; }
+		return flagValid;
+	},
+	function(context) {
+		var weight = 100;
+		return weight;
+	}));
+setup.dialogDB.rdInfamyDialogs.push(new dialog( // Infamy 3
+	function(context) {
+		var dText = "The Temple is at its best when there's peace and harmony. I'm going to have to impose some of it upon you - by force, if required.";
+		return dText;
+	},
+	function(context) {
+		var flagValid = false;
+		if ( true ) { flagValid = true; }
+		return flagValid;
+	},
+	function(context) {
+		var weight = 40; 
+		if ( getCharsDrivePercent(context.actor,"dDomination") > 0.16 ) {
+			weight -= 20;
+		}
+		if ( getCharsDrivePercent(context.actor,"dDomination") > 0.2 ) {
+			weight -= 12;
+		}
+		if ( getCharsDrivePercent(context.actor,"dCooperation") > 0.16 ) {
+			weight *= 2;
+		}
+		if ( getCharsDrivePercent(context.actor,"dCooperation") > 0.2 ) {
+			weight *= 1.5;
+		}
+		if ( getCharsDrivePercent(context.actor,"dLove") > 0.16 ) {
+			weight *= 1.5;
+		}
+		if ( getCharsDrivePercent(context.actor,"dLove") > 0.2 ) {
+			weight *= 1.3;
+		}
+		return weight;
+	}));
+	// Dislike
+setup.dialogDB.rdDislikeDialogs = [];
+setup.dialogDB.rdDislikeDialogs.push(new dialog( // Dislike 1
+	function(context) {
+		var dText = "Do not think I haven't seen that dumb grin you've got on your face. I'll be removing it soon.";
+		return dText;
+	},
+	function(context) {
+		var flagValid = false;
+		if ( true ) { flagValid = true; }
+		return flagValid;
+	},
+	function(context) {
+		var weight = 100;
+		return weight;
+	}));
+setup.dialogDB.rdDislikeDialogs.push(new dialog( // Dislike 2
+	function(context) {
+		var dText = "I've had enough of pretending - I just plain don't like you.";
+		return dText;
+	},
+	function(context) {
+		var flagValid = false;
+		if ( true ) { flagValid = true; }
+		return flagValid;
+	},
+	function(context) {
+		var weight = 100;
+		return weight;
+	}));
+setup.dialogDB.rdDislikeDialogs.push(new dialog( // Dislike 3
+	function(context) {
+		var dText = "Did you really have to show your face here today?";
+		return dText;
+	},
+	function(context) {
+		var flagValid = false;
+		if ( true ) { flagValid = true; }
+		return flagValid;
+	},
+	function(context) {
+		var weight = 100;
+		return weight;
+	}));
+
+		// Covet
+setup.dialogDB.rdCovetDialogs = [];
+setup.dialogDB.rdCovetDialogs.push(new dialog( // Covet 1
+	function(context) {
+		var dText = "I confess - I'm kinda crazy for your bones. And I'm going to have them dancing for me.";
+		return dText;
+	},
+	function(context) {
+		var flagValid = false;
+		if ( true ) { flagValid = true; }
+		return flagValid;
+	},
+	function(context) {
+		var weight = 100;
+		return weight;
+	}));
+setup.dialogDB.rdCovetDialogs.push(new dialog( // Covet 2
+	function(context) {
+		var dText = "How about a little bet? If I manage to pin you down, you have to do what I say.";
+		return dText;
+	},
+	function(context) {
+		var flagValid = false;
+		if ( true ) { flagValid = true; }
+		return flagValid;
+	},
+	function(context) {
+		var weight = 100;
+		return weight;
+	}));
+setup.dialogDB.rdCovetDialogs.push(new dialog( // Covet 3
+	function(context) {
+		var dText = "By the Goddess, I cannot handle all this tension! The sexual tension between you and me! I'll have to resort to extreme measures...";
+		return dText;
+	},
+	function(context) {
+		var flagValid = false;
+		if ( true ) { flagValid = true; }
+		return flagValid;
+	},
+	function(context) {
+		var weight = 100;
+		if ( context.actor == "chAte" || context.actor == "chClaw" ) {
+			weight = 0;
+		}
+		return weight;
+	}));
+		// Conquest
+setup.dialogDB.rdConquestDialogs = [];
+setup.dialogDB.rdConquestDialogs.push(new dialog( // Conquest 1
+	function(context) {
+		var dText = "I've seen you happily wiggling that little backside of yours - as if it didn't belong to me!";
+		return dText;
+	},
+	function(context) {
+		var flagValid = false;
+		if ( true ) { flagValid = true; }
+		return flagValid;
+	},
+	function(context) {
+		var weight = 60;
+		if ( getCharsDrivePercent(context.actor,"dPleasure") > 0.16 ) {
+			weight *= 1.6;
+		}
+		if ( getCharsDrivePercent(context.actor,"dDomination") > 0.16 ) {
+			weight *= 1.6;
+		}
+		return weight;
+	}));
+setup.dialogDB.rdConquestDialogs.push(new dialog( // Conquest 2
+	function(context) {
+		var dText = "There's a prize I've got my eyes on - a prize I want to tie to my bed. Do you want to know what is it?";
+		return dText;
+	},
+	function(context) {
+		var flagValid = false;
+		if ( true ) { flagValid = true; }
+		return flagValid;
+	},
+	function(context) {
+		var weight = 60;
+		if ( getCharsDrivePercent(context.actor,"dPleasure") > 0.16 ) {
+			weight *= 1.6;
+		}
+		if ( getCharsDrivePercent(context.actor,"dPleasure") > 0.2 ) {
+			weight *= 1.6;
+		}
+		return weight;
+	}));	
+setup.dialogDB.rdConquestDialogs.push(new dialog( // Conquest 3
+	function(context) {
+		var dText = "I'm going to end a terrible injustice. The injustice that it is how disobedient you are.";
+		return dText;
+	},
+	function(context) {
+		var flagValid = false;
+		if ( true ) { flagValid = true; }
+		return flagValid;
+	},
+	function(context) {
+		var weight = 60;
+		if ( getCharsDrivePercent(context.actor,"dDomination") > 0.16 ) {
+			weight *= 1.6;
+		}
+		if ( getCharsDrivePercent(context.actor,"dDomination") > 0.2 ) {
+			weight *= 1.6;
+		}
+		return weight;
+	}));	
+setup.dialogDB.rdConquestDialogs.push(new dialog( // Conquest 4
+	function(context) {
+		var dText = "Today's about the day to teach you your proper place: on your knees, and bowing your head to me.";
+		return dText;
+	},
+	function(context) {
+		var flagValid = false;
+		if ( true ) { flagValid = true; }
+		return flagValid;
+	},
+	function(context) {
+		var weight = 40;
+		if ( getCharsDrivePercent(context.actor,"dDomination") > 0.16 ) {
+			weight *= 2;
+		}
+		if ( getCharsDrivePercent(context.actor,"dDomination") > 0.2 ) {
+			weight *= 2;
+		}
+		return weight;
+	}));		
+
+
 // Following dialogues
 setup.dialogDB.folMeDialogs = []; // Extra 1 is forced = true || forced = false
 setup.dialogDB.folMeDialogs.push(new dialog( // Follow me 1
@@ -2647,7 +2938,7 @@ setup.dialogDB.orDialogs.push(new dialog( // Mindblowing 3
 setup.dialogDB.orDialogs.push(new dialog( // Ruined 1
 	function(context) {
 		var actor = gC(context.actor).name;
-		var dText = `A small tear falls from ${actor}'s eye as the joy of orgasming runs away from ` + gC(context.actor).posPr + " fingers.";
+		var dText = `A small tear falls from ${actor}'s eye as the joy of climaxing runs away from ` + gC(context.actor).posPr + " fingers.";
 		return dText;
 	},
 	function(context) {
@@ -2773,7 +3064,7 @@ window.getRelationalName = function(actor,target) {
 			}
 		}
 	}
-	if ( (gC(target).domChar == actor || submissionScore <= -7) && getCharsDrivePercent(actor,"dDomination") > 0.15 ) {
+	if ( (gC(target).domChar == actor && getCharServitudeRels(actor).includes(target) && submissionScore <= -7) && getCharsDrivePercent(actor,"dDomination") > 0.15 ) {
 		validNames.push("slave");
 		validNames.push("servant");
 	}
@@ -2994,6 +3285,22 @@ window.chooseDialogFromList = function(dList,actor,target,extra1,extra2) {
 	if ( wList.length > 0 ) {
 		var chosenDialog = randomFromWeightedListPercentThreshold(wList,0.3);
 		return dialogToText(chosenDialog,context);
+	} else {
+		return chosenDialog;
+	}
+}
+window.chooseDialogFromListWithoutFormat = function(dList,actor,target,extra1,extra2) {
+	var chosenDialog = "";
+	var context = new dialogContext(actor,target,extra1,extra2);
+	var wList = [];
+	for ( var dialog of dList ) { // If requisites are met, add dialog object to weighted list with valid weight
+		if ( dialog.checkReqs(context) ) {
+			wList.push(new weightedElement(dialog,dialog.getWeight(context)));
+		}
+	}
+	if ( wList.length > 0 ) {
+		var chosenDialog = randomFromWeightedListPercentThreshold(wList,0.3);
+		return chosenDialog.getDialog(context);
 	} else {
 		return chosenDialog;
 	}

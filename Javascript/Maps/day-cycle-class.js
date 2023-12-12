@@ -132,6 +132,19 @@ window.getRelativeTimeString = function(addedMinutes) {
 	return newTimeObject.returnHourMin();
 }
 
+window.getTimeArray = function() {
+	return [State.variables.daycycle.hours,State.variables.daycycle.minutes];
+}
+window.areTimeArraysEqual = function(ar1,ar2) {
+	var areEqual = true;
+	if ( ar1[0] != ar2[0] ) {
+		areEqual = false;
+	} else if (ar1[1] != ar2[1]) {
+		areEqual = false;
+	}
+	return areEqual;
+}
+
 ///// Day Cycle
 State.variables.daycycle = new DayCycle();
 State.variables.daycycle.setDate(1,1,8,0);

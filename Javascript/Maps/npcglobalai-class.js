@@ -11,18 +11,6 @@ window.gBarHighThreshold = function() { return 0.75; }
 window.NpcGlobalAi = function(charKey) {
 	this.charKey = charKey;
 	this.type = "static";
-	
-	this.getMission = function() {
-		return [];
-	}
-	
-	this.generateMissionChoices = function() {
-		return [];
-	}
-	
-	this.generalEvaluations = function() {
-		return true;
-	}
 };
 
 window.createCandidateGlobalAi = function(charKey) {
@@ -30,46 +18,37 @@ window.createCandidateGlobalAi = function(charKey) {
 	globalAi.type = "candidateTemple";
 	globalAi.attackedToday = false;
 	
-	globalAi.generalEvaluations = function() {
-		// Get followers
-		if ( gSettings().followingAllowed ) {
-			charactersGetsForcedFollowers(this.charKey);
-			var dcq = findMostDangerousAggressiveCharacterMinusCharA(this.charKey);
-			var dangerousChar = dcq[0];
-			var dangerValue = dcq[1];
-			var dangerProportion = dangerValue / quantifyCharactersGroupStrength(this.charKey);
-			if ( dangerProportion != 0 ) {
-				if ( dangerProportion > 2.3 ) {
-					// Case 1: Danger way too high, follow someone
-					if ( this.findBestCharToFollow() == false ) {
-						// Try following someone at least
-						this.findBestFollower();
-					}
-				} else if ( dangerProportion > 1.1 ) {
-					// Case 2: Danger too high, get a follower
-					if ( this.findBestFollower() == false ) {
-						// Try following someone at least
-						this.findBestCharToFollow();
-					}
-				} else if ( dangerProportion < 0.52 ) {
-					// Case 3: Danger too low, if has non-essential followers, drop one
-					this.findBestCharToLeave(dangerValue);
-				}
-			}
-		}
-		// Join assaults
-		if ( gSettings().assaultingAllowed ) {
-			var joinedChar = considerPossibleAssaults(this.charKey);
-			
-			if ( joinedChar != "" ) {
-				addCharsTeamToCharsBattle(this.charKey,joinedChar);
-				gC(this.charKey).mapAi.signActive();
-				gC(this.charKey).mapAi.goalsList = [];
-			}
-		}
-		return true;
+
+	return globalAi;
+}
+
+window.createCandidateGcAi = function(charKey) {
+	var globalAi = new NpcGlobalAi(charKey);
+	globalAi.type = "candidateGc";
+	
+	return globalAi;
+}
+window.createValGcAi = function(charKey) {
+	var globalAi = new NpcGlobalAi(charKey);
+	globalAi.type = "valGc";
+	
+	return globalAi;
+}
+
+NpcGlobalAi.prototype.x = function() {
+	switch(this.type) {
+		case "candidateTemple":
+			break;
+		case "candidateGc":
+			break;
+		case "valGc":
+			break;
 	}
-	globalAi.evaluateDangerState = function() {
+}
+
+NpcGlobalAi.prototype.evaluateDangerState = function() {
+	switch(this.type) {
+		case "candidateTemple":
 		// The Candidate evaluates their situation in the training/socialization period and potential danger from other Candidates
 		var dangerProportion = 0; // Fraction that determines how powerful is the most dangerous Candidate in comparison to self
 		var aggressiveCandidates = []; // Find Candidates who have accumulated a certain amount of infamy
@@ -97,8 +76,16 @@ window.createCandidateGlobalAi = function(charKey) {
 			}
 		}
 		return dangerProportion;
+			break;
+		case "candidateGc":
+			break;
+		case "valGc":
+			break;
 	}
-	globalAi.findBestFollower = function() {
+}
+NpcGlobalAi.prototype.findBestFollower = function() {
+	switch(this.type) {
+		case "candidateTemple":
 		var foundFollower = false;
 		var potentialFollowers = [];
 		var currentRoom = gC(this.charKey).currentRoom;
@@ -126,9 +113,17 @@ window.createCandidateGlobalAi = function(charKey) {
 			}
 		}
 		return foundFollower;
+			break;
+		case "candidateGc":
+			break;
+		case "valGc":
+			break;
 	}
+}
 	
-	globalAi.findBestCharToFollow = function() {
+NpcGlobalAi.prototype.findBestCharToFollow = function() {
+	switch(this.type) {
+		case "candidateTemple":
 		var foundFollowed = false;
 		var potentialFolloweds = [];
 		var currentRoom = gC(this.charKey).currentRoom;
@@ -155,8 +150,16 @@ window.createCandidateGlobalAi = function(charKey) {
 			}
 		}
 		return foundFollowed;
-	} 
-	globalAi.findBestCharToLeave = function(dangerValue) {
+			break;
+		case "candidateGc":
+			break;
+		case "valGc":
+			break;
+	}
+}
+NpcGlobalAi.prototype.findBestCharToLeave = function(dangerValue) {
+	switch(this.type) {
+		case "candidateTemple":
 		var leftFollower = false;
 		var potentialUnfollowers = [];
 		for ( var charKey of gC(this.charKey).followedBy ) {
@@ -171,45 +174,43 @@ window.createCandidateGlobalAi = function(charKey) {
 		}
 		
 		return leftFollower;
-	}	
-		
-	globalAi.generateRestMissionChoice = function() {
-		var mChoice = cRestMissionChoice(this.charKey);
-		
-		mChoice.weight = 1;
-		if ( gC(this.charKey).lust.current < ( gC(this.charKey).lust.max * gBarLowThreshold() ) ) { mChoice.weight *= 10; }
-		if ( gC(this.charKey).willpower.current < ( gC(this.charKey).willpower.max * gBarLowThreshold() ) ) { mChoice.weight *= 10; }
-		if ( gC(this.charKey).energy.current < ( gC(this.charKey).energy.max * gBarLowThreshold() ) ) { mChoice.weight *= 10; }
-		if ( gC(this.charKey).socialdrive.current < ( gC(this.charKey).socialdrive.max * gBarLowThreshold() ) ) { mChoice.weight *= 10; }
-		
-		return mChoice;
+			break;
+		case "candidateGc":
+			break;
+		case "valGc":
+			break;
 	}
-	globalAi.generateTrainingChoices = function(charKey) {
-		var tChoices = [];
-		for ( var stat of getStatNamesArray() ) {
-			tChoices.push(cTrainStatMissionChoice(charKey,stat));
-		}
-		return tChoices;
-	}
-	globalAi.generateScrollsChoices = function() {
+}
+		
+NpcGlobalAi.prototype.generateScrollsChoices = function() {
+	switch(this.type) {
+		case "candidateTemple":
 		var choices = [];
 		if ( State.variables.simCycPar.templeDayPeriod != "training" ) {
 			var choiceSearch = cSearchScrollsMissionChoice(this.charKey);
 			var choiceStudy = cStudyScrollMissionChoice(this.charKey);
 			if ( choiceSearch.isValid() ) {
-				choiceSearch.weight = 40;
+				choiceSearch.weight = 100 + State.variables.daycycle.month * 30;
 				choices.push(choiceSearch);
 			}
 			if ( choiceStudy.isValid() ) {
-				choiceStudy.weight = 60;
+				choiceStudy.weight = 400 + State.variables.daycycle.month * 100;
 				choices.push(choiceStudy);
 			}
 		}
 		
 		return choices;
+			break;
+		case "candidateGc":
+			break;
+		case "valGc":
+			break;
 	}
+}
 	
-	globalAi.generateAdvancedSocializationChoices = function() {
+NpcGlobalAi.prototype.generateAdvancedSocializationChoices = function() {
+	switch(this.type) {
+		case "candidateTemple":
 		var mChoices = [];
 		
 		var allyTargets = [];
@@ -220,7 +221,7 @@ window.createCandidateGlobalAi = function(charKey) {
 		
 		for ( var charKey of getCurrentMap().characters ) {
 			if ( charKey != this.charKey ) {
-				if ( mayCharBeApproached(this.charKey,charKey) ) {
+				if ( mayCharBeApproached(this.charKey,charKey) && (gC(this.charKey).getRejectedChatByList().includes(charKey) == false || gC(charKey).followingTo == this.charKey) ) {
 					if ( gC(this.charKey).socialAi.allyTs.includes(charKey) ) {
 						allyTargets.push(charKey);
 					}
@@ -388,8 +389,16 @@ window.createCandidateGlobalAi = function(charKey) {
 		}
 		
 		return mChoices;
+			break;
+		case "candidateGc":
+			break;
+		case "valGc":
+			break;
 	}
-	globalAi.generateSocializationChoices = function() {
+}
+NpcGlobalAi.prototype.generateSocializationChoices = function() {
+	switch(this.type) {
+		case "candidateTemple":
 		var mChoices = [];
 		// Choose target
 		var charsOnMap = getCurrentMap().characters;
@@ -436,9 +445,17 @@ window.createCandidateGlobalAi = function(charKey) {
 			mChoices.push(mChoice2);
 		}
 		return mChoices;
+			break;
+		case "candidateGc":
+			break;
+		case "valGc":
+			break;
 	}
+}
 	
-	globalAi.generateAdvancedCombatChoices = function() {
+NpcGlobalAi.prototype.generateAdvancedCombatChoices = function() {
+	switch(this.type) {
+		case "candidateTemple":
 		var mChoices = [];
 		
 		if ( gSettings().challengingAllowed || gSettings().assaultingAllowed ) {
@@ -461,7 +478,7 @@ window.createCandidateGlobalAi = function(charKey) {
 					if ( gC(cK).domChar == null ) {
 						validSubSource.push(cK);
 					}
-					if ( quantifyCharactersGroupStrength(cK) < quantifyCharactersGroupStrength(this.charKey) * 1.1 && isAssaultPossible(this.charKey,cK) ) { // Assault targets
+					if ( quantifyCharactersGroupStrength(cK) < quantifyCharactersGroupStrength(this.charKey) * 1.1 && isAssaultPossible(this.charKey,cK,false) ) { // Assault targets
 						potentialAssaultTargets.push(cK);
 						if ( gC(this.charKey).socialAi.rivalTs.includes(cK) ) {
 							potentialAssaultRivals.push(cK);
@@ -480,7 +497,7 @@ window.createCandidateGlobalAi = function(charKey) {
 							validCasusBelliRetribution.push(cK);
 						}
 					}
-					if ( quantifyCharacterStrength(cK) < quantifyCharacterStrength(this.charKey) * 1.1 && isChallengePossible(this.charKey,cK) ) { // Challenge targets
+					if ( quantifyCharacterStrength(cK) < quantifyCharacterStrength(this.charKey) * 1.1 && isChallengePossible(this.charKey,cK,false) ) { // Challenge targets
 						potentialChallengeTargets.push(cK);
 						if ( gC(this.charKey).socialAi.rivalTs.includes(cK) ) {
 							potentialChallengeRivals.push(cK);
@@ -650,9 +667,24 @@ window.createCandidateGlobalAi = function(charKey) {
 			}
 		}
 		
+		for ( var choice of mChoices ) {
+			//choice.weight *= 3;
+			if ( gC(this.charKey).hasOwnProperty("attackedToday") ) {
+				choice.weight *= 0.4;
+			}
+		}
+		
 		return mChoices;
+			break;
+		case "candidateGc":
+			break;
+		case "valGc":
+			break;
 	}
-	globalAi.generateCombatChoices = function() {
+}
+NpcGlobalAi.prototype.generateCombatChoices = function() {
+	switch(this.type) {
+		case "candidateTemple":
 		var choices = [];
 		
 		if ( gSettings().challengingAllowed || gSettings().assaultingAllowed ) {
@@ -707,9 +739,17 @@ window.createCandidateGlobalAi = function(charKey) {
 		}
 		
 		return choices;
+			break;
+		case "candidateGc":
+			break;
+		case "valGc":
+			break;
 	}
+}
 	
-	globalAi.generateTransformationChoices = function() {
+NpcGlobalAi.prototype.generateTransformationChoices = function() {
+	switch(this.type) {
+		case "candidateTemple":
 		var mChoices = [];
 		if ( gSettings().tfGeneral == tfSetExtra.random ) {
 			var anyTransformerPresent = false;
@@ -758,48 +798,17 @@ window.createCandidateGlobalAi = function(charKey) {
 		}
 		
 		return mChoices;
+			break;
+		case "candidateGc":
+			break;
+		case "valGc":
+			break;
 	}
-	
-	globalAi.generateMissionChoices = function() {
-		// this->Generate stat goals
-		var mChoices = [];
-		
-		// Training
-		for ( var choice of this.generateTrainingChoices(this.charKey) ) {
-			mChoices.push(choice);
-		}
-		mChoices.push(this.generateRestMissionChoice());
-		
-		if ( gC(this.charKey).mood.angry < 25 && gC(this.charKey).mood.bored < 25 && gSettings().talkingAllowed ) {
-			// Social
-			for ( var choice of this.generateAdvancedSocializationChoices() ) {
-				mChoices.push(choice);
-			}
-		}
-		
-		// Scrolls
-		for ( var choice of this.generateScrollsChoices(this.charKey) ) {
-			mChoices.push(choice);
-		}
-		
-		// Combat
-		if ( gSettings().challengingAllowed || gSettings().assaultingAllowed ) {
-			for ( var choice of this.generateAdvancedCombatChoices(this.charKey) ) {
-				mChoices.push(choice);
-			}/*
-			for ( var choice of this.generateCombatChoices(this.charKey) ) {
-				mChoices.push(choice);
-			}*/
-		}
-		
-		// Transformations
-		for ( var choice of this.generateTransformationChoices() ) {
-			mChoices.push(choice);
-		}
-		
-		return mChoices;
-	}
-	globalAi.purgeChoicesAtLowBars = function(choices) {
+}
+
+NpcGlobalAi.prototype.purgeChoicesAtLowBars = function(choices) {
+	switch(this.type) {
+		case "candidateTemple":
 		var nChoices = [];
 		for ( var choice of choices ) {
 			for ( var rBar of choice.reqBars ) {
@@ -813,8 +822,16 @@ window.createCandidateGlobalAi = function(charKey) {
 			}
 		}
 		return nChoices;
+			break;
+		case "candidateGc":
+			break;
+		case "valGc":
+			break;
 	}
-	globalAi.getWeightedRandomMissionChoices = function(choices) {
+}
+NpcGlobalAi.prototype.getWeightedRandomMissionChoices = function(choices) {
+	switch(this.type) {
+		case "candidateTemple":
 		
 		var wList = new weightedList();
 		var i = 0;
@@ -828,140 +845,253 @@ window.createCandidateGlobalAi = function(charKey) {
 			if ( result == "errorWList" ) { result = null; }
 		}
 		return result;
+			break;
+		case "candidateGc":
+			break;
+		case "valGc":
+			break;
 	}
-	globalAi.getMission = function() {
-		var choices = this.generateMissionChoices();
-		
-		choices = this.purgeChoicesAtLowBars(choices);
-		var choice = this.getWeightedRandomMissionChoices(choices);
-		gC(this.charKey).mission = choice.title;
-		if ( choice.extra != undefined ) {
-			gC(this.charKey).missionExtra = choice.extra;
-		} else if ( gC(this.charKey).missionExtra != undefined ) {
-			delete gC(this.charKey).missionExtra;
-		}
-		// Logging //
-		if ( State.variables.log[choice.title] == undefined ) {
-			State.variables.log[choice.title] = 1;
-		} else {
-			State.variables.log[choice.title] += 1;
-		}
-		//         //
-		
-		return choice.getCommandsList(this.charKey);
-	}
+}
 	
-	return globalAi;
+
+
+NpcGlobalAi.prototype.generateTrainingChoices = function() {
+	switch(this.type) {
+		case "candidateTemple":
+			var tChoices = [];
+			for ( var stat of getStatNamesArray() ) {
+				tChoices.push(cTrainStatMissionChoice(this.charKey,stat));
+			}
+			return tChoices;
+			break;
+		case "candidateGc":
+			return [cTrainCharismaMissionChoice(this.charKey),cTrainEmpathyMissionChoice(this.charKey),
+					cTrainIntelligenceMissionChoice(this.charKey),cTrainPerceptionMissionChoice(this.charKey),
+					cTrainPhysiqueMissionChoice(this.charKey),cTrainResilienceMissionChoice(this.charKey)];
+			break;
+		case "valGc":
+			return [cTrainStatMissionChoice(this.charKey,"luck")];
+			break;
+	}
+}
+NpcGlobalAi.prototype.generateRestMissionChoice = function() {
+	switch(this.type) {
+		case "candidateTemple":
+			var mChoice = cRestMissionChoice(this.charKey);
+			
+			mChoice.weight = 1;
+			if ( gC(this.charKey).lust.current < ( gC(this.charKey).lust.max * gBarLowThreshold() ) ) { mChoice.weight *= 10; }
+			if ( gC(this.charKey).willpower.current < ( gC(this.charKey).willpower.max * gBarLowThreshold() ) ) { mChoice.weight *= 10; }
+			if ( gC(this.charKey).energy.current < ( gC(this.charKey).energy.max * gBarLowThreshold() ) ) { mChoice.weight *= 10; }
+			if ( gC(this.charKey).socialdrive.current < ( gC(this.charKey).socialdrive.max * gBarLowThreshold() ) ) { mChoice.weight *= 10; }
+			
+			return mChoice;
+			break;
+		case "candidateGc":
+			var mChoice = cRestMissionChoice(this.charKey);
+			
+			mChoice.weight = 1;
+			if ( gC(this.charKey).lust.current < ( gC(this.charKey).lust.max * gBarLowThreshold() ) ) { mChoice.weight *= 10; }
+			if ( gC(this.charKey).willpower.current < ( gC(this.charKey).willpower.max * gBarLowThreshold() ) ) { mChoice.weight *= 10; }
+			if ( gC(this.charKey).energy.current < ( gC(this.charKey).energy.max * gBarLowThreshold() ) ) { mChoice.weight *= 10; }
+			if ( gC(this.charKey).socialdrive.current < ( gC(this.charKey).socialdrive.max * gBarLowThreshold() ) ) { mChoice.weight *= 10; }
+			
+			return mChoice;
+			break;
+		case "valGc":
+			var mChoice = cRestMissionChoice(this.charKey);
+			
+			mChoice.weight = 1;
+			if ( gC(this.charKey).lust.current < ( gC(this.charKey).lust.max * gBarLowThreshold() ) ) { mChoice.weight *= 10; }
+			if ( gC(this.charKey).willpower.current < ( gC(this.charKey).willpower.max * gBarLowThreshold() ) ) { mChoice.weight *= 10; }
+			if ( gC(this.charKey).energy.current < ( gC(this.charKey).energy.max * gBarLowThreshold() ) ) { mChoice.weight *= 10; }
+			if ( gC(this.charKey).socialdrive.current < ( gC(this.charKey).socialdrive.max * gBarLowThreshold() ) ) { mChoice.weight *= 10; }
+			
+			return mChoice;
+			break;
+	}
 }
 
-window.createCandidateGcAi = function(charKey) {
-	var globalAi = new NpcGlobalAi(charKey);
-	globalAi.type = "candidateGc";
-	
-	globalAi.generalEvaluations = function() {
-	}
-	
-	globalAi.generateRestMissionChoice = function() {
-		var mChoice = cRestMissionChoice(this.charKey);
-		
-		mChoice.weight = 1;
-		if ( gC(this.charKey).lust.current < ( gC(this.charKey).lust.max * gBarLowThreshold() ) ) { mChoice.weight *= 10; }
-		if ( gC(this.charKey).willpower.current < ( gC(this.charKey).willpower.max * gBarLowThreshold() ) ) { mChoice.weight *= 10; }
-		if ( gC(this.charKey).energy.current < ( gC(this.charKey).energy.max * gBarLowThreshold() ) ) { mChoice.weight *= 10; }
-		if ( gC(this.charKey).socialdrive.current < ( gC(this.charKey).socialdrive.max * gBarLowThreshold() ) ) { mChoice.weight *= 10; }
-		
-		return mChoice;
-	}
-	globalAi.generateTrainingChoices = function(charKey) {
-		return [cTrainCharismaMissionChoice(charKey),cTrainEmpathyMissionChoice(charKey),
-				cTrainIntelligenceMissionChoice(charKey),cTrainPerceptionMissionChoice(charKey),
-				cTrainPhysiqueMissionChoice(charKey),cTrainResilienceMissionChoice(charKey)];
-	}
-	globalAi.generateHuntingChoices = function(charKey) {
-		var remainingTimeInPeriod = 120;
-		for ( var sEvent of State.variables.compass.ongoingEvents ) {
-			if ( sEvent.title == "scenarioEnd" ) {
-				remainingTimeInPeriod = sEvent.timeRemaining;
+NpcGlobalAi.prototype.generateHuntingChoices = function() {
+	switch(this.type) {
+		case "candidateTemple":
+			break;
+		case "candidateGc":
+			var remainingTimeInPeriod = 120;
+			for ( var sEvent of State.variables.compass.ongoingEvents ) {
+				if ( sEvent.title == "scenarioEnd" ) {
+					remainingTimeInPeriod = sEvent.timeRemaining;
+				}
 			}
-		}
-		var missions = [];
-		if ( remainingTimeInPeriod > 120 ) {
-			missions = [cMonsterHuntingGcEssenceSucker(charKey),cMonsterHuntingGcFlyingLookout(charKey),cMonsterHuntingGcOppressiveYoke(charKey)];
-		}
-		return missions;
+			var missions = [];
+			if ( remainingTimeInPeriod > 120 ) {
+				missions = [cMonsterHuntingGcEssenceSucker(this.charKey),cMonsterHuntingGcFlyingLookout(this.charKey),cMonsterHuntingGcOppressiveYoke(this.charKey)];
+			}
+			return missions;
+			break;
+		case "valGc":
+			break;
 	}
-	globalAi.generateSpecialGcChoices = function(charKey) {
-		var missions = [ gCnersmiasDiscussion(charKey) ];
-		return missions;
-	}
-	
-	globalAi.generateMissionChoices = function() {
-		// this->Generate stat goals
-		var mChoices = [];
-		
-		// Training
-		mChoices = this.generateTrainingChoices(this.charKey); // Training
-		mChoices.push(this.generateRestMissionChoice()); // Rest
-		mChoices = mChoices.concat(this.generateHuntingChoices(charKey)); // Monster Hunting
-		mChoices = mChoices.concat(this.generateSpecialGcChoices(charKey));
-		
-		return mChoices;
-	}
-	globalAi.getMission = function() {
-		var choices = this.generateMissionChoices();
-		choices = this.purgeChoicesAtLowBars(choices);
-		var choice = this.getWeightedRandomMissionChoices(choices);
-		gC(this.charKey).mission = choice.title;
-		
-		return choice.getCommandsList(this.charKey);
-	}
-	
-	return globalAi;
 }
-window.createValGcAi = function(charKey) {
-	var globalAi = new NpcGlobalAi(charKey);
-	globalAi.type = "valGc";
-	
-	globalAi.generalEvaluations = function() {
+NpcGlobalAi.prototype.generateSpecialGcChoices = function() {
+	switch(this.type) {
+		case "candidateTemple":
+			break;
+		case "candidateGc":
+			var missions = [ gCnersmiasDiscussion(this.charKey) ];
+			return missions;
+			break;
+		case "valGc":
+			break;
 	}
-	
-	globalAi.generateRestMissionChoice = function() {
-		var mChoice = cRestMissionChoice(this.charKey);
-		
-		mChoice.weight = 1;
-		if ( gC(this.charKey).lust.current < ( gC(this.charKey).lust.max * gBarLowThreshold() ) ) { mChoice.weight *= 10; }
-		if ( gC(this.charKey).willpower.current < ( gC(this.charKey).willpower.max * gBarLowThreshold() ) ) { mChoice.weight *= 10; }
-		if ( gC(this.charKey).energy.current < ( gC(this.charKey).energy.max * gBarLowThreshold() ) ) { mChoice.weight *= 10; }
-		if ( gC(this.charKey).socialdrive.current < ( gC(this.charKey).socialdrive.max * gBarLowThreshold() ) ) { mChoice.weight *= 10; }
-		
-		return mChoice;
+}
+
+NpcGlobalAi.prototype.generalEvaluations = function() {
+	switch(this.type) {
+		case "candidateTemple":
+			// Get followers
+			if ( gSettings().followingAllowed ) {
+				charactersGetsForcedFollowers(this.charKey);
+				var dcq = findMostDangerousAggressiveCharacterMinusCharA(this.charKey);
+				var dangerousChar = dcq[0];
+				var dangerValue = dcq[1];
+				var dangerProportion = dangerValue / quantifyCharactersGroupStrength(this.charKey);
+				if ( dangerProportion != 0 ) {
+					if ( dangerProportion > 2.3 ) {
+						// Case 1: Danger way too high, follow someone
+						if ( this.findBestCharToFollow() == false ) {
+							// Try following someone at least
+							this.findBestFollower();
+						}
+					} else if ( dangerProportion > 1.1 ) {
+						// Case 2: Danger too high, get a follower
+						if ( this.findBestFollower() == false ) {
+							// Try following someone at least
+							this.findBestCharToFollow();
+						}
+					} else if ( dangerProportion < 0.52 ) {
+						// Case 3: Danger too low, if has non-essential followers, drop one
+						this.findBestCharToLeave(dangerValue);
+					}
+				}
+			}
+			// Join assaults
+			if ( gSettings().assaultingAllowed ) {
+				var joinedChar = considerPossibleAssaults(this.charKey);
+				
+				if ( joinedChar != "" ) {
+					addCharsTeamToCharsBattle(this.charKey,joinedChar);
+					gC(this.charKey).mapAi.signActive();
+					gC(this.charKey).mapAi.goalsList = [];
+				}
+			}
+			return true;
+			break;
+		case "candidateGc":
+			break;
+		case "valGc":
+			break;
 	}
-	globalAi.generateTrainingChoices = function(charKey) {
-		return [cTrainStatMissionChoice(charKey,"luck")];
+}
+
+NpcGlobalAi.prototype.generateMissionChoices = function() {
+	switch(this.type) {
+		case "candidateTemple":
+			// this->Generate stat goals
+			var mChoices = [];
+			
+			// Training
+			for ( var choice of this.generateTrainingChoices(this.charKey) ) {
+				mChoices.push(choice);
+			}
+			mChoices.push(this.generateRestMissionChoice());
+			
+			if ( gC(this.charKey).mood.angry < 25 && gC(this.charKey).mood.bored < 25 && gSettings().talkingAllowed ) {
+				// Social
+				for ( var choice of this.generateAdvancedSocializationChoices() ) {
+					mChoices.push(choice);
+				}
+			}
+			
+			// Scrolls
+			for ( var choice of this.generateScrollsChoices(this.charKey) ) {
+				mChoices.push(choice);
+			}
+			
+			// Combat
+			if ( gSettings().challengingAllowed || gSettings().assaultingAllowed ) {
+				for ( var choice of this.generateAdvancedCombatChoices(this.charKey) ) {
+					mChoices.push(choice);
+				}
+			}
+			
+			// Transformations
+			for ( var choice of this.generateTransformationChoices() ) {
+				mChoices.push(choice);
+			}
+			
+			return mChoices;
+			break;
+		case "candidateGc":
+			// this->Generate stat goals
+			var mChoices = [];
+			
+			// Training
+			mChoices = this.generateTrainingChoices(this.charKey); // Training
+			mChoices.push(this.generateRestMissionChoice()); // Rest
+			mChoices = mChoices.concat(this.generateHuntingChoices(this.charKey)); // Monster Hunting
+			mChoices = mChoices.concat(this.generateSpecialGcChoices());
+			
+			return mChoices;
+			break;
+		case "valGc":
+			// this->Generate stat goals
+			var mChoices = [];
+			// Training
+			for ( var choice of this.generateTrainingChoices(this.charKey) ) {
+				mChoices.push(choice);
+			}
+			mChoices.push(this.generateRestMissionChoice());
+			
+			return mChoices;
+			break;
 	}
-	
-	globalAi.generateMissionChoices = function() {
-		// this->Generate stat goals
-		var mChoices = [];
+}
+
+NpcGlobalAi.prototype.getMission = function() {
+	switch(this.type) {
+		case "candidateTemple":
+			var choices = this.generateMissionChoices();
 		
-		// Training
-		for ( var choice of this.generateTrainingChoices(this.charKey) ) {
-			mChoices.push(choice);
-		}
-		mChoices.push(this.generateRestMissionChoice());
-		
-		return mChoices;
+			choices = this.purgeChoicesAtLowBars(choices);
+			var choice = this.getWeightedRandomMissionChoices(choices);
+			gC(this.charKey).mission = choice.title;
+			if ( choice.extra != undefined ) {
+				gC(this.charKey).missionExtra = choice.extra;
+			} else if ( gC(this.charKey).missionExtra != undefined ) {
+				delete gC(this.charKey).missionExtra;
+			}
+			
+			return choice.getCommandsList(this.charKey);
+			break;
+		case "candidateGc":
+			var choices = this.generateMissionChoices();
+			choices = this.purgeChoicesAtLowBars(choices);
+			var choice = this.getWeightedRandomMissionChoices(choices);
+			gC(this.charKey).mission = choice.title;
+			
+			return choice.getCommandsList(this.charKey);
+			break;
+		case "valGc":
+			var choices = this.generateMissionChoices();
+			choices = this.purgeChoicesAtLowBars(choices);
+			var choice = this.getWeightedRandomMissionChoices(choices);
+			gC(this.charKey).mission = choice.title;
+			
+			return choice.getCommandsList(this.charKey);
+			
+			break;
 	}
-	globalAi.getMission = function() {
-		var choices = this.generateMissionChoices();
-		choices = this.purgeChoicesAtLowBars(choices);
-		var choice = this.getWeightedRandomMissionChoices(choices);
-		gC(this.charKey).mission = choice.title;
-		
-		return choice.getCommandsList(this.charKey);
-	}
-	
-	return globalAi;
 }
 
 	// Aux methods
@@ -1266,7 +1396,7 @@ window.cStudyScrollMissionChoice = function(character) {
 	mChoice.isValid = function() {
 		var flagValid = false;
 		// If character may study at least one scroll and there's a room that allows studying scrolls, it's valid
-		if ( (gC(character).studiedScrolls.length < gC(character).foundScrolls.length) && (gC(character).studiedScrollToday == false) ) {
+		if ( (gC(character).getStudiedScrolls().length < gC(character).getFoundScrolls().length) && (gC(character).studiedScrollToday == false) ) {
 			if ( getAllActionsOnMapThat(getCurrentMap(),getCharGroup(character),function(action) { return action.tags.includes("studyScroll"); }).length > 0 ) {
 				flagValid = true;
 			}
@@ -1311,7 +1441,7 @@ window.cChallengeGoalsMissionChoice = function(character,targetCharacter,mission
 	var mChoice = new missionChoice(missionName);
 	mChoice.isValid = function() {
 		var isValid = false;
-		if ( getCurrentMap().character.includes(targetCharacter) && isChallengePossible(character,targetCharacter) ) {
+		if ( getCurrentMap().character.includes(targetCharacter) && isChallengePossible(character,targetCharacter,false) ) {
 			isValid = true;
 		}
 		return isValid;
@@ -1325,7 +1455,7 @@ window.cAssaultGoalsMissionChoice = function(character,targetCharacter,missionNa
 	var mChoice = new missionChoice(missionName);
 	mChoice.isValid = function() {
 		var isValid = false;
-		if ( getCurrentMap().character.includes(targetCharacter) && isAssaultPossible(character,targetCharacter) ) {
+		if ( getCurrentMap().character.includes(targetCharacter) && isAssaultPossible(character,targetCharacter,false) ) {
 			isValid = true;
 		}
 		return isValid;
@@ -1449,7 +1579,7 @@ window.cMonsterHuntingGcEssenceSucker = function(character) {
 	
 	// Weight adjustments
 	mChoice.weight = 20;
-	if ( gC(character).saList.includes("baDrainingKiss") == true ) {
+	if ( gC(character).getSaList().includes("baDrainingKiss") == true ) {
 		mChoice.weight *= 0.05;
 	}
 	var ongoingTimeInPeriod = 1;
@@ -1492,7 +1622,7 @@ window.cMonsterHuntingGcFlyingLookout = function(character) {
 	
 	// Weight adjustments
 	mChoice.weight = 20;
-	if ( gC(character).saList.includes("baHypnoticGlance") == true ) {
+	if ( gC(character).getSaList().includes("baHypnoticGlance") == true ) {
 		mChoice.weight *= 0.05;
 	}
 	var ongoingTimeInPeriod = 1;
@@ -1535,7 +1665,7 @@ window.cMonsterHuntingGcOppressiveYoke = function(character) {
 	
 	// Weight adjustments
 	mChoice.weight = 20;
-	if ( gC(character).saList.includes("baEtherealChains") == true ) {
+	if ( gC(character).getSaList().includes("baEtherealChains") == true ) {
 		mChoice.weight *= 0.05;
 	}
 	var ongoingTimeInPeriod = 1;
@@ -1606,17 +1736,17 @@ window.npcConsidersWillingnessToJoinHuntingMission = function(targetKey,actorKey
 		var wantsToHuntMonsterFactor = 50;
 		switch(targetMonster) {
 			case "EssenceSucker":
-				if ( (targetKey != "chNash" && targetKey != "chMir") || gC(targetKey).saList.includes("baDrainingKiss") ) {
+				if ( (targetKey != "chNash" && targetKey != "chMir") || gC(targetKey).getSaList().includes("baDrainingKiss") ) {
 					wantsToHuntMonsterFactor = -50;
 				}
 				break;
 			case "FlyingLookout":
-				if ( (targetKey != "chVal") || gC(targetKey).saList.includes("baHypnoticGlance") ) {
+				if ( (targetKey != "chVal") || gC(targetKey).getSaList().includes("baHypnoticGlance") ) {
 					wantsToHuntMonsterFactor = -50;
 				}
 				break;
 			case "OppressiveYoke":
-				if ( (targetKey != "chClaw" && targetKey != "chAte") || gC(targetKey).saList.includes("baEtherealChains") ) {
+				if ( (targetKey != "chClaw" && targetKey != "chAte") || gC(targetKey).getSaList().includes("baEtherealChains") ) {
 					wantsToHuntMonsterFactor = -50;
 				}
 				break;
@@ -1702,83 +1832,172 @@ missionChoice.prototype.toJSON = function() {
 
 // Other AI functions
 window.activeNPCsDeclareRivalries = function() {
-	var chosenRival = "";
-	var activeChars = getRandomizedActiveSimulationCharactersArray();
-	activeChars = purgeGuestsNotAtTemple(activeChars);
-	var activeNPCs = arrayMinusA(activeChars,"chPlayerCharacter"); // All active chars minus player are active NPCs
-	
-	for ( var npc of activeNPCs ) {
-		chosenRival = "";
-		var potentialValidRivals = arrayMinusA(activeChars,npc); // All active chars minus self must be checked as valid rivals
-		var validRivals = [];
-		for ( var pvr of potentialValidRivals ) {
-			if ( isDeclaringRivalryPossible(npc,pvr) ) {
-				validRivals.push(pvr);
+	if ( (getCurrentStoryState() >= storyState.secondLoop) && isCurrentStoryStateInMainLoop() == true ) { // Declaring rivalries must be possible
+		var chosenRival = "";
+		var reasons = [0,0,0,0,0];
+		var activeChars = getRandomizedActiveSimulationCharactersArray();
+		activeChars = purgeGuestsNotAtTemple(activeChars);
+		var activeNPCs = arrayMinusA(activeChars,"chPlayerCharacter"); // All active chars minus player are active NPCs
+		
+		for ( var npc of activeNPCs ) {
+			chosenRival = "";
+			var potentialValidRivals = arrayMinusA(activeChars,npc); // All active chars minus self must be checked as valid rivals
+			var validRivals = [];
+			for ( var pvr of potentialValidRivals ) {
+				if ( isDeclaringRivalryPossible(npc,pvr) ) {
+					validRivals.push(pvr);
+				}
 			}
-		}
-		if ( validRivals.length > 0 ) {
-			var scoredRivalsList = []; // [[rival,score],(...)]
-			// Social targets, merit, infamy, character values, isACandidate
-			var actorBaseScore = (getCharsDrivePercent(npc,"dAmbition") * 1.5 + getCharsDrivePercent(npc,"dDomination") * 1.5 + getCharsDrivePercent(npc,"dImprovement") * 1 - getCharsDrivePercent(npc,"dCooperation") * 2 - getCharsDrivePercent(npc,"dLove") * 1) * 40;
-			if ( (actorBaseScore + limitedRandomInt(100)) > 75 ) {
-				for ( var vr of validRivals ) {
-					// Score each valid rival
-					var score = 0;
-						// Social targets
-					if ( gC(npc).socialAi.allyTs.includes(vr) ) { score -= 50; }
-					if ( gC(npc).socialAi.loveTs.includes(vr) ) { score -= 100; }
-					if ( gC(npc).socialAi.covetTs.includes(vr) ) { score += 10; }
-					if ( gC(npc).socialAi.conquestTs.includes(vr) ) { score += 40; }
-					if ( gC(npc).socialAi.rivalTs.includes(vr) ) { score += 100; }
-						// Merit
-					if ( getCandidatesKeysArray().includes(npc) && getCandidatesKeysArray().includes(vr) ) {
-						var meritDifference = gC(vr).merit - gC(npc).merit;
-						if ( meritDifference > 0 ) {
-							score += meritDifference * (1 + (getCharsDrivePercent(npc,"dAmbition") - 0.16) * 5);
+			if ( validRivals.length > 0 ) {
+				var scoredRivalsList = []; // [[rival,score],(...)]
+				// Social targets, merit, infamy, character values, isACandidate
+				var actorBaseScore = (getCharsDrivePercent(npc,"dAmbition") * 1.5 + getCharsDrivePercent(npc,"dDomination") * 1.5 + getCharsDrivePercent(npc,"dImprovement") * 0.5 - getCharsDrivePercent(npc,"dCooperation") * 1.5 - getCharsDrivePercent(npc,"dLove") * 0.5) * 40;
+				if ( (actorBaseScore + limitedRandomInt(100)) > 75 ) {
+					for ( var vr of validRivals ) {
+						// Score each valid rival
+						var score = 0;
+						var meritScore = 0;
+						var infamyScore = 0;
+						var relScore = 0;
+						var statsScore = 0;
+						var targets = [];
+							// Social targets
+						if ( gC(npc).socialAi.allyTs.includes(vr) ) { score -= 50; }
+						if ( gC(npc).socialAi.loveTs.includes(vr) ) { score -= 100; }
+						if ( gC(npc).socialAi.covetTs.includes(vr) ) { score += 10; targets.push("covet"); }
+						if ( gC(npc).socialAi.conquestTs.includes(vr) ) { score += 40; targets.push("conquest"); }
+						if ( gC(npc).socialAi.rivalTs.includes(vr) ) { score += 100; targets.push("rival"); }
+							// Merit
+						if ( getCandidatesKeysArray().includes(npc) && getCandidatesKeysArray().includes(vr) ) {
+							var meritDifference = gC(vr).merit - gC(npc).merit;
+							if ( meritDifference > ( gC(npc).merit * 0.9 + 9 ) ) { meritDifference = gC(npc).merit * 0.9 + 9; }
+							if ( meritDifference > 0 ) {
+								meritScore = meritDifference * (1 + (getCharsDrivePercent(npc,"dAmbition") - 0.16) * 5);
+								score += meritScore;
+							}
+						}
+							// Infamy
+						var extraInfamy = gC(vr).infamy - gC(npc).infamy;
+						if ( extraInfamy > 0 ) {
+							infamyScore = extraInfamy * getInfluenceEffectWithDrives(npc,2,["dCooperation","dLove"],["dDomination"]);
+							score += infamyScore;
+						}
+							// Relationships	
+						relScore += (rLvlAbt(npc,vr,"rivalry") + rLvlAbt(npc,vr,"enmity")) * getInfluenceEffectWithDrives(npc,2,["dDomination"],["dCooperation"])
+							   - (rLvlAbt(npc,vr,"friendship") + rLvlAbt(npc,vr,"romance")) * getInfluenceEffectWithDrives(npc,2,["dLove","dCooperation"],["dAmbition","dDomination"]);
+						score += relScore;
+							// Stats difference
+						var statsDifference = Math.abs(quantifyCharacterStrength(npc) - 9 - quantifyCharacterStrength(vr));
+						statsScore = (statsDifference/4.5);
+						if ( statsScore > 0 ) {
+							score -= statsScore;
+						}
+						
+						// The jump from rival target to rival as special relationship should only be made if there are other good reasons
+						if ( targets.includes("rival") && score < 105 ) { score -= 100; } 
+						
+							// Randomizer
+						if ( score > 0 ) {
+							score += score*0.35 + limitedRandomInt(score*1.65);
+						}
+						
+						scoredRivalsList.push([vr,score,[meritScore,infamyScore,relScore,statsScore,targets]]);
+					}
+					// Choose highest rated potential rival
+					var highestScore = 5 + limitedRandomInt(5);
+					for ( var rd of scoredRivalsList ) {
+						if ( rd[1] >= highestScore ) {
+							highestScore = rd[1];
+							chosenRival = rd[0]
+							reasons = rd[2];
 						}
 					}
-						// Infamy
-					var extraInfamy = gC(vr).infamy - gC(npc).infamy;
-					if ( extraInfamy > 0 ) {
-						score += extraInfamy * getInfluenceEffectWithDrives(npc,2,["dCooperation","dLove"],["dDomination"]);
-					}
-						// Relationships	
-					score += (rLvlAbt(npc,vr,"rivalry") + rLvlAbt(npc,vr,"enmity")) * getInfluenceEffectWithDrives(npc,2,["dDomination"],["dCooperation"])
-						   - (rLvlAbt(npc,vr,"friendship") + rLvlAbt(npc,vr,"romance")) * getInfluenceEffectWithDrives(npc,2,["dLove","dCooperation"],["dAmbition","dDomination"]);
-						// Stats difference
-					var statsDifference = Math.abs(quantifyCharacterStrength(npc) - 9 - quantifyCharacterStrength(vr));
-					score -= (statsDifference/4.5) * getInfluenceEffectWithDrives(npc,2,["dImprovement"],["dDomination"]);
-						// Randomizer
-					if ( score > 0 ) {
-						score += limitedRandomInt(score*2);
-					}
-					scoredRivalsList.push([vr,score]);
-				}
-				// Choose highest rated potential rival
-				var highestScore = 1;
-				for ( var rd of scoredRivalsList ) {
-					if ( rd[1] >= highestScore ) {
-						highestScore = rd[1];
-						chosenRival = rd[0]
-					}
 				}
 			}
-		}
-		if ( chosenRival != "" ) {
-			// Create rivalry and initialize it
-			declareRivalry(npc,chosenRival);
-			// State.variables.compass.setMapMessage(gC(unfollowingChar).getFormattedName() + " stopped following " + gC(unfollowedChar).getFormattedName() + ".");
+			if ( chosenRival != "" ) {
+				// Create rivalry and initialize it
+				declareRivalry(npc,chosenRival,reasons);
+			}
 		}
 	}
+}
+
+window.createRivalryDeclarationMessage = function(actor,target,reasons) {
+	// Reasons = [meritScore,infamyScore,relScore,statsScore,targets]
+		// Choose most relevant reason for declaration
+	var merit = reasons[0];
+	if ( merit < 0 ) { merit = 0; }
+	var infamy = reasons[1];
+	if ( infamy < 0 ) { infamy = 0; }
+	var relations = reasons[2];
+	if ( relations < 0 ) { relations = 0; }
+	var covet = 0;
+	var conquest = 0;
+	if ( reasons[4].includes("covet") && reasons[4].includes("rival") == false ) {
+		covet = 10;
+	}
+	if ( reasons[4].includes("conquest") && reasons[4].includes("rival") == false ) {
+		conquest = 40;
+	} else if ( reasons[4].includes("conquest") ) {
+		conquest = 20;
+	}
 	
+	var wList = [];
+	for ( var vl of [["merit",merit],["infamy",infamy],["relations",relations],["covet",covet],["conquest",conquest]] ) {
+		wList.push(new weightedElement(vl[0],vl[1]));
+	}
 	
+	var chosenReason = randomFromWeightedListPercentThreshold(wList,0.5); // randomFromWeightedListPercentThreshold(wList,0.5);
+
+		// Choose declaration
+	var dialogue = "";	
+	if ( chosenReason == "merit" ) {
+		dialogue = chooseDialogFromListWithoutFormat(setup.dialogDB.rdMeritDialogs,actor,target,"","");
+	} else if ( chosenReason == "infamy" ) {
+		dialogue = chooseDialogFromListWithoutFormat(setup.dialogDB.rdInfamyDialogs,actor,target,"","");
+	} else if ( chosenReason == "relations" ) {
+		dialogue = chooseDialogFromListWithoutFormat(setup.dialogDB.rdDislikeDialogs,actor,target,"","");
+	} else if ( chosenReason == "covet" ) {
+		dialogue = chooseDialogFromListWithoutFormat(setup.dialogDB.rdCovetDialogs,actor,target,"","");
+	} else if ( chosenReason == "conquest" ) {
+		dialogue = chooseDialogFromListWithoutFormat(setup.dialogDB.rdConquestDialogs,actor,target,"","");
+	} else {
+		// Weighted list failed somehow
+	}
+	dialogue = '//' + colorText(('"' + dialogue + '"'),gC(actor).speechColor) + '//';
+	if ( chosenReason == "merit" ) {
+		dialogue += " (Desires higher merit)";
+	} else if ( chosenReason == "infamy" ) {
+		dialogue += " (Wary of high infamy)";
+	} else if ( chosenReason == "relations" ) {
+		dialogue += " (Blatant dislike)";
+	} else if ( chosenReason == "covet" ) {
+		dialogue += " (Trouble to control own lust)";
+	} else if ( chosenReason == "conquest" ) {
+		dialogue += " (Desires to dominate)";
+	} else {
+		// Weighted list failed somehow
+	}
+	
+	return dialogue;
 }
 
 // Auxiliars
 
+window.getCharsBaseStatsSum = function(charKey) {
+	var str = 0;
+	for ( var cStat of getStatNamesArray() ) {
+		str += gC(charKey)[cStat].value;
+	}
+	return str;
+}
+window.getCharsAverageStat = function(charKey) {
+	var averageSt = getCharsBaseStatsSum(charKey) / 9;
+	return averageSt;
+}
 window.setTrainingGoals = function(charKey) {
 	// Get average stat
-	var averageStat = quantifyCharacterStats(charKey) / 9;
+	var averageStat = getCharsAverageStat(charKey);
 	// Create string at globalAi
 	gC(charKey).globalAi.statGoals = [];
 	// Link affinity to stat goal

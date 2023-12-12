@@ -2,12 +2,6 @@
 
 window.applyRequiredPatches = function() {
 	genericPatches();
-	
-	v036Patches();
-	v037Patches();
-	v0310Patches();
-	v0316Patches();
-	v0318GeneralPatches();
 }
 
 window.genericPatches = function() {
@@ -117,3 +111,16 @@ window.v0323GeneralPatches = function() {
 	charactersLearnSceneActions(["chPlayerCharacter","chNash","chClaw","chVal","chMir","chAte"],["encInit"]);
 	charactersLearnSceneActions(getGuestsList(),["encInit"]);
 }
+
+window.v0325GeneralPatches = function() {
+	State.variables.eventsCalendar.setFinishEventButton("Continue","setNoPasChars()");
+	if ( State.variables.storyState == undefined ) {
+		State.variables.storyState = storyState.firstLoop;
+	}
+	if ( State.variables.compass.hasOwnProperty("debugFinishedEventInfo") ) {
+		delete State.variables.compass.debugFinishedEventInfo;
+	}
+}
+
+
+

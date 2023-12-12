@@ -40,7 +40,7 @@ PersonalRoom.prototype.formatRoomText = function() {
 				this.roomText += this.getButtonActions() + "\n";
 				this.roomText += this.getButtonSetSexPreferences() + this.getButtonCustomizeMood() + "\n";
 				this.roomText += this.getButtonComparisonChart() + "\n"
-				if ( State.variables.chPlayerCharacter.studiedScrolls.length > 0 ) {
+				if ( State.variables.chPlayerCharacter.getStudiedScrolls().length > 0 ) {
 					this.roomText += this.getButtonReadScrolls() + "\n";
 				}
 				this.roomText += "\n" + this.getButtonSettings() + '\n\n'; // Link to settings
@@ -51,7 +51,7 @@ PersonalRoom.prototype.formatRoomText = function() {
 								   + "\n" + getButtonAnTagBlack()
 								   + "\n" + getButtonAnTagGray();
 				}
-				this.roomText += getHotfixButton();
+				//this.roomText += getHotfixButton();
 				break;
 			case "charInfo": 																	// Char info screen
 				this.roomText  = "" + this.getButtonBackToMain() + "\n";
@@ -121,7 +121,7 @@ PersonalRoom.prototype.getButtonsCharInfo = function() {
 				bText += "State.variables.personalRoom.roomState = 'charInfo';\n";
 				bText += "State.variables.personalRoom.checkedCharacter = '" + character + "';";
 				//bText += "$rightUiBar.stow()";
-				bText += "<</s" + "cript>><</l" + "ink>> " + gC(character).icon();
+				bText += "<</s" + "cript>><</l" + "ink>> " + gC(character).getIcon();
 				if ( gRelTypeAb(character,"chPlayerCharacter") ) {
 					bText += " (" + getRelTypeAbr(character,"chPlayerCharacter") + ")";
 				}
@@ -172,6 +172,7 @@ PersonalRoom.prototype.getButtonActions = function() {
 PersonalRoom.prototype.getButtonCustomizeMood = function() {
 		var bText = "<<l" + "ink [[Customize Player Mood|Personal Room]]>><<s" + "cript>>";
 			bText += "State.variables.personalRoom.roomState = 'customizeMood';\n";
+			bText += "State.variables.StVars.check1 = State.variables.playerCustomMoods;\n";
 			bText += "<</s" + "cript>><</l" + "ink>>";
 		return bText;
 	}
@@ -450,7 +451,7 @@ PersonalRoom.prototype.getCharacterInfo = function(character) {
 	
 PersonalRoom.prototype.getReReadScrollsPassage = function() {
 		var passageText = "__Studied scrolls__:\n";
-		for ( var scr of gC("chPlayerCharacter").studiedScrolls ) {
+		for ( var scr of gC("chPlayerCharacter").getStudiedScrolls() ) {
 			passageText += "- " + this.getButtonReadScroll(scr) + "\n";
 		}
 		passageText += "\n" + this.getButtonBackToMain();
@@ -756,11 +757,14 @@ PersonalRoom.prototype.endDayEffects = function() {
 PersonalRoom.prototype.endDayRelationMoodEffects = function() {
 		var relTypesToFinish = [];
 		var i = 0;
+		/*
 		for ( var mood of ["friendly","intimate","flirty","aroused","dominant","submissive","bored","angry"] ) {
 			gC("chPlayerCharacter").baseMood[mood] = State.variables.playerCustomMoods[i];
 			i++;
 		}
+		*/
 		for ( var character of getActiveSimulationCharactersArray() ) {
+			var charNotifications = "";
 			// Relations
 			for ( var rel in gC(character).relations ) {
 				if ( gC(character).relations[rel] instanceof Relation ) {
@@ -769,16 +773,16 @@ PersonalRoom.prototype.endDayRelationMoodEffects = function() {
 					if ( gC(character).relations[rel].processNewDay() ) {
 						// Notify relation change
 						if ( character == "chPlayerCharacter" ) {
-							this.newDayInfo += "Your opinion of " + gC(iRelation.target).name + " is changing.\n";
+							charNotifications += "Your opinion of " + gC(iRelation.target).name + " is changing.\n";
 						}
 						else if ( iRelation.target == "chPlayerCharacter" ) {
-							this.newDayInfo += gC(character).name + "'s opinion of you is changing.\n";
+							charNotifications += gC(character).name + "'s opinion of you is changing.\n";
 						}
 					}
 					var rType = iRelation.relType
 					if ( rType ) { // Special relationship
 						// Effect
-						this.newDayInfo += rType.dailyEffect() + "\n";
+						charNotifications += rType.dailyEffect() + "\n";
 						// Rest days
 						if ( rType.persistence == "temporary" ) {
 							rType.days--;
@@ -789,6 +793,9 @@ PersonalRoom.prototype.endDayRelationMoodEffects = function() {
 						}
 					}
 				}
+			}
+			if ( charNotifications != "" ) {
+				this.newDayInfo += gC(character).getFormattedName() + "\n" + charNotifications;
 			}
 			// Mood
 			gC(character).restoreMood();
@@ -949,14 +956,14 @@ window.isCharGuest = function(charKey) {
 }
 window.isCharAtTemple = function(charKey) {
 	var flagAtTemple = true;
-	if ( gC(charKey).hasOwnProperty("isAtTemple") ) {
+	if ( State.variables[charKey] == undefined ) {
+		flagAtTemple = false; // Obviously not at Temple
+	} else if ( gC(charKey).hasOwnProperty("isAtTemple") ) {
 		if ( gC(charKey).isAtTemple ) {
 			// Is at Temple
 		} else {
 			flagAtTemple = false;
 		}
-	} else {
-		// Is at Temple
 	}
 	return flagAtTemple;
 }
@@ -997,8 +1004,12 @@ window.guestsEnterAndLeavePassionTemple = function() {
 							guestLeavesTemple(ch);
 						}
 					} else {
-						if ( (-60 + gC(ch).daysOutOfTemple * 15 + limitedRandomInt(100)) >= 100 ) {
+						if ( State.variables.daycycle.month == 2 && State.variables.daycycle.day == 10 ) {
 							guestEntersTemple(ch);
+						} else if ( State.variables.daycycle.month > 2 || State.variables.daycycle.month == 2 && State.variables.daycycle.day > 10 ) {
+							if ( (-60 + gC(ch).daysOutOfTemple * 15 + limitedRandomInt(100)) >= 100 ) {
+								guestEntersTemple(ch);
+							}
 						}
 					}
 					break;
@@ -1126,7 +1137,6 @@ window.getStnChAChBResults = function(chA,chB,chAintention,chBintention) {
 			if ( dsProportion > 0.5 ) { resistedSex = true; }
 		}
 	}
-	// To Do
 	switch(chAintention) {
 		case "snuggle":
 			switch(chBintention) {
@@ -1772,7 +1782,7 @@ window.getActionsWindow = function() {
 	// Collect actions
 	var actionsList = [];
 	for ( var cK of getActiveSimulationCharactersArray() ) {
-		for ( var act of gC(cK).saList ) {
+		for ( var act of gC(cK).getSaList() ) {
 			if ( actionsList.includes(act) == false ) {
 				actionsList.push(act);
 			}
@@ -1792,7 +1802,7 @@ window.getActionsWindow = function() {
 			wText += colorText(" Btl","coral");
 		}
 		// Learned icon
-		if ( gC("chPlayerCharacter").saList.includes(act) ) {
+		if ( gC("chPlayerCharacter").getSaList().includes(act) ) {
 			wText += colorText(" Learned","yellowgreen");
 		}
 		if ( setup.saList[act].tags.includes("ss") ) {
@@ -1890,12 +1900,17 @@ window.attemptEquipSelectedItem = function() {
 window.getCustomizeMoodWindow = function() {
 	var wText = "__Customize Mood Menu__\nSet each mood's desired value.\nYour character's mood will gradually move towards your set values.\nUse only positive integer numbers.\n\nCurrent maximum modifier: " + getCharsMaximumMoodModifier("chPlayerCharacter").toFixed(1) + "\n\n";
 	var moodsList = [ "Friendly","Intimate","Flirty","Aroused","Dominant","Submissive","Bored","Angry" ];
+	var moodNames = ["friendly","intimate","flirty","aroused","dominant","submissive","bored","angry"];
 	var currentMoodMods = State.variables.playerCustomMoods;
 	var i = 0;
+		// Selected moods must be stored at StVars.check1, checked if valid, compared to current custom moods and update if possible in updatePlayerCustomMoods()
 	for ( var mood of moodsList ) {
-		wText += mood + ": " + '<<textbox "$playerCustomMoods[' + i + ']" "' + currentMoodMods[i] + '">>\n';
+		wText += mood + ": " + '<<textbox "$StVars.check1[' + i + ']" ' + currentMoodMods[i] + '>> Current final: ' + gC("chPlayerCharacter").baseMood[moodNames[i]] + '\n';
 		i++;
 	}
+	
+	wText += "\nYour final base mood may be affected by other factors, such as equipped items or altered states.\n";
+	
 	wText += "\n<<l" + "ink [[Update|Personal Room]]>><<s" + "cript>>"
 			+ "updatePlayerCustomMoods();\n"
 			+ "<</s" + "cript>><</l" + "ink>>\n";
@@ -1906,19 +1921,24 @@ window.getCustomizeMoodWindow = function() {
 	return wText;
 }
 window.updatePlayerCustomMoods = function() {
+	var moodNames = ["friendly","intimate","flirty","aroused","dominant","submissive","bored","angry"];
 	var maxMoodMod = getCharsMaximumMoodModifier("chPlayerCharacter");
 	var currentMood = 0;
 	var i = 0;
-	for ( var mood of State.variables.playerCustomMoods ) {
-		if ( isNaN(mood) ) {
-			State.variables.playerCustomMoods[i] = 0;
-		} else if ( mood <= 0 ) {
-			State.variables.playerCustomMoods[i] = 0;
-		} else if ( mood >= maxMoodMod ) {
-			State.variables.playerCustomMoods[i] = maxMoodMod;
+	for ( var m of State.variables.StVars.check1 ) {
+		var mood = parseInt(m);
+		if ( Number.isInteger(parseInt(mood)) ) {
+			if ( mood < 0 ) {
+				mood = 0;
+			} else if ( mood > maxMoodMod ) {
+				mood = maxMoodMod;
+			}
+			gC("chPlayerCharacter").baseMood[moodNames[i]] += (mood - State.variables.playerCustomMoods[i]);
+			State.variables.playerCustomMoods[i] = mood;
 		}
 		i++;
 	}
+	State.variables.StVars.check1 = State.variables.playerCustomMoods;
 }
 
 // Virginities
@@ -1927,19 +1947,29 @@ window.getCharsVirginityChart = function(charKey) {
 	for ( var it in gC(charKey).virginities ) {
 		if ( gC(charKey).virginities[it] instanceof Virginity ) {
 			var virginity = gC(charKey).virginities[it];
-			if ( virginity.taken && virginity.enabled && gC(charKey).body.hasOwnProperty(virginity.type) ) {
-				if ( cText != "" ) { cText += "\n"; }
-				cText += `${virginity.name}: `;
-				switch(virginity.ctxt) {
-					case "bs":
-						cText += `Taken by ${virginity.takerName} during battle.`;
-						break;
-					case "forced":
-						cText += `Taken by ${virginity.takerName}.`
-						break;
-					case "given":
-						cText += `Given to ${virginity.takerName}.`
-						break;
+			if ( virginity.type == "fSex" || (virginity.type == "tribbing" && gC(charKey).body.hasOwnProperty("pussy") ) || 
+			     ( virginity.type == "pussy" && gC(charKey).body.hasOwnProperty("pussy") ) || ( virginity.type == "dick" && gC(charKey).body.hasOwnProperty("dick") ) ||
+				 ( virginity.type == "anus" && gC(charKey).body.hasOwnProperty("anus") ) || ( virginity.type == "fKiss" && gC(charKey).body.hasOwnProperty("mouth") ) ) {
+				if ( virginity.taken && virginity.enabled ) {
+					if ( cText != "" ) { cText += "\n"; }
+					cText += `${virginity.name}: `;
+					switch(virginity.ctxt) {
+						case "bs":
+							cText += colorText(`Taken by ${virginity.takerName} during battle`,"red");
+							break;
+						case "forced":
+							cText += colorText(`Taken by ${virginity.takerName}`,"purple");
+							break;
+						case "given":
+							cText += colorText(`Given to ${virginity.takerName}`,"lightcoral");
+							break;
+						case "storyGiven":
+							cText += colorText(`Given to ${virginity.takerName}`,"lightcoral");
+							break;
+					}
+				} else if ( virginity.taken == false && virginity.enabled ) {
+					if ( cText != "" ) { cText += "\n"; }
+					cText += `${virginity.name}: ` + colorText("Untaken","limegreen");
 				}
 			}
 		}
@@ -1950,9 +1980,23 @@ window.getCharsVirginityChart = function(charKey) {
 // Merchants
 window.spawnMerchants = function() {
 	for ( var merchantID of State.variables.enabledMerchants ) {
-		if ( State.variables.currentMerchants.includes(merchantID) == false ) {
-			if ( limitedRandomInt(100) <= getMerchantDataByID(merchantID).chance ) {
-				State.variables.currentMerchants.push(merchantID);
+		// Special conditions for specific merchants
+		var specialCheck = false;
+		if ( merchantID == merchantType.MONSTER_ACTIONS ) { // Special Artume check
+			if ( State.variables.chArt != undefined ) {
+				specialCheck = true;
+				if ( gC("chArt").isAtTemple ) {
+					State.variables.currentMerchants.push(merchantID);
+				}
+			} else {
+				
+			}
+		}
+		if ( specialCheck == false ) {
+			if ( State.variables.currentMerchants.includes(merchantID) == false ) {
+				if ( limitedRandomInt(100) <= getMerchantDataByID(merchantID).chance ) {
+					State.variables.currentMerchants.push(merchantID);
+				}
 			}
 		}
 	}
@@ -1972,12 +2016,20 @@ window.getMerchantsWindow = function() {
 	// Print merchants
 	for ( var merchantID of State.variables.currentMerchants ) {
 		var merData = getMerchantDataByID(merchantID);
-		wText += "__" + merData.name + "__:\n"
-			   + '//' + merData.getDescription() + '//\n';
-			// Print buy item buttons
-				for ( var itemType of merData.getSoldItems() ) {
-					wText += "- " + getBuyItemButtonByID(itemType) + "\n";
-				}
+		if ( isSpecialMerchant(merchantID) ) {
+			// Special merchant
+			wText += "__" + merData.name + "__:\n"
+				   + '//' + merData.getDescription() + '//\n';
+				// Print buy special merchandise
+			wText += merData.displaySpecialMerchandise("chPlayerCharacter") + "\n";
+		} else {
+			wText += "__" + merData.name + "__:\n"
+				   + '//' + merData.getDescription() + '//\n';
+				// Print buy item buttons
+					for ( var itemType of merData.getSoldItems() ) {
+						wText += "- " + getBuyItemButtonByID(itemType) + "\n";
+					}
+		}
 			// New line
 		wText += "\n";
 	}
@@ -2064,19 +2116,58 @@ window.getBuyableBondageIDs = function(buyableItems) {
 	}
 	return bondagesList;
 }
+
+window.npcEquipsBestOwnedWeapon = function(cK) {
+	var bestOwnedWeapon = -1;
+	var bestWeaponScore = -1;
+	var ownedWeapons = [];
+	var ownedWeaponsScores = [];
+	for ( var eq of State.variables.equipmentList ) { // Find all character's weapons
+		if ( eq.owner == cK && getEquipDataById(eq.id).slot == "weapon" ) {
+			ownedWeapons.push(eq.id);
+			var score = npcValuesWeapon(cK,getEquipDataById(eq.id)); // Value weapon
+			if ( eq.equippedOn == cK ) { score *= 1.05; }
+			ownedWeaponsScores.push(score); 
+		}
+	}
+	var i = 0;
+	if ( ownedWeapons.length > 0 ) { // Find most valued weapon
+		for ( var sc of ownedWeaponsScores ) {
+			if ( sc > bestWeaponScore ) {
+				bestWeaponScore = sc;
+				bestOwnedWeapon = ownedWeapons[i];
+			}
+			i++;
+		}
+	}
+	if ( i != -1 && gC(cK).weaponID != bestOwnedWeapon ) { // Equip weapon if required
+		unequipObject(gC(cK).weaponID);
+		equipObjectOnWearer(bestOwnedWeapon,cK,-1);
+	}
+}
+
+window.npcsSaveThisMuchMoney = function() {
+		// Sets the amount of money NPCs try to maintain saved at any given stage of the game
+	var moneyToSave = 2500;
+	if ( State.variables.storyState > storyState.firstLoop ) {
+		moneyToSave = 5000;
+	}
+	return moneyToSave;
+}
 window.npcsBuyItems = function() {
 	var availableItemsIDs = getAvailableItemsIDs();
 	for ( var character of getActiveSimulationCharactersArray() ) {
 		var buyableItemsIDs = excludeItemsByPrice(availableItemsIDs,gC(character).money);
-		if ( character != "chPlayerCharacter" ) {
+		if ( character != "chPlayerCharacter" && isCharAtTemple(character) == true && gC(character).money >= npcsSaveThisMuchMoney() ) { // Ensure NPC is at Temple and saving money
 			// Weapons
+			npcEquipsBestOwnedWeapon(character);
 			var currentWeaponValue = 0;
 			var buyableWeaponsList = getBuyableWeaponsIDs(buyableItemsIDs);
 			if ( buyableWeaponsList.length > 0 ) { // Assign values to buyable weapons
 				var bestCandidateWeaponValue = -1;
 				var bestCandidateWeaponID = -1;
 				if ( gC(character).weaponID != -1 ) {
-					currentWeaponValue = npcValuesWeapon(character,getEquipDataById(gC(character).weaponID)) * 1.3;
+					currentWeaponValue = npcValuesWeapon(character,getEquipDataById(gC(character).weaponID)) * 1.15; // Extra weight to prevent character from buying marginally better equipment
 				}
 				// Find best buyable weapon
 				for ( var buyableWeapon of buyableWeaponsList ) {
@@ -2097,31 +2188,76 @@ window.npcsBuyItems = function() {
 					}
 				}
 			}
-			// Bondage
-			var buyableBondageList = getBuyableBondageIDs(buyableItemsIDs);
-			if ( buyableBondageList.length > 0 ) {
-				var bondageToBuyList = []; // List of lists: [BondageId,BondageScore]
-				var bestBondageScore = -1;
-				for ( var buyableBondage of buyableBondageList ) {
-					var newString = [buyableBondage];
-					
-					newString.push(npcValuesBondage(character,buyableBondage));
-					bondageToBuyList.push(newString);
-				}
-				for ( var buyableBondage of bondageToBuyList ) {
-					if ( buyableBondage[1] > bestBondageScore ) {
-						bestBondageScore = buyableBondage[1];
+			if ( gC(character).money >= npcsSaveThisMuchMoney() ) { // Ensure NPC is saving money
+				var purActSets = [];
+				for ( var merchantID of getActionsMerchantsIDs() ) { // Get merchants offering actions sets and their merchandise
+					if ( State.variables.currentMerchants.includes(merchantID) ) {
+						for ( var pasID of setup.merchantDataList[merchantID].offerSpecialMerchandise(character) ) {
+							purActSets.push(pasID);
+						}
 					}
 				}
-				var newBondageToBuyList = []; // List of bondage IDs with best score, one of these will be chosen at random
-				for ( var buyableBondage of bondageToBuyList ) {
-					if ( buyableBondage[1] == bestBondageScore ) {
-						newBondageToBuyList.push(buyableBondage[0]);
+				
+				var validSets = [];
+				for ( var pas of purActSets ) { // Check price and missing actions
+					var set = setup.purActionList[pas];
+					if ( gC(character).money >= set.price && doesCharMissActionsFromSet(character,set.key) ) {
+						if ( set.npcValuesSet(character) > 0 ) {
+							validSets.push(pas);
+						}
 					}
 				}
-				if ( newBondageToBuyList.length > 0 ) {
-					var idToBuy = randomFromList(newBondageToBuyList); // Select item out of those with best score
-					charBuysItem(character,idToBuy); // Buy selected item
+				if ( validSets.length > 0 ) { // Finds action of highest value
+					var highestValue = -1;
+					var highestValueIt = -1;
+					var i = 0;
+					var setValues = [];
+					for ( var pas of validSets ) {
+						var v = setup.purActionList[pas].npcValuesSet(character);
+						setValues.push(v);
+						if ( v > highestValue ) {
+							highestValue = v;
+							highestValueIt = i;
+						}
+						i++;
+					}
+					if ( highestValue > 0 ) {
+						// Found set of value high enough: buy buy buy
+						var merchant = setup.merchantDataList[setup.purActionList[validSets[highestValueIt]].getMerchantID()];
+						charBuysActionSet(validSets[highestValueIt],character,merchant.charKey,merchant.getCut());
+						// setup.purActionList[validSets[highestValueIt]]
+					}
+				}
+			}	
+			if ( gC(character).money >= npcsSaveThisMuchMoney() ) { // Ensure NPC is saving money
+				// Bondage
+				var buyableBondageList = getBuyableBondageIDs(buyableItemsIDs);
+				if ( buyableBondageList.length > 0 ) {
+					var bondageToBuyList = []; // List of lists: [BondageId,BondageScore]
+					var bestBondageScore = -1;
+					for ( var buyableBondage of buyableBondageList ) {
+						var newString = [buyableBondage];
+						
+						newString.push(npcValuesBondage(character,buyableBondage));
+						bondageToBuyList.push(newString);
+					}
+					for ( var buyableBondage of bondageToBuyList ) {
+						if ( buyableBondage[1] > bestBondageScore ) {
+							bestBondageScore = buyableBondage[1];
+						}
+					}
+					if ( bestBondageScore > 0 ) { // Don't buy bondage if best score is below zero.
+						var newBondageToBuyList = []; // List of bondage IDs with best score, one of these will be chosen at random
+						for ( var buyableBondage of bondageToBuyList ) {
+							if ( buyableBondage[1] >= bestBondageScore * 0.8 ) {
+								newBondageToBuyList.push(buyableBondage[0]);
+							}
+						}
+						if ( newBondageToBuyList.length > 0 ) {
+							var idToBuy = randomFromList(newBondageToBuyList); // Select item out of those with best score
+							charBuysItem(character,idToBuy); // Buy selected item
+						}
+					}
 				}
 			}
 		}
@@ -2141,7 +2277,7 @@ window.npcsEquipBondage = function() {
 						// Relationship is tutorship, does tutor want to dominate?
 						if ( (getCharsDrivePercent(character,"dDomination") * 2 + getCharsDrivePercent(character,"dAmbition") + getCharsDrivePercent(character,"dPleasure")) < 0.8 ) {
 							flagTryingToDominate = false;
-							if ( (getCharsDrivePercent(character,"dDomination") * 2 + getCharsDrivePercent(character,"dAmbition") + getCharsDrivePercent(character,"dPleasure")) > 0.5 && getItemListEquippableOnChar(subChar,usableBondage).length > 0 ) {
+							if ( (getCharsDrivePercent(character,"dDomination") * 1.5 + getCharsDrivePercent(character,"dAmbition") * 0.5 + getCharsDrivePercent(character,"dPleasure")) >= 0.55 && getItemListEquippableOnChar(subChar,usableBondage).length > 0 ) {
 								// Soft domination
 								var softBondage = findValidSoftBondageOnTargetFromActor(getItemListEquippableOnChar(subChar,usableBondage),subChar,character);
 								if ( softBondage != -1 ) {
@@ -2157,11 +2293,13 @@ window.npcsEquipBondage = function() {
 							// Removed from new active sub chars
 						} else {
 							var chosenBondageId = chooseBestBondageForTargetByActor(getItemListEquippableOnChar(subChar,usableBondage),subChar,character);
-							equipObjectOnWearer(chosenBondageId,subChar,gRelTypeAb(character,subChar).days);
-							if ( subChar == "chPlayerCharacter" ) {
-								State.variables.personalRoom.prMessages += gC(character).getFormattedName() + " has locked " + getEquipDataById(chosenBondageId).name + " on " + gC(subChar).getFormattedName() + ". It will remain locked for as many days as your special relationship is expected to last.\n";
+							if ( chosenBondageId != -1 ) {
+								equipObjectOnWearer(chosenBondageId,subChar,gRelTypeAb(character,subChar).days);
+								if ( subChar == "chPlayerCharacter" ) {
+									State.variables.personalRoom.prMessages += gC(character).getFormattedName() + " has locked " + getEquipDataById(chosenBondageId).name + " on " + gC(subChar).getFormattedName() + ". It will remain locked for as many days as your special relationship is expected to last.\n";
+								}
+								arrayMinusA(usableBondage,chosenBondageId);
 							}
-							arrayMinusA(usableBondage,chosenBondageId);
 							newActiveSubChars.push(subChar);
 						}
 					}

@@ -232,14 +232,14 @@ setup.mapTrainingGrounds.mainLibrary = new RoomInfo(
 );
 setup.mapTrainingGrounds.mainLibrary.getCustomActionsText = function(characters) {
 	var cText = "";
-	if ( ( gC(characters[0]).foundScrolls.length > gC(characters[0]).studiedScrolls.length ) && ( gC(characters[0]).studiedScrollToday == false ) ) {
+	if ( ( decompressScrollsList(gC(characters[0]).foundScrolls).length > decompressScrollsList(gC(characters[0]).studiedScrolls).length ) && ( gC(characters[0]).studiedScrollToday == false ) ) {
 		cText = "Study a scroll<sup><span title='Pick a specific scroll and the characters will study its contents.'>(?)</span></sup> "
 			  + getButtonMapMenuSelectScroll() + "\n";
 	}
 	if ( getScrollsCharMayFind(characters[0]).length < 1 ) {
 		cText += colorText("Locked:","firebrick") + " There aren't any new scrolls for the characters.\n";
 	}
-	if ( gC(characters[0]).foundScrolls.length == gC(characters[0]).studiedScrolls.length ) {
+	if ( decompressScrollsList(gC(characters[0]).foundScrolls).length == decompressScrollsList(gC(characters[0]).studiedScrolls).length ) {
 		cText += colorText("Locked:","firebrick") + " The characters haven't found any new scrolls to study.\n";
 	} else if ( gC(characters[0]).studiedScrollToday ) {
 		cText += colorText("Locked:","firebrick") + " The leading character has already studied a scroll today.\n";
@@ -545,31 +545,24 @@ setup.mapTrainingGrounds.starsTower = new RoomInfo(
 	null, // getActions
 	[191,234]
 );
+
 setup.mapTrainingGrounds.starsTower.getCustomActionsText = function(characters) {
 	var cText = "";
-	State.variables.logL1.push(1);
 	if ( State.variables.StVarsList.includes("go0") && quantifyCharacterVacuumStrength("chPlayerCharacter") < (16*9) ) {
 		cText = getButtonMapMenuRespec() + "<sup><span title='You will have a one-time opportunity to switch the values of three pairs of stats.'>(?)</span></sup> " + "\n";
 	}
-	State.variables.logL1.push(2);
 	var eventCardsAvailable = false; // There are event info cards available for clairvoyance
 	for ( var se in setup.eventsMetaInfo ) {
-		State.variables.logL1.push(setup.eventsMetaInfo[se].key);
 		if ( setup.eventsMetaInfo[se] instanceof eventMetaInfo ) { // Is an eventMetaInfo object
-		State.variables.logL1.push("a");
 			if ( setup.eventsMetaInfo[se].validClairvoyanceCard && setup.eventsMetaInfo[se].clairvoyanceData != null ) { // Has a valid clairvoyance card
-			State.variables.logL1.push("b");
 				if ( State.variables.eventsCalendar.playedStoryEvents.includes(setup.eventsMetaInfo[se].key) == false ) { // Event hasn't been played
-				State.variables.logL1.push("c");
 					if ( setup.eventsMetaInfo[se].clairvoyanceData.reqsToBeShown() ) {
-						State.variables.logL1.push("d");
 						eventCardsAvailable = true;
 					}
 				}
 			}
 		}
 	}
-	State.variables.logL1.push(3);
 	if ( State.variables.daycycle.day > 9 || State.variables.daycycle.month > 1 ) {
 		if ( State.variables.storyState == storyState.secondLoop && State.variables.daycycle.day < 18 && eventCardsAvailable ) {
 			cText = getButtonClairvoyance() + "<sup><span title='The orb might contain hints about the challenges the future holds for you, if you are capable of clawing your way into them.\nTaototh is not here, but he has left the orb of clairvoyance unlocked for all to use.'>(?)</span></sup> " + "\n";
@@ -583,15 +576,34 @@ setup.mapTrainingGrounds.starsTower.getCustomActionsText = function(characters) 
 	} else {
 		cText += colorText("Locked:","firebrick") + " The orb remains pitch-dark. It holds no secrets to show you, yet.\n";
 	}
-	State.variables.logL1.push(4);
+	
 	return cText;
 }
+
+
+
+// Trap room - Characters who have been defeated for the rest of the day are kept here
+setup.mapTrainingGrounds.trapRoom = new RoomInfo(
+	"trapRoom", // Key
+	"Secluded Place", // Title
+	"GleCav/mountain-path-forested.png", // Med Icon
+	"GleCav/mountain-path-forested-sm.png", // Icon
+	"You have been captured by monsters. Try and lay low and you will find your chance to escape.", // Description
+	[ ], // Connections
+	function(characters) {
+		var actions = [ createRestingActionStandard() ];
+		return actions;
+	}, // getActions
+	[0,0]
+);
+
 setup.mapTrainingGrounds.fulfillmentCorridor.combatAllowed = false;
 setup.mapTrainingGrounds.diningHall.combatAllowed = false;
 setup.mapTrainingGrounds.publicBaths.combatAllowed = false;
 setup.mapTrainingGrounds.ambitionCorridor.combatAllowed = false;
 setup.mapTrainingGrounds.storage.combatAllowed = false;
 setup.mapTrainingGrounds.starsTower.combatAllowed = false;
+setup.mapTrainingGrounds.trapRoom.combatAllowed = false;
 
 ////////////////////////////////////////////
 

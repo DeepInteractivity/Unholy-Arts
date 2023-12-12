@@ -5,10 +5,10 @@ window.evasionResults = function(hit,explanation) {
 	this.hit = hit; // True or false
 	this.explanation = explanation; // Text description with brief calculations
 }
-window.calculateEvasion = function(actionType,attacker,target,positiveVariables,negativeVariables,testCalc) { // testCalc is unused, sc.testingActionChances is used instead
+window.calculateEvasion = function(actionKey,actionType,attacker,target,positiveVariables,negativeVariables,testCalc) { // testCalc is unused, sc.testingActionChances is used instead
 	var hit = false;
 	var testResults = false;
-	if ( testCalc != null ) { if ( testCal == true ) { testResults = true; } }
+	if ( testCalc != null ) { if ( testCalc == true ) { testResults = true; } }
 	if ( State.variables.sc.testingActionChances == true ) { testResults = true; }
 	
 	switch ( actionType ) {
@@ -18,8 +18,8 @@ window.calculateEvasion = function(actionType,attacker,target,positiveVariables,
 				var explanation = "Target has no control left. Pounce succeeds!";
 			}
 			else {
-				positiveVariables += gC(attacker).combatAffinities.pounce.strength - gC(attacker).combatAffinities.pounce.frailty;
-				negativeVariables += gC(target).combatAffinities.pounce.resistance - gC(target).combatAffinities.pounce.weakness;
+				positiveVariables += gC(attacker).combatAffinities.pounce.strength - gC(attacker).combatAffinities.pounce.frlt;
+				negativeVariables += gC(target).combatAffinities.pounce.rst - gC(target).combatAffinities.pounce.wkn;
 			}
 			break;
 		case "contact":
@@ -50,17 +50,22 @@ window.calculateEvasion = function(actionType,attacker,target,positiveVariables,
 			break;
 		case "social":
 			positiveVariables += 10;
-			positiveVariables += (gC(attacker).combatAffinities.social.strength - gC(attacker).combatAffinities.social.frailty) / 2;
-			negativeVariables += (gC(target).combatAffinities.social.resistance - gC(target).combatAffinities.social.weakness) / 2;
+			positiveVariables += (gC(attacker).combatAffinities.social.strength - gC(attacker).combatAffinities.social.frlt) / 2;
+			negativeVariables += (gC(target).combatAffinities.social.rst - gC(target).combatAffinities.social.wkn) / 2;
 			break;
 	}
 	
+	if ( setup.saList[actionKey].affinities.includes("weapon") ) {
+		positiveVariables += (gC(attacker).combatAffinities["weapon"].strength * 0.5) - (gC(attacker).combatAffinities["weapon"].frlt * 1);
+		negativeVariables += (gC(target).combatAffinities["weapon"].rst * 0.5) - (gC(target).combatAffinities["weapon"].wkn * 1);
+	}
+		
 	if ( testResults == true ) { // Fake calculation, used for AI
 		var testResults = Math.min(50 + positiveVariables - negativeVariables,100);
 		if ( hit == true ) { testResults = 100; }
 		return testResults;
 	} else if ( hit == false ) { // True calculation
-		var dice = luckedDiceThrow((gC(attacker).luck.getValue() - gC(target).luck.getValue()) * 0.5 ) * 100;
+		var dice = luckedDiceThrow(Math.max((gC(attacker).luck.getValue() - gC(target).luck.getValue()),-40) * 0.5 ) * 100;
 		var total = dice + positiveVariables - negativeVariables;
 		
 		if ( ( total ) >= 50 ) {
@@ -84,8 +89,8 @@ window.calculateAttackEffects = function(attackType,actor,target,attackFlavors,i
 	var powerUp = 0;
 	var powerDown = 0;
 	for ( var flavor of attackFlavors ) {
-		powerUp += gC(actor).combatAffinities[flavor].strength + gC(target).combatAffinities[flavor].weakness;
-		powerDown += gC(actor).combatAffinities[flavor].frailty + gC(target).combatAffinities[flavor].resistance;
+		powerUp += gC(actor).combatAffinities[flavor].strength + gC(target).combatAffinities[flavor].wkn;
+		powerDown += gC(actor).combatAffinities[flavor].frlt + gC(target).combatAffinities[flavor].rst;
 	}
 	var total = initialValue * (( 1 + ( powerUp * 0.01 ) ) / ( 1 + powerDown * 0.01 ));
 	if ( total < 0 ) { total = 0; }
@@ -98,8 +103,8 @@ window.getWeaknessToAttackText = function(attackFlavors,target) {
 	var powerUp = 0;
 	var powerDown = 0;
 	for ( var flavor of attackFlavors ) {
-		powerUp += gC(target).combatAffinities[flavor].weakness;
-		powerDown += gC(target).combatAffinities[flavor].resistance;
+		powerUp += gC(target).combatAffinities[flavor].wkn;
+		powerDown += gC(target).combatAffinities[flavor].rst;
 	}
 	finalWeakness = 1.0 * (1 + ( powerUp * 0.01) ) / ( 1 + powerDown * 0.01 );
 	if ( finalWeakness <= 0.65 ) {
@@ -167,7 +172,7 @@ window.createSaStruggle = function() {
 		attackControl(target,controlDamage);
 		if ( gC(target).control <= 0 ) {
 			// Cancel position
-			State.variables.sc.cancelPosition(target);
+			State.variables.sc.cancelPosition(target,false);
 			// Actor recovers control
 			gC(actor).lostControlTurns = 0;
 			gainControlBack(actor);
@@ -212,9 +217,9 @@ window.createSaBaKissLips = function() {
 	sa.actorBpReqs.push("mouth");
 	sa.targetBpReqs.push("mouth");
 	
-	sa.affinities.push("sex","useMouth","targetMouth");
+	sa.affinities.push("sex");
 	
-	sa.strategyTags.push("targetEnemy","damage","sex","useMouth","targetMouth");
+	sa.strategyTags.push("targetEnemy","damage","sex");
 	sa.actorStatWeights = [0,100,0,0,0,0,0,0,0];
 	sa.targetStatWeights = [0,0,0,0,0,0,0,0,0];
 	sa.statWeightDivider = 100;
@@ -230,7 +235,7 @@ window.createSaBaKissLips = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"agility") * 0.25 + gCstat(actor,"perception") * 0.25 + gC(actor).control * 4;
 		var evasionMinus = gCstat(target,"agility") * 0.35 + gCstat(target,"perception") * 0.35 + gC(target).control * 4 + 10;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}
 
 	sa.getIsCustomAllowed = function(actionKey,actorKey,targetsKeys,skipLinkedCheck) {
@@ -259,6 +264,17 @@ window.createSaBaKissLips = function() {
 			// Apply
 			gC(target).lust.attack(-damage);
 			results.value = damage;
+			
+			// Try virginities
+			if ( gC(target).virginities.fKiss.taken == false ) {
+				var vd3 = colorText((gC(actor).name + " has taken " + gC(target).name + "'s first kiss! "),"red") + provokeVirginityBonusRelationship(actor,target);
+				gC(target).virginities.fSex.tryTakeVirginity(actor,"baKissLips",vd3);
+			}
+			if ( gC(actor).virginities.fKiss.taken == false ) {
+				var vd4 = colorText((gC(target).name + " has taken " + gC(actor).name + "'s first kiss! "),"red") + provokeVirginityBonusRelationship(target,actor);
+				gC(actor).virginities.fSex.tryTakeVirginity(target,"baKissLips",vd4);
+			}	
+			
 			// Description
 			results.description += randomFromList( [
 										(ktn(actor) + " kissed " + ktn(target) + "'s lips."),
@@ -290,7 +306,7 @@ window.createSaBaStrokeDick = function() {
 	sa.actorBpReqs.push("arms");
 	sa.targetBpReqs.push("dick");
 	
-	sa.affinities.push("sex","useArms","targetDick");
+	sa.affinities.push("sex","targetDick");
 	
 	sa.strategyTags.push("targetEnemy","damage","sex","useArms","targetDick");
 	sa.actorStatWeights = [0,100,0,0,0,0,0,0,0];
@@ -307,7 +323,7 @@ window.createSaBaStrokeDick = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"agility") * 0.25 + gCstat(actor,"perception") * 0.25 + gC(actor).control * 4;
 		var evasionMinus = gCstat(target,"agility") * 0.35 + gCstat(target,"perception") * 0.35 + gC(target).control * 4 + 20;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   			
 				   
 	sa.execute = function(actor,targetActors) {
@@ -359,7 +375,7 @@ window.createSaBaStrokePussy = function() {
 	sa.actorBpReqs.push("arms");
 	sa.targetBpReqs.push("pussy");
 	
-	sa.affinities.push("sex","useArms","targetPussy");
+	sa.affinities.push("sex","targetPussy");
 	
 	sa.strategyTags.push("targetEnemy","damage","sex","useArms","targetPussy");
 	sa.actorStatWeights = [0,100,0,0,0,0,0,0,0];
@@ -376,7 +392,7 @@ window.createSaBaStrokePussy = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"agility") * 0.25 + gCstat(actor,"perception") * 0.25 + gC(actor).control * 4;
 		var evasionMinus = gCstat(target,"agility") * 0.35 + gCstat(target,"perception") * 0.35 + gC(target).control * 4 + 20;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   			
 				   
 	sa.execute = function(actor,targetActors) {
@@ -430,7 +446,7 @@ window.createSaBaTeaseLockedDick = function() {
 	sa.actorBpReqs.push("arms");
 	sa.targetLockedBpReqs.push("dick");
 	
-	sa.affinities.push("sex","useArms","targetDick");
+	sa.affinities.push("sex","targetDick");
 	
 	sa.strategyTags.push("targetEnemy","damage","sex","useArms","targetDick");
 	sa.actorStatWeights = [0,50,0,0,0,0,50,0,0];
@@ -457,7 +473,7 @@ window.createSaBaTeaseLockedDick = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"agility") * 0.25 + gCstat(actor,"perception") * 0.25 + gC(actor).control * 4;
 		var evasionMinus = gCstat(target,"agility") * 0.35 + gCstat(target,"perception") * 0.35 + gC(target).control * 4 + 20;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   			
 				   
 	sa.execute = function(actor,targetActors) {
@@ -519,7 +535,7 @@ window.createSaBaTeaseLockedPussy = function() {
 	sa.actorBpReqs.push("arms");
 	sa.targetLockedBpReqs.push("pussy");
 	
-	sa.affinities.push("sex","useArms","targetPussy");
+	sa.affinities.push("sex","targetPussy");
 	
 	sa.strategyTags.push("targetEnemy","damage","sex","useArms","targetPussy");
 	sa.actorStatWeights = [0,50,0,0,0,0,50,0,0];
@@ -546,7 +562,7 @@ window.createSaBaTeaseLockedPussy = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"agility") * 0.25 + gCstat(actor,"perception") * 0.25 + gC(actor).control * 4;
 		var evasionMinus = gCstat(target,"agility") * 0.35 + gCstat(target,"perception") * 0.35 + gC(target).control * 4 + 20;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   			
 				   
 	sa.execute = function(actor,targetActors) {
@@ -627,7 +643,7 @@ window.createSaNeutralFrontalPounce = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"physique") * 0.25 + gCstat(actor,"agility") * 0.25 + gC(actor).control * 5;
 		var evasionMinus = gCstat(target,"physique") * 0.35 + gCstat(target,"agility") * 0.35 + gC(target).control * 15;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}
 	sa.execute = function(actor,targetActors) {
 		applySaCosts(this,actor);
@@ -656,7 +672,7 @@ window.createSaNeutralFrontalPounce = function() {
 			results.description += randomFromList( [
 										(ktn(actor) + " pushed " + ktn(target) + " to the ground and started holding " + gC(target).comPr + " in place."),
 										(ktn(actor) + " pounced on " + ktn(target) + " and mounted " + gC(target).comPr + "."),
-										(ktn(actor) + " jumped on " + ktn(target) + " and trapped " + gC(target).comPr + " " + gC(target).refPr + ".")
+										(ktn(actor) + " jumped on " + ktn(target) + " and trapped " + gC(target).comPr + " below " + gC(target).refPr + ".")
 									] );
 			results.description += " " + dmgEffMsg + ktn(target) + " received " + textLustDamage(damage) + ". " + generateSaCostsText(this,actor)
 								 + ".\n" + evResults.explanation;
@@ -703,7 +719,7 @@ window.createSaD2PfrontalPounce = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"physique") * 0.25 + gCstat(actor,"agility") * 0.25 + gC(actor).control * 5;
 		var evasionMinus = gCstat(target,"physique") * 0.35 + gCstat(target,"agility") * 0.35 + gC(target).control * 15;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}
 	sa.execute = function(actor,targetActors) {
 		applySaCosts(this,actor);
@@ -729,6 +745,14 @@ window.createSaD2PfrontalPounce = function() {
 			createBposDP2frontalPounce(actor,[target]);
 				
 			// Try virginities
+			if ( gC(target).virginities.fSex.taken == false ) {
+				var vd3 = colorText((gC(actor).name + " has taken " + gC(target).name + "'s first virginity! "),"red") + provokeVirginityBonusRelationship(actor,target);
+				gC(target).virginities.fSex.tryTakeVirginity(actor,"pounceFrontalD2P",vd3);
+			}
+			if ( gC(actor).virginities.fSex.taken == false ) {
+				var vd4 = colorText((gC(target).name + " has taken " + gC(actor).name + "'s first virginity! "),"red") + provokeVirginityBonusRelationship(target,actor);
+				gC(actor).virginities.fSex.tryTakeVirginity(target,"pounceFrontalD2P",vd4);
+			}			
 			if ( gC(target).virginities.pussy.taken == false ) {
 				var vd2 = colorText((gC(actor).name + " has taken " + gC(target).name + "'s vaginal virginity! "),"red") + provokeVirginityBonusRelationship(actor,target);
 				gC(target).virginities.pussy.tryTakeVirginity(actor,"pounceFrontalD2P",vd2);
@@ -785,7 +809,7 @@ window.createSaBaThrust = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = 1;
 		var evasionMinus = 1;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   			
 				   
 	sa.execute = function(actor,targetActors) {
@@ -859,7 +883,7 @@ window.createSaBaPushHipsBack = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = 1;
 		var evasionMinus = 1;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   			
 				   
 	sa.execute = function(actor,targetActors) {
@@ -937,7 +961,7 @@ window.createSaP2PfrontalPounce = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"physique") * 0.25 + gCstat(actor,"agility") * 0.25 + gC(actor).control * 5;
 		var evasionMinus = gCstat(target,"perception") * 0.35 + gCstat(target,"agility") * 0.35 + gC(target).control * 15;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}
 	sa.execute = function(actor,targetActors) {
 		applySaCosts(this,actor);
@@ -961,6 +985,24 @@ window.createSaP2PfrontalPounce = function() {
 			
 			// Position
 			createBposP2PfrontalPounce(actor,[target]);
+				
+			// Try virginities
+			if ( gC(target).virginities.fSex.taken == false ) {
+				var vd3 = colorText((gC(actor).name + " has taken " + gC(target).name + "'s first virginity! "),"red") + provokeVirginityBonusRelationship(actor,target);
+				gC(target).virginities.fSex.tryTakeVirginity(actor,"pounceFrontalP2P",vd3);
+			}
+			if ( gC(actor).virginities.fSex.taken == false ) {
+				var vd4 = colorText((gC(target).name + " has taken " + gC(actor).name + "'s first virginity! "),"red") + provokeVirginityBonusRelationship(target,actor);
+				gC(actor).virginities.fSex.tryTakeVirginity(target,"pounceFrontalP2P",vd4);
+			}		
+			if ( gC(target).virginities.tribbing.taken == false ) {
+				var vd2 = colorText((gC(actor).name + " has taken " + gC(target).name + "'s tribbing virginity! "),"red") + provokeVirginityBonusRelationship(actor,target);
+				gC(target).virginities.tribbing.tryTakeVirginity(actor,"pounceFrontalP2P",vd2);
+			}
+			if ( gC(actor).virginities.tribbing.taken == false ) {
+				var vd1 = colorText((gC(target).name + " has taken " + gC(actor).name + "'s tribbing virginity! "),"red") + provokeVirginityBonusRelationship(target,actor);
+				gC(actor).virginities.tribbing.tryTakeVirginity(target,"pounceFrontalP2P",vd1);
+			}		
 				
 			// Description
 			results.description += randomFromList( [
@@ -1009,7 +1051,7 @@ window.createSaBaScissor = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = 1;
 		var evasionMinus = 1;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   			
 				   
 	sa.execute = function(actor,targetActors) {
@@ -1082,7 +1124,7 @@ window.createSaBaScissorBack = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = 1;
 		var evasionMinus = 1;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   			
 				   
 	sa.execute = function(actor,targetActors) {
@@ -1158,7 +1200,7 @@ window.createSaP2DfrontalPounce = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"physique") * 0.25 + gCstat(actor,"agility") * 0.25 + gC(actor).control * 5;
 		var evasionMinus = gCstat(target,"perception") * 0.35 + gCstat(target,"agility") * 0.35 + gC(target).control * 15;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}
 	sa.execute = function(actor,targetActors) {
 		applySaCosts(this,actor);
@@ -1183,6 +1225,14 @@ window.createSaP2DfrontalPounce = function() {
 			createBposP2DfrontalPounce(actor,[target]);
 				
 			// Try virginities
+			if ( gC(target).virginities.fSex.taken == false ) {
+				var vd3 = colorText((gC(actor).name + " has taken " + gC(target).name + "'s first virginity! "),"red") + provokeVirginityBonusRelationship(actor,target);
+				gC(target).virginities.fSex.tryTakeVirginity(actor,"pounceFrontalP2D",vd3);
+			}
+			if ( gC(actor).virginities.fSex.taken == false ) {
+				var vd4 = colorText((gC(target).name + " has taken " + gC(actor).name + "'s first virginity! "),"red") + provokeVirginityBonusRelationship(target,actor);
+				gC(actor).virginities.fSex.tryTakeVirginity(target,"pounceFrontalP2D",vd4);
+			}			
 			if ( gC(target).virginities.dick.taken == false ) {
 				var vd2 = colorText((gC(actor).name + " has taken " + gC(target).name + "'s penile virginity! "),"red") + provokeVirginityBonusRelationship(actor,target);
 				gC(target).virginities.dick.tryTakeVirginity(actor,"pounceFrontalP2D",vd2);
@@ -1240,7 +1290,7 @@ window.createSaBaRideDick = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = 1;
 		var evasionMinus = 1;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   			
 				   
 	sa.execute = function(actor,targetActors) {
@@ -1313,7 +1363,7 @@ window.createSaBaPushDickBack = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = 1;
 		var evasionMinus = 1;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   			
 				   
 	sa.execute = function(actor,targetActors) {
@@ -1376,8 +1426,8 @@ window.createSaBaEnergyDrainingKiss = function() {
 	sa.actorBpReqs.push("mouth");
 	sa.targetBpReqs.push("mouth");
 	
-	sa.strategyTags.push("targetEnemy","damage","sex","useMouth","targetMouth","drain","drainEnergy","recoverEnergy","damageEnergy");
-	sa.affinities.push("sex","useMouth","targetMouth","drain");
+	sa.strategyTags.push("targetEnemy","damage","sex","drain","drainEnergy","recoverEnergy","damageEnergy");
+	sa.affinities.push("sex","drain");
 	
 	sa.actorStatWeights = [0,60,0,0,0,0,40,0,0];
 	sa.targetStatWeights = [0,0,0,0,0,0,0,0,0];
@@ -1402,11 +1452,11 @@ window.createSaBaEnergyDrainingKiss = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"agility") * 0.25 + gCstat(actor,"perception") * 0.25 + gC(actor).control * 4;
 		var evasionMinus = gCstat(target,"agility") * 0.35 + gCstat(target,"perception") * 0.35 + gC(target).control * 4 + 10;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   			
 				   
 	sa.execute = function(actor,targetActors) {
-		if ( actor == "chPlayerCharacter" ) { addToStVarsList("monActUs"); } 
+		if ( actor == "chPlayerCharacter" && State.variables.storyState == storyState.firstLoop ) { addToStVarsList("monActUs"); } 
 		applySaCosts(this,actor);
 		
 		var results = new saResults;
@@ -1417,6 +1467,7 @@ window.createSaBaEnergyDrainingKiss = function() {
 		
 		if ( evResults.hit ) { // Hit lands
 			// Damage
+			var energyCap = gC(target).energy.current; // Drained energy cannot be higher than this
 			var inDamValue = gCstat(actor,"agility") * 0.15 + gCstat(actor,"empathy") * 0.10;
 			inDamValue = addLuckFactor(inDamValue,0.1,gCstat(actor,"luck"));
 			var damage = calculateAttackEffects("lust",actor,target,this.affinities,inDamValue);
@@ -1425,13 +1476,24 @@ window.createSaBaEnergyDrainingKiss = function() {
 			var inEnergyDrain = gCstat(actor,"agility") * 0.15 + gCstat(actor,"empathy") * 0.10;
 			inEnergyDrain = addLuckFactor(inDamValue,0.1,gCstat(actor,"luck"));
 			var energyDrain = calculateAttackEffects("lust",actor,target,this.affinities,inEnergyDrain);
+			
 			// Apply
 			applyBarDamage(target,"lust",-damage);
-			// gC(target).lust.attack(-damage);
 			results.value = damage;
 			var overflowMsg = applyBarDamage(target,"energy",-energyDrain);
-			// gC(target).energy.attack(-energyDrain);
-			gC(actor).energy.changeValue(energyDrain);
+
+			gC(actor).energy.drain(energyDrain,energyCap);
+			
+			// Try virginities
+			if ( gC(target).virginities.fKiss.taken == false ) {
+				var vd3 = colorText((gC(actor).name + " has taken " + gC(target).name + "'s first kiss! "),"red") + provokeVirginityBonusRelationship(actor,target);
+				gC(target).virginities.fSex.tryTakeVirginity(actor,"baEnergyDrainingKiss",vd3);
+			}
+			if ( gC(actor).virginities.fKiss.taken == false ) {
+				var vd4 = colorText((gC(target).name + " has taken " + gC(actor).name + "'s first kiss! "),"red") + provokeVirginityBonusRelationship(target,actor);
+				gC(actor).virginities.fSex.tryTakeVirginity(target,"baEnergyDrainingKiss",vd4);
+			}	
+			
 			// Description
 			
 			if ( gC(actor).race != "monster" ) {
@@ -1446,7 +1508,7 @@ window.createSaBaEnergyDrainingKiss = function() {
 										(ktn(target) + " feels " + gC(target).posPr + " energy leaving " + gC(target).posPr + ", as " + ktn(actor) + " is sucking it away.")
 									] );
 			}
-			results.description += " " + dmgEffMsg + ktn(target) + " received " + textLustDamage(damage) + ". " + ktn(actor) + " drained "
+			results.description += " " + dmgEffMsg + ktn(target) + " received " + textLustDamage(damage) + ". " + ktn(actor) + " drained up to "
 								 + textEnergyDamage(energyDrain) + " from " + ktn(target) + "." + overflowMsg
 								 + "\n" + evResults.explanation;
 		} else { // Hit fails
@@ -1473,8 +1535,8 @@ window.createSaBaDrainingKiss = function() {
 	sa.actorBpReqs.push("mouth");
 	sa.targetBpReqs.push("mouth");
 	
-	sa.strategyTags.push("targetEnemy","damage","sex","useMouth","targetMouth","drain","drainLust");
-	sa.affinities.push("sex","useMouth","targetMouth","drain");
+	sa.strategyTags.push("targetEnemy","damage","sex","drain","drainLust");
+	sa.affinities.push("sex","drain");
 	
 	sa.actorStatWeights = [0,60,0,0,0,0,40,0,0];
 	sa.targetStatWeights = [0,0,0,0,0,0,0,0,0];
@@ -1499,11 +1561,11 @@ window.createSaBaDrainingKiss = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"agility") * 0.25 + gCstat(actor,"perception") * 0.25 + gC(actor).control * 4;
 		var evasionMinus = gCstat(target,"agility") * 0.35 + gCstat(target,"perception") * 0.35 + gC(target).control * 4 + 10;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   			
 				   
 	sa.execute = function(actor,targetActors) {
-		if ( actor == "chPlayerCharacter" ) { addToStVarsList("monActUs"); }
+		if ( actor == "chPlayerCharacter" && State.variables.storyState == storyState.firstLoop ) { addToStVarsList("monActUs"); }
 		applySaCosts(this,actor);
 		
 		var results = new saResults;
@@ -1513,6 +1575,7 @@ window.createSaBaDrainingKiss = function() {
 		var evResults = this.doesHitLand(actor,target);
 		
 		if ( evResults.hit ) { // Hit lands
+			var lustCap = gC(target).lust.current; // Drained lust  cannot be higher than this
 			// Damage
 			var inDamValue = gCstat(actor,"agility") * 0.2 + gCstat(actor,"empathy") * 0.15;
 			inDamValue = addLuckFactor(inDamValue,0.1,gCstat(actor,"luck"));
@@ -1521,9 +1584,19 @@ window.createSaBaDrainingKiss = function() {
 			
 			// Apply
 			applyBarDamage(target,"lust",-damage);
-			// gC(target).lust.attack(-damage);
-			gC(actor).lust.changeValue(damage);
 			results.value = damage;
+			gC(actor).lust.drain(damage,lustCap);
+			
+			// Try virginities
+			if ( gC(target).virginities.fKiss.taken == false ) {
+				var vd3 = colorText((gC(actor).name + " has taken " + gC(target).name + "'s first kiss! "),"red") + provokeVirginityBonusRelationship(actor,target);
+				gC(target).virginities.fSex.tryTakeVirginity(actor,"baDrainingKiss",vd3);
+			}
+			if ( gC(actor).virginities.fKiss.taken == false ) {
+				var vd4 = colorText((gC(target).name + " has taken " + gC(actor).name + "'s first kiss! "),"red") + provokeVirginityBonusRelationship(target,actor);
+				gC(actor).virginities.fSex.tryTakeVirginity(target,"baDrainingKiss",vd4);
+			}	
+			
 			// Description
 			if ( gC(actor).race != "monster" ) {
 				results.description += randomFromList( [
@@ -1537,7 +1610,7 @@ window.createSaBaDrainingKiss = function() {
 										(ktn(target) + " felt " + gC(target).posPr + " aether slipping away when " + ktn(actor) + " attacked " + gC(target).comPr + " with " + gC(actor).posPr + " tongue.")
 									] );
 			}
-			results.description += " " + dmgEffMsg + ktn(actor) + " drained " + textLustDamage(damage) + " from " + ktn(target)
+			results.description += " " + dmgEffMsg + ktn(actor) + " drained up to " + textLustDamage(damage) + " from " + ktn(target)
 								 + ".\n" + evResults.explanation;
 		} else { // Hit fails
 			results.value = 0;
@@ -1585,7 +1658,7 @@ window.createTackle = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"agility") * 0.3 + gCstat(actor,"resilience") * 0.25 + gCstat(actor,"perception") * 0.2 + gC(actor).control * 10 + 10;
 		var evasionMinus = gCstat(target,"perception") * 0.25 + gCstat(target,"agility") * 0.25 + gC(target).control * 10;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   				   
 	sa.execute = function(actor,targetActors) {
 		applySaCosts(this,actor);
@@ -1648,7 +1721,7 @@ window.createSaKick = function() {
 	sa.requiresFree = true;
 	
 	sa.strategyTags.push("targetEnemy","damage","physical","consumeEnergy","physicalDamage","damageControl","useLegs");
-	sa.affinities.push("physical","kick");
+	sa.affinities.push("physical");
 	
 	sa.actorStatWeights = [60,0,40,0,0,0,0,0,0];
 	sa.targetStatWeights = [0,0,20,0,0,0,0,0,0];
@@ -1659,7 +1732,7 @@ window.createSaKick = function() {
 				   + "This attack damages the target and erodes their control.\nCosts 2 energy.\n\nSingle target action."
 				   + "Actor requires free legs. The actor must have control or target the character pinning them down."
 				   + "\n\nPhysical hit attack."
-				   + "\n\n__Influences__:\nDamage: Actor's physique x5, actor's resilience x3, target's resilience x-2."
+				   + "\n\n__Influences__:\nDamage: Actor's physique x5, actor's resilience x3, target's resilience x-2.\nControl damage: Actor's physique x5."
 				   + "\nEvasion: Actor's agility x5, actor's perception x5, actor's control.\nTarget's agility x7, target's perception x7, target's control.";
 	
 	sa.getIsCustomAllowed = function(actionKey,actorKey,targetsKeys,skipLinkedCheck) {
@@ -1676,7 +1749,7 @@ window.createSaKick = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"agility") * 0.25 + gCstat(actor,"perception") * 0.25 + gC(actor).control * 4;
 		var evasionMinus = gCstat(target,"agility") * 0.35 + gCstat(target,"perception") * 0.35 + gC(target).control * 4;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   				   
 	sa.execute = function(actor,targetActors) {
 		applySaCosts(this,actor);
@@ -1904,7 +1977,7 @@ window.createSavageCrush = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"agility") * 0.35 + gCstat(actor,"perception") * 0.15 + gC(actor).control * 4;
 		var evasionMinus = gCstat(target,"agility") * 0.45 + gCstat(target,"perception") * 0.25 + gC(target).control * 4;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   				   
 	sa.execute = function(actor,targetActors) {
 		applySaCosts(this,actor);
@@ -1982,7 +2055,7 @@ window.createDaringAssault = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"agility") * 0.15 + gCstat(actor,"physique") * 0.15 + gCstat(actor,"resilience") * 0.1 + gCstat(actor,"perception") * 0.1 + gC(actor).control * 10;
 		var evasionMinus = gCstat(target,"perception") * 0.25 + gCstat(target,"agility") * 0.25 + gC(target).control * 10;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   				   
 	sa.execute = function(actor,targetActors) {
 		applySaCosts(this,actor);
@@ -2063,7 +2136,7 @@ window.createSaBaScratch = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"agility") * 0.35 + gCstat(actor,"perception") * 0.25 + gC(actor).control * 4;
 		var evasionMinus = gCstat(target,"agility") * 0.25 + gCstat(target,"perception") * 0.25 + gC(target).control * 4;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   				   		
 		
 	sa.execute = function(actor,targetActors) {
@@ -2150,7 +2223,7 @@ window.createHolyBlast = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = quantifyCharacterStats(actor) * 0.2 + gC(actor).control * 3 + 15;
 		var evasionMinus = quantifyCharacterStats(target) * 0.2 + gC(target).control * 2;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   				   
 	
 	sa.execute = function(actor,targetActors) {
@@ -2221,7 +2294,7 @@ window.createSaEmbers = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"intelligence") * 0.25 + gCstat(actor,"perception") * 0.25 + gC(actor).control * 2 + 15;
 		var evasionMinus = gCstat(target,"will") * 0.25 + gCstat(target,"perception") * 0.25 + gC(target).control * 2;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   				   
 	
 	sa.execute = function(actor,targetActors) {
@@ -2291,7 +2364,7 @@ window.createSaFlamingFan = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"intelligence") * 0.2 + gCstat(actor,"perception") * 0.1 + gCstat(actor,"will") * 0.2 + gC(actor).control * 2 + 20;
 		var evasionMinus = gCstat(target,"will") * 0.25 + gCstat(target,"perception") * 0.25 + gC(target).control * 2;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   				   
 	
 	sa.execute = function(actor,targetActors) {
@@ -2365,12 +2438,12 @@ window.createSaFreezeFeet = function() {
 	sa.description = "The character casts a frozen air stream aimed at their target's legs.\n"
 				   + "This attack damages the target and reduces their energy, control and agility.\n\nSingle target action."
 				   + "\n\nMagical ice projectile attack."
-				   + "\n\n__Influences__:\nDamage: Actor's intelligence x2, actor's will x1, target's will x-1, target's resilience x-1.\nEnergy damage: Actor's intelligence x2, actor's will x1.\nEvasion: Actor's intelligence x7, actor's will x3, target's will x-10, actor's and target's control."; 
+				   + "\n\n__Influences__:\nDamage: Actor's intelligence x2, actor's will x1, target's will x-1, target's resilience x-1.\nEnergy damage: Actor's intelligence x2, actor's will x1.\nControl damage: Actor's intelligence x4.\nEvasion: Actor's intelligence x7, actor's will x3, target's will x-10, actor's and target's control."; 
 				   
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"intelligence") * 0.35 + gCstat(actor,"will") * 0.15 + gC(actor).control * 2 + 15;
 		var evasionMinus = gCstat(target,"will") * 0.5 + gC(target).control * 2;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   			
 				   
 	sa.execute = function(actor,targetActors) {
@@ -2454,7 +2527,7 @@ window.createSaSparkingRubbing = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"agility") * 0.25 + gCstat(actor,"perception") * 0.25 + gC(actor).control * 4;
 		var evasionMinus = gCstat(target,"agility") * 0.35 + gCstat(target,"perception") * 0.35 + gC(target).control * 4 + 10;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   			
 				   
 	sa.execute = function(actor,targetActors) {
@@ -2562,12 +2635,11 @@ window.createSaDischarge = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"agility") * 0.25 + gCstat(actor,"will") * 0.25 + gC(actor).control * 6;
 		var evasionMinus = gCstat(target,"agility") * 0.35 + gCstat(target,"perception") * 0.15 + gCstat(target,"will") * 0.20 + gC(target).control * 4 + 15;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   			
 				   
 	sa.execute = function(actor,targetActors) {
 		applySaCosts(this,actor);
-		
 		var results = new saResults;
 		var target = targetActors[0];
 		
@@ -2636,7 +2708,7 @@ window.createSaLightningDarts = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"intelligence") * 0.35 + gCstat(actor,"will") * 0.15 + gC(actor).control * 1 + 15;
 		var evasionMinus = gCstat(target,"will") * 0.4 + gCstat(target,"perception") * 0.1 + gC(target).control * 1;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   			
 				   
 	sa.execute = function(actor,targetActors) {
@@ -2716,7 +2788,7 @@ window.createSaQuake = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"resilience") * 0.2 + gCstat(actor,"perception") * 0.1 + gCstat(actor,"will") * 0.2 + gC(actor).control * 2 + 25;
 		var evasionMinus = gCstat(target,"will") * 0.2 + gCstat(target,"resilience") * 0.2 + gCstat(target,"perception") * 0.1 + gC(target).control * 2;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   				   
 	
 	sa.execute = function(actor,targetActors) {
@@ -2804,7 +2876,7 @@ window.createSaFireBreath = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"will") * 0.2 + gCstat(actor,"perception") * 0.1 + gCstat(actor,"resilience") * 0.2 + gC(actor).control * 5 + 10;
 		var evasionMinus = gCstat(target,"will") * 0.2 + gCstat(target,"perception") * 0.15 + gCstat(target,"agility") * 0.15 + gC(target).control * 5;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   				   
 	
 	sa.execute = function(actor,targetActors) {
@@ -3114,11 +3186,11 @@ window.createSaBaEtherealChains = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"intelligence") * 0.20 + gCstat(actor,"will") * 0.15 + gCstat(actor,"resilience") * 0.15 + gC(actor).control * 2 + 15;
 		var evasionMinus = gCstat(target,"agility") * 0.25 + gCstat(target,"perception") * 0.25 + gC(target).control * 2;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   			
 				   
 	sa.execute = function(actor,targetActors) {
-		if ( actor == "chPlayerCharacter" ) { addToStVarsList("monActUs"); }
+		if ( actor == "chPlayerCharacter" && State.variables.storyState == storyState.firstLoop ) { addToStVarsList("monActUs"); }
 		applySaCosts(this,actor);
 		
 		var results = new saResults;
@@ -3193,7 +3265,7 @@ window.createSaBaVineArmLock = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"intelligence") * 0.20 + gCstat(actor,"perception") * 0.15 + gCstat(actor,"resilience") * 0.15 + gC(actor).control * 2 + 15;
 		var evasionMinus = gCstat(target,"agility") * 0.25 + gCstat(target,"perception") * 0.25 + gC(target).control * 2;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   			
 				   
 	sa.execute = function(actor,targetActors) {
@@ -3352,7 +3424,7 @@ window.createSaTaunt = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"charisma") * 0.35 + gCstat(actor,"empathy") * 0.15 + 25;
 		var evasionMinus = gCstat(target,"empathy") * 0.25 + gCstat(target,"will") * 0.25;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   			
 				   
 	sa.execute = function(actor,targetActors) {
@@ -3421,7 +3493,7 @@ window.createSaBaTease = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"charisma") * 0.35 + gCstat(actor,"empathy") * 0.15 + 25;
 		var evasionMinus = gCstat(target,"empathy") * 0.25 + gCstat(target,"will") * 0.25;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   			
 				   
 	sa.execute = function(actor,targetActors) {
@@ -3533,11 +3605,11 @@ window.createSaBaHypnoticGlance = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"charisma") * 0.25 + gCstat(actor,"will") * 0.25 + 15;
 		var evasionMinus = gCstat(target,"empathy") * 0.1 + gCstat(target,"will") * 0.35;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   			
 		
 	sa.execute = function(actor,targetActors) {
-		if ( actor == "chPlayerCharacter" ) { addToStVarsList("monActUs"); }
+		if ( actor == "chPlayerCharacter" && State.variables.storyState == storyState.firstLoop ) { addToStVarsList("monActUs"); }
 		applySaCosts(this,actor);
 		
 		var results = new saResults;
@@ -3710,13 +3782,13 @@ window.createStaffSwipe = function() {
 				   + "This attack damages the target and their control, and recovers the actor's control.\nCosts 3 energy.\n\nSingle target action."
 				   + "Actor requires control and free arms."
 				   + "\n\nPhysical hit attack."
-				   + "\n\n__Influences__:\nDamage: Actor's resilience x5, actor's physique x3, target's resilience x-2."
+				   + "\n\n__Influences__:\nDamage: Actor's resilience x5, actor's physique x3, target's resilience x-2.\nControl damage: Actor's physique x2, actor's resilience x2."
 				   + "\nEvasion: Actor's resilience x4, actor's agility x3, actor's perception x3, actor's control.\nTarget's agility x6, target's perception x5, target's resilience x3, target's control.";
 				   
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"resilience") * 0.20 + gCstat(actor,"agility") * 0.15 + gCstat(actor,"perception") * 0.15 + gC(actor).control * 4;
 		var evasionMinus = gCstat(target,"resilience") * 0.15 + gCstat(target,"agility") * 0.30 + gCstat(target,"perception") * 0.25 + gC(target).control * 4;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   				   
 	sa.execute = function(actor,targetActors) {
 		applySaCosts(this,actor);
@@ -3792,13 +3864,13 @@ window.createBoldJab = function() {
 				   + "This attack damages the target and their control if it lands, but damages the actor's control otherwise.\nCosts 2 energy.\n\nSingle target action."
 				   + "Actor requires control and free arms."
 				   + "\n\nPhysical hit attack."
-				   + "\n\n__Influences__:\nDamage: Actor's physique x5, actor's resilience x3, actor's agility x3, target's resilience x-1, target's agility x-1."
+				   + "\n\n__Influences__:\nDamage: Actor's physique x5, actor's resilience x3, actor's agility x3, target's resilience x-1, target's agility x-1.\nControl damage: Actor's physique x3, actor's agility x3."
 				   + "\nEvasion: Actor's agility x6, actor's physique x5, actor's perception x4, actor's control.\nTarget's perception x5, target's agility 5, target's control.";
 				   
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"agility") * 0.3 + gCstat(actor,"physique") * 0.25 + gCstat(actor,"perception") * 0.2 + gC(actor).control * 4;
 		var evasionMinus = gCstat(target,"perception") * 0.25 + gCstat(target,"agility") * 0.25 + gC(target).control * 4;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   				   
 	sa.execute = function(actor,targetActors) {
 		applySaCosts(this,actor);
@@ -4016,7 +4088,7 @@ window.createDisablingShot = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"agility") * 0.25 + gCstat(actor,"perception") * 0.25 + gC(actor).control * 4;
 		var evasionMinus = gCstat(target,"agility") * 0.25 + gCstat(target,"perception") * 0.25 + gC(target).control * 4;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   				   
 	sa.execute = function(actor,targetActors) {
 		applySaCosts(this,actor);
@@ -4094,7 +4166,7 @@ window.createSaBaDildoPenetratePussy = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"physique") * 0.25 + gCstat(actor,"agility") * 0.25 + gCstat(actor,"perception") * 0.25 + gC(actor).control * 5;
 		var evasionMinus = gCstat(target,"perception") * 0.15 + gCstat(target,"agility") * 0.5;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}
 	sa.execute = function(actor,targetsList) {
 		applySaCosts(this,actor);
@@ -4165,7 +4237,7 @@ window.createSaBaThrustDildo = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = 1;
 		var evasionMinus = 1;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   			
 				   
 	sa.execute = function(actor,targetActors) {
@@ -4240,7 +4312,7 @@ window.createWeaponPlunge = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"agility") * 0.2 + gCstat(actor,"perception") * 0.2 + gCstat(actor,"physique") * 0.1 + gC(actor).control * 4;
 		var evasionMinus = gCstat(target,"agility") * 0.2 + gCstat(target,"perception") * 0.2 + gCstat(target,"resilience") * 0.1 + gC(target).control * 4;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   				   
 	sa.execute = function(actor,targetActors) {
 		applySaCosts(this,actor);
@@ -4330,7 +4402,7 @@ window.createBaMonsterCapture = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"perception") * 0.35 + gCstat(actor,"agility") * 0.2 + gCstat(actor,"luck") * 0.2 + gC(actor).control * 2 + 25;
 		var evasionMinus = gCstat(target,"perception") * 0.3 + gCstat(target,"agility") * 0.2 + gCstat(target,"luck") * 0.2 + gC(target).control * 4;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}
 	
 	sa.execute = function(actor,targetActors) {
@@ -4370,7 +4442,7 @@ window.createBaMonsterCapture = function() {
 			results.value = controlDamage;
 			// Description
 			results.description += randomFromList( [
-										(ktn(actor) + " throws a net of ropes against " + ktn(target) + ", which immediately start draining " + gC(target).posPr + " energy."),
+										(ktn(actor) + " throws a net of ropes against " + ktn(target) + ", which immediately starts draining " + gC(target).posPr + " energy."),
 										(ktn(actor) + " manages to trap " + ktn(target) + " under " + gC(actor).posPr + " a capturing net."),
 										(ktn(actor) + " successfully gets " + ktn(target) + " trapped under a net of ropes.")
 									] );
@@ -4460,7 +4532,7 @@ window.createBaRunAway = function() {
 		} else {
 			evasionPlus = teamBpoints; evasionMinus = teamApoints;
 		}
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   				   
 	
 	sa.execute = function(actor,targetActors) {
@@ -4551,7 +4623,7 @@ window.createBaOrderKneeling = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"charisma") * 0.25 + gCstat(actor,"will") * 0.25 + gC(actor).control * 5;
 		var evasionMinus = gCstat(target,"will") * 0.35 + gCstat(target,"empathy") * 0.35 + gC(target).control * 15;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}
 	sa.execute = function(actor,targetActors) {
 		applySaCosts(this,actor);
@@ -4635,7 +4707,7 @@ window.createBaOrderMasturbation = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = 1;
 		var evasionMinus = 1;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   			
 				   
 	sa.execute = function(actor,targetActors) {
@@ -4652,6 +4724,7 @@ window.createBaOrderMasturbation = function() {
 			var freeGenitals = false;
 			var extraTags = [];
 			var validGenitalsWords = [];
+			
 			if ( gC(target).hasFreeBodypart("pussy") ) {
 				freeGenitals = true;
 				extraTags.push("targetPussy");
@@ -4666,8 +4739,6 @@ window.createBaOrderMasturbation = function() {
 			}
 			if ( gC(target).hasFreeBodypart("arms") ) {
 				freeArms = true;
-				extraTags.push("useArms");
-				extraTags.push("targetArms");
 			}
 			if ( freeGenitals ) {
 				// Damage
@@ -4758,7 +4829,7 @@ window.createBaCorrodeMind = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = 1;
 		var evasionMinus = 1;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   			
 				   
 	sa.execute = function(actor,targetActors) {
@@ -4830,7 +4901,7 @@ window.createBaDrainingRoots = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"agility") * 0.35 + gCstat(actor,"perception") * 0.15 + gC(actor).control * 4;
 		var evasionMinus = gCstat(target,"agility") * 0.35 + gCstat(target,"perception") * 0.35 + gC(target).control * 4 + 5;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   			
 				   
 	sa.execute = function(actor,targetActors) {
@@ -4843,6 +4914,7 @@ window.createBaDrainingRoots = function() {
 		var evResults = this.doesHitLand(actor,target);
 		
 		if ( evResults.hit ) { // Hit lands
+			var lustCap = gC(target).lust.current; // Drained lust  cannot be higher than this
 			// Damage
 			var inDamValue = gCstat(actor,"resilience") * 0.25 + gCstat(actor,"will") * 0.20 - gCstat(actor,"resilience") * 0.10;
 			inDamValue = addLuckFactor(inDamValue,0.1,gCstat(actor,"luck"));
@@ -4853,14 +4925,15 @@ window.createBaDrainingRoots = function() {
 			applyBarDamage(target,"lust",-damage);
 			results.value = damage;
 			
-			gC(actor).lust.changeValue(damage*0.5);
+			gC(actor).lust.drain(damage*0,5,lustCap);
+			
 			// Description
 			results.description += randomFromList( [
 									(ktn(actor) + " inserted " + gC(actor).posPr + " roots in " + ktn(target) + ", and started sucking " + gC(target).posPr + " aether."),
 									(ktn(target) + " runs short of breath as " + ktn(actor) + " sucks " + gC(target).posPr + " aether away."),
 									(ktn(target) + " is pained by the injection of " + ktn(actor) + " roots, which " + randomFromList(["eagerly","irredeemably","mercilessly"]) + " suck away " + gC(target).posPr + " aether.")
 								] );
-			results.description += " " + dmgEffMsg + ktn(actor) + " drained " + textLustDamage(damage*0.5) + " from " + ktn(target)
+			results.description += " " + dmgEffMsg + ktn(actor) + " drained up to " + textLustDamage(damage*0.5) + " from " + ktn(target)
 								 + ".\n" + evResults.explanation;
 		} else { // Hit fails
 			results.value = 0;
@@ -4905,7 +4978,7 @@ window.createBaOppressiveEmbrace = function() {
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = gCstat(actor,"agility") * 0.12 + gCstat(actor,"resilience") * 0.13 + gCstat(actor,"will") * 0.13 + gCstat(actor,"intelligence") * 0.12 + gC(actor).control * 5;
 		var evasionMinus = gCstat(target,"perception") * 0.2 + gCstat(target,"agility") * 0.3 + gCstat(target,"will") * 0.3 + gC(target).control * 15;
-		return calculateEvasion(this.actionType,actor,target,evasionPlus,evasionMinus);
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}
 	sa.execute = function(actor,targetActors) {
 		applySaCosts(this,actor);

@@ -12,6 +12,7 @@ window.assignPcPortrait = function() {
 			}
 			gC("chPlayerCharacter").fullPortraitL = "img/portraits/mc1-full.png";
 			gC("chPlayerCharacter").avatarL = "img/portraits/mc1-avatar.png";
+			charReceivesAnTags('chPlayerCharacter',['Mcy','WhiteHuman']);
 			break;
 		case "option2":
 			gC("chPlayerCharacter").fullPortrait = function() {
@@ -22,6 +23,7 @@ window.assignPcPortrait = function() {
 			}
 			gC("chPlayerCharacter").fullPortraitL = "img/portraits/mc2-full.png";
 			gC("chPlayerCharacter").avatarL = "img/portraits/mc2-avatar.png";
+			charReceivesAnTags('chPlayerCharacter',['Mcr','WhiteHuman']);
 			break;
 		case "option3":
 			gC("chPlayerCharacter").fullPortrait = function() {
@@ -32,6 +34,7 @@ window.assignPcPortrait = function() {
 			}
 			gC("chPlayerCharacter").fullPortraitL = "img/portraits/mc3-full.png";
 			gC("chPlayerCharacter").avatarL = "img/portraits/mc3-avatar.png";
+			charReceivesAnTags('chPlayerCharacter',['Mcb','WhiteHuman']);
 			break;
 		case "optionCustom":
 			gC("chPlayerCharacter").fullPortrait = function() {

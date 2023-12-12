@@ -68,9 +68,12 @@ window.Character = function(name, varName) {
 	// Images
 	this.fullPortrait = null; // If it exists, it must be returned from a function
 	this.avatar = null; // If it exists, it must be returned from a function
+	this.icon = "npcIcon";
+	/*
 	this.icon = function() {
 		return "[img[img/charIcons/npcIcon.png]]";
 	}
+	*/
 	
 	this.fullPortraitL = null;
 	this.avatarL = null;
@@ -86,6 +89,8 @@ window.Character = function(name, varName) {
 		legs : new Bodypart("legs","legs"),
 		neck : new Bodypart("neck","neck")
 	};
+	this.chestSize = "med"; // Meant to be used to select sprites. Valid values: "sma"/"med"/"big". Male characters have a chestSize value but get no chest sprite
+	this.dickSize = "med"; // Meant to be used to select sprites. Valid values: "med"/"big". Characters without dicks get no dick sprite
 
 	// Drives
 	this.dImprovement = new Drive(0,0);
@@ -117,9 +122,12 @@ window.Character = function(name, varName) {
 	
 	// Virginities list
 	this.virginities = {
+		fSex : new Virginity("fSex","First",true,false),
+		tribbing : new Virginity("tribbing","Tribbing",true,false),
 		pussy : new Virginity("pussy","Vaginal",true,false),
 		anal : new Virginity("anus","Anal",true,false),
-		dick : new Virginity("dick","Penile",true,false)
+		dick : new Virginity("dick","Penile",true,false),
+		fKiss : new Virginity("fKiss","Kiss",true,false)
 	};
 		
 	// Orgasms
@@ -161,6 +169,7 @@ window.Character = function(name, varName) {
 	this.colorStyleKey = 'color: '+this.speechColor;
 	
 	// this.turnTags = []; // Added and gotten by functions, see below Character class. These are labels that only last for the duration of a scene turn
+	// this.rejectedChatBy = []; // Characters who have refused to chat with this character during the active period. Must be set and cleaned externally
 	
 	// Personality
 	this.tastes = createPreferencesWeightedList();
@@ -394,8 +403,21 @@ Character.prototype.getIsAvailableForSocialInteractions = function(initiator) {
 Character.prototype.makeVirginitiesUnknown = function() {
 		for ( var virginity in this.virginities ) {
 			this.virginities[virginity].taken = true;
-			this.virginities[virginity].taker = "unknown";
-			this.virginities[virginity].method = "unknown";
+			this.virginities[virginity].taker = "chDummy";
+			this.virginities[virginity].takerName = "Stranger";
+			this.virginities[virginity].method = "storyGiven";
+			this.virginities[virginity].ctxt = "storyGiven";
+		}
+	}
+Character.prototype.makeSpecificVirginitiesUnknown = function(types) {
+		for ( var virginity in this.virginities ) {
+			if ( types.includes(this.virginities[virginity].type) ) {
+				this.virginities[virginity].taken = true;
+				this.virginities[virginity].taker = "chDummy";
+				this.virginities[virginity].takerName = "Stranger";
+				this.virginities[virginity].method = "storyGiven";
+				this.virginities[virginity].ctxt = "storyGiven";
+			}
 		}
 	}
 
@@ -567,18 +589,24 @@ Character.prototype.textStats = function() {
 		var i = 0;
 		for ( var cStat of getStatNamesArray() ) {
 			var statName = '<span title="' + descriptions[i] + '">' + firstToCap(cStat) + "</span>";
-			if ( this[cStat].getValue() < this[cStat].value ) {
-				text += statName + ": " + colorText(this[cStat].getValue().toFixed(1),"red") + " (" + this[cStat].value.toFixed(0) + ")";
-			} else if ( this[cStat].getValue() > this[cStat].value ) {
-				text += statName + ": " + colorText(this[cStat].getValue().toFixed(1),"green") + " (" + this[cStat].value.toFixed(0) + ")";
-			} else {
-				text += statName + ": " + this[cStat].getValue().toFixed(0);
-			}
+			
+			var statTitle = "";
+				if ( this[cStat].getValue() < this[cStat].value ) {
+					text += statName + ": " + hoverText(colorText(this[cStat].getValue().toFixed(1),"red") + " (" + this[cStat].value.toFixed(0) + ")",getTextStatExpAlt(this[cStat]));
+				} else if ( this[cStat].getValue() > this[cStat].value ) {
+					text += statName + ": " + hoverText(colorText(this[cStat].getValue().toFixed(1),"green") + " (" + this[cStat].value.toFixed(0) + ")",getTextStatExpAlt(this[cStat]));
+				} else {
+					text += statName + ": " + hoverText(this[cStat].getValue().toFixed(0),getTextStatExpAlt(this[cStat]));
+				}
+			text += '<span title="' + getTextStatExpAlt(this[cStat]) + '">' + statTitle + "</span>";
+			// text += hoverText(statTitle,"" + getTextStatExp(this[cStat]));
+			
 			if ( cStat != "luck" ) {
 				text += "\n";
 			}
 			i++;
 		}
+		
 		return text;
 	}
 Character.prototype.textLeadBar = function() {
@@ -627,7 +655,7 @@ Character.prototype.textAlteredStates = function() {
 			} else {
 				asText = getTextWithTooltipAlt("BdPt",("Body Painting: " + bdPntData(as.tag).name + "\n"
 								 + bdPntData(as.tag).getDescription(as.actor,as.target)
-								 + "\nLevel: " + as.level + "\nResistance: " + as.resistance) + "\nDrawn by: " + gC(as.actor).getName());
+								 + "\nLevel: " + as.level + "\nResistance: " + as.rst) + "\nDrawn by: " + gC(as.actor).getName());
 			}
 			text += asText;
 			i++;
@@ -779,12 +807,21 @@ Character.prototype.cleanLead = function() {
 		this.lead = 50;
 		this.hasLead = false;
 	}
-	
+
+Character.prototype.getSaList = function() {
+	var actionsList = [];
+	var dSaList = decompressSaList(this.saList);
+	var sSaList = sortSaList(dSaList);
+	for ( var a of sSaList ) {
+		actionsList.push(a);
+	}
+	return actionsList;
+}	
 Character.prototype.sortSaList = function() {
 		var sortedList = ["doNothing"];
 		
 		// Add single use actions
-		for ( var sa of this.saList ) {
+		for ( var sa of this.getSaList() ) {
 			if ( setup.saList[sa].tags.includes("sUse") ) {
 				if ( sortedList.includes(sa) == false ) {
 					sortedList.push(sa);
@@ -793,7 +830,7 @@ Character.prototype.sortSaList = function() {
 		}
 		
 		// Add continued actions
-		for ( var sa of this.saList ) {
+		for ( var sa of this.getSaList() ) {
 			if ( setup.saList[sa].tags.includes("cAct") ) {
 				if ( sortedList.includes(sa) == false ) {
 					sortedList.push(sa);
@@ -802,7 +839,7 @@ Character.prototype.sortSaList = function() {
 		}
 		
 		// Add positional actions
-		for ( var sa of this.saList ) {
+		for ( var sa of this.getSaList() ) {
 			if ( setup.saList[sa].tags.includes("pos") ) {
 				if ( sortedList.includes(sa) == false ) {
 					sortedList.push(sa);
@@ -811,7 +848,7 @@ Character.prototype.sortSaList = function() {
 		}
 		
 		// Add composite positional actions
-		for ( var sa of this.saList ) {
+		for ( var sa of this.getSaList() ) {
 			if ( setup.saList[sa].tags.includes("cpos") ) {
 				if ( sortedList.includes(sa) == false ) {
 					sortedList.push(sa);
@@ -820,7 +857,7 @@ Character.prototype.sortSaList = function() {
 		}
 		
 		// Add pounce actions
-		for ( var sa of this.saList ) {
+		for ( var sa of this.getSaList() ) {
 			if ( setup.saList[sa].tags.includes("bPos") ) {
 				if ( sortedList.includes(sa) == false ) {
 					sortedList.push(sa);
@@ -831,6 +868,67 @@ Character.prototype.sortSaList = function() {
 		// Replace char.saList
 		this.saList = sortedList;
 	}
+window.sortSaList = function(saList) {
+	var sortedList = ["doNothing"];
+	
+	// Add single use actions
+	for ( var sa of saList ) {
+		if ( setup.saList[sa].tags.includes("sUse") ) {
+			if ( sortedList.includes(sa) == false ) {
+				sortedList.push(sa);
+			}
+		}
+	}
+	
+	// Add continued actions
+	for ( var sa of saList ) {
+		if ( setup.saList[sa].tags.includes("cAct") ) {
+			if ( sortedList.includes(sa) == false ) {
+				sortedList.push(sa);
+			}
+		}
+	}
+	
+	// Add positional actions
+	for ( var sa of saList ) {
+		if ( setup.saList[sa].tags.includes("pos") ) {
+			if ( sortedList.includes(sa) == false ) {
+				sortedList.push(sa);
+			}
+		}
+	}
+	
+	// Add composite positional actions
+	for ( var sa of saList ) {
+		if ( setup.saList[sa].tags.includes("cpos") ) {
+			if ( sortedList.includes(sa) == false ) {
+				sortedList.push(sa);
+			}
+		}
+	}
+	
+	// Add pounce actions
+	for ( var sa of saList ) {
+		if ( setup.saList[sa].tags.includes("bPos") ) {
+			if ( sortedList.includes(sa) == false ) {
+				sortedList.push(sa);
+			}
+		}
+	}
+	
+	return sortedList;
+}
+
+Character.prototype.getFoundScrolls = function() {
+	return decompressScrollsList(this.foundScrolls);
+}
+Character.prototype.getStudiedScrolls = function() {
+	return decompressScrollsList(this.studiedScrolls);
+}
+Character.prototype.compressScrolls = function() {
+	this.foundScrolls = compressScrollsList(decompressScrollsList(this.foundScrolls));
+	this.studiedScrolls = compressScrollsList(decompressScrollsList(this.studiedScrolls));
+}
 
 	// Character stats screen view
 Character.prototype.avatar = function() {
@@ -913,13 +1011,16 @@ Character.prototype.getCharScreenButton = function(handler) {
 
 // Stats and bars
 window.recalculateMaxBars = function(charKey) {
-		gC(charKey).lust.max = float2int(70 + (gC(charKey).physique.value * 1 + gC(charKey).agility.value * 1 + gC(charKey).resilience.value * 1
+		gC(charKey).lust.max = float2int((70 + (gC(charKey).physique.value * 1 + gC(charKey).agility.value * 1 + gC(charKey).resilience.value * 1
 					  + gC(charKey).will.value * 1 + gC(charKey).intelligence.value * 1 + gC(charKey).perception.value * 1
-					  + gC(charKey).empathy.value * 1 + gC(charKey).charisma.value * 1 + gC(charKey).luck.value * 1) / 3);
-		gC(charKey).willpower.max = float2int(70 + gC(charKey).will.value * 1 + gC(charKey).intelligence.value * 1 + gC(charKey).perception.value * 1);
-		gC(charKey).energy.max = float2int(70 + gC(charKey).physique.value * 1 + gC(charKey).agility.value * 1 + gC(charKey).resilience.value * 1);
-		gC(charKey).socialdrive.max = float2int(70 + gC(charKey).empathy.value * 1 + gC(charKey).charisma.value * 1 + gC(charKey).luck.value * 1);
+					  + gC(charKey).empathy.value * 1 + gC(charKey).charisma.value * 1 + gC(charKey).luck.value * 1) / 3) * State.variables.settings.lbRatio * 0.01 );
+		gC(charKey).willpower.max = float2int((70 + gC(charKey).will.value * 1 + gC(charKey).intelligence.value * 1 + gC(charKey).perception.value * 1) * State.variables.settings.obRatio * 0.01 );
+		gC(charKey).energy.max = float2int((70 + gC(charKey).physique.value * 1 + gC(charKey).agility.value * 1 + gC(charKey).resilience.value * 1) * State.variables.settings.obRatio * 0.01 );
+		gC(charKey).socialdrive.max = float2int((70 + gC(charKey).empathy.value * 1 + gC(charKey).charisma.value * 1 + gC(charKey).luck.value * 1) * State.variables.settings.obRatio * 0.01 );
 		for ( var sBar of ["lust","willpower","energy","socialdrive"] ) {
+			if ( gC(charKey)[sBar].max < 10 ) {
+				gC(charKey)[sBar].max = 10;
+			}
 			gC(charKey)[sBar].current = gC(charKey)[sBar].max;
 		}
 	}
@@ -1256,6 +1357,22 @@ window.isOrgasmMindblowing = function(charKey) {
 	return flag;
 }
 
+	// Misc
+Character.prototype.addCharToRejectedChatBy = function(cK) {
+	if ( this.hasOwnProperty("rejectedChatBy") == false ) {
+		this.rejectedChatBy = [cK];
+	} else {
+		this.rejectedChatBy.push(cK);
+	}
+}
+Character.prototype.getRejectedChatByList = function() {
+	var rcb = [];
+	if ( this.hasOwnProperty("rejectedChatBy") ) {
+		rcb = this.rejectedChatBy;
+	}
+	return rcb;
+}
+
 // Constructors, serializers, etc.
 Character.prototype._init = function (obj) {
 	Object.keys(obj).forEach(function (pn) {
@@ -1286,7 +1403,7 @@ window.charactersLearnSceneActions = function(characters,sceneActions) {
 	for ( var currentChar of characters ) {
 		movesLearned = [];
 		for ( var currentAction of sceneActions ) {
-			if ( gC(currentChar).saList.includes(currentAction) == false ) {
+			if ( gC(currentChar).getSaList().includes(currentAction) == false ) {
 				gC(currentChar).saList.push(currentAction);
 				movesLearned.push(setup.saList[currentAction].name);
 			}
@@ -1295,6 +1412,7 @@ window.charactersLearnSceneActions = function(characters,sceneActions) {
 			resultsMsg += gC(currentChar).getFormattedName() + " learned " + stringArrayToText(movesLearned) + ".\n";
 		}
 		gC(currentChar).sortSaList();
+		gC(currentChar).saList = compressSaList(gC(currentChar).getSaList());
 	}
 	return resultsMsg;
 }
@@ -1302,12 +1420,32 @@ window.charactersForgetSceneActions = function(characters,sceneActions) {
 	var resultsMsg = "";
 	for ( var character of characters ) {
 		var newSaList = [];
-		for ( var action of gC(character).saList ) {
+		for ( var action of gC(character).getSaList() ) {
 			if ( sceneActions.includes(action) == false ) {
 				newSaList.push(action);
 			}
 		}
 		gC(character).saList = newSaList;
+		gC(character).saList = compressSaList(gC(character).saList);
+	}
+	return resultsMsg;
+}
+window.charactersLearnSocIntActions = function(characters,socIntActions) {
+		// Function to learn actions from generic conversations system
+	var resultsMsg = "";
+	var movesLearned = [];
+	for ( var currentChar of characters ) {
+		movesLearned = [];
+		for ( var currentAction of socIntActions ) {
+			if ( gC(currentChar).extraSocIntList.includes(currentAction) == false ) {
+				gC(currentChar).extraSocIntList.push(currentAction);
+				movesLearned.push(getSiByKey(currentAction).key);
+			}
+		}
+		if ( movesLearned.length > 0 ) {
+			resultsMsg += gC(currentChar).getFormattedName() + " learned " + stringArrayToText(movesLearned) + ".\n";
+		}
+		// gC(currentChar).sortSaList();
 	}
 	return resultsMsg;
 }
@@ -1317,11 +1455,12 @@ window.reorderCharactersStudiedScrolls = function(characters) {
 	for ( var character of characters ) {
 		var newScrList = [];
 		for ( var scr of getScrollsStringList() ) {
-			if ( gC(character).studiedScrolls.includes(scr) ) {
+			if ( gC(character).getStudiedScrolls().includes(scr) ) {
 				newScrList.push(scr);
 			}
 		}
 		gC(character).studiedScrolls = newScrList;
+		gC(character).compressScrolls();
 	}
 }
 
@@ -1380,6 +1519,13 @@ window.getCharsInfamyLimit = function(charKey) {
 	return (percentLimit * absoluteLimit);
 }
 
+	// Tastes / Preferences
+window.getCharsTasteRank = function(cK,taste) {
+	var rank = 0;
+	rank = gC(cK).tastes[taste].r;
+	return rank;
+}
+
 	// AI
 window.getCharsMissionTitle = function(charKey) {
 	var missionTitle = "";
@@ -1433,6 +1579,15 @@ window.charReceivesAnTags = function(cK,anTags) {
 	for ( var at of anTags ) {
 		gC(cK).anTags.push(at);
 	}
+}
+window.charLosesAnTags = function(cK,lostAnTags) {
+	var newAnTags = [];
+	for ( var at of getCharsAnTags(cK) ) {
+		if ( lostAnTags.includes(at) == false ) {
+			newAnTags.push(at);
+		}
+	}
+	gC(cK).anTags = newAnTags;
 }
 
 	// Base stats
@@ -1520,6 +1675,11 @@ window.actorGetsCbAgainstTarget = function(actor,target) {
 }
 
 // Auxiliar UI
+
+Character.prototype.getIcon = function() {
+	var iconImgStr = "[img[img/charIcons/" + this.icon + ".png]]";
+	return iconImgStr;
+}
 
 window.textCharactersDrives = function(character) {
 	var desc = "";

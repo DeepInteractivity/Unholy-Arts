@@ -177,6 +177,12 @@ window.EventsCalendar = function() {
 							return this.getButtonToEvent("TftG Init1");
 						}
 						break;
+					case 9:
+						this.customEventScript = initializeSeMonsterAdept;
+						this.getEndDayButton = function() {
+							return this.getButtonToEvent("SE Monster Adept Start");
+						}
+						break;
 				}
 		}
 		
@@ -200,8 +206,8 @@ window.EventsCalendar = function() {
 	EventsCalendar.prototype.getButtonToEvent = function(firstEventPassageName) {
 		var bText = "<<l" + "ink [[" + this.newDayLinkMessage + "|" + firstEventPassageName + "]]>><<s" + "cript>>\n"
 				  + "State.variables.eventsCalendar.activeEvent = true;\n"
-				  + "State.variables.eventsCalendar.newDayScript();\n"
 				  + "State.variables.eventsCalendar.customEventScript();\n"
+				  + "State.variables.eventsCalendar.newDayScript();\n"
 				  + "<</s" + "cript>><</l" + "ink>>";
 		return bText;
 	}
@@ -212,10 +218,12 @@ window.EventsCalendar = function() {
 	EventsCalendar.prototype.getNewDayButtonCustomMessageCustomScript = function(message,script) {
 		var bText = "<<l" + "ink [[" + message + "|" + this.newDayPassage + "]]>><<s" + "cript>>\n"
 				  + "State.variables.eventsCalendar.activeEvent = false;\n"
+				  + "callFtmiwse(" + ");\n"
 				  + script
 				  + "<</s" + "cript>><</l" + "ink>>";
 		return bText;
 	}
+	
 	EventsCalendar.prototype.cleanUIscriptText = function() {
 		var sText = 'setNoPasChars();\n'
 	}
@@ -414,7 +422,7 @@ setup.eventsMetaInfo["gfn0"] = new eventMetaInfo( // "Gifts For Nature"
 	}
 );
 setup.eventsMetaInfo["gfn0"].clairvoyanceData = new emiClaivoyanceData(
-	"When you and the Leirien collect offering from nature", // Cryptic Name
+	"When you and the Leirien collect offerings from nature", // Cryptic Name
 	function() { // Reqs to be shown
 		return true; // Might always be shown
 	},
@@ -556,7 +564,7 @@ setup.eventsMetaInfo["gol0"].clairvoyanceData = new emiClaivoyanceData(
 
 setup.eventsMetaInfo["mt1"] = new eventMetaInfo( // "Martial Tutorship I"
 	true,true,
-	"Martial Tutorship I",
+	"Martial Tutorship",
 	"mt1",
 	initializeMartialTutorshipI, // initFunc
 	"SE MartialTutorshipI Start",
@@ -576,7 +584,7 @@ setup.eventsMetaInfo["mt1"] = new eventMetaInfo( // "Martial Tutorship I"
 		return allowed;
 	},
 	function() { // Weight
-		var weight = 300;
+		var weight = 1500;
 		return weight;
 	}
 );
@@ -891,7 +899,7 @@ setup.eventsMetaInfo["stn"] = new eventMetaInfo( // "Sharing the Night"
 		return allowed;
 	},
 	function() { // Weight
-		var weight = 100;
+		var weight = 1000;
 		
 		return weight;
 	}
@@ -946,7 +954,28 @@ setup.eventsMetaInfo["CNe0"] = new eventMetaInfo( // "Candidates Negotiation"
 		return weight;
 	}
 );
-
+/*
+setup.eventsMetaInfo["MAdp"] = new eventMetaInfo( // "Monster Adept"
+	true,false,
+	"Monster Adept",
+	"MAdp",
+	initializeSeMonsterAdept, // initFunc
+	"SE Monster Adept Start",
+	function() { // Reqs
+		var allowed = false;
+		
+		if ( State.variables.daycycle.month > 1 && isCurrentStoryStateInMainLoop() == true && getCurrentStoryState() > storyState.firstAdventure && State.variables.daycycle.day > 9 ) {
+			allowed = true;
+		}
+		return allowed;
+	},
+	function() { // Weight
+		var weight = 50000;
+		
+		return weight;
+	}
+);
+*/
 setup.eventsMetaInfo["RuRe"] = new eventMetaInfo( // "A Ruler's Responsibility"
 	true,true,
 	"A Ruler's Responsibility",
@@ -1203,6 +1232,65 @@ setup.eventsMetaInfo["CgLb"].clairvoyanceData = new emiClaivoyanceData(
 	null // Hints
 );
 
+setup.eventsMetaInfo["CTch"] = new eventMetaInfo( // "Communication Teacher"
+	true,true,
+	"Communication Teacher",
+	"CTch",
+	initializeCommunicationTeacher, // initFunc
+	"SE Communication Teacher 0",
+	function() { // Reqs
+		var allowed = false;
+		
+		if ( getCurrentStoryState() >= storyState.secondLoop && getCurrentStoryState() < storyState.thirdAdventure ) {
+			if ( gC("chAte").getStudiedScrolls().includes("intCom") ) { // Ate has read the appropriate scroll
+				if ( gC("chAte").domChar == null && gC("chVal").domChar == null && gC("chPlayerCharacter").domChar == null ) { // Three Candidates have no dom
+					allowed = true;
+				}					
+			}
+		}
+		return allowed;
+	},
+	function() { // Weight
+		var weight = 300;
+		
+		for ( var cK of getCandidatesKeysArray() ) {
+			if ( cK != "chAte" ) {
+				weight -= (rLvlAbt("chAte",cK,"friendship") + rLvlAbt("chAte",cK,"romance") - rLvlAbt("chAte",cK,"sexualTension")) * 10;
+			}
+		}
+		
+		if ( weight < 30 ) { weight = 30; }
+		
+		return weight;
+	}
+);
+setup.eventsMetaInfo["CTch"].clairvoyanceData = new emiClaivoyanceData(
+	"When the Aiishen seeks to gain a new voice", // Cryptic Name
+	function() { // Reqs to be shown
+		var result = false;
+		if ( getCurrentStoryState() >= storyState.secondLoop && getCurrentStoryState() < storyState.thirdAdventure ) {
+			result = true;
+		}
+		return result; // 
+	},
+	function() { // Reqs to appear
+		var reqsText = formatClairvoyanceCheck("Requisites (1)",50,formatRequisiteForClairvoyance("Maaterasu has read the Intertribal Communication scroll", function() {
+			var b = false;
+			if ( gC("chAte").getStudiedScrolls().includes("intCom") ) { b = true; } 
+			return b;
+		})) + formatClairvoyanceCheck("Requisites (2)",60,formatRequisiteForClairvoyance("Maaterasu has no dominant", function() {
+			var b = false;
+			if ( gC("chAte").domChar == null ) { b = true; } 
+			return b;
+		})) + formatClairvoyanceCheck("Requisites (3)",70,formatRequisiteForClairvoyance("Neither you nor Valtan have a dominant", function() {
+			var b = false;
+			if ( gC("chVal").domChar == null && gC("chPlayerCharacter").domChar == null ) { b = true; } 
+			return b;
+		}));
+		return reqsText;
+	},
+	null // Hints
+);
 
 /*
 setup.eventsMetaInfo["gd3"] = new eventMetaInfo( // "A Sacrifice of Aether"

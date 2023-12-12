@@ -58,11 +58,12 @@ Config.history.maxStates = 1;
 // * plSgVF , tfNsSp , tfMrSp , tfClSp , tfPlSp , tfVlSP -> Twisted Festival, Player Signals Valtan Defense , Nash/Mir/Claw/Player Speech , Valtan Speech Plus
 // * GcEndA , GcEndB , GcEndC -> Gleaming Caverns Ending A / B / C // MAINTAINED
 // * END FIRST ADVENTURE
+// * VlTtAt , PlTtAt -> Valtan tutored Ate, Player tutored Ate
 // * ShTNgt
   // Special experiences
 // VarDom -> Varyonte's domination
 
-// State.variables.StVarsList = []; // Ex.: isStVarOn("ShTNgt") // removeFromStVarsList("HdRlts"); addToStVarsList("ShTNgt");
+// State.variables.StVarsList = []; // Ex.: isStVarOn("GcEndC") // removeFromStVarsList("HdRlts"); addToStVarsList("VlTtAt");
 
 	// Tf Settings constants and definitions
 const tfSetTarget = {
@@ -107,7 +108,7 @@ setup.tfExtraSettingsNames = [ "No transformations", "Temporary", "Permanent", "
 
 ////////// GAME SETTINGS CLASS //////////
 
-setup.versionName = "Unholy Arts v0.3.23";
+setup.versionName = "Unholy Arts v0.4.0";
 
 setup.infamySecondThreshold = 1.2;
 setup.infamyThirdThreshold = 1.4;
@@ -119,6 +120,10 @@ window.Settings = function() {
 	this.debugFunctions = true;
 	
 	this.stdSxScDur = 30; // Standard Sex Scene Duration
+	this.rvConversionRate = 1; // Percent of stv that gets added to ltv at the end of the day. 1 -> 1%
+	this.lbRatio = 100; // Lust bar multiplier
+	this.obRatio = 100; // Other bars multiplier
+	
 	this.infamyLimit = 25;
 	this.relationshipsDuration = 3;
 	this.equipmentDuration = 5;
@@ -399,8 +404,7 @@ Settings.prototype.formatTfChoices = function() {
 		
 		this.allChoices += this.autosavingChoices + "\n\n";
 		
-		
-		this.allChoices = '__Animations__' + getAnimationsTooltip() + ':\n';
+		this.allChoices += '__Animations__' + getAnimationsTooltip() + ':\n';
 		this.allChoices += '<label><<radiobutton "$settings.animations" "enable"';
 		if ( this.animations == 'enable' ) { this.allChoices += " checked"; }
 		this.allChoices += '>> Animations will be shown in sex scenes</label>\n'
@@ -616,7 +620,7 @@ window.getAnimationsSettings = function() {
 	return setting;
 }
 
-window.isAssaultPossible = function(actor,target) {
+window.isAssaultPossible = function(actor,target,checkingInitiatedBattle) {
 	var flagPossible = true;
 	
 	if ( gC(actor).followingTo != "" ) { // Actor follows no one
@@ -640,7 +644,7 @@ window.isAssaultPossible = function(actor,target) {
 		}
 	}
 	
-	if ( flagPossible ) {
+	if ( flagPossible && checkingInitiatedBattle == false ) {
 		if ( mayCharBeInterrupted(target) == false ) {
 			flagPossible = false;
 		}
@@ -658,7 +662,7 @@ window.assaultPreConditions = function(actor,target) {
 	}
 	return flagPossible;
 }
-window.isChallengePossible = function(actor,target) {
+window.isChallengePossible = function(actor,target,checkingInitiatedBattle) {
 	var flagPossible = true;
 	
 	if ( gC(actor).followingTo != "" ) { // Actor follows no one
@@ -688,7 +692,7 @@ window.isChallengePossible = function(actor,target) {
 	}
 	
 	
-	if ( flagPossible ) {
+	if ( flagPossible && checkingInitiatedBattle == false ) {
 		if ( mayCharBeInterrupted(target) == false ) {
 			flagPossible = false;
 		}
@@ -706,7 +710,7 @@ window.challengePreConditions = function(actor,target) {
 	}
 	return flagPossible;
 }
-window.isLiberationChallengePossible = function(actor,target) {
+window.isLiberationChallengePossible = function(actor,target,checkingInitiatedBattle) {
 	var flagPossible = true;
 	var eventsList = getEventsWherCharIsInvolved(actor).concat(getEventsWherCharIsInvolved(target));
 	for ( var ev of eventsList ) {

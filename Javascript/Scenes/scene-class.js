@@ -2,7 +2,7 @@
 
 window.scene = function() {
 	this.sceneLog = ""; // Debug console
-	this.logAi = false; // TODO: Set to false
+	this.logAi = false;
 	
 	this.scenePassage = "";
 	
@@ -226,6 +226,8 @@ window.scene = function() {
 		applyRequiredScenePatches();
 		
 		this.formatScenePassage();
+		
+		// bgAutosolve -> Manually set flag. Should prevent the scene from formatting passages
 	}
 	
 	scene.prototype.autoResolveScene = function() {
@@ -238,6 +240,13 @@ window.scene = function() {
 		while ( this.flagSceneEnded == false ) {
 			this.executeTurn();
 		}
+	}
+	scene.prototype.autoResolveSceneBackground = function() {
+		State.variables.sc.bgAutosolve = true;
+		while ( this.flagSceneEnded == false ) {
+			this.executeTurn();
+		}
+		this.cleanScene();
 	}
 	
 	// Management
@@ -416,15 +425,16 @@ window.scene = function() {
 			getChar(key).cleanAccumulatedDamages();
 		}
 	}
-	scene.prototype.cancelPosition = function(charKey) {
+	scene.prototype.cancelPosition = function(charKey,playerCanceled) {
 		var affectedChars = findAllConnectedCharsByPositionMinusList(charKey,[]);
 		for ( var cK of affectedChars ) {
 			getChar(cK).position.free();
 			if ( State.variables.sc.sceneType == "bs" ) {
-				if ( cK != "chPlayerCharacter" ) {
-					gainControlBack(cK);
+				if ( playerCanceled != true ) {
 					//gC(cK).lostControlTurns = 0;
 					//gC(cK).control = gC(cK).maxControl / 2;
+				} else {
+					gainControlBack(cK);
 				}
 			}
 		}
@@ -584,6 +594,9 @@ window.scene = function() {
 		if ( this.hasOwnProperty("tempData") ) {
 			delete this.tempData;
 		}
+		if ( this.hasOwnProperty("bgAutosolve") ) {
+			delete this.bgAutosolve;
+		}
 		
 		this.customActionAllowed = null;
 	}
@@ -659,6 +672,9 @@ window.scene = function() {
 					gC(character)[bar].current = 0;
 				}
 			}
+			if ( gC(character).lead < 0 ) {
+				gC(character).lead = 0;
+			}
 		}
 	}
 	
@@ -698,7 +714,7 @@ window.scene = function() {
 		var list = ["doNothing"];
 		var charList = this.teamAcharKeys.concat(this.teamBcharKeys);
 		
-		for ( var actionKey of gC(actorKey).saList ) {
+		for ( var actionKey of gC(actorKey).getSaList() ) {
 			for ( var target of charList ) {
 				if ( list.includes(actionKey) == false ) {
 					if ( this.isActionAllowed(actorKey,setup.saList[actionKey]) == true && isActionUsable(actionKey,actorKey,[target],false).isUsable == true ) {
@@ -717,7 +733,7 @@ window.scene = function() {
 			// Only "doNothing" is usable
 		} else {
 			
-		for ( var actionKey of gC(actorKey).saList ) {
+		for ( var actionKey of gC(actorKey).getSaList() ) {
 				if ( list.includes(actionKey) == false ) {
 					if ( this.isActionAllowed(actorKey,setup.saList[actionKey]) == true && isActionUsable(actionKey,actorKey,[targetKey],false).isUsable == true ) {
 						list.push(actionKey);
@@ -1062,7 +1078,7 @@ window.scene = function() {
 				this.importantMessages += orgasmMessage + "\n";
 				if ( this.sceneType == "bs" ) {
 					gC(key).koed = true; // If battle scene, character gets KO'ed
-					this.cancelPosition(key);
+					this.cancelPosition(key,false);
 				} else if ( this.sceneType == "ss" ) {
 					var str = 7;
 					if ( type == "mindblowing" ) {
@@ -1385,7 +1401,7 @@ window.scene = function() {
 			if ( State.variables.chPlayerCharacter.position.type != "passive" && State.variables.chPlayerCharacter.position.type != "free" ) {
 				script = '<<link "Cancel Player Position" "Scene">>'
 				   + '<<' + 'script>>'
-				   + 'State.variables.sc.cancelPosition("chPlayerCharacter");'
+				   + 'State.variables.sc.cancelPosition("chPlayerCharacter",true);'
 				   + 'State.variables.sc.positionsDescription = "";\n'
 				   + 'State.variables.sc.pcChosenAction = "";\n'
 				   + 'State.variables.sc.pcChosenTargets = [];\n'
@@ -1400,7 +1416,7 @@ window.scene = function() {
 			if ( gC("chPlayerCharacter").position.type != "free" ) {
 				script = '<<link "Cancel Player Position" "Scene">>'
 					   + '<<' + 'script>>'
-					   + 'State.variables.sc.cancelPosition("chPlayerCharacter");'
+					   + 'State.variables.sc.cancelPosition("chPlayerCharacter",true);'
 					   + 'State.variables.sc.positionsDescription = "";'
 					   + 'State.variables.sc.actionsDescription = "The position was canceled.";\n';
 					   
@@ -1539,9 +1555,9 @@ window.scene = function() {
 		var description = chooseMessageFromList(setup.dialogDB.orDialogs,charKey,"",type,actionsAgainstActor);
 		if ( gC(charKey).race != "monster" ) {
 			if ( type == "ruined" ) {
-				orgasmText = colorText((gC(charKey).name + " almost reached climax for " + (getChar(charKey).lust.max + overflow).toFixed(2) + " total lust damage, but... "),"red") + description + " " + gC(charKey).name + " feels " + gC(charKey).posPr + " strength flowing away.";
+				orgasmText = colorText((gC(charKey).name + " almost reached climax for " + (getChar(charKey).lust.max + overflow).toFixed(2) + " total lust damage, but... "),"red") + colorText((description + " " + gC(charKey).name + " feels " + gC(charKey).posPr + " strength flowing away."),"purple");
 			} else if ( type == "mindblowing" ) {
-				orgasmText = colorText((getChar(charKey).name + " reached a most powerful climax for " + (getChar(charKey).lust.max + overflow).toFixed(2) + " lust damage and " + (gC(charKey).willpower.max * 0.2).toFixed(2) + " willpower damage. "),"red") + description;
+				orgasmText = "//" + colorText((getChar(charKey).name + " reached a most powerful climax for " + (getChar(charKey).lust.max + overflow).toFixed(2) + " lust damage and " + (gC(charKey).willpower.max * 0.2).toFixed(2) + " willpower damage. "),"mediumvioletred") + description + "//";
 			} else {
 				orgasmText = colorText((getChar(charKey).name + " reached climax for " + (getChar(charKey).lust.max + overflow).toFixed(2) + " total lust damage. "),"red") + description;
 			}
@@ -1697,91 +1713,95 @@ window.formatSceneAnimationsHtmlSegment = function() {
 
 	// UI
 	scene.prototype.formatScenePassage = function() {
-		this.formatActionsOptionList(getChar("chPlayerCharacter"));
-		this.formatTargetsOptionList();
-		var pas = "<div>";
-		// Right Avatar Div
-		if ( this.flagFullAvatar ) {
-			pas += this.formatFullAvatarDiv();
+		if ( this.hasOwnProperty("bgAutosolve") ) {
+			// Scene shouldn't be formatted, as the player character does neither participate nor spectate
 		} else {
-			pas += '<<removeclass "#right-ui-bar" "stowed">>';
-		}
-		// Standard Scene Passage
-		if ( getAnimationsSettings() != "disable" ) {
-			pas += formatSceneAnimationsHtmlSegment(); // Format animations for HTML
-		}
-		pas += "<div>"; // Heading Description
-		if ( this.outHeadingDescription != "" ) { pas += "<div class='standardBox'>" + this.outHeadingDescription + "\\ </div> \n"; }
-		if ( this.positionsDescription != "" || this.actionsDescription != "" || this.cancelActionButtons.length > 0 ) {
-			pas += "<div class='standardBox'>";
-		}
-		if ( this.positionsDescription != "" ) { pas += this.positionsDescription + "\\ \n"; }
-		if ( this.actionsDescription != "" ) { pas += this.actionsDescription + "\\ \n"; }
-		if ( this.actionsDescriptionNl ) { pas += "\n"; }
-		if ( this.cancelActionButtons.length > 0 ) {
-			for ( var cab of this.cancelActionButtons ) {
-				if ( cab[1] != "" ) {
-					pas += cab[1] + "\n";
+			this.formatActionsOptionList(getChar("chPlayerCharacter"));
+			this.formatTargetsOptionList();
+			var pas = "<div>";
+			// Right Avatar Div
+			if ( this.flagFullAvatar ) {
+				pas += this.formatFullAvatarDiv();
+			} else {
+				pas += '<<removeclass "#right-ui-bar" "stowed">>';
+			}
+			// Standard Scene Passage
+			if ( getAnimationsSettings() != "disable" ) {
+				pas += formatSceneAnimationsHtmlSegment(); // Format animations for HTML
+			}
+			pas += "<div>"; // Heading Description
+			if ( this.outHeadingDescription != "" ) { pas += "<div class='standardBox'>" + this.outHeadingDescription + "\\ </div> \n"; }
+			if ( this.positionsDescription != "" || this.actionsDescription != "" || this.cancelActionButtons.length > 0 ) {
+				pas += "<div class='standardBox'>";
+			}
+			if ( this.positionsDescription != "" ) { pas += this.positionsDescription + "\\ \n"; }
+			if ( this.actionsDescription != "" ) { pas += this.actionsDescription + "\\ \n"; }
+			if ( this.actionsDescriptionNl ) { pas += "\n"; }
+			if ( this.cancelActionButtons.length > 0 ) {
+				for ( var cab of this.cancelActionButtons ) {
+					if ( cab[1] != "" ) {
+						pas += cab[1] + "\n";
+					}
+					pas += cab[2];
 				}
-				pas += cab[2];
 			}
-		}
-		if ( this.positionsDescription != "" || this.actionsDescription != "" || this.cancelActionButtons.length > 0 ) {
-			pas += "</div>\n";
-		}
-		if ( this.importantMessages != "" ) { pas += "<div class='standardBox'>" + this.importantMessages + " </div> \n"; }
-		if ( this.genericDialogs != "" ) { pas += "<div class='standardBox'>" + this.genericDialogs + " </div> \n"; }
-		
-		else if ( this.actionsDescription != "" ) { // I know this looks strange.
-			pas += "\n";
-		}
-		
-		var l = 0;
-		if ( this.otherMessages.length > 0 ) {
-			pas += "<div class='standardBox'>";
-			for ( var mes of this.otherMessages ) {
-				if ( l > 0 ) { pas+= "\n"; }
-				pas += mes;
-				l++;
+			if ( this.positionsDescription != "" || this.actionsDescription != "" || this.cancelActionButtons.length > 0 ) {
+				pas += "</div>\n";
 			}
-			pas += "</div>\n";
-		}
-		
-		if ( this.extraEffectsDescription != "" ) {
-			pas += "<div class='standardBox'>" + this.extraEffectsDescription + "</div>\n";
-		}
-		
-		if ( this.flagSceneEnded == false ) { // Scene has not ended
-			if ( this.isPlayerInScene() && State.variables.chPlayerCharacter.koed == false ) { // Player is in scene
-				pas += this.askForLeadScript + "\\"
-					 + "\n" + this.getActionDescriptionButton() + "\n"
-					 + this.formattedActionsOptionList + "\n"
-					 + "Target:\n"
-					 + this.formattedTargetsOptionList + "\n"
-					 + this.getCommitActionButton();
-					 // If end condition = turns && player in scene
-					 // Print remaining turns
-					 if ( ( this.checkEndConditions == endConditionTurns ) && ( this.teamAcharKeys.includes("chPlayerCharacter") || this.teamBcharKeys.includes("chPlayerCharacter") ) ) {
-						 pas += "\n\nRemaining turns: " + (this.endConditionsVars + 1 - this.currentTurn);
-						 //"currentTurn": 2, "turnLimit": -1, "importantMessages": "", "headingDe
-					 } else if ( this.checkEndConditions == endConditionGrapes ) {
-						 pas += "\n\nRemaining grapes: " + State.variables.sc.remainingGrapes;
-					 }
-			} else {						// Player isn't in scene
-				pas += this.getPassTurnButton();
+			if ( this.importantMessages != "" ) { pas += "<div class='standardBox'>" + this.importantMessages + " </div> \n"; }
+			if ( this.genericDialogs != "" ) { pas += "<div class='standardBox'>" + this.genericDialogs + " </div> \n"; }
+			
+			else if ( this.actionsDescription != "" ) { // I know this looks strange.
+				pas += "\n";
 			}
-		} else {
-			if ( this.endSceneMessage != "" ) { pas += this.endSceneMessage + "\n\n"; }
-			pas += this.endScenePassageScript;
+			
+			var l = 0;
+			if ( this.otherMessages.length > 0 ) {
+				pas += "<div class='standardBox'>";
+				for ( var mes of this.otherMessages ) {
+					if ( l > 0 ) { pas+= "\n"; }
+					pas += mes;
+					l++;
+				}
+				pas += "</div>\n";
+			}
+			
+			if ( this.extraEffectsDescription != "" ) {
+				pas += "<div class='standardBox'>" + this.extraEffectsDescription + "</div>\n";
+			}
+			
+			if ( this.flagSceneEnded == false ) { // Scene has not ended
+				if ( this.isPlayerInScene() && State.variables.chPlayerCharacter.koed == false ) { // Player is in scene
+					pas += this.askForLeadScript + "\\"
+						 + "\n" + this.getActionDescriptionButton() + "\n"
+						 + this.formattedActionsOptionList + "\n"
+						 + "Target:\n"
+						 + this.formattedTargetsOptionList + "\n"
+						 + this.getCommitActionButton();
+						 // If end condition = turns && player in scene
+						 // Print remaining turns
+						 if ( ( this.checkEndConditions == endConditionTurns ) && ( this.teamAcharKeys.includes("chPlayerCharacter") || this.teamBcharKeys.includes("chPlayerCharacter") ) ) {
+							 pas += "\n\nRemaining turns: " + (this.endConditionsVars + 1 - this.currentTurn);
+							 //"currentTurn": 2, "turnLimit": -1, "importantMessages": "", "headingDe
+						 } else if ( this.checkEndConditions == endConditionGrapes ) {
+							 pas += "\n\nRemaining grapes: " + State.variables.sc.remainingGrapes;
+						 }
+				} else {						// Player isn't in scene
+					pas += this.getPassTurnButton();
+				}
+			} else {
+				if ( this.endSceneMessage != "" ) { pas += this.endSceneMessage + "\n\n"; }
+				pas += this.endScenePassageScript;
+			}
+			
+			// Transformation scene description
+			if ( this.hasOwnProperty("tfFlag") ) {
+				pas += "\n<div class='standardBox'>" + this.tfProgressDescription() + "</div>\n";
+			}
+			
+			pas += "</div></div>";
+			this.scenePassage = pas;
 		}
-		
-		// Transformation scene description
-		if ( this.hasOwnProperty("tfFlag") ) {
-			pas += "\n<div class='standardBox'>" + this.tfProgressDescription() + "</div>\n";
-		}
-		
-		pas += "</div></div>";
-		this.scenePassage = pas;
 	}
 	
 	scene.prototype.getActionDescriptionButton = function() {

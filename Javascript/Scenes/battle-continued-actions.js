@@ -368,7 +368,6 @@ window.createBcaMakingKneel = function(initiator,targetsList) {
 		var results = new saResults;
 		var actor = this.initiator;
 		var target = this.targetsList[0];
-		
 		// Damage to target
 		var actAffinities = ["hypnosis","useEyes","targetEyes"];
 		var inDamValue = gCstat(actor,"will") * 0.1 + gCstat(actor,"charisma") * 0.1;

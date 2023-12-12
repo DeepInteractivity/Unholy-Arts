@@ -15,12 +15,13 @@ window.NpcMapAi = function(charKey) {
 			if ( this.goalsList[0] != undefined ) {
 				this.previousGoals.push(this.goalsList[0].type);
 			}
-			if ( this.goalsList[0].isValid() ) {	
+			if ( this.goalsList[0].isValid() ) {
 				this.goalsList[0].createEvent();
 				this.previousGoals.push("Was valid");
 				this.goalsList.splice(0,1);
 			}
 			else {
+				evaluateCommunicateIntentionsToPlayer(this.charKey,0,[]);
 				flagSuccess = false;
 			}
 		}
@@ -76,7 +77,7 @@ window.NpcMapAi = function(charKey) {
 				var fT = gC(this.charKey).followingTo;
 				var rT = gRelTypeAb(this.charKey,fT);
 				if ( rT != null ) {
-					if ( isLiberationChallengePossible(this.charKey,fT) ) {
+					if ( isLiberationChallengePossible(this.charKey,fT,false) ) {
 						if ( limitedRandomInt(100) < (6 * modifierLiberationChallengeChance(this.charKey,fT)) ) {
 							if ( proportionQuantifiedCharactersStrength(this.charKey,fT) > 0.85 + limitedRandom(0.1) ) {
 								initiateLiberationChallenge(this.charKey,fT);
@@ -271,7 +272,7 @@ window.createMapAiGoalTalkTo = function(charKey,targetCharKey) {
 							p += getButtonRejectConversation(this.charKey);
 						}
 						if ( canPlayerBeAskedToTalk(this.charKey) ) {
-							State.variables.compass.setPlayerPrompt(p,this.charKey,true);
+							State.variables.compass.setPlayerPrompt(p,this.charKey,true,"conversation",getTimeArray());
 						}
 					} else {
 						var canInterrupt = true;
@@ -283,7 +284,7 @@ window.createMapAiGoalTalkTo = function(charKey,targetCharKey) {
 							canInterrupt = canPlayerBeAskedToTalk(this.charKey);
 						}
 						if ( canInterrupt ) {
-							State.variables.compass.interruptPlayer(p,this.charKey,true);
+							State.variables.compass.interruptPlayer(p,this.charKey,true,"conversation",getTimeArray());
 						}
 					}
 				}
@@ -374,14 +375,14 @@ window.createMapAiGoalAssault = function(charKey,targetCharKey) {
 				var p = gD + "\n" + gC(charKey).getFormattedName() + " is assaulting you!\n\n";
 				if ( sisId != -1 ) {
 					p += getButtonBeingAssaultedPlus(charKey);
-					State.variables.compass.interruptPlayer(p,this.charKey,true);
+					State.variables.compass.interruptPlayer(p,this.charKey,true,"assault",getTimeArray());
 				} else {
 					p += getButtonBeingAssaulted(charKey,gC(charKey).mission);
 					initiateNpcAssault(charKey,targetCharKey);
 					if ( playerEvent == null ) {
-						State.variables.compass.setPlayerPrompt(p,this.charKey,true);
+						State.variables.compass.setPlayerPrompt(p,this.charKey,true,"assault",getTimeArray());
 					} else {
-						State.variables.compass.interruptPlayer(p,this.charKey,true);
+						State.variables.compass.interruptPlayer(p,this.charKey,true,"assault",getTimeArray());
 					}
 				}
 			}
@@ -425,9 +426,9 @@ window.createMapAiGoalChallenge = function(charKey,targetCharKey) {
 				var p = gD + "\n" + gC(charKey).getFormattedName() + " is challenging you for " + stakesMsg + "!\nRefusing the challenge will make you lose merit.\n\n";
 				p += getButtonAcceptChallenge(charKey,stakes,gC(charKey).mission) + "\n" + getButtonRejectChallenge(charKey,stakes);
 				if ( playerEvent == null ) {
-					State.variables.compass.setPlayerPrompt(p,this.charKey,true);
+					State.variables.compass.setPlayerPrompt(p,this.charKey,true,"challenge",getTimeArray());
 				} else {
-					State.variables.compass.interruptPlayer(p,this.charKey,true);
+					State.variables.compass.interruptPlayer(p,this.charKey,true,"challenge",getTimeArray());
 				}
 			}
 		}
@@ -761,7 +762,7 @@ window.checkTalkTo = function(charGroup,targetChar) {
 
 window.checkMayAssault = function(charGroup,targetChar) {
 	var flagAllowed = false;
-	var flagAllowedAssault = isAssaultPossible(charGroup[0],targetChar); // True if assault is possible
+	var flagAllowedAssault = isAssaultPossible(charGroup[0],targetChar,false); // True if assault is possible
 	var flagSameRoom = ( gC(targetChar).currentRoom == gC(charGroup[0]).currentRoom ); // True if they're at the same room
 	
 	var targetEvent = State.variables.compass.findFirstEventInvolvingCharacter(targetChar);
@@ -776,7 +777,7 @@ window.checkMayAssault = function(charGroup,targetChar) {
 }
 window.checkMayChallenge = function(charGroup,targetChar) {
 	var flagAllowed = false;
-	var flagAllowedChallenge = isChallengePossible(charGroup[0],targetChar); // True if assault is possible
+	var flagAllowedChallenge = isChallengePossible(charGroup[0],targetChar,false); // True if assault is possible
 	var flagSameRoom = ( gC(targetChar).currentRoom == gC(charGroup[0]).currentRoom ); // True if they're at the same room
 	
 	var targetEvent = State.variables.compass.findFirstEventInvolvingCharacter(targetChar);
@@ -1094,18 +1095,32 @@ window.cMissionActionTag = function(mapKey,charsGroup,tag) {
 		}
 	}
 	
+	// Communicate to player
+	if ( setup.baseStats.includes(tag) ) {
+		evaluateCommunicateIntentionsToPlayer(charsGroup[0],10,[]);
+	} else if ( tag == "rest" ) {
+		evaluateCommunicateIntentionsToPlayer(charsGroup[0],10,[]);
+	} else if ( tag == "searchScrolls" ) {
+		evaluateCommunicateIntentionsToPlayer(charsGroup[0],100,[]);
+	} else if ( tag == "studyScroll" ) {
+		evaluateCommunicateIntentionsToPlayer(charsGroup[0],110,[]);
+	}
+	
 	return commandsList;
 }
 	
 window.cMissionPursueAndTalkTo = function(mapKey,charsGroup,targetChar) {
+	evaluateCommunicateIntentionsToPlayer(charsGroup[0],200,[targetChar]);
 	return [ createMapAiGoalPursueAndTalkTo(charsGroup[0],targetChar) ];
 }
 
 window.cMissionPursueAndAssault = function(charsGroup,targetChar) {
+	evaluateCommunicateIntentionsToPlayer(charsGroup[0],260,[targetChar]);
 	return [ createMapAiGoalPursueAndAssault(charsGroup[0],targetChar) ];
 }
 
 window.cMissionPursueAndChallenge = function(charsGroup,targetChar) {
+	evaluateCommunicateIntentionsToPlayer(charsGroup[0],250,[targetChar]);
 	return [ createMapAiGoalPursueAndChallenge(charsGroup[0],targetChar) ];
 }
 
@@ -1125,6 +1140,7 @@ window.cMissionHuntGleamingCavernsMonsters = function(charsGroup,targetMonster,c
 		commandsList.push(createMapAiGoalHuntGcMonster(charsGroup[0],targetMonster));
 	}
 	
+	evaluateCommunicateIntentionsToPlayer(charsGroup[0],400,[]);
 	return commandsList;
 }
 
@@ -1143,9 +1159,9 @@ window.npcProposalFollowMe = function(actor,target) {
 				}
 				if ( flagForcedToFollow ) {
 					var gD = chooseDialogFromList(setup.dialogDB.folMeDialogs,actor,"chPlayerCharacter",true,"");
-					var p = gD + "\n" + gC(actor).getFormattedName() + " wants you to follow " + gC(actor).comPr + ". You relationship compels you to accept.\n\n";
+					var p = gD + "\n" + gC(actor).getFormattedName() + " wants you to follow " + gC(actor).comPr + ". Your relationship compels you to accept.\n\n";
 					p += getButtonNpcAsksToFollowThemAccept(actor);
-					State.variables.compass.setPlayerPrompt(p,actor,true);
+					State.variables.compass.setPlayerPrompt(p,actor,true,"forcedFollowing",getTimeArray());
 				}
 				else if ( rFavor("chPlayerCharacter",actor) > 0 ) {
 					var gD = chooseDialogFromList(setup.dialogDB.folMeDialogs,actor,"chPlayerCharacter",false,"");
@@ -1153,7 +1169,7 @@ window.npcProposalFollowMe = function(actor,target) {
 						  + " and refusing this request would be seen as an insult.\n\n";
 					p += getButtonNpcAsksToFollowThemAccept(actor) + "\n";
 					p += getButtonNpcAsksToFollowThemReject(actor);
-					State.variables.compass.setPlayerPrompt(p,actor,true);
+					State.variables.compass.setPlayerPrompt(p,actor,true,"following",getTimeArray());
 				}
 				else {
 					var gD = chooseDialogFromList(setup.dialogDB.folMeDialogs,actor,"chPlayerCharacter",false,"");
@@ -1162,7 +1178,7 @@ window.npcProposalFollowMe = function(actor,target) {
 					p += getButtonNpcAsksToFollowThemAccept(actor) + "\n";
 					p += getButtonNpcAsksToFollowThemReject(actor);
 					if ( canPlayerBeAskedToFollow(actor) ) {
-						State.variables.compass.setPlayerPrompt(p,actor,true);
+						State.variables.compass.setPlayerPrompt(p,actor,true,"following",getTimeArray());
 					}
 				}
 			}
@@ -1180,7 +1196,7 @@ window.npcProposalFollowYou = function(actor,target) {
 				p += getButtonNpcAsksToFollowPlayerAccept(actor) + "\n";
 				p += getButtonNpcAsksToFollowPlayerReject(actor);
 				if ( canPlayerBeAskedToFollow(actor) ) {
-					State.variables.compass.setPlayerPrompt(p,actor,true);
+					State.variables.compass.setPlayerPrompt(p,actor,true,"following",getTimeArray());
 				}
 			}
 		} else { // Target is not player
@@ -1196,7 +1212,7 @@ window.npcProposalUnfollowMe = function(actor,target) {
 				var p = gD + "\n" + gC(actor).getFormattedName() + " wants you to stop following " + gC(actor).comPr + ".\n\n";
 				p += getButtonNpcAsksToUnfollowThemAccept(actor) + "\n";
 				p += getButtonNpcAsksToUnfollowThemReject(actor);
-				State.variables.compass.setPlayerPrompt(p,actor,true);
+				State.variables.compass.setPlayerPrompt(p,actor,true,"following",getTimeArray());
 			}
 		} else { // Target is not player
 			aAsksBtoUnfollowA(actor,target);
@@ -1211,7 +1227,7 @@ window.npcProposalUnfollowYou = function(actor,target) {
 				var p = gD + "\n" + gC(actor).getFormattedName() + " wants to stop following you.\n\n";
 				p += getButtonNpcAsksToUnfollowPlayerAccept(actor) + "\n";
 				p += getButtonNpcAsksToUnfollowPlayerReject(actor);
-				State.variables.compass.setPlayerPrompt(p,actor,true);
+				State.variables.compass.setPlayerPrompt(p,actor,true,"following",getTimeArray());
 			}
 		} else { // Target is not player
 			aAsksBtoUnfollowB(actor,target);
@@ -1266,6 +1282,12 @@ window.doesTargetAcceptConversation = function(actor,target) {
 		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2)
 					  + ", Others: " + simulationState + ", Luck: " + luckFactor.toFixed(2) + " - Result: " + finalValue.toFixed(2);
 	}
+	
+	if ( result == false ) {
+		evaluateCommunicateIntentionsToPlayer(actor,210,[target]);
+		gC(actor).addCharToRejectedChatBy(target);
+	}
+	
 	return [result,stringResult];	
 }
 
@@ -1454,4 +1476,70 @@ window.modifierLiberationChallengeChance = function(sub,dom) {
 	if ( modifier < 0.1 ) { modifier = 0.1; }
 	return modifier;
 }
+
+////////// PLAYER FEEDBACK //////////
+// Functionality meant to tell the player what a character wants to do, when appropriate
+/*
+const misAcr = { // Mission Acronym
+	failedMission: 0,
+	training: 10,
+	searchScrolls: 100,
+	studyScrolls: 110,
+	rest: 90,
+	conversation: 200, // [Target of conversation]
+	rejectedConv: 210, // [Target of conversation]
+	challenge: 250, // [Target of challenge]
+	rejectedChal: 251, // [Target of challenge]
+	assault: 260, // [Target of assault]
+	huntMonsters: 400
+}
+*/
+window.evaluateCommunicateIntentionsToPlayer = function(cK,misType,vars) {
+	if ( cK == gC("chPlayerCharacter").followingTo ) {
+		displayLeadingNpcIntentions(cK,misType,vars);
+	}
+}
+window.displayLeadingNpcIntentions = function(cK,misType,vars) {
+	// Displays a message in the map passage explaining the intentions of cK, who is assumed to be the character that the player is following.
+	// Vars is a [] list is a varying amount of data, depending on the mission type
+	var msg = "";
+	switch (misType) {
+		case misAcr.failedMission:
+			msg = gC(cK).getFormattedName() + " saw " + gC(cK).refPr + " forced to change plans.";
+			break;
+		case misAcr.training:
+			msg = gC(cK).getFormattedName() + " is planning to train.";
+			break;
+		case misAcr.searchScrolls:
+			msg = gC(cK).getFormattedName() + " is planning to do browse through scrolls in the library.";
+			break;
+		case misAcr.studyScrolls:
+			msg = gC(cK).getFormattedName() + " is planning to do some reading in the library.";
+			break;
+		case misAcr.rest:
+			msg = gC(cK).getFormattedName() + " is planning to rest for a while.";
+			break;
+		case misAcr.conversation:
+			msg = gC(cK).getFormattedName() + " is planning to start a conversation with " + gC(vars[0]).getFormattedName() + ".";
+			break;
+		case misAcr.rejectedConv:
+			msg = gC(vars[0]).getFormattedName() + " didn't want to chat with " + gC(cK).getFormattedName() + ".";
+			break;
+		case misAcr.challenge:
+			msg = gC(cK).getFormattedName() + " is planning to solve " + gC(cK).posPr + " differences with " + gC(vars[0]).getFormattedName() + ".";
+			break;
+		case misAcr.rejectedChal:
+			msg = gC(vars[0]).getFormattedName() + " refused " + gC(cK).getFormattedName() + "'s challenge.";
+			break;
+		case misAcr.assault:
+			msg = gC(cK).getFormattedName() + " is planning to solve " + gC(cK).posPr + " differences with " + gC(vars[0]).getFormattedName() + ".";
+			break;
+		case misAcr.huntMonsters:
+			msg = gC(cK).getFormattedName() + " is planning to hunt monsters.";
+			break;
+	}
+	State.variables.compass.setMapMessage(msg);
+}
+
+
 

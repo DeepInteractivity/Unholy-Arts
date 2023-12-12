@@ -189,7 +189,7 @@ window.initializeSeBkifOutcome = function () {
 	if ( gC("chClaw").baseMood.angry == 0 ) { State.variables.StVars.clawLostBkif = true; }
 	
 	// Reset Claw's base mood
-	gC("chClaw").baseMood.angry = 0;
+	gC("chClaw").baseMood.angry = 50;
 	gC("chClaw").mood.angry = 0;
 	
 	// Checks
@@ -225,11 +225,11 @@ window.initializeSeAspiringTreeClimber = function () {
 	gC("chClaw").agility.addExperience(1000);
 	// Checks
 	State.variables.StVars.check1 = false;
-	if ( gC("chPlayerCharacter").saList.includes("baHypnoticGlance") ) {
+	if ( gC("chPlayerCharacter").getSaList().includes("baHypnoticGlance") ) {
 		State.variables.StVars.check1 = "hypnosis";
-	} else if ( gC("chPlayerCharacter").saList.includes("baEnergyDrainingKiss") ) {
+	} else if ( gC("chPlayerCharacter").getSaList().includes("baEnergyDrainingKiss") ) {
 		State.variables.StVars.check1 = "draining";
-	} else if ( gC("chPlayerCharacter").saList.includes("baEtherealChains") ) {
+	} else if ( gC("chPlayerCharacter").getSaList().includes("baEtherealChains") ) {
 		State.variables.StVars.check1 = "bondage";
 	}
 	
@@ -596,10 +596,10 @@ window.initializeBondageAwakening = function() {
 	State.variables.StVars.check9 = rLvlAbt("chMir","chPlayerCharacter","submission") * 2 + rLvlAbt("chMir","chPlayerCharacter","friendship") + rLvlAbt("chMir","chPlayerCharacter","friendship") - rLvlAbt("chMir","chPlayerCharacter","enmity") * 2; // Order Padmiri check
 	State.variables.StVars.check10 = rLvlAbt("chMir","chPlayerCharacter","domination") * 2 + rLvlAbt("chMir","chPlayerCharacter","romance") + rLvlAbt("chMir","chPlayerCharacter","romance") - rLvlAbt("chMir","chPlayerCharacter","enmity") * 2; // Beg Padmiri check
 	
-	if ( gC("chPlayerCharacter").saList.includes("baEtherealChains") ) {
+	if ( gC("chPlayerCharacter").getSaList().includes("baEtherealChains") ) {
 		State.variables.StVars.check2 = true;
 	}
-	if ( gC("chPlayerCharacter").saList.includes("baHypnoticGlance") ) {
+	if ( gC("chPlayerCharacter").getSaList().includes("baHypnoticGlance") ) {
 		State.variables.StVars.check4 = true;
 	}
 	
@@ -672,7 +672,7 @@ window.initGleamingCavernsTwistedFestival = function() {
 	
 	// Empathy check
 	State.variables.StVars.check5 = false;
-	if ( gCstat("chPlayerCharacter","intelligence") >= 16 ) {
+	if ( gCstat("chPlayerCharacter","empathy") >= 16 ) {
 		State.variables.StVars.check5 = true;
 	}
 }
@@ -746,7 +746,7 @@ window.twistedFestivalWontHumilliateValtan = function() {
 	}
 	if ( affectedCandidates.length > 0 ) {
 		var tText = "//Due to having a positive opinion of Valtan, " + getCharNames(affectedCandidates);
-		tText += "felt moved by your words. Your friendship improves.//\n\n"
+		tText += " felt moved by your words. Your friendship improves.//\n\n"
 		tempText = colorText(tText,"khaki");
 	}
 	State.variables.temp = tempText;
@@ -981,6 +981,8 @@ window.twistedFestivalEndingCeffects = function() {
 	addPointsToDrive(gC("chVal").dImprovement,-500);
 	gC("chVal").dLove.value = 0;
 	gC("chVal").dLove.level = 0;
+	gC("chVal").baseMood.submissive += 20;
+	gC("chVal").baseMood.bored += 20;
 	for ( var cK of ["chPlayerCharacter","chNash","chMir","chClaw","chAte"] ) {
 		State.variables.chVal.relations[cK].romance.stv = 0;
 		State.variables.chVal.relations[cK].romance.ltv = 0;
@@ -1015,6 +1017,9 @@ window.twistedFestivalEndingBeffects = function() {
 	addPointsToDrive(gC("chVal").dAmbition,-500);
 	gC("chVal").charisma.affinity += 0.05;
 	gC("chVal").empathy.affinity += 0.05;
+	gC("chVal").baseMood.friendly += 10;
+	gC("chVal").baseMood.intimate += 20;
+	gC("chVal").baseMood.flirty += 10;
 	tempText = "//This will have large consequences for Valtan.\nValtan's love and pleasure drives have increased.\nValtan's ambition drive has decreased.\nValtan's charisma and empathy affinities have increased.//";
 	State.variables.temp = tempText;
 	return tempText;
@@ -1027,6 +1032,8 @@ window.twistedFestivalEndingAeffects = function() {
 	gC("chVal").charisma.affinity += 0.05;
 	gC("chVal").empathy.affinity += 0.05;
 	gC("chVal").will.affinity += 0.1;
+	gC("chVal").baseMood.intimate += 20;
+	gC("chVal").baseMood.dominant += 20;
 	if ( isStVarOn("tfNsSp") ) {
 		State.variables.chVal.relations["chNash"].friendship.stv += 1000;
 		gC("chNash").ssRsp += 50;
@@ -1260,9 +1267,9 @@ window.finishTributeForTheGoddess = function() {
 		createRelTypeCompanionship("chVal","chSil",10);
 	}
 	if ( isStVarOn("GcEndA") ) {
-		trainingResultsModifier += 1.5;
+		State.variables.trainingResultsModifier += 1.5;
 	} else {
-		trainingResultsModifier += 1.4;
+		State.variables.trainingResultsModifier += 1.4;
 	}
 }
 
@@ -1700,7 +1707,20 @@ window.seCandidatesNegotiationCountVotes = function() {
 	}
 }
 
-
+window.initializeSeMonsterAdept = function() {
+	State.variables.StVars.check1 = false; // False if Artume wasn't invited
+	// If Artume is a defined character,
+	if ( State.variables.chArt != undefined ) {
+		// Artume must at least know of Aetherial Chains
+		charactersLearnSceneActions(["chArt"],["etherealChains","baEtherealChains"]);
+		State.variables.chArt.relations.chPlayerCharacter.rivalry.stv += 300;
+		State.variables.chPlayerCharacter.relations.chArt.rivalry.stv += 300;
+		State.variables.StVars.check1 = isCharGuest("chArt"); // True if Artume was invited
+	}
+	State.variables.StVars.check2 = isStVarOn("monActUs"); // Was player character seen using monster actions?
+	
+	State.variables.enabledMerchants.push(merchantType.MONSTER_ACTIONS);
+}
 
 // Variables for Candidates Negotiation
 /*
@@ -1886,8 +1906,30 @@ window.cgLbUpdateHopeVirginityVar = function() {
 	}
 }
 
-
-
+// Communication Teacher
+window.initializeCommunicationTeacher = function() { // CTch
+	setRoomIntro("mapTrainingGrounds","westLibrary");
+	// Did Sillan come to the Passion Temple?
+	State.variables.StVars.check1 = (isStVarOn("GcEndC") == false); // If true, Sillan is at the Passion Temple
+	if ( State.variables.StVars.check1 == true ) {
+		setPasChars([getPresentCharByKey("chVal"),presentCharTitleColorInfo("Sillan","lightskyblue","[img[img/portraits/sillan-avatar.png]]")]);
+	} else {
+		setPasChars([getPresentCharByKey("chMir"),getPresentCharByKey("chVal")]);
+	}
+	// Player Character vs Valtan checks
+	var playerRel = rLvlAbt("chAte","chPlayerCharacter","friendship") + rLvlAbt("chAte","chPlayerCharacter","romance") - rLvlAbt("chAte","chPlayerCharacter","enmity") * 2;
+	var valRel = rLvlAbt("chAte","chVal","friendship") + rLvlAbt("chAte","chVal","romance") - rLvlAbt("chAte","chVal","enmity") * 2;
+	var plaCha = gCstat("chPlayerCharacter","charisma");
+	var valCha = gCstat("chVal","charisma");
+	State.variables.StVars.check2 = plaCha + playerRel - valCha - valRel;
+	
+	// Maaterasu's affinities changes
+	// gC("chAte").intelligence.affinity -= 0.1;
+	// gC("chAte").resilience.affinity -= 0.1;
+	// gC("chAte").will.affinity -= 0.1;
+	// gC("chAte").charisma.affinity += 0.2;
+	// gC("chAte").empathy.affinity += 0.1;
+}
 
 
 

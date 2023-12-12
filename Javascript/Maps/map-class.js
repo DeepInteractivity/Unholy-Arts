@@ -1,3 +1,18 @@
+// Mission Acronym
+const misAcr = {
+	failedMission: 0,
+	training: 10,
+	searchScrolls: 100,
+	studyScrolls: 110,
+	rest: 90,
+	conversation: 200, // [Target of conversation]
+	rejectedConv: 210, // [Target of conversation]
+	challenge: 250, // [Target of challenge]
+	rejectedChal: 251, // [Target of challenge]
+	assault: 260, // [Target of assault]
+	huntMonsters: 400
+}
+
 setup.cursorHalfX = 10;
 setup.cursorHalfY = 10;
 
@@ -89,7 +104,7 @@ window.mayEventBeSpectated = function(sEvent) {
 	var flag = false;
 	if ( sEvent ) {
 		if ( sEvent.title == "battle" || sEvent.title == "scene" ) {
-			if ( sEvent.characters.includes("chPlayerCharacter") == false && gC("chPlayerCharacter").followingTo == "" && sEvent.label != "monsterEncounter" ) {
+			if ( sEvent.characters.includes("chPlayerCharacter") == false && gC("chPlayerCharacter").followingTo == "" && sEvent.label != "monsterEncounter" && sEvent.label != "sexScene" ) {
 			// if ( sEvent.charactersTeamA.includes("chPlayerCharacter") == false && sEvent.charactersTeamB.includes("chPlayerCharacter") == false ) {
 				flag = true;
 			}
@@ -290,8 +305,10 @@ window.willFirstEventFinishSooner = function(firstEvent,secondEvent) {
 	var flag = false;
 	if ( firstEvent.timeRemaining <= secondEvent.timeRemaining ) {
 		if ( firstEvent.timeRemaining == secondEvent.timeRemaining ) {
-			if ( secondEvent.characters.includes("chPlayerCharacter") ) {
-				flag = true;
+			if ( secondEvent.characters.includes("chDummy") ) {
+				flag = false;
+			} else if ( secondEvent.characters.includes("chPlayerCharacter") ) {
+				flag = false;
 			}
 		} else {
 			flag = true;
@@ -416,7 +433,7 @@ window.initiateLiberationChallenge = function(actor,target) {
 		var gD = chooseDialogFromList(setup.dialogDB.icDialogs,actor,"chPlayerCharacter","","");
 		var p = gD + "\n" + gC(actor).getFormattedName() + " is initiating a liberation challenge against you!\n\n";
 		p += getButtonBeingAssaulted(actor,gC(actor).mission);
-		State.variables.compass.setPlayerPrompt(p,actor,true);
+		State.variables.compass.setPlayerPrompt(p,actor,true,"assault",getTimeArray());
 	}
 }
 
@@ -519,6 +536,7 @@ window.initiateNpcToNpcChallenge = function(actor,target,stakes) {
 		State.variables.compass.ongoingEvents.push(createSystemEventStandardChallenge([actor],[target],spectators,stakes));
 		State.variables.compass.sortOnGoingEventsByTime();
 	} else {
+		evaluateCommunicateIntentionsToPlayer(actor,251,[target]);
 		gC(target).refusedChallengeToday = true;
 		gC(actor).changeMerit(1);
 		gC(target).changeMerit(-1);
@@ -620,11 +638,17 @@ window.addCharsTeamToCharsMonsterBattle = function(joiningCharacter,joinedCharac
 }
 
 	// Declarations
-window.declareRivalry = function(actor,target) {
+window.declareRivalry = function(actor,target,reasons) {
 	gC(actor).socialdrive.current -= getDeclaringRivalryCost(actor,target);
 	createRelTypeRivalry(actor,target,gSettings().relationshipsDuration);
 	createRelTypeRivalry(target,actor,gSettings().relationshipsDuration);
-	State.variables.compass.setMapMessage(gC(actor).getFormattedName() + colorText(" has declared a rivalry against ","red") + gC(target).getFormattedName() + "!");
+	
+	var mapMessage = gC(actor).getFormattedName() + colorText(" has declared a rivalry against ","red") + gC(target).getFormattedName() + "!";
+	if ( actor != "chPlayerCharacter" ) {
+		mapMessage += " " + createRivalryDeclarationMessage(actor,target,reasons);
+	}
+	
+	State.variables.compass.setMapMessage(mapMessage);
 }
 
 ////////// COMPASS CLASS  //////////
@@ -690,7 +714,7 @@ window.Compass = function() {
 	this.debugInfo = "";	
 	
 	this.debugFinishedEventInfo = function(sEvent) {
-		var text = "|Finished event. Event name: " + sEvent.title + ", Chars: [" + sEvent.characters + "], Total time: " + sEvent.ongoingTime + "|";
+		var text = "|Finished event. Event name: " + sEvent.title + ", Chars: [" + sEvent.characters + "], Total time: " + sEvent.ongoingTime + ", HHMM: " + State.variables.daycycle.hours + ":" + State.variables.daycycle.minutes + " , Forced to end? " + sEvent.flagForcedToEnd + " |";
 		return text;
 	}
 };
@@ -774,6 +798,13 @@ window.Compass = function() {
 			 }
 		}
 		
+		// Clean rejectedChatBy lists
+		for ( var cK of getCurrentMap().characters ) {
+			if ( gC(cK).hasOwnProperty("rejectedChatBy") ) {
+				delete gC(cK).rejectedChatBy;
+			}
+		}
+		
 		// Clean AI memory
 		for ( var charKey of getCurrentMap().characters ) {
 			gC(charKey).mapAi.previousGoals = [];
@@ -809,18 +840,20 @@ window.Compass = function() {
 	}
 	
 		// External interruptions and calls to player
-	Compass.prototype.interruptPlayer = function(promptText,promptSender,isPrompterAchar) {
+	Compass.prototype.interruptPlayer = function(promptText,promptSender,isPrompterAchar,promptType,time) {
 		this.timeToAdvance = 0;
-		this.setPlayerPrompt(promptText,promptSender,isPrompterAchar);
+		this.setPlayerPrompt(promptText,promptSender,isPrompterAchar,"interrupt",time);
 		// If player is in SIS -> Set prompt in SIS -> Otherwise set prompt in map
 		this.interludePassage = promptText;
 	}
 	
-	Compass.prototype.setPlayerPrompt = function(passageText,promptSender,isPrompterAchar) {
+	Compass.prototype.setPlayerPrompt = function(passageText,promptSender,isPrompterAchar,promptType,time) {
 		this.flagPlayerIsPrompted = true;
 		this.promptPassage = passageText;
 		this.promptSender = promptSender;
 		this.isPrompterAchar = isPrompterAchar;
+		this.lastPromptType = promptType;
+		this.lastPromptTime = time;
 		var playerSisId = this.getCharacterSisId("chPlayerCharacter");
 		if ( playerSisId == -1 ) { // Set prompt in map
 			this.interludePassage = passageText;
@@ -928,6 +961,7 @@ window.Compass = function() {
 												  
 					
 					if ( willFirstEventFinishSooner(sortedList[l],sortedList[l-1]) ) {
+						// Swap positions
 						var tE = sortedList[l-1];
 						sortedList[l-1] = sortedList[l];
 						sortedList[l] = tE;
@@ -967,7 +1001,8 @@ window.Compass = function() {
 		var sEvent = null;
 		var i = 0;
 		while ( sEvent == null && i < this.ongoingEvents.length ) {
-			if ( this.ongoingEvents[i].characters.includes(character) && this.ongoingEvents[i].flagForcedToEnd == false ) {
+			if ( this.ongoingEvents[i].characters.includes(character) ) {
+			//if ( this.ongoingEvents[i].characters.includes(character) && this.ongoingEvents[i].flagForcedToEnd == false ) {
 				sEvent = this.ongoingEvents[i];
 			}
 			i++;
@@ -1109,6 +1144,11 @@ window.Compass = function() {
 			}
 		}
 	}
+	
+	Compass.prototype.debugFinishedEventInfo = function(sEvent) {
+		var text = "|Finished event. Event name: " + sEvent.title + ", Chars: [" + sEvent.characters + "], Total time: " + sEvent.ongoingTime + ", HHMM: " + State.variables.daycycle.hours + ":" + State.variables.daycycle.minutes + " |";
+		return text;
+	}
 	Compass.prototype.cleanPhantasmEvents = function() {
 		this.pushTimeToOngoingEvents(0);
 	}
@@ -1122,6 +1162,7 @@ window.Compass = function() {
 		this.allCharsCheckMapAi();
 	}
 	Compass.prototype.pushAllTimeToAdvance = function() {
+		this.sortOnGoingEventsByTime();
 		this.pushTimerUntilPlayerIsDone();
 		if ( this.timeToAdvance == 0 ) {
 			this.pushTimeToOngoingEvents(0);
@@ -1225,15 +1266,15 @@ window.Compass = function() {
 		for ( var sEvent of this.ongoingEvents ) {
 			if ( sEvent.characters.includes("chPlayerCharacter") == false ) {
 				if ( sEvent.label == "liberationChallenge" ) {
-					if ( isLiberationChallengePossible(sEvent.charactersTeamA[0],sEvent.charactersTeamB[0]) == false ) {
+					if ( isLiberationChallengePossible(sEvent.charactersTeamA[0],sEvent.charactersTeamB[0],true) == false ) {
 						sEvent.forceEnd("Not valid liberation challenge");
 					}
 				} else if ( sEvent.label == "challenge" ) {
-					if ( isChallengePossible(sEvent.charactersTeamA[0],sEvent.charactersTeamB[0]) == false ) {
+					if ( isChallengePossible(sEvent.charactersTeamA[0],sEvent.charactersTeamB[0],true) == false ) {
 						sEvent.forceEnd("Not valid challenge");
 					}
 				} else if ( sEvent.label == "assault" ) {
-					if ( isAssaultPossible(sEvent.charactersTeamA[0],sEvent.charactersTeamB[0]) == false ) {
+					if ( isAssaultPossible(sEvent.charactersTeamA[0],sEvent.charactersTeamB[0],true) == false ) {
 						sEvent.forceEnd("Not valid assault");
 					}
 				}
@@ -1262,14 +1303,23 @@ window.Compass = function() {
 				this.roomPassage += "</div>\n";
 				
 				// Check if prompt is no longer valid
+				var cancelPromptFlag = false;
 				if ( this.flagPlayerIsPrompted ) {
 					if ( this.isPrompterAchar ) {
-						if ( gC(this.promptSender).followingTo != "" && gC(this.promptSender).followingTo != "chPlayerCharacter" && isCharInScene(this.promptSender) == false ) {
-							// Cancel prompt
-							this.flagPlayerIsPrompted = false;
-							this.promptPassage = "";
-							this.isPrompterAchar = true;
+						if ( this.lastPromptType != "interrupt" ) {
+							if ( (gC(this.promptSender).followingTo != "" && gC(this.promptSender).followingTo != "chPlayerCharacter") || isCharInScene(this.promptSender) == true || areTimeArraysEqual(getTimeArray(),this.lastPromptTime) == false || this.flagEndedScenario == true ) {
+								cancelPromptFlag = true;
+							}
+						} else if ( this.lastPromptType == "forcedFollowing" ) {
+							if ( gC("chPlayerCharacter").domChar != this.promptSender ) {
+								cancelPromptFlag = true;
+							}
 						}
+					}
+					if ( cancelPromptFlag ) {
+						this.flagPlayerIsPrompted = false;
+						this.promptPassage = "";
+						this.isPrompterAchar = true;
 					}
 				}
 				
@@ -1471,9 +1521,7 @@ window.Compass = function() {
 		var text = "__Characters in room__:\n";
 		var i = 1;
 		for ( var character of this.getCurrentRoom().characters ) {
-			if ( gC(character).icon != null ) { // Icon
-				text += gC(character).icon() + " ";
-			}
+			text += gC(character).getIcon() + " ";
 			text += gC(character).getFormattedName(); // Name
 			if ( gC("chPlayerCharacter").cbl.includes(character) ) {
 				text += '<span title="' + "You have a casus belli against this character. Your next assault or challenge against them will cost you no infamy." + '">' + colorText(" (!)","firebrick"); + '</span>';
@@ -1550,13 +1598,13 @@ window.Compass = function() {
 			if ( character != "chPlayerCharacter" ) {
 				var battleButtons = [];
 				// Battle
-				if ( isChallengePossible("chPlayerCharacter",character) ) {
+				if ( isChallengePossible("chPlayerCharacter",character,false) ) {
 					battleButtons.push(this.getButtonChallenge(character));
 				}
-				if ( isAssaultPossible("chPlayerCharacter",character) ) {
+				if ( isAssaultPossible("chPlayerCharacter",character,false) ) {
 					battleButtons.push(this.getButtonAssault(character));
 				}
-				if ( isLiberationChallengePossible("chPlayerCharacter",character) ) {
+				if ( isLiberationChallengePossible("chPlayerCharacter",character,false) ) {
 					battleButtons.push(this.getButtonLiberationChallenge(character));
 				}
 				// Rivalry
@@ -1616,6 +1664,13 @@ window.Compass = function() {
 			}
 			text += " This may continue for at least " + sEvent.timeRemaining + " minutes.";
 		}
+		else if ( sEvent.title == "scene" ) {
+			if ( sEvent.label == "sexScene" ) {
+				text += " having an intimate encounter. This may continue for " + sEvent.timeRemaining + " minutes. Are you sure you should even be here?";
+			} else {
+				text += "engaged in " + sEvent.name + ". This may continue for " + sEvent.timeRemaining + " minutes.";
+			}
+		}
 		else {
 			text += "engaged in " + sEvent.name + ". This may continue for " + sEvent.timeRemaining + " minutes.";
 		}
@@ -1646,6 +1701,7 @@ window.Compass = function() {
 		} else {
 			this.interludePassage = passageText;
 		}
+		this.interludePassage += '<<s' + 'cript>>State.variables.compass.pushTimeToOngoingEvents(0);<</' + 'script>>';
 	}
 	Compass.prototype.setInterludeTrigger = function(uniquePassageText) {
 		this.interludePassage = uniquePassageText;
@@ -1765,7 +1821,7 @@ window.Compass = function() {
 
 	Compass.prototype.getButtonDeclareRivalry = function(target) {
 		var bText = "<<l" + "ink [[ Riv|Map]]>><<s" + "cript>>\n";
-		bText 	 += "declareRivalry('chPlayerCharacter','" + target + "');\n";
+		bText 	 += "declareRivalry('chPlayerCharacter','" + target + "',[0,0,0,0,[]]);\n";
 		bText	 += "<</s" + "cript>><</l" + "ink>>" + getTextWithTooltipAlt("^^(?)^^:","Declare rivalry.\n" + relTypeRivalryTooltip()) + colorText(getDeclaringRivalryCost("chPlayerCharacter",target),"khaki") + "";
 		return bText;
 	}	
@@ -2082,9 +2138,7 @@ window.createStandardDisplayConnections = function(connections) { // May be alte
 window.displayCharIconsInRoom = function(roomKey) {
 	var string = "";
 	for ( var character of getRoomA(roomKey).characters ) {
-		if ( gC(character).icon != null ) {
-			string += gC(character).icon() + " ";
-		}
+		string += gC(character).getIcon() + " ";
 	}
 	return string;
 }

@@ -509,6 +509,13 @@ window.areCharactersLinked = function(charA,charB) {
 				flagLinked = true;
 			}
 		}
+		if ( flagLinked == false ) {
+			if ( gC(charA).position.hasOwnProperty('initiator') ) {
+				if ( gC(charA).position.initiator == charB ) {
+					flagLinked = true;
+				}
+			}
+		}
 	}
 	else if ( gC(charA).position.type == "passive" ) {
 		if ( gC(charA).position.initiator == charB ) {
@@ -1003,7 +1010,7 @@ window.getAllActions = function() {
 	return actions;
 }
 
-window.returnBaList = function() {
+window.returnBaList = function() { // Outdated?
 	return ["struggle","baKissLips","baStrokeDick","baStrokePussy","baTeaseLockedDick","baTeaseLockedPussy","pounceFrontal","pounceFrontalD2P","pounceFrontalP2D","pounceFrontalP2P","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","coldGuts","baScratch","catAspect","embers","freezeFeet","sparkingRubbing","lightningDarts","taunt","baTease","baHypnoticGlance","baOrderKneeling","baDrainingKiss","baEnergyDrainingKiss","baEtherealChains","baVineArmLock","baBorrowedIdentity","baRelaxingScent","holyBlast","flamingFan","flaringFeint","disablingShot","earthWall","quake"];
 }
 window.returnFirstScrollGroupActionsList = function() {
@@ -1068,4 +1075,63 @@ window.getCurrentContinuedActionsBetweenInitiatorAndTarget = function(initiator,
 	
 	return existingCAs;
 }
+
+// SA List Keywords
+	// These are used to compress saLists into less extensive pools of data, saving space
+	// Each keyword follows this structure: [<keyword name>,<associated scene actions list>]
+
+setup.saListKeywords = [
+	["bsa", // Basic sex actions
+	["strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","mountDick"]],
+	["bca", // Basic combat actions
+	["baKissLips","baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","taunt","baTease","embers","freezeFeet","sparkingRubbing","runAway"]],
+	["fsg", // First scroll group
+	["pushHipsBack","pushAssBack","scissor","thrust","mountFromBehind","rideDick","pushDickBack","kneel","makeKneel","legHoldHead","getBlowjob","fuckFace","suckDick","lickPussy","rideFace","giveCunnilingus","giveBlowjob",'strokeAss','penetrateAss','analThrust','doublePenetration','doubleThrust','analMountDick','analRideDick','analPushDickBack','spanking','holdArms','vinesHoldArms','dickFootjob','pussyFootjob','lickLegs','denyOrgasm','teaseLockedPussy','teaseLockedDick','baTeaseLockedDick','baTeaseLockedPussy','extraMountFromBehind','extraKneel','extraMakeKneel','extraLegHoldHead','coldGuts','pounceFrontal']],
+	["fmg", // First monster group
+	["etherealChains","baEtherealChains","energyDrainingKiss","baDrainingKiss","baEnergyDrainingKiss","realHypnoticGlance","baHypnoticGlance"]]
+];
+
+window.compressSaList = function(saList) {
+	// Returns a compressed sa list
+	var cSaList = [];
+	var compressedSa = [];
+	// Add all potential keywords
+	for ( var kw of setup.saListKeywords ) {
+		var validKw = true;
+		for ( var sa of kw[1] ) {
+			if ( saList.includes(sa) == false ) {
+				validKw = false;
+			}
+		}
+		if ( validKw ) {
+			cSaList.push(kw[0]);
+			compressedSa = compressedSa.concat(kw[1]);
+		}
+	}
+	// Add 
+	for ( var st of saList ) {
+		if ( compressedSa.includes(st) == false ) {
+			cSaList.push(st);
+		}
+	}
+	return cSaList;
+}
+window.decompressSaList = function(saList) {
+	// Returns a decompressed sa list
+	var dSaList = [];
+	for ( var st of saList ) {
+		var foundKeyword = false;
+		for ( var kw of setup.saListKeywords ) {
+			if ( st == kw[0] ) {
+				dSaList = dSaList.concat(kw[1]);
+				foundKeyword = true;
+			}
+		}
+		if ( foundKeyword == false ) {
+			dSaList.push(st);
+		}
+	}
+	return dSaList;
+}
+
 

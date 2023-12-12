@@ -654,7 +654,7 @@ window.createAiWeightedMissionsByTasteOld = function() {
 						dice = 0;
 					}
 					if ( State.variables.sc.sceneConditions.includes("cantChangePositions") == false && State.variables.sc.sceneConditions.includes("cantCancelPositions") == false ) {
-						State.variables.sc.cancelPosition(character);
+						State.variables.sc.cancelPosition(character,false);
 					}
 				}
 				if ( this.missionCommands.length < 1 ) {
@@ -759,7 +759,7 @@ window.createAiWeightedMissionsByTaste = function() {
 									this.missionCommands.shift();
 								} else if ( mission[2] == "cancel" ) {
 									// Cancel position and skip position action
-									State.variables.sc.cancelPosition(character);
+									State.variables.sc.cancelPosition(character,false);
 									this.missionCommands = [[mission[0],mission[1]]];
 									results.actionKey = this.missionCommands[0][0];
 									results.targetsIDs = [this.missionCommands[0][1]];
@@ -1102,7 +1102,7 @@ window.charEvaluatesContinuedActionsToCancel = function(actor) {
 		State.variables.sc.removeContinuedAction(id);
 	}
 	if ( flagCancelPosition ) {
-		State.variables.sc.cancelPosition(actor);
+		State.variables.sc.cancelPosition(actor,false);
 	}
 }
 window.cancelAllCharActionsAndPositions = function(actor) {
@@ -1118,7 +1118,7 @@ window.cancelAllCharActionsAndPositions = function(actor) {
 	for ( var id of casToRemove ) {
 		State.variables.sc.removeContinuedAction(id);
 	}
-	State.variables.sc.cancelPosition(actor);
+	State.variables.sc.cancelPosition(actor,false);
 }
 
 window.cancelActionsConflictingWithTf = function(actor) {
@@ -1129,7 +1129,7 @@ window.cancelActionsConflictingWithTf = function(actor) {
 		var conflictingContinuedActions = []; // Reverse position iterators
 		
 		// Get all tfActions from a tfActor
-		for ( var sa of gC(State.variables.sc.tfActors[0]).saList ) {
+		for ( var sa of gC(State.variables.sc.tfActors[0]).getSaList() ) {
 			if ( setup.saList[sa].tags.includes("tf") ) {
 				tfActions.push(sa);
 				// Get all requiredBps
@@ -1253,7 +1253,7 @@ window.findAllPotentialPositions = function(actor,target) {
 		positions.push(["free","free","stay",target]);
 	}
 	// Get all position actions known by actor
-	var positionActions = purgeActionsWithoutPreferenceTag(gC(actor).saList,"position");
+	var positionActions = purgeActionsWithoutPreferenceTag(gC(actor).getSaList(),"position");
 	// Filter usable position actions
 	var usablePositionActions = [];
 	if ( gC(actor).aiAlgorythm.disablePositions == false ) {
@@ -1280,7 +1280,7 @@ window.findAllPotentialPositions = function(actor,target) {
 }
 window.getCharsPrimaryContinuedActions = function(charKey) {
 	var pca = [];
-	var caList = purgeActionsWithoutPreferenceTag(gC(charKey).saList,"continuedAction");
+	var caList = purgeActionsWithoutPreferenceTag(gC(charKey).getSaList(),"continuedAction");
 	for ( var ca of caList ) {
 		if ( setup.saList[ca].hasOwnProperty("caRank") ) {
 			if ( setup.saList[ca].caRank == 2 ) {
@@ -1333,7 +1333,7 @@ window.returnValidSexSceneMissions = function(character,target) {
 	if ( gC(character).hasFreeBodypart("pussy") && gC(target).hasFreeBodypart("pussy") ) {
 		validMissions.push("scissor");
 	}
-	if ( gC(character).hasFreeBodypart("dick") && gC(target).hasFreeBodypart("pussy") && gC(target).hasFreeBodypart("anus") && gC(character).race == "shapeshifter" && gC(character).saList.includes("doublePenetration") && State.variables.settings.anal == "enable" ) {
+	if ( gC(character).hasFreeBodypart("dick") && gC(target).hasFreeBodypart("pussy") && gC(target).hasFreeBodypart("anus") && gC(character).race == "shapeshifter" && gC(character).getSaList().includes("doublePenetration") && State.variables.settings.anal == "enable" ) {
 		validMissions.push("doublePenetration");
 	}
 	if ( gC(character).hasFreeBodypart("dick") && gC(target).hasFreeBodypart("mouth") ) {
@@ -1472,7 +1472,7 @@ window.purgeCAsConflictingWithTransformationGoals = function(caUnweightedList,ac
 	var requiredActorBps = [];
 	
 	// Get all tfActions from a tfActor
-	for ( var sa of gC(State.variables.sc.tfActors[0]).saList ) {
+	for ( var sa of gC(State.variables.sc.tfActors[0]).getSaList() ) {
 		if ( setup.saList[sa].tags.includes("tf") ) {
 			tfActions.push(sa);
 			// Get all requiredBps
@@ -1536,7 +1536,7 @@ window.fixActorsActionListDependingOnTargetBeingMonster = function(actor,actions
 				newList.push(action,action,action);
 			}
 		} else if ( setup.saList[action].strategyTags.includes("captureMonster") == true ) {
-			if ( gC(target).race == "monster" ) { // TO DO: Condition, monster should only be captured if the actor wants the monster 
+			if ( gC(target).race == "monster" ) {
 				newList.push(action);
 				if ( gC(actor).hasOwnProperty("mapAi") ) {
 					if ( gC(actor).mapAi.goalsList.length > 0 ) {

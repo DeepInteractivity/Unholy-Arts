@@ -18,6 +18,7 @@ window.initializeGleamingCavernsAdventure = function() {
 			gC(cK).combatAffinities.holy = new flavorAffinity("holy");
 		}
 	}
+	
 	// Initialize tribes & Shapeshifter tribe
 	State.variables.tribes = new pseudoList();
 		// Shapeshifters respect
@@ -26,6 +27,7 @@ window.initializeGleamingCavernsAdventure = function() {
 		gC(cK).ssRsp = 0; // Individual respect
 	}
 	gC("chVal").ssRsp = -500; // Valtan respect
+	
 	// Other story variables
 	initNersmiasGlobalTrust();
 	initNersmiasGlobalConviction();

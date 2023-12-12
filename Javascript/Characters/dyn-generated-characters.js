@@ -39,13 +39,11 @@ window.generateBaseHumanoid = function(name,baseStat) {
 	character.avatar = function() {
 		return "[img[img/portraits/unknown-avatar.png]]";
 	}
-	character.icon = function() {
-		return "[img[img/charIcons/npcIcon.png]]";
-	}
+	character.icon = "npcIcon";
 	
 	character.fullPortraitL = "img/portraits/unknown-full.png";
 	character.avatarL = "img/portraits/unknown-avatar.png";
-	character.iconL = "img/charIcons/npcIcon.png";
+	//character.iconL = "img/charIcons/npcIcon.png";
 	
 	// AI
 	character.globalAi = createCandidateGlobalAi(chKey);
@@ -176,7 +174,7 @@ window.generateFemaleAnonLizardlin = function(statVariance,statBuff,number) {
 	character.statsDifficultyAdjustments(1);
 	
 	// Affinities
-	character.combatAffinities.fire.resistance += 30;
+	character.combatAffinities.fire.rst += 30;
 	character.combatAffinities.fire.strength += 15;
 	
 	character.saList = ["strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","mountDick"].concat(returnGenericLizardlinBaList());
@@ -207,7 +205,7 @@ window.generateMaleAnonLizardlin = function(statVariance,statBuff,number) {
 	character.statsDifficultyAdjustments(1);
 	
 	// Affinities
-	character.combatAffinities.fire.resistance += 30;
+	character.combatAffinities.fire.rst += 30;
 	character.combatAffinities.fire.strength += 15;
 	
 	character.saList = ["strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","mountDick"].concat(returnGenericLizardlinBaList());

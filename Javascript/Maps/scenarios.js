@@ -39,7 +39,10 @@ window.initTrainingPeriodPassionTemple = function() {
 	}
 	
 	// Declare rivalries if required
-	activeNPCsDeclareRivalries();
+	if ( State.variables.eventsCalendar.activeEvent == false ) {
+		callFtmiwse();
+	}
+	// activeNPCsDeclareRivalries();
 	
 	State.variables.compass.allCharsCheckMapAi();
 	
@@ -211,6 +214,13 @@ window.initAdventurePeriodGleamingCaverns = function() {
 	State.variables.compass.sortOnGoingEventsByTime();
 }
 
+	// Others
+window.callFtmiwse = function() { // Functions that might interfere with story events
+	if ( isCurrentStoryStateInMainLoop() ) {
+		activeNPCsDeclareRivalries();
+	}
+}
+
 	// Tests
 window.initCommandTestsPeriodPassionTemple = function() {
 	
@@ -314,7 +324,8 @@ window.initFakePeriodPassionTemple = function() {
 	// Place Candidates on map
 	State.variables.compass.initializeMap("mapTrainingGrounds","westLibrary");
 	var chars = getActiveSimulationCharactersArray();
-	State.variables.mapTrainingGrounds.placeCharacters(["chNash","chMir","chAte","chClaw","chVal"],"westLibrary");
+	var simmedChars = arrayMinusA(getActiveSimulationCharactersArray(),"chPlayerCharacter")
+	State.variables.mapTrainingGrounds.placeCharacters(simmedChars,"westLibrary");
 	
 	// Stablish period type
 	State.variables.simCycPar.templeDayPeriod = "training";
@@ -350,7 +361,7 @@ window.initFakePeriodPassionTemple = function() {
 	// Place Candidates on map
 	State.variables.compass.initializeMap("mapTrainingGrounds","westLibrary");
 	var chars = getActiveSimulationCharactersArray();
-	State.variables.mapTrainingGrounds.placeCharacters(["chNash","chMir","chAte","chClaw","chVal"],"westLibrary");
+	State.variables.mapTrainingGrounds.placeCharacters(simmedChars,"westLibrary");
 	
 	// Stablish period type
 	State.variables.simCycPar.templeDayPeriod = "socialization";
@@ -422,7 +433,7 @@ window.initFakePeriodPassionTempleXtimes = function(times) {
 //		State.variables.logL1.push(getActiveSimulationCharactersArray().length);
 	}
 	} catch(e) {
-		State.variables.logL2.errorLog = e.message;
+		State.variables.logL3.push("ERROR MSG: ",e.message);
 	}
 	/*
 	// Logging
@@ -450,6 +461,142 @@ window.initFakePeriodPassionTempleXtimes = function(times) {
 	}
 	*/
 }
+
+window.candidatesBecomeFutas = function() {
+	gC("chPlayerCharacter").addBodypart("dick","dick");
+	gC("chClaw").addBodypart("dick","dick");
+	gC("chAte").addBodypart("dick","dick");
+	gC("chVal").addBodypart("dick","dick");
+	gC("chNash").addBodypart("dick","dick");
+	gC("chMir").addBodypart("dick","dick");
+}
+window.initTestsFirst10Days = function() {
+	try {
+		var i = 0;
+		var times = 10;
+		while ( i < times ) {
+			i++;
+			State.variables.logL3.push("fakePeriod");
+			initFakePeriodPassionTemple();
+			State.variables.logL3.push("perRoom");
+			State.variables.personalRoom.initPersonalRoom();
+			
+			State.variables.logL3.push("socPri");
+			// AI social priorities
+			for ( var character of arrayMinusA(getActiveSimulationCharactersArray(),"chPlayerCharacter") ) {
+				setSocialAiCandidateGoals(gC(character).socialAi);
+			}
+			
+			State.variables.logL3.push("finishedDay");
+		}
+	} catch(e) {
+		State.variables.logL3.push("ERROR MSG: ",e.message);
+	}
+}
+window.initTestsFirstMonthSecondHalf = function() {
+	gC("chClaw").baseMood.angry = 0;
+	gC("chAte").baseMood.bored = 0;
+	State.variables.enabledMerchants = [0,30];
+	State.variables.settings.relationshipTypesAllowed = true;
+	State.variables.settings.followingAllowed = true;
+	State.variables.settings.challengingAllowed = true;
+	State.variables.settings.assaultingAllowed = true;
+	try {
+		var i = 0;
+		var times = 15;
+		while ( i < times ) {
+			i++;
+			State.variables.logL3.push("fakePeriod");
+			initFakePeriodPassionTemple();
+			State.variables.logL3.push("perRoom");
+			State.variables.personalRoom.initPersonalRoom();
+			
+			State.variables.logL3.push("socPri");
+			// AI social priorities
+			for ( var character of arrayMinusA(getActiveSimulationCharactersArray(),"chPlayerCharacter") ) {
+				setSocialAiCandidateGoals(gC(character).socialAi);
+			}
+			
+			State.variables.logL3.push("finishedDay");
+		}
+	} catch(e) {
+		State.variables.logL3.push("ERROR MSG: ",e.message);
+	}
+}
+window.initTestsSecondMonth = function() {
+	gC("chClaw").baseMood.angry = 0;
+	gC("chAte").baseMood.bored = 0;
+	State.variables.enabledMerchants = [0,30];
+	State.variables.settings.relationshipTypesAllowed = true;
+	State.variables.settings.followingAllowed = true;
+	State.variables.settings.challengingAllowed = true;
+	State.variables.settings.assaultingAllowed = true;
+	State.variables.trainingResultsModifier = 1.5;
+	State.variables.settings.relationshipsDuration++;
+	State.variables.settings.equipmentDuration++;
+	State.variables.settings.infamyLimit += 5;
+	State.variables.storyState = storyState.secondLoop;
+	try {
+		var i = 0;
+		var times = 20;
+		while ( i < times ) {
+			i++;
+			State.variables.logL3.push("fakePeriod");
+			initFakePeriodPassionTemple();
+			State.variables.logL3.push("perRoom");
+			State.variables.personalRoom.initPersonalRoom();
+			
+			State.variables.logL3.push("socPri");
+			// AI social priorities
+			for ( var character of arrayMinusA(getActiveSimulationCharactersArray(),"chPlayerCharacter") ) {
+				setSocialAiCandidateGoals(gC(character).socialAi);
+			}
+			
+			State.variables.logL3.push("finishedDay");
+		}
+	} catch(e) {
+		State.variables.logL3.push("ERROR MSG: ",e.message);
+	}
+}
+
+window.printTestsData = function() {
+	var pD = ""; // Printed Data
+	
+	var sA = ["Ph","Ag","Re","Wi","In","Pe","Em","Ch","Lk"];
+	var cumulativeDrives = [0,0,0,0,0,0];
+	// var sA = ["Fr","Ro"];
+	for ( var cK of getActiveSimulationCharactersArray() ) {
+		pD += gC(cK).name + " - Mrt:" + gC(cK).merit + " - Infm:" + gC(cK).infamy + "\n";
+		var i = 0;
+		var total = 0;
+		while ( i < 9 ) {
+			pD += sA[i] + gC(cK)[setup.baseStats[i]].value + " ";
+			total += gC(cK)[setup.baseStats[i]].value;
+			i++;
+		}
+		pD += "   TOTAL: " + total;
+		pD += "\n";
+		for ( var it in gC(cK).relations ) {
+			var rel = gC(cK).relations[it];
+			if ( rel instanceof Relation ) {
+				pD += gC(rel.target).name + ": ";
+				pD += colorText(("Fr" + rel.friendship.level),"khaki") + " Ro" + rel.romance.level + " Sx" + rel.sexualTension.level + colorText((" Do" + rel.domination.level + " Sb" + rel.submission.level),"purple") + " Ri" + rel.rivalry.level + " En" + rel.enmity.level;
+				pD += "\n";
+			}
+		}
+		pD += "SImp:" + getCharsDrive(cK,"dImprovement") + " | Love:" + getCharsDrive(cK,"dLove") + " | Plsr:" + getCharsDrive(cK,"dPleasure") + " | Coop:" + getCharsDrive(cK,"dCooperation") + " | Domn:" + getCharsDrive(cK,"dDomination") + " | Ambt:" + getCharsDrive(cK,"dAmbition") + " \n";
+		cumulativeDrives[0] += getCharsDrive(cK,"dImprovement");
+		cumulativeDrives[1] += getCharsDrive(cK,"dLove");
+		cumulativeDrives[2] += getCharsDrive(cK,"dPleasure");
+		cumulativeDrives[3] += getCharsDrive(cK,"dCooperation");
+		cumulativeDrives[4] += getCharsDrive(cK,"dDomination");
+		cumulativeDrives[5] += getCharsDrive(cK,"dAmbition");
+		pD += "\n";
+	}
+	pD = "__Cumulative drives:__\n" + "SImp: " + cumulativeDrives[0] + "\nLove: " + cumulativeDrives[1] + "\nPlsr: " + cumulativeDrives[2] + "\nCoop: " + cumulativeDrives[3] + "\nDomn: " + cumulativeDrives[4] + "\nAmbt: " + cumulativeDrives[5] + "\n\n" + pD;
+	return pD;
+}
+
 
 
 window.testGleamingCaverns = function() {
@@ -489,5 +636,8 @@ window.testGleamingCaverns = function() {
 	State.variables.compass.sortOnGoingEventsByTime();
 	setSubareaCaverns();
 }
+
+
+
 
 

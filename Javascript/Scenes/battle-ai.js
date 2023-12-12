@@ -292,7 +292,7 @@ window.bAiProcessTurn = function(actor,allyCharacters,enemyCharacters,currentTur
 				
 				// Holy actions
 				if ( setup.saList[action].strategyTags.includes("holyAttack") ) {
-					if ( (gC(target).combatAffinities.holy.weakness - gC(target).combatAffinities.holy.resistance) <= 0 ) {
+					if ( (gC(target).combatAffinities.holy.wkn - gC(target).combatAffinities.holy.rst) <= 0 ) {
 						w *= 0;
 					} else {
 						w *= 3;
@@ -315,7 +315,7 @@ window.bAiProcessTurn = function(actor,allyCharacters,enemyCharacters,currentTur
 				if ( setup.saList[action].strategyTags.includes("damage") ) {
 					for ( var el of setup.checkElementalDamage ) {
 						if ( setup.saList[action].strategyTags.includes(el) ) {
-							var expectedDamMult = (gC(actor).combatAffinities[el].strength - gC(actor).combatAffinities[el].frailty + gC(target).combatAffinities[el].weakness - gC(actor).combatAffinities[el].resistance) * 0.01;
+							var expectedDamMult = (gC(actor).combatAffinities[el].strength - gC(actor).combatAffinities[el].frlt + gC(target).combatAffinities[el].wkn - gC(actor).combatAffinities[el].rst) * 0.01;
 							w *= (1 + expectedDamMult * 0.5);
 						}
 					}
@@ -325,7 +325,7 @@ window.bAiProcessTurn = function(actor,allyCharacters,enemyCharacters,currentTur
 				var validSexOffensive = false;
 				if ( setup.saList[action].strategyTags.includes("sexOffensive") ) {
 					if ( longPinnableEnemies.length > 0 && longPinnableEnemies.includes(target) ) {
-						if ( (gC(actor).combatAffinities.sex.strength - gC(actor).combatAffinities.sex.frailty + gC(target).combatAffinities.sex.weakness - gC(actor).combatAffinities.sex.resistance) > 0 ) {
+						if ( (gC(actor).combatAffinities.sex.strength - gC(actor).combatAffinities.sex.frlt + gC(target).combatAffinities.sex.wkn - gC(actor).combatAffinities.sex.rst) > 0 ) {
 							w *= 2;
 							validSexOffensive = true;
 						}

@@ -246,6 +246,7 @@ window.selectAnimationSprites = function() {
 	// It must return an animation key and a list of actors with corresponding animation positions
 	// Example of ValidAnimationData = ["mountDick",[["chPlayerCharacter","MftfMdT"],["chMir","MftfMdB"]],"MftfMd" + ca.initiator + ca.targetsList[0]];
 	//									type		[[charA,model],				     [charB,model]]		  (type+Actors)Identifier
+	// model refers to the object containing the references to the sprites to be selected from setup.SCSDL
 	
 	// Select animation
 	var selectedAnimation = "";
@@ -263,18 +264,26 @@ window.selectAnimationSprites = function() {
 			ch1anTags = ["MGrayCharacter"];
 		} else {
 			if ( ch1anTags.includes("Mcy") || ch1anTags.includes("Mcb") || ch1anTags.includes("Mcr") ) {
-				ch1anTags.push("WhiteHuman");
+				if ( ch1anTags.includes("WhiteHuman") == false ) {
+					ch1anTags.push("WhiteHuman");
+				}
 			} else {
-				ch1anTags.push("GrayCharacter");
+				if ( ch1anTags.includes("GrayCharacter") == false ) {
+					ch1anTags.push("GrayCharacter");
+				}
 			}
 		}
 		if ( gC(chB).perPr == "he" ) {		
 			ch2anTags = ["MGrayCharacter"];
 		} else {
 			if ( ch2anTags.includes("Mcy") || ch2anTags.includes("Mcb") || ch2anTags.includes("Mcr") ) {
-				ch2anTags.push("WhiteHuman");
+				if ( ch2anTags.includes("WhiteHuman") == false ) {
+					ch2anTags.push("WhiteHuman");
+				}
 			} else {
-				ch2anTags.push("GrayCharacter");
+				if ( ch2anTags.includes("GrayCharacter") == false ) {
+					ch2anTags.push("GrayCharacter");
+				}
 			}
 		}
 		var chAnTagsPosList = [[selectedAnimation[1][0][0],ch1anTags,selectedAnimation[1][0][1]],[selectedAnimation[1][1][0],ch2anTags,selectedAnimation[1][1][1]]];

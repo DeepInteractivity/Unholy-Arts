@@ -101,8 +101,8 @@ NpcSocialAi.prototype.getInterRoundBehavior = function(sis) {
 			for ( var cK of sis.charList ) {
 				// Intimate relationship
 				if ( gC(this.charKey).socialAi.loveTs.includes(cK) ) {
-					if ( setup.sistDB[setup.sistType.companionship].isPossible(this.charKey,cK) ) {
-						if ( setup.sistDB[setup.sistType.companionship].isSuccessful(this.charKey,cK)[0] && setup.sistDB[setup.sistType.companionship].isSuccessful(cK,this.charKey)[0] ) {
+					if ( setup.sistDB[setup.sistType.intimacy].isPossible(this.charKey,cK) ) {
+						if ( setup.sistDB[setup.sistType.intimacy].isSuccessful(this.charKey,cK)[0] && setup.sistDB[setup.sistType.intimacy].isSuccessful(cK,this.charKey)[0] ) {
 							choice = setup.sistType.intimacy;
 							target = cK;
 						}
@@ -116,8 +116,10 @@ NpcSocialAi.prototype.getInterRoundBehavior = function(sis) {
 					var validTarget = "";
 					for ( var chKey of sis.charList ) {
 						if ( gC(this.charKey).socialAi.allyTs.includes(chKey) || gC(this.charKey).socialAi.loveTs.includes(chKey) ) {
-							if ( setup.sistDB[setup.sistType.companionship].isSuccessful(this.charKey,chKey)[0] ) {
-								validTarget = chKey;
+							if ( setup.sistDB[setup.sistType.companionship].isPossible(this.charKey,chKey) ) {
+								if ( setup.sistDB[setup.sistType.companionship].isSuccessful(this.charKey,chKey)[0] ) {
+									validTarget = chKey;
+								}
 							}
 						}
 					}
@@ -202,7 +204,7 @@ NpcSocialAi.prototype.getInterRoundBehavior = function(sis) {
 			
 						var allowedSex = true;
 						if ( gC(this.charKey).subChars.includes(priorizedChar) ) {
-							if ( limitedRandomInt(16) > 4 ) { allowedSex == false; }
+							if ( limitedRandomInt(16) > 4 ) { allowedSex == false; } 
 						}
 						if ( allowedSex ) {
 							var domSexAllowed = true;
@@ -733,21 +735,27 @@ window.scorePotentialConquest = function(actor,target) {
 window.scorePotentialRival = function(actor,target) {
 	var score = 0;
 	
+		// Just old plain relationship
 	var relationScore = rLvlAbt(actor,target,"rivalry") * 1.5 + rLvlAbt(actor,target,"enmity") * 2 - rLvlAbt(actor,target,"friendship") * 1 - rLvlAbt(actor,target,"romance") * 1.5;
+		// Does the character want to break free of a submission dynamic?
 	var submissionScore = rLvlAbt(actor,target,"submission") - rLvlAbt(actor,target,"domination");
+		// Does the character wants to challenge high merit characters?
 	var meritScore = gC(target).merit - gC(actor).merit;
+	if ( meritScore > ( gC(actor).merit * 0.9 + 5 ) ) { meritScore = gC(actor).merit * 0.9 + 5; }
+		// Does the character want to punish evil-doers?
 	var infamyScore = gC(target).infamy - gC(actor).infamy;
+		// Does the character value intimacy?
 	var intimateScore = getCharsRelativeIntimacy(actor,target) * getInfluenceEffectWithDrives(target,2,["dLove","dCooperation"],["dAmbition","dDomination","dImprovement"]) * -1;
 	
 	score += relationScore;
-	if ( submissionScore > 0 ) { score += submissionScore * getCharsDrivePercent(actor,"dAmbition") * 5; }
-	if ( meritScore > 0 ) { score += meritScore; }
-	if ( infamyScore > 0 ) { score += infamyScore * getCharsDrivePercent(actor,"dCooperation") * 5; }
-	score += intimateScore;
+	if ( submissionScore > 0 ) { score += submissionScore * getCharsDrivePercent(actor,"dAmbition") * 6; }
+	if ( meritScore > 0 ) { score += meritScore * getCharsDrivePercent(actor,"dAmbition") * 6; }
+	if ( infamyScore > 0 ) { score += infamyScore * getCharsDrivePercent(actor,"dCooperation") * getCharsDrivePercent(actor,"dLove") * 12; }
+	if ( intimateScore > 0 ) { score -= intimateScore; }
 	
 	score += score * limitedRandom(setup.randomTargetScore);
 	
-	if ( gC(actor).domChar == target ) { score = -50; }
+	if ( gC(target).domChar == actor ) { score = -50; }
 	
 	return score;
 }

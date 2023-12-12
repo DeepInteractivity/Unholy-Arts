@@ -41,7 +41,7 @@ window.formatNersmiasSocialBattleMainPassage = function(isFirstRound) {
 		
 		if ( contractedMenu == false ) {
 			// Did Player attack?
-			if ( State.variables.nerSocPlayerHypno == true && gC("chPlayerCharacter").saList.includes("baHypnoticGlance") && gC("chPlayerCharacter").willpower.current >= 5 ) {
+			if ( State.variables.nerSocPlayerHypno == true && gC("chPlayerCharacter").getSaList().includes("baHypnoticGlance") && gC("chPlayerCharacter").willpower.current >= 5 ) {
 				pT += "\n\nYou capture Nersmias' eyes and enter his thoughts, disrupting them and replacing them with noise.\n//Nersmias' conviction and trust have decreased.\n"
 					+ "You have lost " + textWillpowerPoints(5) + ".";
 				gC("chPlayerCharacter").willpower.current -= 5;
@@ -133,7 +133,7 @@ window.formatNersmiasSocialBattleMainPassage = function(isFirstRound) {
 				
 			// Use hypnosis option
 				// Textbox: check to use hypnosis if possible. Using hypnosis consumes willpower
-			if ( gC("chPlayerCharacter").saList.includes("baHypnoticGlance") && gC("chPlayerCharacter").willpower.current >= 5 ) {
+			if ( gC("chPlayerCharacter").getSaList().includes("baHypnoticGlance") && gC("chPlayerCharacter").willpower.current >= 5 ) {
 				pT += "\n\nYou may use hypnosis to erode Nersmias' conviction, at the expense of your own willpower.\n" + `<<checkbox "$nerSocPlayerHypno" false true>> Use hypnosis.`
 			}
 			
@@ -184,7 +184,7 @@ window.formatNersmiasSocialBattleMainPassageSecondPart = function(isFirstRound) 
 				
 			// Use hypnosis option
 				// Textbox: check to use hypnosis if possible. Using hypnosis consumes willpower
-			if ( gC("chPlayerCharacter").saList.includes("baHypnoticGlance") && gC("chPlayerCharacter").willpower.current >= 5 ) {
+			if ( gC("chPlayerCharacter").getSaList().includes("baHypnoticGlance") && gC("chPlayerCharacter").willpower.current >= 5 ) {
 				pT += "\n\nYou may use hypnosis to erode Nersmias' conviction, at the expense of your own willpower.\n" + `<<checkbox "$nerSocPlayerHypno" false true>> Use hypnosis.`
 			}
 			
@@ -703,7 +703,7 @@ Nersmias remains silent, his gaze turned to the ground. He's carefully evaluatin
 
 <span @style=$chNer.colorStyleKey>//"...I suppose that's not impossible. It could be that you had ulterior motives to lie in favor of Valtan... But it would be coherent that she was hidden in the deeper tunnels."//</span>
 
-//Your inspiration has decreased Nersmias' conviction and increased his trust.//</span>` + scriptStart() + `modifyPlayerHelpedValtan(1); IorPmodifiesNersmiasLocalTorC(-8,'i','c'); IorPmodifiesNersmiasLocalTorC(4,'i','t');` + `<</s` + `cript>>` + `<<else>> \
+//Your inspiration has decreased Nersmias' conviction and increased his trust.//` + scriptStart() + `modifyPlayerHelpedValtan(1); IorPmodifiesNersmiasLocalTorC(-8,'i','c'); IorPmodifiesNersmiasLocalTorC(4,'i','t');` + `<</s` + `cript>>` + `<<else>> \
 <span style="color:red">Inspiration check: failed.</span>
 
 <span @style=$chNer.colorStyleKey>//"Something you expect me to believe? No one saw her while you were carrying Glien back."//</span>

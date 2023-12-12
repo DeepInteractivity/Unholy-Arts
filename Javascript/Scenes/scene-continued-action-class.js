@@ -104,6 +104,7 @@ window.createCaFrenchKiss = function(initiator, targetsList) {
 	ca.flavorTags = ["oral","useMouth","targetMouth","romantic","continuedAction"];
 	
 	ca.unvalidRelationalPositions.push(["standing","kneeling"],["kneeling","standing"]);
+	ca.unvalidRelationalPositions.push(["mountingFaceToGroin","mountedFaceToGroin"],["mountedFaceToGroin","mountingFaceToGroin"]);
 	
 	ca.learnAssociatedActions();
 	
@@ -311,7 +312,7 @@ window.createCaPenetratePussy = function(initiator, targetsList) {
 	
 	ca.validRelationalPositions.push(["mountingFromBehind","mountedFromBehind"],["mountingFaceToFace","mountedFaceToFace"],
 									 ["spitroastBehind","spitroastTarget"],["mountingFromBehind","mountingAndMounted"],
-									 ["mountingAndMounted","mountedFaceToFace"],["mountingAndMounted","mountedFaceToFace"]);
+									 ["mountingAndMounted","mountedFaceToFace"],["mountingAndMounted","mountedFromBehind"]);
 	
 	ca.execute = function() {
 		var results = new saResults;
@@ -357,7 +358,7 @@ window.createCaPenetrateAss = function(initiator, targetsList) {
 	
 	ca.validRelationalPositions.push(["mountingFromBehind","mountedFromBehind"],["mountingFaceToFace","mountedFaceToFace"],
 									 ["spitroastBehind","spitroastTarget"],["mountingFromBehind","mountingAndMounted"],
-									 ["mountingAndMounted","mountedFaceToFace"],["mountingAndMounted","mountedFaceToFace"]);
+									 ["mountingAndMounted","mountedFaceToFace"],["mountingAndMounted","mountedFromBehind"]);
 	
 	ca.execute = function() {
 		var results = new saResults;
@@ -519,7 +520,7 @@ window.createCaDoublePenetration = function(initiator, targetsList) {
 	
 	ca.validRelationalPositions.push(["mountingFromBehind","mountedFromBehind"],["mountingFaceToFace","mountedFaceToFace"],
 									 ["spitroastBehind","spitroastTarget"],["mountingFromBehind","mountingAndMounted"],
-									 ["mountingAndMounted","mountedFaceToFace"],["mountingAndMounted","mountedFaceToFace"]);
+									 ["mountingAndMounted","mountedFaceToFace"],["mountingAndMounted","mountedFromBehind"]);
 	
 	ca.execute = function() {
 		var results = new saResults;
@@ -809,7 +810,7 @@ window.createCaHoldArms = function(initiator,targetsList) {
 		gC(target).willpower.changeValue(-willpowerDamage);
 		results.value += willpowerDamage;
 		results.description += randomFromList( [
-								(ktn(target) + "'s arms remain restrainted by " + ktn(initiator) + "."),
+								(ktn(target) + "'s arms remain restrained by " + ktn(initiator) + "."),
 								(ktn(target) + " is still immobilized by " + ktn(initiator) + "."),
 								(ktn(initiator) + " keeps " + ktn(target) + "'s arms in place.") ] );
 		results.description += " " + ktn(target) + " received " + textWillpowerDamage(willpowerDamage) + ". " + multAr[1];
@@ -837,11 +838,13 @@ window.createCaHoldArms = function(initiator,targetsList) {
 		else if ( subThrill >= 2 ) { stLustFactor = 1; }
 		if ( stLustFactor > 0 ) {
 			var subLustDamage = (gCstat(initiator,"physique") + gCstat(initiator,"resilience")) / 20 * stLustFactor * multAr[0];
-			gC(target).lust.changeValue(-subLustDamage);
-			if ( stLustFactor >= 2 ) {
-				results.description += " " + ktn(target) + " is uncontrollably gasping due to " + gC(target).posPr + " vulnerability, receiving " + textLustDamage(subLustDamage) + ". " + multAr[1];
-			} else {
-				results.description += " " + ktn(target) + " is getting excited from " + gC(target).posPr + " vulnerability, receiving " + textLustDamage(subLustDamage) + ". " + multAr[1];
+			if ( subLustDamage > 0 ) {
+				gC(target).lust.changeValue(-subLustDamage);
+				if ( stLustFactor >= 2 ) {
+					results.description += " " + ktn(target) + " is uncontrollably gasping due to " + gC(target).posPr + " vulnerability, receiving " + textLustDamage(subLustDamage) + ". " + multAr[1];
+				} else {
+					results.description += " " + ktn(target) + " is getting excited from " + gC(target).posPr + " vulnerability, receiving " + textLustDamage(subLustDamage) + ". " + multAr[1];
+				}
 			}
 		}
 		// Waning willpower extra lust
@@ -849,8 +852,10 @@ window.createCaHoldArms = function(initiator,targetsList) {
 			var exLustDamage = ((gC(this.initiator).physique.getValue() + gC(this.initiator).resilience.getValue())*0.5 / Math.max(gC(target).will.getValue(),1)) * (2 - (gC(target).willpower.current / gC(target).willpower.max)) * multAr[0];
 			//var exLustDamage = ((gC(this.initiator).physique.getValue() + gC(this.initiator).resilience.getValue())
 			//					/ (gC(target).will.getValue() * 2 )) * (1 - (gC(target).willpower.current / gC(target).willpower.max)) * 2;
+			if ( exLustDamage > 0 ) {
 			gC(target).lust.changeValue(-exLustDamage);
-			results.description += " " + ktn(target) + "'s waning willpower aroused " + gC(target).comPr + " and made " + gC(target).comPr + " receive " + textLustDamage(exLustDamage) + ". " + multAr[0];
+				results.description += " " + ktn(target) + "'s waning willpower aroused " + gC(target).comPr + " and made " + gC(target).comPr + " receive " + textLustDamage(exLustDamage) + ". " + multAr[1];
+			}
 		}
 		
 		return results;
@@ -891,7 +896,7 @@ window.createCaAetherialChains = function(initiator,targetsList) {
 		}
 		
 		results.description += randomFromList( [
-								(ktn(target) + "'s arms remain restrainted by " + ktn(initiator) + "'s aetherial chains."),
+								(ktn(target) + "'s arms remain restrained by " + ktn(initiator) + "'s aetherial chains."),
 								(ktn(target) + " is still immobilized by " + ktn(initiator) + "'s aetherial chains."),
 								(ktn(initiator) + "'s aetherial chains keep " + ktn(target) + "'s arms in place.") ] );
 		results.description += " " + ktn(target) + " received " + textWillpowerDamage(generalDamage) + " and " + textEnergyDamage(generalDamage) + "." + overflowMsg1 + overflowMsg2 + " " + ktn(target) + " is having trouble to keep control. " + multAr[1];
@@ -976,7 +981,7 @@ window.createCaVinesHoldArms = function(initiator,targetsList) {
 		}
 		
 		results.description += randomFromList( [
-								(ktn(target) + "'s arms remain restrainted by " + ktn(initiator) + "'s vines."),
+								(ktn(target) + "'s arms remain restrained by " + ktn(initiator) + "'s vines."),
 								(ktn(target) + " is still immobilized by " + ktn(initiator) + "'s vines."),
 								(ktn(initiator) + "'s vines keep " + ktn(target) + "'s arms in place.") ] );
 		results.description += " " + ktn(target) + " received " + textWillpowerDamage(generalDamage) + " and " + textEnergyDamage(generalDamage) + "." + overflowMsg1 + overflowMsg2 + " " + ktn(target) + " is having trouble to keep control. " + multAr[1];
@@ -1099,14 +1104,18 @@ window.createCaEnergyDrainingKiss = function(initiator, targetsList) {
 		var results = new saResults;
 		var target = targetsList[0];
 		
+		var energyCap = gC(target).energy.current; // Drained energy cannot be higher than this
 		var multAr = getSexDamageMultAlt(this.initiator,this.targetsList[0],this.flavorTags);
 		var lustDamage = ((getChar(this.initiator).agility.getValue() + getChar(this.initiator).perception.getValue() + getChar(this.initiator).empathy.getValue()) / 22.5) * multAr[0];
 		getChar(this.initiator).lust.changeValue(-lustDamage/2);
 		getChar(this.targetsList[0]).lust.changeValue(-lustDamage);
 		var energyDrain = (( gCstat("chPlayerCharacter","agility") + gCstat("chPlayerCharacter","perception") + gCstat("chPlayerCharacter","empathy") ) / 30) * multAr[0];
-		gC(this.initiator).energy.changeValue(energyDrain);
+
 		gC(this.targetsList[0]).energy.changeValue(-energyDrain);
+		gC(this.initiator).energy.drain(energyDrain,energyCap);
+		
 		results.value += lustDamage;
+		
 		results.description += randomFromList( [
 								(ktn(initiator) + " steals energy from " + ktn(target) + "'s mouth."),
 								(ktn(initiator) + " keeps kissing " + ktn(target) + ", who feels " + gC(target).posPr + " energy slipping away.") ] );

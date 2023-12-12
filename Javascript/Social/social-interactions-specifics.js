@@ -128,6 +128,7 @@ window.SisSpecifics = function() {
 			effect = sisTopic.getSuccessEffect(actor,target);
 		}
 		else if ( willpowerRejectCost > gC(target).willpower.current ) { // Forced to accept offer due to lack of willpower
+				// TO DO : INFAMY
 			resultsText = "Not enough " + colorText("willpower","darkslateblue"); + " to reject! " + gC(target).getFormattedName() + " resented that. " + sisTopic.getSuccessMessage(actor,target);
 			gC(target).relations[actor].enmity.stv += 10;
 			gC(target).relations[actor].rivalry.stv += 10;
@@ -240,6 +241,10 @@ window.sisTopic = function(title) {
 		if ( desire > 20 ) {
 			cost = desire - 20;
 		}
+		return cost;
+	}
+	this.getInfamyCost = function(actor,target) {
+		var cost = 0;
 		return cost;
 	}
 	
@@ -1511,13 +1516,15 @@ window.createSistOfferServitudeAsMaster = function() {
 		var baseDifficulty = -25;
 		var moodFactor = gC(target).mood.intimate * 0.05 - gC(target).mood.angry * 0.5 - gC(target).mood.bored * 0.3
 					   +  gC(target).mood.submissive * 0.05 - gC(target).mood.dominant * 0.1;
-		var relationshipFactor = rLvlAbt(target,actor,"romance") * 2 + rLvlAbt(target,actor,"sexualTension") * 5
+		var relationshipFactor = rLvlAbt(target,actor,"romance") * 2 + rLvlAbt(target,actor,"sexualTension") * 2
 							 + rLvlAbt(target,actor,"submission") * 5 + rLvlAbt(target,actor,"domination") * -5
 							 + rLvlAbt(target,actor,"rivalry") * 5;
 		var statsFactor = quantifyCharacterStats(actor) - quantifyCharacterStats(target) * 1.2;
-		desire = baseDifficulty + moodFactor + relationshipFactor + statsFactor;
+		var preferencesFactor = getCharsTasteRank(target,"submission") * 5;
+		var compoundingFactors = rLvlAbt(target,actor,"sexualTension") * 3 * getCharsTasteRank(target,"submission");
+		desire = baseDifficulty + moodFactor + relationshipFactor + statsFactor + preferencesFactor;
 		var desireString = "Desire" + getDesireTooltip() + ": Base difficulty (" + baseDifficulty.toFixed(2) + ") + Mood (" + moodFactor.toFixed(2) + ") + Relationship ("
-						 + relationshipFactor.toFixed(2) + ") + Stats (" + statsFactor.toFixed(2) + ") = Total (" + desire.toFixed(2) + ").";
+						 + relationshipFactor.toFixed(2) + ") + Stats (" + statsFactor.toFixed(2) + ") + Preferences (" + preferencesFactor.toFixed(1) + ") + Compounding Factors (" + compoundingFactors.toFixed(2) + ") = Total (" + desire.toFixed(2) + ").";
 		
 		return [desire,desireString];
 	}
@@ -1627,16 +1634,18 @@ window.createSistOfferServitudeAsServant = function() {
 	
 	sist.getDesire = function(actor,target) {
 		var desire = 0;
-		var baseDifficulty = 10;
+		var baseDifficulty = -10;
 		var moodFactor = gC(target).mood.friendly * 0.05 + gC(target).mood.intimate * 0.1 - gC(target).mood.angry * 0.5 - gC(target).mood.bored * 0.3
 					   -  gC(target).mood.submissive * 0.1 + gC(target).mood.dominant * 0.1;
-		var relationshipFactor = rLvlAbt(target,actor,"romance") * 2 + rLvlAbt(target,actor,"sexualTension") * 5
+		var relationshipFactor = rLvlAbt(target,actor,"romance") * 2 + rLvlAbt(target,actor,"sexualTension") * 3
 							 + rLvlAbt(target,actor,"submission") * -5 + rLvlAbt(target,actor,"domination") * 5
 							 + rLvlAbt(target,actor,"enmity") * -10 + rLvlAbt(target,actor,"rivalry") * 5;
 		var statsFactor = quantifyCharacterStats(target) - quantifyCharacterStats(actor) * 1.2;
-		desire = baseDifficulty + moodFactor + relationshipFactor + statsFactor;
+		var preferencesFactor = getCharsTasteRank(target,"domination") * 5;
+		var compoundingFactors = rLvlAbt(target,actor,"sexualTension") * 3 * getCharsTasteRank(target,"domination");
+		desire = baseDifficulty + moodFactor + relationshipFactor + statsFactor + preferencesFactor + compoundingFactors;
 		var desireString = "Desire" + getDesireTooltip() + ": Base difficulty (" + baseDifficulty.toFixed(2) + ") + Mood (" + moodFactor.toFixed(2) + ") + Relationship ("
-						 + relationshipFactor.toFixed(2) + ") + Stats (" + statsFactor.toFixed(2) + ") = Total (" + desire.toFixed(2) + ").";
+						 + relationshipFactor.toFixed(2) + ") + Stats (" + statsFactor.toFixed(2) + ") + Preferences (" + preferencesFactor.toFixed(1) + ") + Compounding Factors (" + compoundingFactors.toFixed(2) + ") = Total (" + desire.toFixed(2) + ").";
 		
 		return [desire,desireString];
 	}
@@ -1775,6 +1784,11 @@ window.createSistOfferTutorshipAsTutor = function() {
 		var competitionFactor = 0;
 		var infamyFactor = 0;
 		var drivesFactor = gC(target).dDomination.level * -2 + gC(target).dAmbition.level * -2;
+		if ( target == "chAte" && (isStVarOn("VlTtAt") || isStVarOn("PlTtAt") ) ) { // Ate wants tutorship story
+			if ( gCstat(actor,"charisma") > (gCstat(target,"charisma") + 5) ) {
+				drivesFactor += 75 + limitedRandomInt(50);
+			}
+		}
 		
 		if ( gC(target).type == "candidate" ) { // More likely to accept if weaker than the average candidate and weaker than potential tutor
 			var averageStr = quantifyAverageCandidateVacuumStrength();
@@ -1783,7 +1797,7 @@ window.createSistOfferTutorshipAsTutor = function() {
 			if ( selfStr < averageStr && actStr > (selfStr * 1.1) ) {
 				competitionFactor += 10;
 				competitionFactor += (actStr - selfStr);
-				drivesFactor += gC(target).dImprovement * 4 + gC(target).dCooperation * 2;
+				drivesFactor += gC(target).dImprovement.level * 4 + gC(target).dCooperation.level * 2;
 			} else {
 				competitionFactor -= 50;
 			}
@@ -1804,7 +1818,7 @@ window.createSistOfferTutorshipAsTutor = function() {
 		
 		var finalValue = semifinalValue + luckFactor;
 		if ( finalValue >= baseDifficulty ) { result = true; }
-		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Competition: " + competitionFactor.toFixed(2) + ", Infamy: " + infamyFactor.toFixed(2) + ", Drives: " + drivesFactor + ", Willpower cost: " + willpowerCostFactor.toFixed(2) + ", Luck: " + luckFactor.toFixed(2) + alignmentData[1]
+		stringResult += " Mood: " + targetMoodFactor.toFixed(2) + ", Relationship: " + relationshipFactor.toFixed(2) + ", Competition: " + competitionFactor.toFixed(2) + ", Infamy: " + infamyFactor.toFixed(2) + ", Drives: " + drivesFactor.toFixed(2) + ", Willpower cost: " + willpowerCostFactor.toFixed(2) + ", Luck: " + luckFactor.toFixed(2) + alignmentData[1]
 					  + " -> Result: " + finalValue.toFixed(2) + " VS Difficulty: " + baseDifficulty;
 		
 		secondStringResult = gC(actor).getFormattedName() + " invited " + gC(target).getFormattedName() + " to become " + gC(target).posPr + " tutor and " + gC(target).perPr;
@@ -2125,7 +2139,7 @@ window.createSistOfferIntimacyRel = function() {
 		if ( gRelTypeAb(actor,target) != null ) {
 			if ( gRelTypeAb(actor,target).type == "companionship" ) {
 				validSpecialRel = true;
-				areCompanions = false;
+				areCompanions = true;
 			}
 		} else {
 			validSpecialRel = true;
@@ -2150,9 +2164,11 @@ window.createSistOfferIntimacyRel = function() {
 							 + rLvlAbt(target,actor,"submission") * 5 - rLvlAbt(target,actor,"domination") * 10
 							 + rLvlAbt(target,actor,"rivalry") * -5 + rLvlAbt(target,actor,"enmity") * -10;
 		var statsFactor = (quantifyCharacterStats(actor) - quantifyCharacterStats(target) * 1.2) / 9;
+		var preferencesFactor = getCharsTasteRank(target,"romantic") * 2;
+		var compoundingFactors = rLvlAbt(target,actor,"romance") * 2 * getCharsTasteRank(target,"romantic");
 		desire = baseDifficulty + moodFactor + relationshipFactor + statsFactor;
 		var desireString = "Desire" + getDesireTooltip() + ": Base difficulty (" + baseDifficulty.toFixed(2) + ") + Mood (" + moodFactor.toFixed(2) + ") + Relationship ("
-						 + relationshipFactor.toFixed(2) + ") + Stats (" + statsFactor.toFixed(2) + ") = Total (" + desire.toFixed(2) + ").";
+						 + relationshipFactor.toFixed(2) + ") + Stats (" + statsFactor.toFixed(2) + ") + Preferences (" + preferencesFactor.toFixed(1) + ") + Compounding Factors (" + compoundingFactors.toFixed(2) + ") = Total (" + desire.toFixed(2) + ").";
 		
 		return [desire,desireString];
 	}
@@ -2240,8 +2256,8 @@ window.createSistOfferIntimacyRel = function() {
 			State.variables.sisSpecifics.continueButton = bText;
 		} else {
 			finishRelType(actor,target);
-			createRelTypeCompanionship(target,actor,gSettings().relationshipsDuration);
-			createRelTypeCompanionship(actor,target,gSettings().relationshipsDuration);
+			createRelTypeIntimacy(target,actor,gSettings().relationshipsDuration);
+			createRelTypeIntimacy(actor,target,gSettings().relationshipsDuration);
 		}
 	}
 	sist.askToPlayer = function(actor,target,sisKey) {
@@ -2870,7 +2886,7 @@ window.sistTransformationEffects = function(actors,targets,additionalChars) {
 		
 			// Event
 		eventToPile(createSystemEventStandardTransformationScene(groupA,groupB,desc,isTfSceneFinished,"Scene Results",
-			tfGoals,tfActors,transformationTarget,flagTemporary,"none","","","TF Std Menu"));
+			tfGoals,tfActors,transformationTarget,flagTemporary,"none","","",[],"TF Std Menu"));
 		
 		// charsA,charsB,description,checkEndScene,endScenePassage,
 		// tfGoals,tfActors,tfTarget,tfTemporary,genderChange,avatarFileName,portraitFileName,tfMenuPassage

@@ -102,10 +102,10 @@ window.bdPntGainsLevelsFake = function() {
 window.bdPntLosesResistance = function(bdPnt,lostRes) {
 	var i = lostRes;
 	while ( i > 0 && bdPnt.level > 0 ) {
-		bdPnt.resistance--;
-		if ( bdPnt.resistance == 0 ) {
+		bdPnt.rst--;
+		if ( bdPnt.rst == 0 ) {
 			bdPntLosesLevels(bdPnt,1);
-			bdPnt.resistance = 3;
+			bdPnt.rst = 3;
 		}
 		i--;
 	}
@@ -124,8 +124,8 @@ window.washCharsBodyPainting = function(cK) {
 	for ( var as of gC(cK).alteredStates ) {
 		if ( as.acr == "BdPt" ) {
 			flagWashed = true;
-			as.resistance--;
-			if ( as.resistance == 0 ) {
+			as.rst--;
+			if ( as.rst == 0 ) {
 				bdPntLosesLevels(as,1);
 				if ( as.level = 0 ) {
 					removeBdPnt = true;
@@ -330,13 +330,13 @@ window.createBdPntSlutMark = function() {
 		function(actor,target) { // Effects per gained level
 			gC(target).relations[actor].sexualTension.levelMod += 1;
 			gC(target).relations[actor].submission.levelMod += 1;
-			gC(target).combatAffinities.sex.weakness += 15;
+			gC(target).combatAffinities.sex.wkn += 15;
 			gC(target).combatAffinities.sex.strength += 5;
 		},
 		function(actor,target) { // Effects per lost level
 			gC(target).relations[actor].sexualTension.levelMod -= 1;
 			gC(target).relations[actor].submission.levelMod -= 1;
-			gC(target).combatAffinities.sex.weakness -= 15;
+			gC(target).combatAffinities.sex.wkn -= 15;
 			gC(target).combatAffinities.sex.strength -= 5;
 		},
 		function(actor,target) { // Calculate level
@@ -410,13 +410,13 @@ window.createBdPntHoneyMark = function() {
 			gC(target).relations[actor].sexualTension.levelMod += 1;
 			gC(target).relations[actor].friendship.levelMod += 1;
 			gC(target).tastes.usePussy.w += 15;
-			gC(target).combatAffinities.usePussy.weakness += 10;
+			gC(target).combatAffinities.usePussy.wkn += 10;
 		},
 		function(actor,target) { // Effects per lost level
 			gC(target).relations[actor].sexualTension.levelMod -= 1;
 			gC(target).relations[actor].friendship.levelMod -= 1;
 			gC(target).tastes.usePussy.w -= 15;
-			gC(target).combatAffinities.usePussy.weakness -= 10;
+			gC(target).combatAffinities.usePussy.wkn -= 10;
 		},
 		function(actor,target) { // Calculate level
 			return baseCalculateBdPntLevel(this.tag,actor,target);

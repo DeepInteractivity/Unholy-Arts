@@ -44,11 +44,11 @@ window.createFlyingLookout = function(statVariance,statBuff,number) {
 	character.luck.value = 0;
 	
 	// Affinities
-	character.combatAffinities.holy.weakness += 200;
+	character.combatAffinities.holy.wkn += 200;
 	character.combatAffinities.hypnosis.strength += 15;
-	character.combatAffinities.hypnosis.weakness += 15;
+	character.combatAffinities.hypnosis.wkn += 15;
 	character.combatAffinities.useEyes.strength += 15;
-	character.combatAffinities.useEyes.weakness += 15;
+	character.combatAffinities.useEyes.wkn += 15;
 	
 	// Moves
 	character.saList = ["doNothing","struggle","baHypnoticGlance","baOrderKneeling","baOrderMasturbation","baCorrodeMind"];
@@ -105,12 +105,12 @@ window.createEssenceSucker = function(statVariance,statBuff,number) {
 	character.luck.value = 0;
 	
 	// Affinities
-	character.combatAffinities.holy.weakness += 200;
-	character.combatAffinities.fire.weakness += 50;
+	character.combatAffinities.holy.wkn += 200;
+	character.combatAffinities.fire.wkn += 50;
 	character.combatAffinities.drain.strength += 15;
 	character.combatAffinities.spore.strength += 15;
 	character.combatAffinities.useMouth.strength += 25;
-	character.combatAffinities.targetMouth.resistance += 25;
+	character.combatAffinities.targetMouth.rst += 25;
 	
 	// Moves
 	character.saList = ["doNothing","struggle","baEnergyDrainingKiss","baDrainingKiss","pounceFrontal","tackle","baDrainingRoots"];
@@ -160,9 +160,9 @@ window.createOppressiveYoke = function(statVariance,statBuff,number) {
 	character.luck.value = 0;
 	
 	// Affinities
-	character.combatAffinities.holy.weakness += 200;
-	character.combatAffinities.physical.resistance += 25;
-	character.combatAffinities.magic.resistance += 25;
+	character.combatAffinities.holy.wkn += 200;
+	character.combatAffinities.physical.rst += 25;
+	character.combatAffinities.magic.rst += 25;
 	
 	// Moves
 	character.saList = ["doNothing","struggle","baEtherealChains","tackle","baOppressiveEmbrace","savageCrush"];

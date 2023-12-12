@@ -47,8 +47,9 @@ Scenes\battle-continued-actions.js
 Scenes\battle-demands.js
 Scenes\post-scene-logic.js
 HTML\keybinding.js
-items.js
-merchants.js
+Others\items.js
+Others\purchasableActions.js
+Others\merchants.js
 z-setup.js
 Others\punishments.js
 Characters\dyn-generated-characters.js

@@ -972,7 +972,6 @@ window.getAskAboutValues = function(type) {
 	
 	socInt.topic = "none";
 	socInt.weight = 5; // Starting weight
-						// TO DO: Change back
 	
 				 // Both vectors (frie,inti,flir,arou,domi,subm,bore,angr) (frie,sext,roma,domi,subm,riva,enmi)
 	
@@ -2823,6 +2822,16 @@ window.getKissSocInt = function(type) {
 			}
 			this.furtherEffects = function(sis) {
 				var eText = "\n" + gC(this.target).formattedName + " received " + textLustDamage(-gC(this.target).lust.attackInConversation(-this.getLustDamage(this.actor,this.target))) + ".";
+				if ( gC(this.actor).virginities.fKiss.taken == false ) {
+					gC(this.actor).virginities.fKiss.tryTakeVirginity(this.target,"storyGiven","");
+					provokeVirginityBonusRelationshipFixedType(this.actor,this.target,"given");
+					eText += "\n" + colorText(gC(this.actor).name + " just gave " + gC(this.actor).posPr + " first kiss.","red");
+				}
+				if ( gC(this.target).virginities.fKiss.taken == false ) {
+					gC(this.target).virginities.fKiss.tryTakeVirginity(this.actor,"storyGiven","");
+					provokeVirginityBonusRelationshipFixedType(this.target,this.actor,"given");
+					eText += "\n" + colorText(gC(this.target).name + " just had " + gC(this.actor).posPr + " first kiss taken.","red");
+				}
 				sis.extraEffects += eText; 
 			}
 		}
@@ -2926,7 +2935,9 @@ window.getHypnoticGlanceSocInt = function(type) {
 		return damage;
 	}
 	socInt.furtherEffects = function(sis) {
-		if ( this.actor == "chPlayerCharacter" ) { addToStVarsList("monActUs"); }
+		if ( this.actor == "chPlayerCharacter" && State.variables.storyState == 0 ) {
+			addToStVarsList("monActUs");
+		}
 		var eText = "\n" + gC(this.target).formattedName + " received " + textWillpowerDamage(-gC(this.target).willpower.attackInConversation(-this.getWillpowerDamage(this.actor,this.target))) + ".";
 		sis.extraEffects += eText; 
 	}

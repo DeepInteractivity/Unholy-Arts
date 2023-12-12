@@ -23,7 +23,7 @@ window.battleDemand = function(title) {
 	this.getFormattedPlayerChoice = function(actor,target,stakes,infamyMultiplier,i) {
 		var cText = "<<l" + "ink [[" + this.title + "|Scene Results]]>><<s" + "cript>>\n";
 			cText += "setup.battleDemandsDB[" + i + "].provokeEffect('chPlayerCharacter','" + target + "'," + stakes + "," + infamyMultiplier + ",'','');\n";
-			cText += "formatGenericBattlePlayerChoice(setup.battleDemandsDB[" + i + "].resultMessage('chPlayerCharacter','" + target + "'," + stakes + "," + infamyMultiplier + ",'',''),setup.battleDemandsDB[" + i + "].getPassageLink('" + actor + "','" + target + "'));\n";
+			cText += "formatGenericBattlePlayerChoice(setup.battleDemandsDB[" + i + "].resultMessage('chPlayerCharacter','" + target + "'," + stakes + "," + infamyMultiplier + ",'',''),setup.battleDemandsDB[" + i + "].getPassageLink('" + actor + "','" + target + "')," + this.requiresSkipTime + ");\n";
 			cText += "<</s" + "cript>><</l" + "ink>>" + this.subtitle + "\n";
 		return cText;
 	}
@@ -36,6 +36,8 @@ window.battleDemand = function(title) {
 		var extra2 = "";
 		return [getBattleDemandChoiceValueNpc(-10,this,extra1,extra2)];
 	}
+	
+	this.requiresSkipTime = false;
 }
 
 window.getBattleDemandChoiceValueNpc = function(decisionValue,choiceDemand,extra1,extra2) {
@@ -136,7 +138,7 @@ window.createBdemandHumillitation = function() {
 		var rivalryApplied = 35 * generalMultiplier;
 		// Merit
 		gC(actor).changeMerit(meritTaken);
-		gC(target).changeMerit(-meritTaken);
+		gC(target).changeMerit(-meritTaken*0.5);
 		// Domination
 		getRelation(actor,target).domination.stv += dominationApplied;
 		getRelation(target,actor).submission.stv += dominationApplied;
@@ -188,6 +190,7 @@ window.createBdemandHumillitation = function() {
 		if ( gC(actor).mission == "humilliate" ) { value = (value + 10) * 2; }
 		if ( gC(actor).mission == "gainDomination" ) { value = (value + 5) * 1.5; }
 		if ( gC(actor).socialAi.rivalTs.includes(target) ) { value *= 1.3; }
+		
 		return [getBattleDemandChoiceValueNpc(value,this,extra1,extra2)];
 	}
 	
@@ -207,7 +210,7 @@ window.createBdemandForceSex = function() {
 				remainingTimeInPeriod = ev.timeRemaining;
 			}
 		}
-		if ( isLewdingPossible(actor,target) && battleWeight >= 2 && gSettings().battleDefeatSex == "enable" ) {
+		if ( isLewdingPossible(actor,target) && battleWeight >= 2 && gSettings().battleDefeatSex == "enable" && remainingTimeInPeriod >= 20 ) {
 			isPossible = true;
 		}
 		return isPossible;
@@ -283,9 +286,11 @@ window.createBdemandForceSex = function() {
 		if ( gC(actor).mission == "forceSex" ) { value = (value + 10) * 2; }
 		if ( gC(actor).socialAi.conquestTs.includes(target) ) { value *= 1.3; }
 		if ( gC(actor).socialAi.covetTs.includes(target) ) { value *= 1.5; }
+		
 		return [getBattleDemandChoiceValueNpc(value,this,extra1,extra2)];
 	}
 	
+	bDemand.requiresSkipTime = true;
 	return bDemand;
 }
 
@@ -427,6 +432,8 @@ window.createBdemandForceLiberation = function() {
 			// Romance
 			getRelation(extra1,actor).friendship.stv += 100;
 		}
+		// Unequip items equipped on sub by dom
+		removeItemsFromActorOnTarget(target,extra1);
 		// Terminate special relationship
 		finishRelType(target,extra1);		
 		return 1;
@@ -435,6 +442,7 @@ window.createBdemandForceLiberation = function() {
 		var infamy = this.calculateInfamy(actor,target,battleWeight,infamyMultiplier);
 		var days = 3;
 		var msg = gC(actor).getFormattedName() + " will liberate " + gC(extra1).getFormattedName() + " from " + gC(target).getFormattedName() + ".\n"
+				+ "Any items equipped on " + gC(extra1).getFormattedName() + " by " + gC(target).getFormattedName() + " will be removed.\n"
 				+ gC(actor).getFormattedName() + " will lose " + -infamy.toFixed(1) + " infamy. "
 				+ gC(target).getFormattedName() + "'s rivalry towards " + gC(actor).getFormattedName() + " has slightly increased.\n"
 				+ gC(extra1).getFormattedName() + "'s friendship and romance towards " + gC(actor).getFormattedName() + " have increased.\n";
@@ -446,7 +454,7 @@ window.createBdemandForceLiberation = function() {
 			if ( gC(target).relations[subChar].relType.type == "servitude" ) {
 				cText += "<<l" + "ink [[" + this.title + " of " + gC(subChar).getName() + "|Scene Results]]>><<s" + "cript>>\n"
 					   + "setup.battleDemandsDB[" + i + "].provokeEffect('chPlayerCharacter','" + target + "'," + stakes + "," + infamyMultiplier + ",'" + subChar + "','');\n"
-					   + "formatGenericBattlePlayerChoice(setup.battleDemandsDB[" + i + "].resultMessage('chPlayerCharacter','" + target + "'," + stakes + "," + infamyMultiplier + ",'" + subChar + "',''),setup.battleDemandsDB[" + i + "].getPassageLink());\n"
+					   + "formatGenericBattlePlayerChoice(setup.battleDemandsDB[" + i + "].resultMessage('chPlayerCharacter','" + target + "'," + stakes + "," + infamyMultiplier + ",'" + subChar + "',''),setup.battleDemandsDB[" + i + "].getPassageLink()," + this.requiresSkipTime + ");\n"
 					   + "<</s" + "cript>><</l" + "ink>>" + this.subtitle + "\n";
 			}
 		}
@@ -526,6 +534,8 @@ window.createBdemandStealServant = function() {
 		// Terminate special relationship
 		finishRelType(target,extra1);		
 		finishRelType(actor,extra1);	
+		// Unequip items equipped on sub by dom
+		removeItemsFromActorOnTarget(target,extra1);
 		// Create new servitude relationship
 		createRelTypeServitudeDom(actor,extra1,gSettings().relationshipsDuration);
 		createRelTypeServitudeSub(extra1,actor,gSettings().relationshipsDuration);
@@ -535,7 +545,8 @@ window.createBdemandStealServant = function() {
 		var infamy = this.calculateInfamy(actor,target,battleWeight,infamyMultiplier);
 		var days = 3;
 		
-		var msg = gC(actor).getFormattedName() + " will steal " + gC(extra1).getFormattedName() + " from " + gC(target).getFormattedName() + ", forcing servitude upon " + gC(extra1).comPr + " for " + days + " days.\n";
+		var msg = gC(actor).getFormattedName() + " will steal " + gC(extra1).getFormattedName() + " from " + gC(target).getFormattedName() + ", forcing servitude upon " + gC(extra1).comPr + " for " + days + " days.\n"
+				+ "Any items equipped on " + gC(extra1).getFormattedName() + " by " + gC(target).getFormattedName() + " will be removed.\n";
 		if ( getCharEnemies(actor).includes(target) ) {
 			msg += "\n" + "The rivalry between " + gC(actor).getFormattedName() + " and " + gC(target).getFormattedName() + " adds weight to the sour taste of defeat.";
 		}
@@ -551,7 +562,7 @@ window.createBdemandStealServant = function() {
 			if ( gC(target).relations[subChar].relType.type == "servitude" ) {
 				cText += "<<l" + "ink [[" + this.title + " (" + gC(subChar).getName() + ")|Scene Results]]>><<s" + "cript>>\n"
 					   + "setup.battleDemandsDB[" + i + "].provokeEffect('chPlayerCharacter','" + target + "'," + stakes + "," + infamyMultiplier + ",'" + subChar + "','');\n"
-					   + "formatGenericBattlePlayerChoice(setup.battleDemandsDB[" + i + "].resultMessage('chPlayerCharacter','" + target + "'," + stakes + "," + infamyMultiplier + ",'" + subChar + "',''),setup.battleDemandsDB[" + i + "].getPassageLink());\n"
+					   + "formatGenericBattlePlayerChoice(setup.battleDemandsDB[" + i + "].resultMessage('chPlayerCharacter','" + target + "'," + stakes + "," + infamyMultiplier + ",'" + subChar + "',''),setup.battleDemandsDB[" + i + "].getPassageLink()," + this.requiresSkipTime + ");\n"
 					   + "<</s" + "cript>><</l" + "ink>>" + this.subtitle + "\n";
 			}
 		}
@@ -725,7 +736,7 @@ window.createBdemandForceBondage = function() {
 		var cText = "<<l" + "ink [[" + this.title + "|Scene Results]]>><<s" + "cript>>\n"
 					   + "setup.battleDemandsDB[" + i + "].provokeEffect('chPlayerCharacter','" + target + "'," + stakes + "," + infamyMultiplier + ",'','');\n"
 					   // Add format bondage choice option
-					   + "formatGenericBattlePlayerChoice(setup.battleDemandsDB[" + i + "].resultMessage('chPlayerCharacter','" + target + "'," + stakes + "," + infamyMultiplier + ",'',''),setup.battleDemandsDB[" + i + "].getPassageLink());\n"
+					   + "formatGenericBattlePlayerChoice(setup.battleDemandsDB[" + i + "].resultMessage('chPlayerCharacter','" + target + "'," + stakes + "," + infamyMultiplier + ",'',''),setup.battleDemandsDB[" + i + "].getPassageLink()," + this.requiresSkipTime + ");\n"
 					   + "<</s" + "cript>><</l" + "ink>>" + this.subtitle + "\n";
 		
 		return cText;
@@ -819,7 +830,7 @@ window.createBdemandUnequipBondage = function() {
 		for ( var charKey of validChars ) {
 			cText += "<<l" + "ink [[" + this.title + " (" + gC(charKey).getName() + ")|Scene Results]]>><<s" + "cript>>\n"
 				   + "setup.battleDemandsDB[" + i + "].provokeEffect('chPlayerCharacter','" + target + "'," + stakes + "," + infamyMultiplier + ",'" + charKey + "','');\n"
-				   + "formatGenericBattlePlayerChoice(setup.battleDemandsDB[" + i + "].resultMessage('chPlayerCharacter','" + target + "'," + stakes + "," + infamyMultiplier + ",'" + charKey + "',''),setup.battleDemandsDB[" + i + "].getPassageLink());\n"
+				   + "formatGenericBattlePlayerChoice(setup.battleDemandsDB[" + i + "].resultMessage('chPlayerCharacter','" + target + "'," + stakes + "," + infamyMultiplier + ",'" + charKey + "',''),setup.battleDemandsDB[" + i + "].getPassageLink()," + this.requiresSkipTime + ");\n"
 				   + "<</s" + "cript>><</l" + "ink>>" + this.subtitle + "\n";
 		}
 		
@@ -918,7 +929,7 @@ window.createBdemandBodyPaint = function() {
 		for ( var bpTag of bpTags ) {
 			cText += "<<l" + "ink [[" + this.title + " (" + bdPntData(bpTag).name + ")|Scene Results]]>><<s" + "cript>>\n"
 				   + "setup.battleDemandsDB[" + i + "].provokeEffect('chPlayerCharacter','" + target + "'," + stakes + "," + infamyMultiplier + ",'" + bpTag + "','');\n"
-				   + "formatGenericBattlePlayerChoice(setup.battleDemandsDB[" + i + "].resultMessage('chPlayerCharacter','" + target + "'," + stakes + "," + infamyMultiplier + ",'" + bpTag + "',''),setup.battleDemandsDB[" + i + "].getPassageLink());\n"
+				   + "formatGenericBattlePlayerChoice(setup.battleDemandsDB[" + i + "].resultMessage('chPlayerCharacter','" + target + "'," + stakes + "," + infamyMultiplier + ",'" + bpTag + "',''),setup.battleDemandsDB[" + i + "].getPassageLink()," + this.requiresSkipTime + ");\n"
 				   + "<</s" + "cript>><</l" + "ink>>" + getTextWithTooltip("(?)","Paints the body of the target, usually for the sake of shame or humilliation.\n" + bdPntData(bpTag).getPreliminaryDesc()) + "\n";
 		}
 		

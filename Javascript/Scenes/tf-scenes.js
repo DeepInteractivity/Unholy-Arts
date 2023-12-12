@@ -6,7 +6,7 @@
 // tfGoals -> "addDick","addPussy","removeDick","removePussy","addBreasts","removeBreasts","rebuildFace","rebuildFigure"
 // tfGoalsPoints are the required points remaining until 0 to consider each tfGoal complete
 scene.prototype.startTfScene = function(sceneType, enabledLead,	tAck, tBck, headingDescription,	checkEndConditions, endConditionsVars, endScenePassage,
-										tfGoals, tfActors, tfTarget, tfPoints, tfPermanentFlag, tfDays, genderChange, newAvatarFileName, newPortraitFileName) {
+										tfGoals, tfActors, tfTarget, tfPoints, tfPermanentFlag, tfDays, genderChange, newAvatarFileName, newAnTags, newPortraitFileName) {
 	this.tfFlag = true;
 	this.tfActors = tfActors;
 	this.tfTarget = tfTarget;
@@ -31,6 +31,7 @@ scene.prototype.startTfScene = function(sceneType, enabledLead,	tAck, tBck, head
 		this.newAvatarFileName = newAvatarFileName;
 		this.newPortraitFileName = newPortraitFileName;
 	}
+	this.newAnTags = newAnTags;
 	this.startScene(sceneType, enabledLead,	tAck, tBck,	headingDescription, checkEndConditions, endConditionsVars, endScenePassage);
 }
 
@@ -325,8 +326,20 @@ window.tfRebuildFace = function(target) {
 		gC(target).avatar = function() { return "[img[" + this.avatarL + "]]"; }
 		gC(target).fullPortrait = function() { return "[img[" + this.fullPortraitL + "]]"; }
 	}
+	assignNewAnTags(target);
 }
 window.tfRebuildFigure = function(target) {
+	assignNewAnTags(target);
+}
+window.assignNewAnTags = function(cK) {
+	if ( State.variables.sc.hasOwnProperty("newAnTags") ) {
+		if ( State.variables.sc.newAnTags.length > 0 ) {
+			if ( gC(cK).hasOwnProperty("oldAnTags") == false ) {
+				gC(cK).oldAnTags = gC(cK).anTags;
+				gC(cK).anTags = State.variables.sc.newAnTags;
+			}
+		}
+	}
 }
 
 	// Finished transformation effects
@@ -394,6 +407,7 @@ window.tfFinishRebuildFigure = function(cK) {
 	}
 	delete gC(cK).originalAvatar;
 	delete gC(cK).originalPortrait;
+	assignOldAnTags(cK);
 }
 window.tfFinishChangedGender = function(cK) {
 	if ( gC(cK).oldPronoun == "she" ) {
@@ -402,6 +416,12 @@ window.tfFinishChangedGender = function(cK) {
 	} else if ( gC(cK).oldPronoun == "he" ) {
 		gC(cK).assignMasculinePronouns();
 		delete gC(cK).oldPronoun;		
+	}
+}
+window.assignOldAnTags = function(cK) {
+	if ( gC(cK).hasOwnProperty("oldAnTags") ) {
+		gC(cK).anTags = gC(cK).oldAnTags;
+		delete gC(cK).oldAnTags;
 	}
 }
 
@@ -697,6 +717,17 @@ window.createTfSceneWithSettings = function() {
 		avatarFileName = "img/portraits/" + State.variables.StVars.check1 + "-avatar.png";
 		portraitFileName = "img/portraits/" + State.variables.StVars.check1 + "-full.png";
 	}
+	// Animation tags
+	var tfNewAnTags = [];
+	if ( State.variables.StVars.check1 == "mc1" ) {
+		tfNewAnTags = ['Mcy','WhiteHuman'];
+	} else if ( State.variables.StVars.check1 == "mc2" ) {
+		tfNewAnTags = ['Mcr','WhiteHuman'];
+	} else if ( State.variables.StVars.check1 == "mc3" ) {
+		tfNewAnTags = ['Mcb','WhiteHuman'];
+	} else if ( State.variables.StVars.check1 == "custom" ) {
+		tfNewAnTags = ["GrayCharacter"];
+	}
 	// Description
 	var description = "";
 	// getCurrentRoomInfo().description
@@ -722,7 +753,7 @@ window.createTfSceneWithSettings = function() {
 	*/
 	//var tfMenuPassage = State.variables.tfMenuPassage;
 	State.variables.compass.ongoingEvents.push(createSystemEventStandardTransformationScene(teamAchars,teamBchars,description,isTfSceneFinished,endScenePassage,
-		tfGoals,tfActors,State.variables.tfTarget,!State.variables.tfTemporary,genderChange,avatarFileName,portraitFileName,State.variables.tfMenuPassage));
+		tfGoals,tfActors,State.variables.tfTarget,!State.variables.tfTemporary,genderChange,avatarFileName,portraitFileName,tfNewAnTags,State.variables.tfMenuPassage));
 	State.variables.compass.sortOnGoingEventsByTime();
 	State.variables.compass.pushAllTimeToAdvance();
 	// Clean tf variables

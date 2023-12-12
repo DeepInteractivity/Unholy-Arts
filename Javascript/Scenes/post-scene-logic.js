@@ -453,7 +453,7 @@ window.processGenericMapBattleEffects = function() {
 		  addPointsToDrive(gC(winner).dAmbition,(30+20*(0.1 * (getAverageRelationStatBetweenCharAndGroup("enmity",winner,getCharsEnemyTeam(winner))))));
 		  driveChangesMessage += gC(winner).getFormattedName() + " gained domination and ambition drive points.\n";
 		  // Defender
-		  addPointsToDrive(gC(loser).dImprovement,30+10*(0.1 * (getAverageRelationStatBetweenCharAndGroup("rivalry",winner,getCharsEnemyTeam(winner)) + getAverageRelationStatBetweenCharAndGroup("enmity",winner,getCharsEnemyTeam(winner)))));
+		  addPointsToDrive(gC(loser).dImprovement,15+5*(0.1 * (getAverageRelationStatBetweenCharAndGroup("rivalry",winner,getCharsEnemyTeam(winner)) + getAverageRelationStatBetweenCharAndGroup("enmity",winner,getCharsEnemyTeam(winner)))));
 		  driveChangesMessage += gC(loser).getFormattedName() + " gained self-improvement drive points.\n";
 		  // Cooperation extra
 		  if ( flagWinningTeamIsCooperating ) {
@@ -465,7 +465,7 @@ window.processGenericMapBattleEffects = function() {
 		infamyMult = 0.5;
 		// Drive changes
 		  // Attacker
-		  addPointsToDrive(gC(loser).dImprovement,(30+10*(0.1 * (getAverageRelationStatBetweenCharAndGroup("rivalry",winner,getCharsEnemyTeam(winner)) + getAverageRelationStatBetweenCharAndGroup("enmity",winner,getCharsEnemyTeam(winner))))));
+		  addPointsToDrive(gC(loser).dImprovement,(15+5*(0.1 * (getAverageRelationStatBetweenCharAndGroup("rivalry",winner,getCharsEnemyTeam(winner)) + getAverageRelationStatBetweenCharAndGroup("enmity",winner,getCharsEnemyTeam(winner))))));
 		  addPointsToDrive(gC(loser).dDomination,-10);
 		  addPointsToDrive(gC(loser).dAmbition,-10);
 		  driveChangesMessage += gC(loser).getFormattedName() + " gained self-improvement drive points and lost domination and ambition drive points.\n";
@@ -496,7 +496,12 @@ window.processGenericMapBattleEffects = function() {
 			if ( driveChangesMessage != "" ) { resultsMessage += driveChangesMessage + "\n"; }
 			resultsMessage += selectedBattleDemand.resultMessage(winner,loser,stakes,infamyMult,extra1,extra2);
 			var returnPassage = selectedBattleDemand.getPassageLink(winner,loser);
-			resultsMessage += "\n\n<<link[[Continue|" + returnPassage +"]]>><<s" + "cript>>State.variables.compass.pushAllTimeToAdvance();\nState.variables.compass.pushAllTimeToAdvance();<</s" + "cript>><</l" + "ink>>";
+			if ( selectedBattleDemand.requiresSkipTime ) {
+				resultsMessage += "\n\n<<link[[Continue|" + returnPassage +"]]>><<s" + "cript>>State.variables.compass.pushAllTimeToAdvance();\nState.variables.compass.pushAllTimeToAdvance();<</s" + "cript>><</l" + "ink>>";
+			} else {
+				resultsMessage += "\n\n<<link[[Continue|" + returnPassage +"]]>><<s" + "cript>><</s" + "cript>><</l" + "ink>>"; 
+			}
+			//"cript>>State.variables.compass.pushAllTimeToAdvance();\nState.variables.compass.pushAllTimeToAdvance();<</s" + "cript>><</l" + "ink>>";
 		} else { // Player victory
 			resultsMessage = "You won! You may now demand something from " + gC(loser).name + ".\n\n"
 						   + formatBattleDemandButtons(loser,stakes,infamyMult);
@@ -562,16 +567,20 @@ window.processLiberationChallengeEffects = function() {
 			// Drive changes
 			addPointsToDrive(gC(loser).dAmbition,-10);
 			addPointsToDrive(gC(loser).dDomination,-10);
-			addPointsToDrive(gC(loser).dImprovement,40);
+			addPointsToDrive(gC(loser).dImprovement,20);
 			// Relations effects
-			resultsMessage = gC(winner).getFormattedName() + " won the challenge! " + gC(winner).getFormattedName() + " will no longer be submissive to " + gC(loser).getFormattedName() + "." + gC(loser).getFormattedName() + " lost 10 ambition and domination drive points, and gained 40 self-improvement drive points." + "\n\n[[Continue|Map]]";
+			resultsMessage = gC(winner).getFormattedName() + " won the challenge! " + gC(winner).getFormattedName() + " will no longer be submissive to " + gC(loser).getFormattedName() + ".\n" + "Any bondage equipped on " + gC(winner).getFormattedName() + " by " + gC(loser).getFormattedName() + " will be removed.\n"
+			+ gC(loser).getFormattedName() + " lost 10 ambition and domination drive points, and gained 20 self-improvement drive points." + "\n\n[[Continue|Map]]";
+				// Unequip items equipped on sub by dom
+			removeItemsFromActorOnTarget(loser,winner);
+				// Finish relationship
 			finishRelType(winner,loser);
 		} else if ( gC(loser).domChar == winner ) {
 			// Drive changes
 			addPointsToDrive(gC(loser).dAmbition,-20);
-			addPointsToDrive(gC(loser).dImprovement,40);
+			addPointsToDrive(gC(loser).dImprovement,20);
 			// Relations effects
-			resultsMessage = gC(winner).getFormattedName() + " won the challenge! " + gC(winner).getFormattedName() + " stole 3 merit from " + gC(loser).getFormattedName() + ", gained domination towards " + gC(loser).comPr + " and will extend their relationship for an extra day. " + gC(loser).getFormattedName() + " lost 20 ambition drive points and gained 40 self-improvement drive points." + "\n\n[[Continue|Map]]";
+			resultsMessage = gC(winner).getFormattedName() + " won the challenge! " + gC(winner).getFormattedName() + " stole 3 merit from " + gC(loser).getFormattedName() + ", gained domination towards " + gC(loser).comPr + " and will extend their relationship for an extra day. " + gC(loser).getFormattedName() + " lost 20 ambition drive points and gained 20 self-improvement drive points." + "\n\n[[Continue|Map]]";
 			gC(winner).relations[loser].domination.stv += 250;
 			gC(winner).changeMerit(3);
 			gC(loser).relations[winner].submission.stv += 250;
@@ -587,8 +596,13 @@ window.processLiberationChallengeEffects = function() {
 	State.variables.compass.sceneResultsPassage = resultsMessage;
 }
 
-window.formatGenericBattlePlayerChoice = function(message,nextPassage) {
-	State.variables.compass.sceneResultsPassage = message + "\n\n<<link[[Continue|" + nextPassage +"]]>><<s" + "cript>>State.variables.compass.pushAllTimeToAdvance();\nState.variables.compass.pushAllTimeToAdvance();<</s" + "cript>><</l" + "ink>>";
+window.formatGenericBattlePlayerChoice = function(message,nextPassage,requiresSkipTime) {
+	if ( requiresSkipTime ) {
+		State.variables.compass.sceneResultsPassage = message + "\n\n<<link[[Continue|" + nextPassage +"]]>><<s" +  "cript>>State.variables.compass.pushAllTimeToAdvance();\nState.variables.compass.pushAllTimeToAdvance();<</s" + "cript>><</l" + "ink>>";
+	} else {
+		State.variables.compass.sceneResultsPassage = message + "\n\n<<link[[Continue|" + nextPassage +"]]>><<s" +  "cript>><</s" + "cript>><</l" + "ink>>";
+	}
+	// State.variables.compass.sceneResultsPassage = message + "\n\n<<link[[Continue|" + nextPassage +"]]>><<s" +  "cript>><</s" + "cript>><</l" + "ink>>";//"cript>>State.variables.compass.pushAllTimeToAdvance();\nState.variables.compass.pushAllTimeToAdvance();<</s" + "cript>><</l" + "ink>>";
 }
 window.getAllPotentialBattleDemands = function(actor,target,stakes,infamyMult) {
 	var potentialDemands = [];
@@ -615,6 +629,8 @@ window.selectBattleDemandFromList = function(battleDemandList) {
 	bd = battleDemandList[highestValueIterator];
 	return bd;
 }
+
+	// Deprecated
 window.getNpcDemandOnWinningBattle = function(actor,target,stakes,infamyMult) {
 	var infamy = gC(actor).infamy;
 	var choices = [ "doNothing" , "humilliate" , "forceServitude" ];
@@ -651,7 +667,8 @@ window.getNpcDemandOnWinningBattle = function(actor,target,stakes,infamyMult) {
 	
 	return result;
 }
-
+	// // // // //
+	
 window.processGenericMonsterBattleEffects = function() {
 	// teamAwin -> Characters win ; teamBwin -> Monsters win
 	var flagMonstersVictory = false;
@@ -702,6 +719,7 @@ window.processGenericMonsterBattleEffects = function() {
 		case "teamBwin":
 			var defeatedChars = State.variables.sc.teamAcharKeys;
 			resultsMessage = getStandardMonsterDefeatMsgEffects(defeatedChars)
+				//		   + "\n\n<<link[[Continue|Map]]>><<s" + "cript>><</s" + "cript>><</l" + "ink>>";
 						   + "\n\n<<link[[Continue|Map]]>><<s" + "cript>>State.variables.compass.pushAllTimeToAdvance();<</s" + "cript>><</l" + "ink>>";
 			// Chars from teamA are taken to locked room
 			var trapRoom = findTrapRoomInMap();
@@ -717,6 +735,7 @@ window.processGenericMonsterBattleEffects = function() {
 			break;
 		case "flight":
 			resultsMessage = "You have managed to lose the monsters from sight."
+				//		   + "\n\n<<link[[Continue|Map]]>><<s" + "cript>><</s" + "cript>><</l" + "ink>>";
 						   + "\n\n<<link[[Continue|Map]]>><<s" + "cript>>State.variables.compass.pushAllTimeToAdvance();<</s" + "cript>><</l" + "ink>>";
 			break;
 	}

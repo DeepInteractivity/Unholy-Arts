@@ -177,6 +177,20 @@ window.removeItemsFromChar = function(ch) {
 	}
 }
 
+window.removeItemsFromActorOnTarget = function(actor,target) {
+	var unequipList = [];
+	for ( var item of State.variables.equipmentList ) {
+		if ( item.owner == actor ) {
+			if ( item.equippedOn == target ) {
+				unequipList.push(item.id);
+			}
+		}
+	}
+	for ( var id of unequipList ) {
+		unequipObject(id);
+	}
+}
+
 	// Extra
 window.isCharsWeaponInUse = function(charKey) {
 	var flagInUse = false;
@@ -316,6 +330,7 @@ setup.equipDataList[equipmentType.COLLAR] = new equipmentData("Collar","bodypart
 		gC(wearer).will.multModifier -= 0.1;
 		gC(wearer).charisma.sumModifier -= 2;
 		gC(wearer).charisma.multModifier -= 0.1;
+		gC(wearer).baseMood.submissive += 3;
 	},
 	function(owner,wearer) { // Put out
 		if ( getRelation(wearer,owner) != undefined ) {
@@ -326,8 +341,9 @@ setup.equipDataList[equipmentType.COLLAR] = new equipmentData("Collar","bodypart
 		gC(wearer).will.multModifier += 0.1;
 		gC(wearer).charisma.sumModifier += 2;
 		gC(wearer).charisma.multModifier += 0.1;
+		gC(wearer).baseMood.submissive -= 3;
 	}, "A leather collar. It gets locked in the neck to mark possession over the wearer."
-		+ "\nIncreases submission and sexual tension, decreases will and charisma. Locks neck.\n1 infamy upon forced equipment.",
+		+ "\nIncreases submission and sexual tension and submissive mood, decreases will and charisma. Locks neck.\n1 infamy upon forced equipment.",
 	750,1,["bondage","domination"],[],1);
 setup.equipDataList[equipmentType.BLINDFOLD] = new equipmentData("Blindfold","bodypart","eyes",
 	function(owner,wearer) { // Put on
@@ -428,7 +444,8 @@ setup.equipDataList[equipmentType.NIPPLESUCKERS] = new equipmentData("Nipple suc
 			getRelation(wearer,owner).sexualTension.levelMod += 2;
 			getRelation(wearer,owner).rivalry.levelMod += 1;
 		}
-		gC(wearer).lust.weakness += 10;
+		gC(wearer).baseMood.aroused += 2;
+		gC(wearer).lust.wkn += 10;
 		gC(wearer).alteredStates.push(createASnipplesuckers());
 	},
 	function(owner,wearer) { // Put out
@@ -437,10 +454,11 @@ setup.equipDataList[equipmentType.NIPPLESUCKERS] = new equipmentData("Nipple suc
 			getRelation(wearer,owner).sexualTension.levelMod -= 2;
 			getRelation(wearer,owner).rivalry.levelMod -= 1;
 		}
+		gC(wearer).baseMood.aroused -= 2;
 		removeAlteredStateByAcr(wearer,"Npsk");
-		gC(wearer).lust.weakness -= 10;
+		gC(wearer).lust.wkn -= 10;
 	}, "A magical device that suctions the wearer's nipples."
-		+ "\nIncreases submission, sexual tension and rivalry, as well as weakness to lust damage. Locks breasts.\n2 infamy upon forced equipment.",
+		+ "\nIncreases submission, sexual tension and rivalry, as well as aroused mood and weakness to lust damage. Locks breasts.\n2 infamy upon forced equipment.",
 	1500,2,["bondage","attackAll"],[],1);
 setup.equipDataList[equipmentType.BUTTPLUG] = new equipmentData("Buttplug","bodypart","anus",
 	function(owner,wearer) { // Put on
@@ -450,7 +468,8 @@ setup.equipDataList[equipmentType.BUTTPLUG] = new equipmentData("Buttplug","body
 			getRelation(wearer,owner).rivalry.levelMod += 1;
 		}
 		gC(wearer).alteredStates.push(createASbuttplug());
-		gC(wearer).lust.weakness += 10;
+		gC(wearer).baseMood.aroused += 2;
+		gC(wearer).lust.wkn += 10;
 		gC(wearer).energy.tainted += 10;
 	},
 	function(owner,wearer) { // Put out
@@ -460,10 +479,11 @@ setup.equipDataList[equipmentType.BUTTPLUG] = new equipmentData("Buttplug","body
 			getRelation(wearer,owner).rivalry.levelMod -= 1;
 		}
 		removeAlteredStateByAcr(wearer,"Btpg");
-		gC(wearer).lust.weakness -= 10;
+		gC(wearer).baseMood.aroused -= 2;
+		gC(wearer).lust.wkn -= 10;
 		gC(wearer).energy.tainted -= 10;
 	}, "A toy that gets locked in the ass."
-		+ "\nIncreases submission, sexual tension and rivalry, as well as weakness to lust damage and tainting energy. Locks ass.\n2 infamy upon forced equipment.",
+		+ "\nIncreases submission, sexual tension and rivalry, as well as aroused mood and weakness to lust damage and tainting energy. Locks ass.\n2 infamy upon forced equipment.",
 	2000,2,["bondage","attackAll"],[],1);
 setup.equipDataList[equipmentType.CHASTITYBELT] = new equipmentData("Chastity belt","bodypart","pussy",
 	function(owner,wearer) { // Put on
@@ -477,8 +497,9 @@ setup.equipDataList[equipmentType.CHASTITYBELT] = new equipmentData("Chastity be
 		gC(wearer).intelligence.multModifier -= 0.2;
 		gC(wearer).will.sumModifier -= 2;
 		gC(wearer).will.multModifier -= 0.2;
-		gC(wearer).lust.weakness += 15;
-		gC(wearer).willpower.weakness += 10;
+		gC(wearer).lust.wkn += 15;
+		gC(wearer).willpower.wkn += 10;
+		gC(wearer).baseMood.aroused += 3;
 		if ( limitedRandomInt(100) > 30 ) {
 			gC(owner).tastes.denial.w += limitedRandomInt(5);
 		}
@@ -498,10 +519,11 @@ setup.equipDataList[equipmentType.CHASTITYBELT] = new equipmentData("Chastity be
 		gC(wearer).intelligence.multModifier += 0.2;
 		gC(wearer).will.sumModifier += 2;
 		gC(wearer).will.multModifier += 0.2;
-		gC(wearer).lust.weakness -= 15;
-		gC(wearer).willpower.weakness -= 10;		
+		gC(wearer).lust.wkn -= 15;
+		gC(wearer).willpower.wkn -= 10;		
+		gC(wearer).baseMood.aroused -= 3;
 	}, "A metal shield that locks the wearer's pussy. It may provoke sexual frustration."
-		+ "\nIncreases submission, sexual tension, rivalry and enmity. Reduces intelligence and will, and increases weakness to lust and willpower damage. Locks pussy.\n3 infamy upon forced equipment.",
+		+ "\nIncreases submission, sexual tension, rivalry, enmity and aroused mood. Reduces intelligence and will, and increases weakness to lust and willpower damage. Locks pussy.\n3 infamy upon forced equipment.",
 	2500,3,["bondage","attackMagic","chastity"],[],1);
 setup.equipDataList[equipmentType.CHASTITYCAGE] = new equipmentData("Chastity cage","bodypart","dick",
 	function(owner,wearer) { // Put on
@@ -515,8 +537,9 @@ setup.equipDataList[equipmentType.CHASTITYCAGE] = new equipmentData("Chastity ca
 		gC(wearer).intelligence.multModifier -= 0.2;
 		gC(wearer).will.sumModifier -= 2;
 		gC(wearer).will.multModifier -= 0.2;
-		gC(wearer).lust.weakness += 15;
-		gC(wearer).willpower.weakness += 10;
+		gC(wearer).lust.wkn += 15;
+		gC(wearer).willpower.wkn += 10;
+		gC(wearer).baseMood.aroused += 3;
 		if ( limitedRandomInt(100) > 30 ) {
 			gC(owner).tastes.denial.w += limitedRandomInt(5);
 		}
@@ -536,10 +559,11 @@ setup.equipDataList[equipmentType.CHASTITYCAGE] = new equipmentData("Chastity ca
 		gC(wearer).intelligence.multModifier += 0.2;
 		gC(wearer).will.sumModifier += 2;
 		gC(wearer).will.multModifier += 0.2;
-		gC(wearer).lust.weakness -= 15;
-		gC(wearer).willpower.weakness -= 10;	
+		gC(wearer).lust.wkn -= 15;
+		gC(wearer).willpower.wkn -= 10;	
+		gC(wearer).baseMood.aroused -= 3;
 	}, "A metal cage that locks the wearer's dick. It may provoke sexual frustration."
-		+ "\nIncreases submission, sexual tension, rivalry and enmity. Reduces intelligence and will, and increases weakness to lust and willpower damage. Locks dick.\n3 infamy upon forced equipment.",
+		+ "\nIncreases submission, sexual tension, rivalry, enmity and aroused mood. Reduces intelligence and will, and increases weakness to lust and willpower damage. Locks dick.\n3 infamy upon forced equipment.",
 	2500,3,["bondage","attackMagic","chastity"],[],1);
 	
 	// Weapons
@@ -650,7 +674,8 @@ setup.equipDataList[equipmentType.DILDO] = new equipmentData("Dildo","tool","wea
 		gC(wearer).agility.sumModifier += 1;
 		gC(wearer).agility.multModifier += 0.1;
 		gC(wearer).combatAffinities.sex.strength += 10;
-		gC(wearer).combatAffinities.sex.weakness += 10;
+		gC(wearer).combatAffinities.sex.wkn += 10;
+		gC(wearer).baseMood.aroused += 2;
 	},
 	function(owner,wearer) { // Put out
 		gC(wearer).physique.sumModifier -= 1;
@@ -658,7 +683,8 @@ setup.equipDataList[equipmentType.DILDO] = new equipmentData("Dildo","tool","wea
 		gC(wearer).agility.sumModifier -= 1;
 		gC(wearer).agility.multModifier -= 0.1;
 		gC(wearer).combatAffinities.sex.strength -= 10;
-		gC(wearer).combatAffinities.sex.weakness -= 10;
+		gC(wearer).combatAffinities.sex.wkn -= 10;
+		gC(wearer).baseMood.aroused -= 2;
 	}, "A ceramic dildo, able to penetrate others during intimacy and battle."
 		+ "\nIncreases physique and agility, as well as sex strength and weakness. Provides with several actions in sex and combat scenes.",
 	3000,0,
@@ -670,6 +696,7 @@ window.npcValuesBondage = function(charKey,bondageId) {
 	var value = 100;
 	var bondageData = setup.equipDataList[bondageId];
 	var bondageType = bondageData.slot;
+		// Main evaluations
 	for ( var equipment of gC(charKey).ownedEquipment ) {
 		var equipData = getEquipDataById(equipment);
 		if ( equipData.slotType == "bodypart" ) {
@@ -683,6 +710,28 @@ window.npcValuesBondage = function(charKey,bondageId) {
 		}
 		if ( bondageId == getEquipById(equipment).id ) {
 			value -= 40;
+		}
+	}
+		// Percentual evaluations
+	if ( bondageType == "pussy" || equipData.slot == "dick" ) { // Only buy pussy or dick bondage if there are active characters with pussies or dicks
+		var checkedBp = bondageType;
+		var totalChars = State.variables.activeSimulationCharacters.length;
+		var validTargets = 0;
+		var lastValidTarget = "";
+		for ( var cK of State.variables.activeSimulationCharacters ) {
+			if ( gC(cK).body.hasOwnProperty(checkedBp) ) {
+				validTargets++;
+				lastValidTarget = cK;
+			}
+		}
+		if ( validTargets <= 1 ) {
+			if ( lastValidTarget == charKey || validTargets == 0 ) { // Only valid target is self, don't buy
+				value *= 0;
+			} else { // Only one valid target, probably shouldn't buy
+				value *= 0.2;
+			}
+		} else if ( validTargets <= totalChars * 0.5 ) { // Less than half the characters are valid targets, probably shouldn't buy
+			value *= 0.6;
 		}
 	}
 	return value;
@@ -869,7 +918,9 @@ window.findValidSoftBondageOnTargetFromActor = function(bondageIDsList,target,ac
 	var chosenID = -1;
 	for ( var id of bondageIDsList ) {
 		if ( getEquipDataById(id).type == equipmentType.COLLAR ) {
-			chosenID = id;
+			if ( getEquipById(id).owner == actor ) {
+				chosenID = id;
+			}
 		}
 	}
 	return chosenID;

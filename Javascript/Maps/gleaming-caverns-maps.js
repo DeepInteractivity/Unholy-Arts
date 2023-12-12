@@ -530,6 +530,21 @@ setup.mapGleamingCaverns.marshMentrance = new RoomInfo(
 	null, // getActions
 	[257,59]
 );
+setup.mapGleamingCaverns.marshMentrance.displayConnections = function() {
+	var string = "";
+	for ( var connection of this.connections ) {
+		string += getLinkToRoom(connection.loc,"Go to " + getCurrentMap().rooms[connection.loc].title,connection.distance)
+			    + " (" + colorText(connection.distance,"khaki") + ") ";
+				if ( State.variables.chPlayerCharacter.hasFreeBodypart("eyes") ) {
+					string += displayCharIconsInRoom(connection.loc);
+				}
+		string += "\n";
+	}
+		// Temple Sanctum
+	string += colorText("The path continues further into the mountain. There's nothing of interest in there.\n","red");
+	
+	return string;
+}
 
 setup.mapGleamingCaverns.hiddenCamp = new RoomInfo(
 	"hiddenCamp", // Key

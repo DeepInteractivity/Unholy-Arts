@@ -2211,6 +2211,7 @@ window.owGrDomGropingClaw = function() {
 		}
 		State.variables.sc.headingDescription = hDesc;
 	}
+	State.variables.sc.formatScenePassage();
 }
 
 window.owGrEgaGropingClaw = function() {
@@ -2299,6 +2300,7 @@ window.owGrEgaGropingClaw = function() {
 		}
 		State.variables.sc.headingDescription = hDesc;
 	}
+	State.variables.sc.formatScenePassage();
 }
 
 window.owGrSubKneelClaw = function() {
@@ -2401,6 +2403,8 @@ window.owGrSubKneelClaw = function() {
 		}
 		State.variables.sc.headingDescription = hDesc;
 	}
+	
+	State.variables.sc.formatScenePassage();
 }
 
 window.owGrEgaKneelClaw = function() {
@@ -2493,6 +2497,8 @@ window.owGrEgaKneelClaw = function() {
 		}
 		State.variables.sc.headingDescription = hDesc;
 	}
+
+	State.variables.sc.formatScenePassage();
 }
 
 

@@ -37,10 +37,14 @@ RelPar.prototype.processNewDay = function(mult) {
 		var f = (this.stv * mult) / 100.0;
 		if ( this.stv < 0 ) { this.stv *= 0.5; } // Reduce effect of negative stv
 		this.stv -= f * 5; // Remove 5% of current Short Term Value
-		this.ltv += f; // Add 1% of current Short Term Value
+		this.ltv += f * gSettings().rvConversionRate; // Add 1% of current Short Term Value
 		if ( this.ltv < 0 ) { this.ltv = 0; } // Prevent negative ltv
 		var levelChanges = formulaRelParLevel(this);
 		this.level += levelChanges;
+		
+		this.stv = Math.trunc(this.stv);
+		this.ltv = Math.trunc(this.ltv);
+		
 		if ( levelChanges != 0 ) {
 			return true;
 		} else {
@@ -330,7 +334,7 @@ window.getRelationshipDescription = function(charA,charB) {
 				} else { // Enmity is dominant
 					if ( intensity == 0 ) { results = [(gC(charA).getFormattedName() + " is annoyed about " + gC(charB).getFormattedName() + "."),"2ccb",0]; }
 					else if ( intensity == 1 ) { results = [(gC(charA).getFormattedName() + " thinks " + gC(charB).getFormattedName() + " is dangerous."),"2ccb",1]; }
-					else { results = [(gC(charA).getFormattedName() + " thinks " + gC(charB).getFormattedName() + " is scum."),"2ccb",2]; }					
+					else { results = [(gC(charA).getFormattedName() + " can't see " + gC(charB).getFormattedName() + " as anything other than scum."),"2ccb",2]; }					
 				}
 			}
 		} else { // Sexually focused
@@ -340,7 +344,7 @@ window.getRelationshipDescription = function(charA,charB) {
 			else if ( inValue > 7 ) { intensity = 1; }
 			if ( dsBalance >= 0.25 ) { // Domination is dominant
 				if ( intensity == 0 ) { results = [(gC(charA).getFormattedName() + " lusts after " + gC(charB).getFormattedName() + "'s body."),"2db",0]; }
-				else if ( intensity == 1 ) { results = [(gC(charA).getFormattedName() + " desire to have " + gC(charB).getFormattedName() + " under " + gC(charA).posPr + " grasp."),"2db",1]; }
+				else if ( intensity == 1 ) { results = [(gC(charA).getFormattedName() + " desires to have " + gC(charB).getFormattedName() + " under " + gC(charA).posPr + " grasp."),"2db",1]; }
 				else { results = [(gC(charA).getFormattedName() + " sees an alluring toy in " + gC(charB).getFormattedName() + "."),"2db",2]; }
 			} else if ( dsBalance <= 0.25 ) { // Submission is dominant
 				if ( intensity == 0 ) { results = [(gC(charA).getFormattedName() + " is scared of " + gC(charB).getFormattedName() + "."),"2da",0]; }
@@ -574,7 +578,7 @@ window.createRelTypeServitudeSub = function(actor,target,days) {
 	relType.disallowedAssault = true;
 	relType.liberationChallenge = true;
 	relType.dailyEffect = function() {
-		var meritLoss = 1;
+		var meritLoss = 0.5;
 		var submissionGain = 50;
 		gC(this.actor).changeMerit(-meritLoss);
 		gC(this.actor).relations[this.target].submission.stv += submissionGain;
@@ -840,7 +844,6 @@ window.relTypeIntimacyTooltip = function() {
 	return tt;
 }
 
-// TO DO: CONTINUE UPDATING
 window.relTypeRivalryTooltip = function() {
 	var tt = "Once rivalry has sparked, the adversaries' honour will be at stake.\n"
 		   + "Daily rivalry and enmity gains.\n"

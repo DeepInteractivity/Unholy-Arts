@@ -4,8 +4,8 @@ window.Bar = function(maxValue) {
 	this.max = maxValue;
 	this.current = maxValue;
 	
-	this.resistance = 0; // Reduces the damage against this bar
-	this.weakness = 0; // Increases damage against this bar
+	this.rst = 0; // Reduces the damage against this bar
+	this.wkn = 0; // Increases damage against this bar
 	this.tainted = 0; // Increases the cost of using this bar
 	
 	this.accumulatedDamage = 0;
@@ -79,15 +79,22 @@ Bar.prototype.changeValue = function(change) { // Use this function whenever it 
 		return overflow;
 	}
 
+Bar.prototype.drain = function(inflictedDrainDamage,targetsCurrentBar) {
+	// When draining, gained bar cannot be lower than 0, nor higher than the target's bar's current value
+	var drainedAmount = Math.max(0,Math.min(inflictedDrainDamage,targetsCurrentBar));
+	this.changeValue(drainedAmount);	
+	return drainedAmount;
+}
+
 Bar.prototype.attack = function(change) {
-		var finalChange = change * (( 1 + ( this.weakness * 0.01 ) ) / ( 1 + this.resistance * 0.01 ));
+		var finalChange = change * (( 1 + ( this.wkn * 0.01 ) ) / ( 1 + this.rst * 0.01 ));
 		var overflow = this.changeValue(finalChange);
 		return overflow;
 	}
 Bar.prototype.attackInConversation = function(change) {
 		var finalChange = 0;
 		if ( this.current >= this.max * 0.1 ) {
-			finalChange = change * (( 1 + ( this.weakness * 0.01 ) ) / ( 1 + this.resistance * 0.01 ));
+			finalChange = change * (( 1 + ( this.wkn * 0.01 ) ) / ( 1 + this.rst * 0.01 ));
 			this.changeValue(finalChange);
 			if ( this.current < this.max * 0.1 ) {
 				this.current = this.max * 0.1;
@@ -168,6 +175,16 @@ window.getTextStatExp = function(stat) {
 	} else {
 		text += stat.experience.toFixed(0) + " / " + stat.getRequiredExp().toFixed(0);
 	}
+	return text;
+}
+window.getTextStatExpAlt = function(stat) {
+	var text = "Experience: ";
+	
+	text += stat.experience.toFixed(0) + " / " + stat.getRequiredExp().toFixed(0);
+	if ( stat.experience >= stat.getRequiredExp() ) {
+		text += "(!)";
+	}
+	
 	return text;
 }
 window.getTextStatAff = function(stat) {
@@ -512,30 +529,67 @@ window.provokeVirginityBonusRelationship = function(actor,target) {
 			if ( State.variables.sc.enabledLead == "fixed" && gC(target).hasLead == false ) {
 				ctxt = "forced";
 				// Target -> Actor: ++Sexual tension +Submission +Romance
-				gC(target).relations[actor].sexualTension.stv += 400 * multiplier2;
-				gC(target).relations[actor].submission.stv += 200 * multiplier2;
-				gC(target).relations[actor].romance.stv += 200 * multiplier2;
+				gC(target).relations[actor].sexualTension.stv += 300 * multiplier2;
+				gC(target).relations[actor].submission.stv += 150 * multiplier2;
+				gC(target).relations[actor].romance.stv += 150 * multiplier2;
 				// Actor -> Target: +Sexual tension +Domination +Romance
-				gC(actor).relations[target].sexualTension.stv += 100 * multiplier1;
-				gC(actor).relations[target].domination.stv += 100 * multiplier1;
-				gC(actor).relations[target].romance.stv += 100 * multiplier1;
+				gC(actor).relations[target].sexualTension.stv += 75 * multiplier1;
+				gC(actor).relations[target].domination.stv += 75 * multiplier1;
+				gC(actor).relations[target].romance.stv += 75 * multiplier1;
 				description = gC(actor).getFormattedName() + "'s and " + gC(target).getFormattedName() + "'s sexual tension and romance and " + gC(target).getFormattedName() + "'s submission have increased.";
 			} else {
 				ctxt = "given";
 				// Target -> Actor: +++Romance +Sexual tension
-				gC(target).relations[actor].sexualTension.stv += 200 * multiplier2;
-				gC(target).relations[actor].romance.stv += 600 * multiplier2;
+				gC(target).relations[actor].sexualTension.stv += 150 * multiplier2;
+				gC(target).relations[actor].romance.stv += 450 * multiplier2;
 				// Actor -> Target: ++Romance +Sexual tension
-				gC(actor).relations[target].sexualTension.stv += 100 * multiplier1;
-				gC(actor).relations[target].romance.stv += 200 * multiplier1;
+				gC(actor).relations[target].sexualTension.stv += 75 * multiplier1;
+				gC(actor).relations[target].romance.stv += 150 * multiplier1;
 				description = gC(actor).getFormattedName() + "'s and " + gC(target).getFormattedName() + "'s romance and sexual tension have increased.";
 			}
 		} else if ( State.variables.sc.sceneType == "bs" ) {
 			ctxt = "bs"; 
 			// Target -> Actor: +++Rivalry
-			gC(target).relations[actor].rivalry.stv += 400 * multiplier2;
+			gC(target).relations[actor].rivalry.stv += 300 * multiplier2;
 			// Actor -> Target: +Rivalry
-			gC(actor).relations[target].sexualTension.stv += 100 * multiplier1;
+			gC(actor).relations[target].sexualTension.stv += 75 * multiplier1;
+			description = gC(actor).getFormattedName() + "'s and " + gC(target).getFormattedName() + "'s rivalry has increased.";
+		}
+	}
+	return description;
+}
+window.provokeVirginityBonusRelationshipFixedType = function(actor,target,type) {
+	var description = "";
+	if ( gC(actor).relations[target] != undefined ) {
+		var multiplier1 = getVirginityRelationshipMultiplier(actor,target);
+		var multiplier2 = getVirginityRelationshipMultiplier(target,actor);
+		var ctxt = "";
+		if ( type == "forced" ) {
+			ctxt = "forced";
+			// Target -> Actor: ++Sexual tension +Submission +Romance
+			gC(target).relations[actor].sexualTension.stv += 300 * multiplier2;
+			gC(target).relations[actor].submission.stv += 150 * multiplier2;
+			gC(target).relations[actor].romance.stv += 150 * multiplier2;
+			// Actor -> Target: +Sexual tension +Domination +Romance
+			gC(actor).relations[target].sexualTension.stv += 75 * multiplier1;
+			gC(actor).relations[target].domination.stv += 75 * multiplier1;
+			gC(actor).relations[target].romance.stv += 75 * multiplier1;
+			description = gC(actor).getFormattedName() + "'s and " + gC(target).getFormattedName() + "'s sexual tension and romance and " + gC(target).getFormattedName() + "'s submission have increased.";
+		} else if ( type == "given" ) {
+			ctxt = "given";
+			// Target -> Actor: +++Romance +Sexual tension
+			gC(target).relations[actor].sexualTension.stv += 150 * multiplier2;
+			gC(target).relations[actor].romance.stv += 450 * multiplier2;
+			// Actor -> Target: ++Romance +Sexual tension
+			gC(actor).relations[target].sexualTension.stv += 75 * multiplier1;
+			gC(actor).relations[target].romance.stv += 150 * multiplier1;
+			description = gC(actor).getFormattedName() + "'s and " + gC(target).getFormattedName() + "'s romance and sexual tension have increased.";
+		} else if ( type == "bs" ) {
+			ctxt = "bs"; 
+			// Target -> Actor: +++Rivalry
+			gC(target).relations[actor].rivalry.stv += 300 * multiplier2;
+			// Actor -> Target: +Rivalry
+			gC(actor).relations[target].sexualTension.stv += 75 * multiplier1;
 			description = gC(actor).getFormattedName() + "'s and " + gC(target).getFormattedName() + "'s rivalry has increased.";
 		}
 	}
@@ -573,6 +627,7 @@ Virginity.prototype.assignTaker = function(taker,method) {
 Virginity.prototype.clean = function() {
 		this.taken = false;
 		this.taker = "";
+		this.takerName = "";
 		this.method = "";
 	}
 Virginity.prototype.tryTakeVirginity = function(taker,method,description) {
@@ -581,8 +636,8 @@ Virginity.prototype.tryTakeVirginity = function(taker,method,description) {
 			this.taker = taker;
 			this.takerName = gC(taker).name;
 			this.method = method;
-			if ( State.variables.sc.sceneType == "ss" ) {
-				if ( State.variables.sc.enabledLead == "fixed" && gC(taker).hasLead == true ) {
+			if ( State.variables.sc.sceneType == "ss" || method == "storyForced" || method == "storyGiven" ) {
+				if ( (State.variables.sc.enabledLead == "fixed" && gC(taker).hasLead == true) || method == "storyForced" ) {
 					this.ctxt = "forced";
 				} else {
 					this.ctxt = "given";
@@ -590,7 +645,9 @@ Virginity.prototype.tryTakeVirginity = function(taker,method,description) {
 			} else if ( State.variables.sc.sceneType == "bs" ) {
 				this.ctxt = "bs"; 
 			}
-			State.variables.sc.importantMessages += description + "\n";
+			if ( method != "storyForced" && method != "storyGiven" ) {
+				State.variables.sc.importantMessages += description + "\n";
+			}
 		}
 	}
 
@@ -737,7 +794,7 @@ window.flavorAffinities = function() {
 	// Sex
 	this.sex = new flavorAffinity("sex");
 	this.pounce = new flavorAffinity("pounce");
-	for ( var type of ["Dick","Pussy","Ass","Mouth","Breasts","Eyes","Neck","Arms","Legs"] ) {
+	for ( var type of ["Dick","Pussy","Ass","Mouth","Breasts","Eyes","Legs"] ) {
 		var typeA = "use" + type;
 		var typeB = "target" + type;
 		this[typeA] = new flavorAffinity(typeA);
@@ -750,7 +807,7 @@ window.flavorAffinities = function() {
 	
 	// Physical
 	this.physical = new flavorAffinity("physical");
-	this.kick = new flavorAffinity("kick");
+	//this.kick = new flavorAffinity("kick");
 	
 	this.pain = new flavorAffinity("pain");
 	
@@ -767,6 +824,7 @@ window.flavorAffinities = function() {
 	this.seduction = new flavorAffinity("seduction");
 	this.taunt = new flavorAffinity("taunt");
 	this.hypnosis = new flavorAffinity("hypnosis");
+	this.domination = new flavorAffinity("domination");
 	
 	// Others
 	this.spore = new flavorAffinity("spore");
@@ -798,9 +856,9 @@ flavorAffinities.prototype.toJSON = function() {
 window.flavorAffinity = function(type) {
 	this.type = type;
 	this.strength = 0; // Scales up power of moves used
-	this.frailty = 0; // Scales down power of moves used
-	this.resistance = 0; // Scales down power of moves used against
-	this.weakness = 0; // Scales up power of moves used against
+	this.frlt = 0; // Frailty: Scales down power of moves used
+	this.rst = 0; // Scales down power of moves used against
+	this.wkn = 0; // Weakness: Scales up power of moves used against
 }
 
 // Constructors, serializers, etc.

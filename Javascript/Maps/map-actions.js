@@ -33,7 +33,7 @@ window.createSystemEventSearchForScrolls = function(minutes,characters) {
 			// Add scrolls to characters' found scrolls
 			for ( var scr of foundScrolls ) {
 				for ( var character of characters ) {
-					if ( gC(character).foundScrolls.includes(scr) == false ) {
+					if ( gC(character).getFoundScrolls().includes(scr) == false ) {
 						gC(character).foundScrolls.push(scr);
 					}
 				}
@@ -78,8 +78,8 @@ window.createSystemEventStudyRandomScroll = function(minutes,characters) {
 		var eventMsg = "";
 		if ( cList.length > 0 ) {
 			var validScrolls = []; // Select potentially valid scrolls
-			for ( var scr of gC(characters[0]).foundScrolls ) {
-				if ( gC(characters[0]).studiedScrolls.includes(scr) == false ) {
+			for ( var scr of gC(characters[0]).getFoundScrolls() ) {
+				if ( gC(characters[0]).getStudiedScrolls().includes(scr) == false ) {
 					validScrolls.push(scr);
 				}
 			}
@@ -87,7 +87,7 @@ window.createSystemEventStudyRandomScroll = function(minutes,characters) {
 			
 			var nCharacters = [];
 			for ( var character of characters ) { // Select valid characters
-				if ( gC(character).studiedScrolls.includes(scrollKey) == false ) {
+				if ( gC(character).getStudiedScrolls().includes(scrollKey) == false ) {
 					nCharacters.push(character);
 					gC(character).studiedScrolls.push(scrollKey);
 				}
@@ -113,9 +113,10 @@ window.createSystemEventStudySpecificScroll = function(characters,scrollKey) {
 			if ( setup.scrollsList[scrollKey] != undefined ) {
 				var nCharacters = []; // Select valid characters
 				for ( var character of cList ) {
-					if ( gC(character).studiedScrolls.includes(scrollKey) == false ) {
+					if ( gC(character).getStudiedScrolls().includes(scrollKey) == false ) {
 						nCharacters.push(character);
 						gC(character).studiedScrolls.push(scrollKey);
+						gC(character).compressScrolls();
 					}
 				}
 				reorderCharactersStudiedScrolls(cList); // Variable cleaning
@@ -144,8 +145,8 @@ window.getButtonMapMenuSelectScroll = function() {
 	}
 window.formatPassageMenuSelectScroll = function() {
 	var passageText = "__Pick a scroll__:\n";
-	for ( var scr of gC("chPlayerCharacter").foundScrolls ) {
-		if ( gC("chPlayerCharacter").studiedScrolls.includes(scr) == false ) {
+	for ( var scr of gC("chPlayerCharacter").getFoundScrolls() ) {
+		if ( gC("chPlayerCharacter").getStudiedScrolls().includes(scr) == false ) {
 			// Command to start study specific scroll event
 			passageText += "- " + '<<link [[' + setup.scrollsList[scr].title + '|Interlude]]>><<script>>'
 						 + 'State.variables.compass.ongoingEvents.push(createSystemEventStudySpecificScroll(getPlayerCharsGroup(),"' + scr + '"));\n'
@@ -294,12 +295,12 @@ window.createSystemEventAltDominantSexEffects = function(charsA,charsB) {
 }
 
 window.createSystemEventStandardTransformationScene = function(charsA,charsB,description,checkEndScene,endScenePassage,
-		tfGoals,tfActors,tfTarget,tfTemporary,genderChange,avatarFileName,portraitFileName,tfMenuPassage) {
+		tfGoals,tfActors,tfTarget,tfTemporary,genderChange,avatarFileName,portraitFileName,tfNewAnTags,tfMenuPassage) {
 	var allChars = charsA.concat(charsB);
 	var sEvent = new systemEvent(20,allChars,"scene","Scene",function(cList) {
 			// var desc = getRoomInfoA(gC(this.characters[0]).currentRoom).description;
 			State.variables.sc.startTfScene("ss","dynamic",this.charsA,this.charsB,this.description,isTfSceneFinished,1,this.endScenePassage,
-		this.tfGoals,this.tfActors,this.tfTarget,4,this.tfTemporary,7,this.genderChange,this.avatarFileName,this.portraitFileName);
+		this.tfGoals,this.tfActors,this.tfTarget,4,this.tfTemporary,7,this.genderChange,this.avatarFileName,this.tfNewAnTags,this.portraitFileName);
 			for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
 				if ( charKey != "chPlayerCharacter" ) {
 					gC(charKey).aiAlgorythm = createAiWeightedMissionsByTaste();
@@ -329,6 +330,7 @@ window.createSystemEventStandardTransformationScene = function(charsA,charsB,des
 	sEvent.genderChange = genderChange;
 	sEvent.avatarFileName = avatarFileName;
 	sEvent.portraitFileName = portraitFileName;
+	sEvent.tfNewAnTags = tfNewAnTags;
 	sEvent.flagMayBeInterrupted = false;
 	sEvent.flagMayChangeGroups = false;
 	sEvent.tfMenuPassage = tfMenuPassage;
@@ -351,15 +353,17 @@ window.createSystemEventStandardTransformationScene = function(charsA,charsB,des
 window.createSystemEventBattle = function(charactersTeamA,charactersTeamB,spectators,minutes,label) {
 	var allChars = charactersTeamA.concat(charactersTeamB.concat(spectators));
 	var sEvent = new systemEvent(minutes,characters,"battle","Battle",function(cList) {
-			var desc = getRoomInfoA(gC(this.characters[0]).currentRoom).description;
-			State.variables.sc.startScene("bs","none",this.charactersTeamA,this.charactersTeamB,desc,endConditionStandardBattle,0,"Map");
-			for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
-				if ( charKey != "chPlayerCharacter" ) {
-					gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
+			if ( this.flagForcedToEnd == false || ( State.variables.compass.flagEndedScenario == true && this.ongoingTime > 0 ) ) {
+				var desc = getRoomInfoA(gC(this.characters[0]).currentRoom).description;
+				State.variables.sc.startScene("bs","none",this.charactersTeamA,this.charactersTeamB,desc,endConditionStandardBattle,0,"Map");
+				for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
+					if ( charKey != "chPlayerCharacter" ) {
+						gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
+					}
 				}
-			}
-			if ( this.characters.includes("chPlayerCharacter") == false ) {
-				State.variables.sc.autoResolveScene();
+				if ( this.characters.includes("chPlayerCharacter") == false ) {
+					State.variables.sc.autoResolveScene();
+				}
 			}
 		}
 	);
@@ -378,21 +382,23 @@ window.createSystemEventStandardAssault = function(charactersTeamA,charactersTea
 	var allChars = charactersTeamA.concat(charactersTeamB.concat(spectators));
 	var characters = allChars;
 	var sEvent = new systemEvent(20,characters,"battle","Battle",function(cList) {
-			var desc = getRoomInfoA(gC(this.characters[0]).currentRoom).description;
-			State.variables.sc.startScene("bs","none",this.charactersTeamA,this.charactersTeamB,desc,endConditionStandardBattle,0,"Scene Results"); // Start scene
-			State.variables.sc.setBattleParameters(3,this.charactersTeamA[0],this.charactersTeamB[0]); // Battle parameters
-			State.variables.sc.endSceneScript = processGenericMapBattleEffects; // Set generic battle effects
-			for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
-				if ( charKey != "chPlayerCharacter" ) {
-					gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
+			if ( this.flagForcedToEnd == false || ( State.variables.compass.flagEndedScenario == true && this.ongoingTime > 0 ) ) {
+				var desc = getRoomInfoA(gC(this.characters[0]).currentRoom).description;
+				State.variables.sc.startScene("bs","none",this.charactersTeamA,this.charactersTeamB,desc,endConditionStandardBattle,0,"Scene Results"); // Start scene
+				State.variables.sc.setBattleParameters(3,this.charactersTeamA[0],this.charactersTeamB[0]); // Battle parameters
+				State.variables.sc.endSceneScript = processGenericMapBattleEffects; // Set generic battle effects
+				for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
+					if ( charKey != "chPlayerCharacter" ) {
+						gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
+					}
 				}
-			}
-			for ( var extraMessage of this.extraMessages ) {
-				if ( State.variables.sc.importantMessages != "" ) { State.variables.sc.importantMessages += "\n"; }
-				State.variables.sc.importantMessages += extraMessage;
-			}
-			if ( this.characters.includes("chPlayerCharacter") == false ) {
-				State.variables.sc.autoResolveScene();
+				for ( var extraMessage of this.extraMessages ) {
+					if ( State.variables.sc.importantMessages != "" ) { State.variables.sc.importantMessages += "\n"; }
+					State.variables.sc.importantMessages += extraMessage;
+				}
+				if ( this.characters.includes("chPlayerCharacter") == false ) {
+					State.variables.sc.autoResolveScene();
+				}
 			}
 		}
 	);
@@ -410,21 +416,25 @@ window.createSystemEventStandardChallenge = function(charactersTeamA,charactersT
 	var allChars = charactersTeamA.concat(charactersTeamB.concat(spectators));
 	var characters = allChars;
 	var sEvent = new systemEvent(20,characters,"battle","Battle",function(cList) {
-			var desc = getRoomInfoA(gC(this.characters[0]).currentRoom).description;
-			State.variables.sc.startScene("bs","none",this.charactersTeamA,this.charactersTeamB,desc,endConditionStandardBattle,0,"Scene Results"); // Start scene
-			State.variables.sc.setBattleParameters(stakes,this.charactersTeamA[0],this.charactersTeamB[0]); // Battle parameters
-			State.variables.sc.endSceneScript = processGenericMapBattleEffects; // Set generic battle effects
-			for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
-				if ( charKey != "chPlayerCharacter" ) {
-					gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
+		if ( this.flagForcedToEnd == false || ( State.variables.compass.flagEndedScenario == true && this.ongoingTime > 0 ) ) {
+				var desc = getRoomInfoA(gC(this.characters[0]).currentRoom).description;
+				State.variables.sc.startScene("bs","none",this.charactersTeamA,this.charactersTeamB,desc,endConditionStandardBattle,0,"Scene Results"); // Start scene
+				
+				State.variables.sc.setBattleParameters(stakes,this.charactersTeamA[0],this.charactersTeamB[0]); // Battle parameters
+				State.variables.sc.endSceneScript = processGenericMapBattleEffects; // Set generic battle effects
+				for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
+					if ( charKey != "chPlayerCharacter" ) {
+						gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
+					}
 				}
-			}
-			for ( var extraMessage of this.extraMessages ) {
-				if ( State.variables.sc.importantMessages != "" ) { State.variables.sc.importantMessages += "\n"; }
-				State.variables.sc.importantMessages += extraMessage;
-			}
-			if ( this.characters.includes("chPlayerCharacter") == false ) {
-				State.variables.sc.autoResolveScene();
+				for ( var extraMessage of this.extraMessages ) {
+					if ( State.variables.sc.importantMessages != "" ) { State.variables.sc.importantMessages += "\n"; }
+					State.variables.sc.importantMessages += extraMessage;
+				}
+				
+				if ( this.characters.includes("chPlayerCharacter") == false ) {
+					State.variables.sc.autoResolveScene();
+				}
 			}
 		}
 	);
@@ -443,17 +453,19 @@ window.createSystemEventLiberationChallenge = function(charactersTeamA,character
 	var allChars = charactersTeamA.concat(charactersTeamB.concat(spectators));
 	var characters = allChars;
 	var sEvent = new systemEvent(20,characters,"battle","Battle",function(cList) {
-			var desc = getRoomInfoA(gC(this.characters[0]).currentRoom).description;
-			State.variables.sc.startScene("bs","none",this.charactersTeamA,this.charactersTeamB,desc,endConditionStandardBattle,0,"Scene Results"); // Start scene
-			State.variables.sc.setBattleParameters(1,this.charactersTeamA[0],this.charactersTeamB[0]); // Battle parameters
-			State.variables.sc.endSceneScript = processLiberationChallengeEffects; // Set generic battle effects
-			for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
-				if ( charKey != "chPlayerCharacter" ) {
-					gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
+			if ( this.flagForcedToEnd == false || ( State.variables.compass.flagEndedScenario == true && this.ongoingTime > 0 ) ) {
+				var desc = getRoomInfoA(gC(this.characters[0]).currentRoom).description;
+				State.variables.sc.startScene("bs","none",this.charactersTeamA,this.charactersTeamB,desc,endConditionStandardBattle,0,"Scene Results"); // Start scene
+				State.variables.sc.setBattleParameters(1,this.charactersTeamA[0],this.charactersTeamB[0]); // Battle parameters
+				State.variables.sc.endSceneScript = processLiberationChallengeEffects; // Set generic battle effects
+				for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
+					if ( charKey != "chPlayerCharacter" ) {
+						gC(charKey).aiAlgorythm = createAiBattleAlgorithm();
+					}
 				}
-			}
-			if ( this.characters.includes("chPlayerCharacter") == false ) {
-				State.variables.sc.autoResolveScene();
+				if ( this.characters.includes("chPlayerCharacter") == false ) {
+					State.variables.sc.autoResolveScene();
+				}
 			}
 		}
 	);

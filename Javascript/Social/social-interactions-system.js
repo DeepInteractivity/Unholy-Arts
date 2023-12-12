@@ -645,12 +645,14 @@ window.SocIntSys = function(key,charList) {
 		if ( roundMult >= 1 ) {
 			var mult = roundMult * ( 0.4 + this.charList.length * 0.3 );
 			for ( var cNa of charsNactions ) {
-				var charKey = cNa[0];
-				var chaExp = 2 * gC(charKey).charisma.affinity * mult;
-				var empExp = 2 * gC(charKey).empathy.affinity * mult;
-				gC(charKey).charisma.experience += chaExp;
-				gC(charKey).empathy.experience += empExp;
-				this.expGainsDescription += "\n" + gC(charKey).getFormattedName() + " has gained " + chaExp.toFixed(1) + " and " + empExp.toFixed(1) + " charisma and empathy exp.";
+				if ( cNa[2] != "doNothing" ) {
+					var charKey = cNa[0];
+					var chaExp = 2 * gC(charKey).charisma.affinity * mult;
+					var empExp = 2 * gC(charKey).empathy.affinity * mult;
+					gC(charKey).charisma.experience += chaExp;
+					gC(charKey).empathy.experience += empExp;
+					this.expGainsDescription += "\n" + gC(charKey).getFormattedName() + " has gained " + chaExp.toFixed(1) + " and " + empExp.toFixed(1) + " charisma and empathy exp.";
+				}
 			}
 		}
 	}
