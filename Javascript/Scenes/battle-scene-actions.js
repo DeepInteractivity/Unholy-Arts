@@ -946,7 +946,7 @@ window.createSaP2PfrontalPounce = function() {
 	sa.affinities.push("sex","pounce","usePussy","targetPussy");
 	
 	sa.strategyTags.push("targetEnemy","pounce","bPos","usePussy","targetPussy","frontal");
-	sa.actorStatWeights = [125,25,50,0,0,0,0,0,0];
+	sa.actorStatWeights = [100,50,50,0,0,0,0,0,0];
 	sa.targetStatWeights = [-60,0,-40,0,0,0,0,0,0];
 	sa.statWeightDivider = 100;
 	sa.overallWeightMultiplier = 1;
@@ -1038,7 +1038,7 @@ window.createSaBaScissor = function() {
 	sa.affinities.push("sex","usePussy","targetPussy");
 	
 	sa.strategyTags.push("targetEnemy","damage","sex","usePussy","targetPussy");
-	sa.actorStatWeights = [80,30,10,0,0,0,0,0,0];
+	sa.actorStatWeights = [60,50,10,0,0,0,0,0,0];
 	sa.targetStatWeights = [-10,-10,-20,0,0,0,0,0,0];
 	sa.statWeightDivider = 60;
 	sa.overallWeightMultiplier = 1.2;
@@ -1046,7 +1046,7 @@ window.createSaBaScissor = function() {
 	sa.description = "The character rubs their intimate parts against their target's. Actor and target must already be scissoring.\n"
 				   + "This attack damages the target, and the actor receives some retaliation.\n\nSingle target action."
 				   + "\n\nSexual contact attack."
-				   + "\n\n__Influences__:\nDamage: Actor's physique x8, actor's agility x3, target's resilience x-2.\nSelf damage: Target's physique x1, target's agility x1, actor's resilience x-1.";
+				   + "\n\n__Influences__:\nDamage: Actor's physique x6, actor's agility x5, target's resilience x-2.\nSelf damage: Target's physique x1, target's agility x1, actor's resilience x-1.";
 				   
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = 1;
@@ -1065,7 +1065,7 @@ window.createSaBaScissor = function() {
 		
 		if ( evResults.hit ) { // Hit lands
 			// Damage
-			var inDamValue = gCstat(actor,"physique") * 0.8 + gCstat(actor,"agility") * 0.3 - gCstat(target,"resilience") * 0.2;
+			var inDamValue = gCstat(actor,"physique") * 0.6 + gCstat(actor,"agility") * 0.5 - gCstat(target,"resilience") * 0.2;
 			inDamValue = addLuckFactor(inDamValue,0.1,gCstat(actor,"luck"));
 			var damage = calculateAttackEffects("lust",actor,target,this.affinities,inDamValue);
 			var dmgEffMsg = getWeaknessToAttackText(this.affinities,target);
@@ -1185,7 +1185,7 @@ window.createSaP2DfrontalPounce = function() {
 	sa.affinities.push("sex","pounce","usePussy","targetDick");
 	
 	sa.strategyTags.push("targetEnemy","pounce","bPos","usePussy","targetDick","frontal");
-	sa.actorStatWeights = [125,25,50,0,0,0,0,0,0];
+	sa.actorStatWeights = [113,0,87,0,0,0,0,0,0];
 	sa.targetStatWeights = [-60,0,-40,0,0,0,0,0,0];
 	sa.statWeightDivider = 100;
 	sa.overallWeightMultiplier = 1;
@@ -1277,15 +1277,15 @@ window.createSaBaRideDick = function() {
 	sa.strategyTags.push("targetEnemy","damage","sex","usePussy","targetDick");
 	sa.affinities.push("sex","usePussy","targetDick");
 	
-	sa.actorStatWeights = [75,25,12,0,0,0,0,0,0];
-	sa.targetStatWeights = [12,12,25,0,0,0,0,0,0];
-	sa.statWeightDivider = 112;
-	sa.overallWeightMultiplier = 1;
+	sa.actorStatWeights = [70,0,50,0,0,0,0,0,0];
+	sa.targetStatWeights = [-10,-10,-20,0,0,0,0,0,0];
+	sa.statWeightDivider = 60;
+	sa.overallWeightMultiplier = 1.2;
 	
 	sa.description = "The character forces their target's dick within themself. The character must already be riding their target.\n"
 				   + "This attack damages the target, and the actor receives some retaliation.\n\nSingle target action."
 				   + "\n\nSexual contact attack."
-				   + "\n\n__Influences__:\nDamage: Actor's physique x3, actor's agility x1, target's resilience x-1.\nSelf damage: Target's physique x1, target's agility x1, actor's resilience x-1.";
+				   + "\n\n__Influences__:\nDamage: Actor's physique x7, actor's resilience x4, target's resilience x-1.\nSelf damage: Target's physique x1, target's agility x1, actor's resilience x-1.";
 				   
 	sa.doesHitLand = function(actor,target) {
 		var evasionPlus = 1;
@@ -1304,7 +1304,7 @@ window.createSaBaRideDick = function() {
 		
 		if ( evResults.hit ) { // Hit lands
 			// Damage
-			var inDamValue = gCstat(actor,"physique") * 0.6 + gCstat(actor,"agility") * 0.2 - gCstat(target,"resilience") * 0.2;
+			var inDamValue = gCstat(actor,"physique") * 0.7 + gCstat(actor,"resilience") * 0.4 - gCstat(target,"resilience") * 0.2;
 			inDamValue = addLuckFactor(inDamValue,0.1,gCstat(actor,"luck"));
 			var damage = calculateAttackEffects("lust",actor,target,this.affinities,inDamValue);
 			var dmgEffMsg = getWeaknessToAttackText(this.affinities,target);

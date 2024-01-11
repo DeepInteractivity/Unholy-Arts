@@ -463,6 +463,43 @@ window.createASbleedingInjury = function(intensity) {
 	return as;
 }
 
+window.createASwhatInTarnation = function(intensity) {
+	// Stats gain (phy,res,will) , increased lust resistance
+	var provokeEffect = function(charKey) {
+		gC(charKey).luck.sumModifier -= this.luckLoss;
+	}
+	var cancelEffect = function(charKey) {
+		gC(charKey).luck.sumModifier += this.luckLoss;
+	}
+	var description = "Why- Why in tarnation did I say that!?\n"
+					+ "Decreased luck.";
+	var as = new alteredState("What in tarnation","WhTa","days",turns,provokeEffect,cancelEffect,description);
+	as.luckLoss = 10 * intensity;
+	as.remainingDays = 1;
+	as.type = "other";
+	return as;
+}
+
+window.createASscrewed = function(intensity) {
+	var provokeEffect = function(charKey) {
+		for ( var st of getStatNamesArray() ) {
+			gC(charKey)[st].multModifier -= 0.1 * intensity;
+		}
+	}
+	var cancelEffect = function(charKey) {
+		for ( var st of getStatNamesArray() ) {
+			gC(charKey)[st].multModifier += 0.1 * intensity;
+		}
+	}
+	var description = "The human body was not made for such feats.\n"
+					+ "All stats decreased.";
+	var as = new alteredState("Screwed from the inside out","ScIO","days",turns,provokeEffect,cancelEffect,description);
+	as.intensity = intensity;
+	as.remainingDays = 1;
+	as.type = "other";
+	return as;
+}
+
 // Hypnosis
 
 window.createAShypnosisStroke = function(intensity) {

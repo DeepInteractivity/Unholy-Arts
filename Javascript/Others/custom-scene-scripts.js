@@ -2579,12 +2579,12 @@ window.cbLbKneelingThreesome = function() {
 	setRefreshLustScript();
 	
 	State.variables.sc.customScript = function() {
-		if ( limitedRandomInt(100) > 65 ) {
+		if ( limitedRandomInt(100) > 35 ) {
 			gC("chHope").aiAlgorythm.fixedTarget = "chRock";
 		} else {
 			gC("chHope").aiAlgorythm.fixedTarget = undefined;
 		}
-		if ( limitedRandomInt(100) > 65 ) {
+		if ( limitedRandomInt(100) > 35 ) {
 			gC("chRock").aiAlgorythm.fixedTarget = "chHope";
 		} else {
 			gC("chRock").aiAlgorythm.fixedTarget = undefined;
@@ -2606,12 +2606,12 @@ window.cbLbThreesome = function() {
 	setRefreshLustScript();
 	
 	State.variables.sc.customScript = function() {
-		if ( limitedRandomInt(100) > 65 ) {
+		if ( limitedRandomInt(100) > 35 ) {
 			gC("chHope").aiAlgorythm.fixedTarget = "chRock";
 		} else {
 			gC("chHope").aiAlgorythm.fixedTarget = undefined;
 		}
-		if ( limitedRandomInt(100) > 65 ) {
+		if ( limitedRandomInt(100) > 35 ) {
 			gC("chRock").aiAlgorythm.fixedTarget = "chHope";
 		} else {
 			gC("chRock").aiAlgorythm.fixedTarget = undefined;
@@ -2620,6 +2620,67 @@ window.cbLbThreesome = function() {
 	
 }
 
+window.viCoGangbang = function(gangbangers,description,nextPassage) {
+	addSceneTagToChar("noLead","chPlayerCharacter");
+	State.variables.sc.startScene(
+	"ss","dynamic",["chPlayerCharacter"],gangbangers,description,endConditionTurns,gSettings().stdSxScDur,
+	nextPassage);
+	// Assign choices
+	for ( var ch of gangbangers ) {
+		State.variables[ch].aiAlgorythm = createAiWeightedMissionsByTaste();
+		State.variables[ch].aiAlgorythm.setRoleDomination();
+	}
+	//
+	State.variables.sc.formatScenePassage();
+	setRefreshLustScript();
+	
+	State.variables.muteChars = ["chPlayerCharacter"];
+	for ( var ch of gangbangers ) {
+		gC(ch).aiAlgorythm.fixedTarget = "chPlayerCharacter";
+	}
+	State.variables.sc.customScript = function() {
+		for ( var ch of gangbangers ) {
+			if ( limitedRandomInt(100) > 25 ) {
+				gC(ch).aiAlgorythm.fixedTarget = "chPlayerCharacter";
+				var targetedGenitals = randomFromList(State.variables.StVars.check1);
+				if ( targetedGenitals == "dick" ) {
+					var as = createSensitizedTag(5,"targetDick","Desired dick","DicT",2,"This character will receive extra damage when affected by other dicks.");
+					applyAlteredState([ch],as);
+				} else {
+					var as = createSensitizedTag(5,"targetPussy","Desired pussy","PusT",2,"This character will receive extra damage when affected by other pussies.");
+					applyAlteredState([ch],as);
+				}
+			} else {
+				gC(ch).aiAlgorythm.fixedTarget = undefined;
+			}
+		}
+	}
+	State.variables.sc.endSceneScript = function() {
+		for ( var ch of gangbangers ) {
+			gC(ch).aiAlgorythm.fixedTarget = undefined;
+		}
+	}
+}
+
+window.viCoFirstGangbang = function() {
+	viCoGangbang(["chNash","chClaw"],"A long table stands along the room. Half a hundred people would be able to drown in pleasure here.","SE Virginities Gangbang 1");
+}
+
+window.viCoSecondGangbang = function() {
+	viCoGangbang(["chAte","chVal"],"There's plenty of chairs scattered scross the hall. Someone is going to have to put them back in their place later.","SE Virginities Gangbang 2");
+}
+
+window.viCoThirdGangbang = function() {
+	viCoGangbang(["chMir","chNash"],"The smell of sex impregnates the air. Perhaps it isn't a great idea to have an orgy at the same place where you eat every day.","SE Virginities Gangbang 3");
+}
+
+window.viCoFourthGangbang = function() {
+	viCoGangbang(["chClaw","chAte"],"Is this your life now? Are you now the sex-toy of all the other Candidates?","SE Virginities Gangbang 4");
+}
+
+window.viCoLastGangbang = function() {
+	viCoGangbang(["chMir","chVal"],"Most of the Candidates are now chatting about various trivialities, bonding together over their shared success. The harmony reigning amongst them is a true spectacle of beauty.","SE Virginities Gangbang 5");
+}
 
 /*
 

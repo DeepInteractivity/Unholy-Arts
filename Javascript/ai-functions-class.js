@@ -710,7 +710,7 @@ window.createAiWeightedMissionsByTasteOld = function() {
 	return ai;
 }
 
-// NEW GENERIC AI ALGORITHM - SEX SCENES - 06-2021 - Last updated: Jul-2023
+// NEW GENERIC AI ALGORITHM - SEX SCENES - 06-2021 - Last updated: Nov-2023
 window.createAiWeightedMissionsByTaste = function() {
 	var ai = new aiAlgorithm();
 	ai.key = "weightedMissions";
@@ -736,12 +736,24 @@ window.createAiWeightedMissionsByTaste = function() {
 				this.missionCommands.shift();
 			} else {
 				// Check canceleable continued actions
-				if ( limitedRandomInt(100) < 5 ) {
+				if ( limitedRandomInt(100) < 4 ) {
 					cancelAllCharActionsAndPositions(character);
 				} else {
-					charEvaluatesContinuedActionsToCancel(character);
-					if ( State.variables.sc.hasOwnProperty("tfFlag") ) {
-						cancelActionsConflictingWithTf(character);
+					if ( gC(character).position.continuedTurns > 4 ) {
+						if ( limitedRandomInt(100) < (5 + gC(character).position.continuedTurns) ) {
+							cancelAllCharActionsAndPositions(character);
+						} else {
+							if ( gC(character).position.continuedTurns > (7 + limitedRandomInt(3) ) ) {
+								if ( limitedRandomInt(100) < (gC(character).position.continuedTurns * 1.5) ) {
+									State.variables.sc.cancelPosition(character,false);
+								}
+							}
+						}
+					} else {
+						charEvaluatesContinuedActionsToCancel(character);
+						if ( State.variables.sc.hasOwnProperty("tfFlag") ) {
+							cancelActionsConflictingWithTf(character);
+						}
 					}
 				}
 				if ( isCharInPrimaryContinuedAction(character) ) {
@@ -987,7 +999,7 @@ window.assignWeightToActionFromActorToTargetWithDesires = function(action,actor,
 		} else if ( setup.saList[action].strategyTags.includes("tfHalfPlus") ) {
 			weight *= 2.2 + (State.variables.sc.currentTurn * 0.3);
 		} else if ( setup.saList[action].strategyTags.includes("tfMinus") ) {
-			weight /= 5;
+			weight *= 0.2;
 		}
 	}
 	
@@ -1298,9 +1310,12 @@ window.createWeightedListOfCaChoices = function(actor,caPosChoicesList) {
 	var wL = new weightedList();
 	
 	var fixedTarget = "";
-	if ( gC(actor).aiAlgorythm.fixedTarget ) { fixedTarget = gC(actor).aiAlgorythm.fixedTarget; }
+	if ( gC(actor).aiAlgorythm.fixedTarget != undefined && gC(actor).aiAlgorythm.fixedTarget != "" ) {
+		fixedTarget = gC(actor).aiAlgorythm.fixedTarget;
+	}
 	
 	var i = 0;
+	
 	for ( var capCh of caPosChoicesList ) {
 		var mult = 1;
 		var target = capCh[1];
@@ -1313,8 +1328,13 @@ window.createWeightedListOfCaChoices = function(actor,caPosChoicesList) {
 			}
 			mult = targetsMultipliers[target];
 		}
-		if ( target == fixedTarget ) { mult *= 1000; }
+	
+		if ( target == fixedTarget ) {
+			mult *= 1000;
+		}
+		
 		wL[i] = new weightedElement(capCh,assignWeightToActionFromActorToTargetWithDesires(capCh[0],actor,target,desires,mult));
+			
 		i++;
 	}
 	

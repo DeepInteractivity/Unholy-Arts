@@ -679,6 +679,7 @@ window.Position = function() {
 	this.name = "Free";
 	this.type = "free";
 	this.description = "";
+	this.continuedTurns = 0;
 	
 	this.cAction = null; // If it's a battle position, it may have a continued action
 };
@@ -700,7 +701,7 @@ window.findAllConnectedCharsByPositionMinusList = function(charKey,excludedList)
 	var initiator = gC(charKey).position.initiator;
 	if ( initiator != undefined ) {
 		if ( excludedList.includes(initiator) == false && charList.includes(initiator) == false ) {
-			charList = charList.concat(findAllConnectedCharsByPositionMinusList(initiator,charList));
+			charList = charList.concat(findAllConnectedCharsByPositionMinusList(initiator,excludedList.concat(charList.concat([initiator]))));
 		}
 	}
 	// TargetsList
@@ -708,7 +709,7 @@ window.findAllConnectedCharsByPositionMinusList = function(charKey,excludedList)
 	if ( targetsList != undefined ) {
 		for ( var cK of targetsList ) {
 			if ( charList.includes(cK) == false && excludedList.includes(cK) == false ) {
-				charList = charList.concat(findAllConnectedCharsByPositionMinusList(cK,charList));
+				charList = charList.concat(findAllConnectedCharsByPositionMinusList(cK,excludedList.concat(charList.concat([cK]))));
 			}
 		}
 	}
@@ -717,7 +718,7 @@ window.findAllConnectedCharsByPositionMinusList = function(charKey,excludedList)
 	if ( secondaryInitiators != undefined ) {
 		for ( var cK of secondaryInitiators ) {
 			if ( charList.includes(cK) == false && excludedList.includes(cK) == false ) {
-				charList = charList.concat(findAllConnectedCharsByPositionMinusList(cK,charList));
+				charList = charList.concat(findAllConnectedCharsByPositionMinusList(cK,excludedList.concat(charList.concat([cK]))));
 			}
 		}
 	}
@@ -765,6 +766,7 @@ Position.prototype.free = function() {
 				}
 				break;
 		}
+		this.continuedTurns = 0;
 	}
 
 // Constructors, serializers, etc.

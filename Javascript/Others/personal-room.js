@@ -52,6 +52,7 @@ PersonalRoom.prototype.formatRoomText = function() {
 								   + "\n" + getButtonAnTagGray();
 				}
 				//this.roomText += getHotfixButton();
+				this.roomText += getClawHotfixButton();
 				break;
 			case "charInfo": 																	// Char info screen
 				this.roomText  = "" + this.getButtonBackToMain() + "\n";

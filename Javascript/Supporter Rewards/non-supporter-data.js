@@ -101,7 +101,8 @@ window.SupToolsData = function() {
 				  + '<<link [[Boons were received' + '|Supporter Quickstart Room]]' + '>><<' + 'script>>\n'
 				  + 'State.variables.supToolsData.quickstartStage = "receivedBoons";\n'
 				  + 'State.variables.supToolsData.initializeGameSettings();\n'
-				  + '<</' + 'script>><</' + 'link>>';
+				  + '<</' + 'script>><</' + 'link>>\n'
+				  + '<span style="color:red">Locked: Gleaming Caverns quickstart available on Supporter Version.</span>';
 		return bText;
 	}
 	

@@ -123,4 +123,9 @@ window.v0325GeneralPatches = function() {
 }
 
 
+window.v041FixClawsAngerButton = function() {
+	gC("chClaw").baseMood.angry = 0;
+}
+
+
 

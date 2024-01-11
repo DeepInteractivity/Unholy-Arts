@@ -223,6 +223,8 @@ window.scene = function() {
 		
 		this.turnsWithoutActions = 0;
 		
+		this.muteChars = [];
+		
 		applyRequiredScenePatches();
 		
 		this.formatScenePassage();
@@ -516,6 +518,9 @@ window.scene = function() {
 		
 		if ( this.spectators != undefined ) {
 			delete this.spectators;
+		}
+		if ( this.muteChars != undefined ) {
+			delete this.muteChars;
 		}
 		
 		this.lastPlayerCommand = "";
@@ -1064,6 +1069,15 @@ window.scene = function() {
 			i++;
 		}
 	}
+	scene.prototype.advancePositionTurns = function() {
+		for ( var ch of this.teamAcharKeys.concat(this.teamBcharKeys) ) {
+			if ( gC(ch).position.key != "free" ) {
+				gC(ch).position.continuedTurns++;
+			} else if ( gC(ch).position.key == "free" ) {
+				gC(ch).position.continuedTurns = 0;
+			}
+		}
+	}
 	
 	scene.prototype.checkForOrgasms = function() {
 		var charKeys = this.teamAcharKeys.concat(this.teamBcharKeys);
@@ -1186,7 +1200,6 @@ window.scene = function() {
 			gC(charKey).turnPrefTags = [];
 		}
 		
-		
 		// Choose actions
 		State.variables.sc.testingActionChances = true;
 		State.variables.sc.strategicAiData = this.generateStrategicAiData();
@@ -1260,6 +1273,7 @@ window.scene = function() {
 		// Execute continued action
 		this.checkUnvalidContinuedActions();
 		this.executeContinuedActions();
+		this.advancePositionTurns();
 		
 		// this.refreshCharacterDescriptions(); // Outdated		
 		this.refreshPositionsDescriptions();
@@ -1505,12 +1519,14 @@ window.scene = function() {
 					if ( gC(this.teamAcharKeys[i]).hasFreeBodypart("mouth") == false ) {
 						(100 - threshold) / 1.5;
 					}
-					if ( limitedRandomInt(100) > (threshold + extraThreshold) && (this.teamAcharKeys[i] != this.teamAchosenTargets[i] && this.teamAchosenTargets[i][0] != undefined ) ) { // Activate dialog
-						var actionsAgainstActor = getActionsAgainstTarget(this.teamAcharKeys[i]);					
-						var nd = chooseDialogFromList(setup.dialogDB[this.getDialogsList()],this.teamAcharKeys[i],this.teamAchosenTargets[i][0],this.teamAchosenActions[i],actionsAgainstActor);
-						if ( nd != "" ) {
-							if ( dialogs == "" ) { dialogs += nd; }
-							else { dialogs += "\n" + nd; }
+					if ( this.muteChars.includes(gC(this.teamAcharKeys[i]) == false ) ) {
+						if ( limitedRandomInt(100) > (threshold + extraThreshold) && (this.teamAcharKeys[i] != this.teamAchosenTargets[i] && this.teamAchosenTargets[i][0] != undefined ) ) { // Activate dialog
+							var actionsAgainstActor = getActionsAgainstTarget(this.teamAcharKeys[i]);					
+							var nd = chooseDialogFromList(setup.dialogDB[this.getDialogsList()],this.teamAcharKeys[i],this.teamAchosenTargets[i][0],this.teamAchosenActions[i],actionsAgainstActor);
+							if ( nd != "" ) {
+								if ( dialogs == "" ) { dialogs += nd; }
+								else { dialogs += "\n" + nd; }
+							}
 						}
 					}
 					i++;
@@ -1521,12 +1537,14 @@ window.scene = function() {
 					if ( gC(this.teamBcharKeys[i]).hasFreeBodypart("mouth") == false ) {
 						(100 - threshold) / 1.5;
 					}
-					if ( limitedRandomInt(100) > (threshold + extraThreshold) && (this.teamBcharKeys[i] != this.teamBchosenTargets[i] && this.teamBchosenTargets[i][0] != undefined) ) { // Activate dialog
-						var actionsAgainstActor = getActionsAgainstTarget(this.teamBcharKeys[i]);					
-						var nd = chooseDialogFromList(setup.dialogDB[this.getDialogsList()],this.teamBcharKeys[i],this.teamBchosenTargets[i][0],this.teamBchosenActions[i],actionsAgainstActor);
-						if ( nd != "" ) {
-							if ( dialogs == "" ) { dialogs += nd; }
-							else { dialogs += "\n" + nd; }
+					if ( this.muteChars.includes(gC(this.teamBcharKeys[i]) == false ) ) {
+						if ( limitedRandomInt(100) > (threshold + extraThreshold) && (this.teamBcharKeys[i] != this.teamBchosenTargets[i] && this.teamBchosenTargets[i][0] != undefined) ) { // Activate dialog
+							var actionsAgainstActor = getActionsAgainstTarget(this.teamBcharKeys[i]);					
+							var nd = chooseDialogFromList(setup.dialogDB[this.getDialogsList()],this.teamBcharKeys[i],this.teamBchosenTargets[i][0],this.teamBchosenActions[i],actionsAgainstActor);
+							if ( nd != "" ) {
+								if ( dialogs == "" ) { dialogs += nd; }
+								else { dialogs += "\n" + nd; }
+							}
 						}
 					}
 					i++;

@@ -189,7 +189,7 @@ window.initializeSeBkifOutcome = function () {
 	if ( gC("chClaw").baseMood.angry == 0 ) { State.variables.StVars.clawLostBkif = true; }
 	
 	// Reset Claw's base mood
-	gC("chClaw").baseMood.angry = 50;
+	gC("chClaw").baseMood.angry = 0;
 	gC("chClaw").mood.angry = 0;
 	
 	// Checks
@@ -1124,6 +1124,7 @@ window.gCepigInitGuestsChecks = function() {
 	State.variables.StVars.check10 = isStVarOn("GcEndA"); // Nersmias tip
 }
 window.endGleamingCavernsEpilogue = function() {
+	State.variables.logL1.push(3);
 	var chars = ["chVal","chMir","chAte"];
 	if ( State.variables.StVars.check1 != 3 ) {
 		chars.push("chSil");
@@ -1134,6 +1135,8 @@ window.endGleamingCavernsEpilogue = function() {
 		}
 		gC(ch).merit += 7;
 	}
+	
+	State.variables.logL1.push(6);
 	chars.push("chNash","chRock");
 	for ( var ch of chars ) {
 		for ( var stat of setup.baseStats ) {
@@ -1146,9 +1149,13 @@ window.endGleamingCavernsEpilogue = function() {
 		addPointsToDrive(gC(ch).dDomination,100);
 		addPointsToDrive(gC(ch).dAmbition,100);
 	}
+	
+	
+	State.variables.logL1.push(9);
 	addPointsToDrive(gC("chClaw").dImprovement,250);
 	
 	gCaddSelectedGuests();
+	State.variables.logL1.push(12);
 	finishGleamingCavernsAdventure();
 }
 window.gCaddSelectedGuests = function() {
@@ -1930,6 +1937,159 @@ window.initializeCommunicationTeacher = function() { // CTch
 	// gC("chAte").charisma.affinity += 0.2;
 	// gC("chAte").empathy.affinity += 0.1;
 }
+
+// Virginities Collector
+window.initializeVirgCollector = function() {
+	setRoomIntro("mapTrainingGrounds","diningHall");
+		
+	var targetedGens = [];
+	if ( (gC("chNash").virginities.tribbing.taker == "chPlayerCharacter") && (gC("chMir").virginities.tribbing.taker == "chPlayerCharacter") && (gC("chAte").virginities.tribbing.taker == "chPlayerCharacter") && (gC("chClaw").virginities.tribbing.taker == "chPlayerCharacter") ) {
+		if ( gC("chPlayerCharacter").hasFreeBodypart("pussy") ) {
+			targetedGens.push("pussy");
+		}
+	}
+	if ( (gC("chNash").virginities.dick.taker == "chPlayerCharacter") && (gC("chMir").virginities.dick.taker == "chPlayerCharacter") && (gC("chAte").virginities.dick.taker == "chPlayerCharacter") && (gC("chClaw").virginities.dick.taker == "chPlayerCharacter") && (gC("chVal").virginities.dick.taker == "chPlayerCharacter") ) {
+		if ( gC("chPlayerCharacter").hasFreeBodypart("pussy") ) {
+			targetedGens.push("pussy");
+		}
+	}
+	if ( (gC("chNash").virginities.pussy.taker == "chPlayerCharacter") && (gC("chMir").virginities.pussy.taker == "chPlayerCharacter") && (gC("chAte").virginities.pussy.taker == "chPlayerCharacter") && (gC("chClaw").virginities.pussy.taker == "chPlayerCharacter") && (gC("chVal").virginities.pussy.taker == "chPlayerCharacter") ) {
+		if ( gC("chPlayerCharacter").hasFreeBodypart("dick") ) {
+			targetedGens.push("dick");
+		}
+	}
+	
+	State.variables.StVars.check1 = targetedGens;
+}
+window.virgColCoolSequenceChecks = function() {
+	State.variables.StVars.check2 = [
+		(gCstat("chPlayerCharacter","luck") >= 13),
+		(gCstat("chPlayerCharacter","perception") >= 12),
+		((gCstat("chPlayerCharacter","agility") + gCstat("chPlayerCharacter","resilience") + gCstat("chPlayerCharacter","will")) >= 28)
+	];
+	State.variables.StVars.check3 = [
+		(gCstat("chPlayerCharacter","luck") >= 14),
+		((gCstat("chPlayerCharacter","physique") + gCstat("chPlayerCharacter","agility")) >= 30),
+		((gCstat("chPlayerCharacter","intelligence") + gCstat("chPlayerCharacter","will")) >= 24),
+		((gCstat("chPlayerCharacter","charisma") + gCstat("chPlayerCharacter","empathy") + (rLvlAbt("chNash","chPlayerCharacter","friendship") * 2 - rLvlAbt("chNash","chPlayerCharacter","romance") - rLvlAbt("chNash","chPlayerCharacter","sexualTension") - rLvlAbt("chNash","chPlayerCharacter","rivalry") - rLvlAbt("chNash","chPlayerCharacter","enmity") ) * 2 ) >= 24)
+	];
+	State.variables.StVars.check4 = [
+		(gCstat("chPlayerCharacter","luck") >= 15),
+		((gCstat("chPlayerCharacter","intelligence") + gCstat("chPlayerCharacter","will")) >= 30),
+		((gCstat("chPlayerCharacter","physique") + gCstat("chPlayerCharacter","resilience") + gCstat("chPlayerCharacter","perception")) >= 40)
+	];
+	State.variables.StVars.check5 = [
+		(gCstat("chPlayerCharacter","luck") >= 16),
+		((gCstat("chPlayerCharacter","intelligence") + gCstat("chPlayerCharacter","will")) >= 24),
+		((gCstat("chPlayerCharacter","physique") + gCstat("chPlayerCharacter","resilience") + gCstat("chPlayerCharacter","agility")) >= 42),
+		((gCstat("chPlayerCharacter","charisma") + gCstat("chPlayerCharacter","empathy") + (rLvlAbt("chMir","chPlayerCharacter","friendship") + (rLvlAbt("chMir","chPlayerCharacter","romance"))) * 2) >= 32)
+	];
+	State.variables.StVars.check6 = [
+		(gCstat("chPlayerCharacter","luck") >= 17),
+		((gCstat("chPlayerCharacter","intelligence") + gCstat("chPlayerCharacter","will")) >= 30),
+		((gCstat("chPlayerCharacter","physique") + gCstat("chPlayerCharacter","resilience")) >= 24),
+		((gCstat("chPlayerCharacter","charisma")) >= 16)
+	];
+}
+window.virgColGangbackPreparations = function() {
+	charactersLearnSceneActions(["chNash","chMir","chVal","chAte","chClaw"],['extraMountFromBehind','extraKneel','extraMakeKneel','extraLegHoldHead']);
+}
+
+window.viCoFoiledValtan = function() {
+	for ( var ch of ["chNash","chMir","chAte","chClaw"] ) {
+		State.variables[ch].relations.chVal.rivalry.stv += 100;
+		State.variables[ch].relations.chVal.enmity.stv += 100;
+		State.variables[ch].relations.chVal.sexualTension.stv += 500;
+		State.variables[ch].relations.chVal.domination.stv += 500;
+		State.variables.chVal.relations[ch].submission.stv += 500;
+		State.variables.chVal.relations[ch].sexualTension.stv += 500;
+		State.variables.chVal.relations[ch].rivalry.stv += 100;
+		State.variables.chVal.relations[ch].enmity.stv += 100;
+	}
+	State.variables.chPlayerCharacter.relations.chVal.rivalry.stv += 250;
+	State.variables.chPlayerCharacter.relations.chVal.enmity.stv += 100;
+	State.variables.chVal.relations.chPlayerCharacter.rivalry.stv += 250;
+	State.variables.chVal.relations.chPlayerCharacter.enmity.stv += 100;
+	gC("chVal").lust.current *= 0.3;
+	gC("chVal").energy.current *= 0.3;
+	gC("chVal").willpower.current *= 0.3;
+	gC("chVal").socialdrive.current *= 0.3;
+	gC("chVal").combatAffinities.sex.wkn += 5;
+}
+
+window.viCoGangbansSequenceStart = function() {
+	// check2 is used to keep track of the player's failed checks until the end of the gangbangs
+	for ( var c of ["check2","check3","check4","check5","check6"] ) {
+		State.variables.StVars[c] = 0;
+	}
+	
+	State.variables.StVars.check3 = [ (gCstat("chPlayerCharacter","resilience") >= 13),
+									  (gCstat("chPlayerCharacter","will") >= 13),
+									  (gCstat("chPlayerCharacter","luck") >= 13) ];
+	viCoFirstGangbang();
+}
+
+
+
+window.viCoGangbangsEnding = function() {
+	State.variables.logL1.push(100);
+	if ( gC("chPlayerCharacter").willpower.current < gC("chPlayerCharacter").willpower.max * 0.5 ) {
+		State.variables.StVars.check2++;
+	}
+	
+	gC("chPlayerCharacter").changeMerit(-5);
+	for ( var ch of ["chNash","chMir","chClaw","chVal","chAte"] ) {
+		addPointsToDrive(gC(ch).dPleasure,100);
+		gC(ch).restoreBars();
+	}
+	State.variables.logL1.push(200);
+	for ( var ch of ["chNash","chMir","chClaw","chAte"] ) {
+		State.variables[ch].relations.chPlayerCharacter.friendship.stv -= 100;
+		State.variables.chPlayerCharacter.relations[ch].friendship.stv -= 100;
+		State.variables[ch].relations.chPlayerCharacter.romance.stv -= 100;
+		State.variables.chPlayerCharacter.relations[ch].romance.stv -= 100;
+		State.variables[ch].relations.chPlayerCharacter.enmity.stv += 100;
+		State.variables.chPlayerCharacter.relations[ch].enmity.stv += 100;
+	}
+	State.variables.chPlayerCharacter.relations.chVal.rivalry.stv += 500;
+	State.variables.chVal.relations.chPlayerCharacter.sexualTension.stv += 500;
+	
+	State.variables.logL1.push(300);
+	if ( State.variables.StVars.check2 > 3 ) {
+		gC("chPlayerCharacter").combatAffinities.sex.wkn += 10;
+		for ( var ch of ["chNash","chMir","chClaw","chVal","chAte"] ) {
+			State.variables[ch].relations.chPlayerCharacter.sexualTension.stv += 500;
+			State.variables.chPlayerCharacter.relations[ch].sexualTension.stv += 500;
+			State.variables[ch].relations.chPlayerCharacter.domination.stv += 500;
+			State.variables.chPlayerCharacter.relations[ch].submission.stv += 500;
+		}
+		applyAlteredState(["chPlayerCharacter"],createASscrewed(5));
+	} else if ( State.variables.StVars.check2 > 1 ) {
+		gC("chPlayerCharacter").combatAffinities.sex.wkn += 5;
+		for ( var ch of ["chNash","chMir","chClaw","chVal","chAte"] ) {
+			State.variables[ch].relations.chPlayerCharacter.sexualTension.stv += 250;
+			State.variables.chPlayerCharacter.relations[ch].sexualTension.stv += 250;
+			State.variables[ch].relations.chPlayerCharacter.domination.stv += 250;
+			State.variables.chPlayerCharacter.relations[ch].submission.stv += 250;
+		}
+		applyAlteredState(["chPlayerCharacter"],createASscrewed(3));
+	} else {
+		for ( var ch of ["chNash","chMir","chClaw","chVal","chAte"] ) {
+			State.variables[ch].relations.chPlayerCharacter.sexualTension.stv += 100;
+			State.variables.chPlayerCharacter.relations[ch].sexualTension.stv += 100;
+			State.variables[ch].relations.chPlayerCharacter.domination.stv += 100;
+			State.variables.chPlayerCharacter.relations[ch].submission.stv += 100;
+		}
+		applyAlteredState(["chPlayerCharacter"],createASscrewed(1));
+	}
+	State.variables.logL1.push(400);
+}
+
+
+
+
+
+
 
 
 

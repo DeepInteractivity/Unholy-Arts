@@ -296,6 +296,15 @@ window.formatRequisiteForClairvoyance = function(reqName,reqFunc) {
 	fText += "\n";
 	return fText;
 }
+window.formatRequisiteForClairvoyanceAlt = function(reqName,reqFunc) {
+	var fText = reqName + ": ";
+	if ( reqFunc() ) {
+		fText += colorText("Passed","greenyellow");
+	} else {
+		fText += colorText("Not passed","red");
+	}
+	return fText;
+}
 window.formatHintForClairvoyance = function(hintName) {
 	var fText = "- " + hintName;
 	fText += "\n";
@@ -1291,6 +1300,145 @@ setup.eventsMetaInfo["CTch"].clairvoyanceData = new emiClaivoyanceData(
 	},
 	null // Hints
 );
+
+setup.eventsMetaInfo["ViCo"] = new eventMetaInfo( // "Virginities Collector"
+	true,true,
+	"Virginities Collector",
+	"ViCo",
+	initializeVirgCollector, // initFunc
+	"SE Virginities Collector 0",
+	function() { // Reqs
+		var allowed = false;
+		
+		if ( State.variables.daycycle.month == 1 ) {
+			var anyVirgCollected = false;
+			if ( (gC("chNash").virginities.tribbing.taker == "chPlayerCharacter") && (gC("chMir").virginities.tribbing.taker == "chPlayerCharacter") && (gC("chAte").virginities.tribbing.taker == "chPlayerCharacter") && (gC("chClaw").virginities.tribbing.taker == "chPlayerCharacter") ) {
+				if ( gC("chPlayerCharacter").hasFreeBodypart("pussy") ) {
+					anyVirgCollected = true;
+				}
+			}
+			if ( (gC("chNash").virginities.dick.taker == "chPlayerCharacter") && (gC("chMir").virginities.dick.taker == "chPlayerCharacter") && (gC("chAte").virginities.dick.taker == "chPlayerCharacter") && (gC("chClaw").virginities.dick.taker == "chPlayerCharacter") && (gC("chVal").virginities.dick.taker == "chPlayerCharacter") ) {
+				if ( gC("chPlayerCharacter").hasFreeBodypart("pussy") ) {
+					anyVirgCollected = true;
+				}
+			}
+			if ( (gC("chNash").virginities.pussy.taker == "chPlayerCharacter") && (gC("chMir").virginities.pussy.taker == "chPlayerCharacter") && (gC("chAte").virginities.pussy.taker == "chPlayerCharacter") && (gC("chClaw").virginities.pussy.taker == "chPlayerCharacter") && (gC("chVal").virginities.pussy.taker == "chPlayerCharacter") ) {
+				if ( gC("chPlayerCharacter").hasFreeBodypart("dick") ) {
+					anyVirgCollected = true;
+				}
+			}
+			if ( anyVirgCollected ) {
+				allowed = true;
+			}
+		}
+		return allowed;
+	},
+	function() { // Weight
+		var weight = 500 + gC("chVal").dPleasure.level * 100;
+		
+		return weight;
+	}
+);
+setup.eventsMetaInfo["ViCo"].clairvoyanceData = new emiClaivoyanceData(
+	"When the sexual exploits of the Gaanidan Candidate are discussed", // Cryptic Name
+	function() { // Reqs to be shown
+		var result = false;
+		if ( State.variables.daycycle.month == 1 ) {
+			result = true;
+		}
+		return result; // 
+	},
+	function() { // Reqs to appear
+		var reqsText = formatClairvoyanceCheck("Requisites (1)",25,formatRequisiteForClairvoyance("Time is fleeting", function() {
+			var b = true;
+			return b;
+		})) + formatClairvoyanceCheck("Requisites (2)",50,formatRequisiteForClairvoyance(("Either of:\n"
+		+ "A) The player has taken the tribbing virginity of: " + formatRequisiteForClairvoyanceAlt("Nash", function() {
+			var b = gC("chNash").virginities.tribbing.taker == "chPlayerCharacter";
+			return b;
+		}) + ", " + formatRequisiteForClairvoyanceAlt("Mir", function() {
+			var b = gC("chMir").virginities.tribbing.taker == "chPlayerCharacter";
+			return b;
+		}) + ", " + formatRequisiteForClairvoyanceAlt("Ate", function() {
+			var b = gC("chAte").virginities.tribbing.taker == "chPlayerCharacter";
+			return b;
+		}) + ", and " + formatRequisiteForClairvoyanceAlt("Claw", function() {
+			var b = gC("chClaw").virginities.tribbing.taker == "chPlayerCharacter";
+			return b;
+		}) + "\nB) The player has taken the penile virginity of: " + formatRequisiteForClairvoyanceAlt("Nash", function() {
+			var b = gC("chNash").virginities.dick.taker == "chPlayerCharacter";
+			return b;
+		}) + ", " + formatRequisiteForClairvoyanceAlt("Mir", function() {
+			var b = gC("chMir").virginities.dick.taker == "chPlayerCharacter";
+			return b;
+		}) + ", " + formatRequisiteForClairvoyanceAlt("Ate", function() {
+			var b = gC("chAte").virginities.dick.taker == "chPlayerCharacter";
+			return b;
+		}) + ", " + formatRequisiteForClairvoyanceAlt("Val", function() {
+			var b = gC("chVal").virginities.dick.taker == "chPlayerCharacter";
+			return b;
+		}) + ", and " + formatRequisiteForClairvoyanceAlt("Claw", function() {
+			var b = gC("chClaw").virginities.dick.taker == "chPlayerCharacter";
+			return b;
+		}) + "\nC) The player has taken the vaginal virginity of: " + formatRequisiteForClairvoyanceAlt("Nash", function() {
+			var b = gC("chNash").virginities.pussy.taker == "chPlayerCharacter";
+			return b;
+		}) + ", " + formatRequisiteForClairvoyanceAlt("Mir", function() {
+			var b = gC("chMir").virginities.pussy.taker == "chPlayerCharacter";
+			return b;
+		}) + ", " + formatRequisiteForClairvoyanceAlt("Ate", function() {
+			var b = gC("chAte").virginities.pussy.taker == "chPlayerCharacter";
+			return b;
+		}) + ", " + formatRequisiteForClairvoyanceAlt("Val", function() {
+			var b = gC("chVal").virginities.pussy.taker == "chPlayerCharacter";
+			return b;
+		}) + ", and " + formatRequisiteForClairvoyanceAlt("Claw", function() {
+			var b = gC("chClaw").virginities.pussy.taker == "chPlayerCharacter";
+			return b;
+		}) + "\nAny full category"
+		), function() {
+			var fulfilledReqs = false;
+			var reqs1 = false;
+			var reqs2 = false;
+			var reqs3 = false;
+			
+			if ( (gC("chNash").virginities.tribbing.taker == "chPlayerCharacter") && (gC("chMir").virginities.tribbing.taker == "chPlayerCharacter") && (gC("chAte").virginities.tribbing.taker == "chPlayerCharacter") && (gC("chClaw").virginities.tribbing.taker == "chPlayerCharacter") ) {
+					fulfilledReqs = true;
+					reqs1 = true;
+			}
+			if ( (gC("chNash").virginities.dick.taker == "chPlayerCharacter") && (gC("chMir").virginities.dick.taker == "chPlayerCharacter") && (gC("chAte").virginities.dick.taker == "chPlayerCharacter") && (gC("chClaw").virginities.dick.taker == "chPlayerCharacter") && (gC("chVal").virginities.dick.taker == "chPlayerCharacter") ) {
+					fulfilledReqs = true;
+					reqs2 = true;
+			}
+			if ( (gC("chNash").virginities.pussy.taker == "chPlayerCharacter") && (gC("chMir").virginities.pussy.taker == "chPlayerCharacter") && (gC("chAte").virginities.pussy.taker == "chPlayerCharacter") && (gC("chClaw").virginities.pussy.taker == "chPlayerCharacter") && (gC("chVal").virginities.pussy.taker == "chPlayerCharacter") ) {
+					fulfilledReqs = true;
+					reqs3 = true;
+			}
+			return fulfilledReqs;
+		})) + formatClairvoyanceCheck("Requisites (3)",60,formatRequisiteForClairvoyance("The sexual organ you took the collected virginities with is free", function() {
+			var anyVirgCollected = false;
+			if ( (gC("chNash").virginities.tribbing.taker == "chPlayerCharacter") && (gC("chMir").virginities.tribbing.taker == "chPlayerCharacter") && (gC("chAte").virginities.tribbing.taker == "chPlayerCharacter") && (gC("chClaw").virginities.tribbing.taker == "chPlayerCharacter") ) {
+				if ( gC("chPlayerCharacter").hasFreeBodypart("pussy") ) {
+					anyVirgCollected = true;
+				}
+			}
+			if ( (gC("chNash").virginities.dick.taker == "chPlayerCharacter") && (gC("chMir").virginities.dick.taker == "chPlayerCharacter") && (gC("chAte").virginities.dick.taker == "chPlayerCharacter") && (gC("chClaw").virginities.dick.taker == "chPlayerCharacter") && (gC("chVal").virginities.dick.taker == "chPlayerCharacter") ) {
+				if ( gC("chPlayerCharacter").hasFreeBodypart("pussy") ) {
+					anyVirgCollected = true;
+				}
+			}
+			if ( (gC("chNash").virginities.pussy.taker == "chPlayerCharacter") && (gC("chMir").virginities.pussy.taker == "chPlayerCharacter") && (gC("chAte").virginities.pussy.taker == "chPlayerCharacter") && (gC("chClaw").virginities.pussy.taker == "chPlayerCharacter") && (gC("chVal").virginities.pussy.taker == "chPlayerCharacter") ) {
+				if ( gC("chPlayerCharacter").hasFreeBodypart("dick") ) {
+					anyVirgCollected = true;
+				}
+			}
+			return anyVirgCollected;
+		})) + formatClairvoyanceCheck("Hints (1)",95,"- //Some pour blood and tears into becoming great warriors, leaders or sorcerers. The soft smile of fate and luck trumps them all.//") + "\n" + formatClairvoyanceCheck("Hints (2)",100,"- In order to grasp failure away from all chance of success, blame the deer.");
+		return reqsText;
+	},
+	null // Hints
+);
+
 
 /*
 setup.eventsMetaInfo["gd3"] = new eventMetaInfo( // "A Sacrifice of Aether"

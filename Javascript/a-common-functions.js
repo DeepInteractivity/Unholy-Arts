@@ -434,7 +434,7 @@ window.getLuckDescription = function() {
 ////////// Weighted List //////////
 
 window.weightedList = function() {
-
+	this.exists = true;
 };
 
 window.weightedElement = function(content,weight) {
@@ -762,6 +762,14 @@ window.getHotfixButton = function() {
 	//	bText 	 += "applyLagFix();\n";
 	//	bText	 += "<</s" + "cript>><</l" + "ink>>\n\n";
 	// var bText = "";
+	return bText;
+}
+window.getClawHotfixButton = function() {
+	var bText = "\n\n";
+	bText	 += "<<l" + "ink [[Hotfix: Lower Claw's base angry mood|Personal Room]]>><<s" + "cript>>\n";
+		bText 	 += "v041FixClawsAngerButton();\n";
+		bText	 += "<</s" + "cript>><</l" + "ink>> Use this option only if Claw still refuses to ever talk to anyone after day 13.\n";
+		
 	return bText;
 }
 

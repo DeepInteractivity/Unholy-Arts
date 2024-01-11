@@ -108,7 +108,7 @@ setup.tfExtraSettingsNames = [ "No transformations", "Temporary", "Permanent", "
 
 ////////// GAME SETTINGS CLASS //////////
 
-setup.versionName = "Unholy Arts v0.4.0";
+setup.versionName = "Unholy Arts v0.4.1";
 
 setup.infamySecondThreshold = 1.2;
 setup.infamyThirdThreshold = 1.4;
