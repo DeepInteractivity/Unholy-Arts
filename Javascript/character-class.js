@@ -238,6 +238,14 @@ Character.prototype.cleanStates = function() {
 			if ( as.flagRemove == false ) {
 				newAlteredStates.push(as);
 			} else {
+				if ( as.acr == "ScIO" ) {
+					as.cancelEffect = function(charKey) {
+						var intensity = this.intensity;
+						for ( var st of getStatNamesArray() ) {
+							gC(charKey)[st].multModifier += 0.1 * intensity;
+						}
+					} // TO DO: Remove in a few versions
+				}
 				as.cancelEffect(this.varName);
 			}
 		}

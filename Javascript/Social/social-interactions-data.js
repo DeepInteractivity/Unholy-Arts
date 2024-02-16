@@ -2824,13 +2824,11 @@ window.getKissSocInt = function(type) {
 				var eText = "\n" + gC(this.target).formattedName + " received " + textLustDamage(-gC(this.target).lust.attackInConversation(-this.getLustDamage(this.actor,this.target))) + ".";
 				if ( gC(this.actor).virginities.fKiss.taken == false ) {
 					gC(this.actor).virginities.fKiss.tryTakeVirginity(this.target,"storyGiven","");
-					provokeVirginityBonusRelationshipFixedType(this.actor,this.target,"given");
-					eText += "\n" + colorText(gC(this.actor).name + " just gave " + gC(this.actor).posPr + " first kiss.","red");
+					eText += "\n" + colorText(gC(this.actor).name + " just gave " + gC(this.actor).posPr + " first kiss.","red") + provokeVirginityBonusRelationshipFixedType(this.actor,this.target,"given");
 				}
 				if ( gC(this.target).virginities.fKiss.taken == false ) {
 					gC(this.target).virginities.fKiss.tryTakeVirginity(this.actor,"storyGiven","");
-					provokeVirginityBonusRelationshipFixedType(this.target,this.actor,"given");
-					eText += "\n" + colorText(gC(this.target).name + " just had " + gC(this.actor).posPr + " first kiss taken.","red");
+					eText += "\n" + colorText(gC(this.target).name + " just had " + gC(this.actor).posPr + " first kiss taken.","red") + provokeVirginityBonusRelationshipFixedType(this.target,this.actor,"given");
 				}
 				sis.extraEffects += eText; 
 			}

@@ -59,6 +59,8 @@ window.createFlyingLookout = function(statVariance,statBuff,number) {
 	// Finish initialization
 	assignMaxBarsMediumMonster(nameVar);
 	
+	character.makeVirginitiesUnknown();
+	
 	return nameVar;
 }
 
@@ -121,6 +123,8 @@ window.createEssenceSucker = function(statVariance,statBuff,number) {
 	// Finish initialization
 	assignMaxBarsMediumMonster(nameVar);
 	
+	character.makeVirginitiesUnknown();
+	
 	return nameVar;
 }
 
@@ -177,6 +181,8 @@ window.createOppressiveYoke = function(statVariance,statBuff,number) {
 	
 	// Finish initialization
 	assignMaxBarsCustomBase(nameVar,80);
+	
+	character.makeVirginitiesUnknown();
 	
 	return nameVar;
 }

@@ -151,8 +151,11 @@ window.initFaSeVoicesFromTheCaverns = function() {
 	
 	// Initial passage , check1
 	var initialPassage = "FASE VFtC InitB"; // Start variant B
-	if ( isStVarOn("diVcAt") == true ) { initialPassage = "FASE VFtC InitA"; }
-	else if ( isStVarOn("diAcFf") == true || isStVarOn("diDfWn") == true ) { initialPassage = "FASE VFtC InitC"; }
+	if ( isStVarOn("diVcAt") == true ) {
+		initialPassage = "FASE VFtC InitA";
+	} else if ( isStVarOn("diAcFf") == true || isStVarOn("diDfWn") == true ) {
+		initialPassage = "FASE VFtC InitC";
+	}
 	
 	// Relationship check , check2
 	State.variables.StVars.check2 = rLvlAbt("chAte","chPlayerCharacter","friendship") * 2 + rLvlAbt("chAte","chPlayerCharacter","romance") * 1.5 - rLvlAbt("chAte","chPlayerCharacter","sexualTension") * 0.5 - rLvlAbt("chAte","chPlayerCharacter","rivalry") * 2 - rLvlAbt("chAte","chPlayerCharacter","enmity") * 3;

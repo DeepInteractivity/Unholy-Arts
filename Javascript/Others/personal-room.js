@@ -728,10 +728,12 @@ PersonalRoom.prototype.endDayEffects = function() {
 
 		// Equipment
 		for ( var equip of State.variables.equipmentList ) {
-			if ( equip.days > 1 ) {
-				equip.days--;
-			} else if ( equip.days == 1 ) {
-				unequipObject(equip.id);
+			if ( isCharAtTemple(equip.equippedOn) ) {
+				if ( equip.days > 1 ) {
+					equip.days--;
+				} else if ( equip.days == 1 ) {
+					unequipObject(equip.id);
+				}
 			}
 		}
 				
@@ -782,14 +784,16 @@ PersonalRoom.prototype.endDayRelationMoodEffects = function() {
 					}
 					var rType = iRelation.relType
 					if ( rType ) { // Special relationship
-						// Effect
-						charNotifications += rType.dailyEffect() + "\n";
-						// Rest days
-						if ( rType.persistence == "temporary" ) {
-							rType.days--;
-							if ( rType.days == 0 ) {
-								// Mark to finish
-								relTypesToFinish.push([rType.actor,rType.target]);
+					if ( isCharAtTemple(character) && isCharAtTemple(rel) ) {
+							// Effect
+							charNotifications += rType.dailyEffect() + "\n";
+							// Rest days
+							if ( rType.persistence == "temporary" ) {
+								rType.days--;
+								if ( rType.days == 0 ) {
+									// Mark to finish
+									relTypesToFinish.push([rType.actor,rType.target]);
+								}
 							}
 						}
 					}
@@ -1727,7 +1731,9 @@ window.getEquipmentWindow = function() {
 	wText += "\n__Characters__:\n";
 	wText += '<<radiobutton "$selectedChar" "chPlayerCharacter" autocheck>> ' + gC("chPlayerCharacter").getFormattedName() + "\n";
 	for ( var charKey of State.variables.chPlayerCharacter.subChars ) {
-		wText += '<<radiobutton "$selectedChar" "' + charKey + '" autocheck>> ' + gC(charKey).getFormattedName() + "\n";
+		if ( isCharAtTemple(charKey) ) {
+			wText += '<<radiobutton "$selectedChar" "' + charKey + '" autocheck>> ' + gC(charKey).getFormattedName() + "\n";
+		}
 	}
 			// Attempt equip item button
 	wText += "\n<<l" + "ink [[Equip item|Personal Room]]>><<s" + "cript>>"

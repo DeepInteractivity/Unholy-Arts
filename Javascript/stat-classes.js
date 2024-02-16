@@ -575,7 +575,7 @@ window.provokeVirginityBonusRelationshipFixedType = function(actor,target,type) 
 			gC(actor).relations[target].domination.stv += 75 * multiplier1;
 			gC(actor).relations[target].romance.stv += 75 * multiplier1;
 			description = gC(actor).getFormattedName() + "'s and " + gC(target).getFormattedName() + "'s sexual tension and romance and " + gC(target).getFormattedName() + "'s submission have increased.";
-		} else if ( type == "given" ) {
+		} else if ( type == "given" || type == "storyGiven" ) {
 			ctxt = "given";
 			// Target -> Actor: +++Romance +Sexual tension
 			gC(target).relations[actor].sexualTension.stv += 150 * multiplier2;

@@ -257,8 +257,6 @@ window.selectAnimationSprites = function() {
 		var chB = selectedAnimation[1][1][0];
 		var ch1anTags = getCharsAnTags(selectedAnimation[1][0][0]);
 		var ch2anTags = getCharsAnTags(selectedAnimation[1][1][0]);
-		
-		State.variables.logL1.push("XXX",selectedAnimation,ch1anTags,ch2anTags);
 			
 			// Temp fix: Protags get WhiteHuman sprite tags, others get GrayCharacter sprite tags // 0.4
 			//if ( gC(ca.targetsList[0]).perPr == "she" && gC(ca.initiator).perPr == "she" ) {
@@ -289,7 +287,6 @@ window.selectAnimationSprites = function() {
 			}
 		}
 		
-		State.variables.logL1.push(ch1anTags,ch2anTags);
 		var chAnTagsPosList = [[selectedAnimation[1][0][0],ch1anTags,selectedAnimation[1][0][1]],[selectedAnimation[1][1][0],ch2anTags,selectedAnimation[1][1][1]]];
 		// Sprite Collector must receive a list of 3-sized arrays, where the first element is the key of the referred character, the second one is an array with all animation tags of the character, and the second is the position the character will be occupying.
 		// For instance: ["chPlayerCharacter",["Mcy","WhiteHuman"],"MftfMdT"] tells the Sprite collector that it must find all sprites for Mcy (Main Character Yellow) for MftfMdT (Mount Face to Face, Mount Dick, Top), or for WhiteHuman if Mcy doesn't have sprites of the corresponding category. "chPlayerCharacter" must be inputed so that the Sprite Collector knows which groups of sprites should be looked for (such as "lockedArms" instead of "arms" if the characters' arms are locked

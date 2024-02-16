@@ -425,7 +425,7 @@ window.initiateLiberationChallenge = function(actor,target) {
 	}
 	
 	if ( actor == "chPlayerCharacter" ) {
-		var iText = "You're challenging " + getCharNames(getCharGroup(target)) + " to finish your relationship!\n"
+		var iText = "You're challenging " + getCharNames(getCharGroup(target)) + " to finish your submission!\n"
 				  + "[[Continue|Scene]]";
 		State.variables.compass.setInterludeTrigger(iText);
 	} else if ( target == "chPlayerCharacter" ) {
@@ -434,6 +434,13 @@ window.initiateLiberationChallenge = function(actor,target) {
 		var p = gD + "\n" + gC(actor).getFormattedName() + " is initiating a liberation challenge against you!\n\n";
 		p += getButtonBeingAssaulted(actor,gC(actor).mission);
 		State.variables.compass.setPlayerPrompt(p,actor,true,"assault",getTimeArray());
+	} else if ( spectators.includes("chPlayerCharacter") ) {
+		var iText = gC(actor).getFormattedName() + " is challenging " + gC(target).getFormattedName() + " to finish " + gC(actor).posPr + " submission!\n\n"
+				  + "<<l" + "ink [[Continue|Scene]]>><<s" + "cript>>\n";
+			iText	 += "State.variables.compass.finishPlayerPrompt();\n";
+			iText	 += "State.variables.compass.pushAllTimeToAdvance();\n";
+			iText	 += "<</s" + "cript>><</l" + "ink>>"
+		State.variables.compass.interruptPlayer(iText,actor,true,"challenge",getTimeArray());
 	}
 }
 
@@ -768,6 +775,14 @@ window.Compass = function() {
 		}
 	}
 	
+	Compass.prototype.signalFinishMapSimulation = function() {
+		// Sets the "scenarioEnd" event to not to require any more time to trigger
+		for ( var sEvent of State.variables.compass.ongoingEvents ) {
+			if ( sEvent.title == "scenarioEnd" ) {
+				sEvent.timeRemaining = 0;
+			}
+		}
+	}
 	Compass.prototype.finishMapSimulation = function() {
 		this.flagEndedScenario = true;
 		this.timeToAdvance = 0;

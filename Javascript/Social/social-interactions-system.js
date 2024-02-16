@@ -85,6 +85,8 @@ window.SocIntSys = function(key,charList) {
 	this.relationChangesDescription = "";
 	this.expGainsDescription = "";
 	this.descriptionsText = ""; // Sums all descriptions about the last round's results
+	this.descriptionsText1 = ""; // Alt description, block 1
+	this.descriptionsText2 = ""; // Alt description, block 2
 	
 	this.passageText = "TestText";
 	
@@ -136,9 +138,11 @@ window.SocIntSys = function(key,charList) {
 			if ( this.descriptionsText != "" ) {
 				this.passageText += "<div class='standardBox'>" + this.descriptionsText + "</div>\n"; 
 			}
-			
-			this.moodChangesDescription = "";
-			this.descriptionsText = "";
+			/*
+			this.formatDescriptionAlt();
+			if ( this.descriptionsText1 != "" ) {
+				this.passageText += "<div class='standardBox'>" + this.descriptionsText1 + "</div>\n"; 
+			} */
 			
 			// Extra check: Scenario is dead
 			var deadScenario = true;
@@ -192,6 +196,13 @@ window.SocIntSys = function(key,charList) {
 			else { // Player alone
 				this.passageText += this.getButtonEndDeadSis();
 			}
+			/*
+			if ( this.descriptionsText2 != "" ) {
+				this.passageText += "\n\n<div class='standardBox'>" + this.descriptionsText2 + "</div>\n"; 
+			} */
+			
+			this.moodChangesDescription = "";
+			this.descriptionsText = "";
 		}
 		else if ( State.variables.sisPlayerInfo.playerPrompt != "" ) {
 			this.passageText = State.variables.sisPlayerInfo.playerPrompt;
@@ -337,6 +348,7 @@ window.SocIntSys = function(key,charList) {
 		
 		var desc = ""; // '<span style="color:darkgray"'+'>__Mood changes__:\n</'+'span>';
 		for ( var cmc in this.charMoodChanges ) {
+			if ( desc != "" ) { desc += "\n"; }
 			if ( this.charMoodChanges[cmc].hasOwnProperty("friendly") ) {
 				desc += gC(this.charMoodChanges[cmc].name).formattedName + ": ";
 				for ( var m of ["friendly","intimate","flirty","aroused","dominant","submissive","bored","angry"] ) {
@@ -346,7 +358,6 @@ window.SocIntSys = function(key,charList) {
 						// <span title="Hover text">[[test]]</span>
 					}
 				}
-				desc += "\n";
 			}
 		}
 		if ( desc != "" ) {
@@ -418,7 +429,7 @@ window.SocIntSys = function(key,charList) {
 		this.formatMoodChanges();
 		this.formatRelationChanges();
 		if ( this.moodChangesDescription != "" ) {
-			this.descriptionsText += this.moodChangesDescription + "\n";
+			this.descriptionsText += this.moodChangesDescription + "\n\n";
 		}
 		if ( this.relationChangesDescription != "" ) {
 			this.descriptionsText += this.relationChangesDescription;
@@ -428,6 +439,30 @@ window.SocIntSys = function(key,charList) {
 		}
 		if ( this.extraEffects != "" ) {
 			this.descriptionsText += '\n\n<span style="color:darkgray"'+'>__Extra effects__:</'+'span>' + this.extraEffects;
+			this.extraEffects = "";
+		}
+	}
+	SocIntSys.prototype.formatDescriptionAlt = function() {
+		this.descriptionsText1 = "";
+		this.descriptionsText2 = "";
+		
+		if ( this.interactionsDescription != "" ) {
+			this.descriptionsText1 += '<span style="color:darkgray"'+'>__Results__:\n</'+'span> ';
+			this.descriptionsText1 += this.interactionsDescription + "\n";
+		}
+		this.formatMoodChanges();
+		this.formatRelationChanges();
+		if ( this.moodChangesDescription != "" ) {
+			this.descriptionsText2 += this.moodChangesDescription + "\n\n";
+		}
+		if ( this.relationChangesDescription != "" ) {
+			this.descriptionsText2 += this.relationChangesDescription;
+		}
+		if ( this.expGainsDescription != "" ) {
+			this.descriptionsText2 += '\n\n<span style="color:darkgray"'+'>__Experience__:</'+'span>' + this.expGainsDescription;
+		}
+		if ( this.extraEffects != "" ) {
+			this.descriptionsText2 += '\n\n<span style="color:darkgray"'+'>__Extra effects__:</'+'span>' + this.extraEffects;
 			this.extraEffects = "";
 		}
 	}

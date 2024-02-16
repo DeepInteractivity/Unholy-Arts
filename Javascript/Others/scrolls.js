@@ -261,6 +261,40 @@ window.createScrollIntertribalCommunication = function() {
 	return scr;
 }
 
+// On Martial Arts
+window.getScrollOnMartialArts = function() {
+	var content = `"You better write down everything I tell you, alright!? Yes, even these words! No, I don't care about the ink, if you run out of ink, just go get more!
+
+So! The Martial Arts! Most of the tribes in the Confined Valley practice some form of physical combat, mostly to hunt if nothing else, but it's also the most reliable protection against monsters. And some dare to look down on it for that very reason! I know it took you months of training to even start throwing fireballs reliably, you lil' bitch, but someone being able to smack your ass within seconds of picking up a staff is a perk, not a...! No, no, it's not foul language! Write it down already!
+
+I had to deal with all sorts of nasty comments when I was a Candidate. 'We know you don't have talent for magic, but you should still put effort into trying', or 'Good priestesses back their physical fighting with spells', or even 'Give up on becoming High Priestess if you can't even leave your zone of comfort'! Well, who's the High Priestess now!? Being a competent physical fighter also takes sophistication! Awareness! Strategy!
+
+Never charge in blindly against your enemy, unless you want to make a fool of yourself, that is. Give some thought to what kind of opponent you have in front of you, and act accordingly! Is your foe a hunk of a man with twice your brawn? Measure your distance and attack from safety. Polearms are your best friend here! Harass them with impunity and punish their mistakes until you gain the upper hand, which will be soon! What if it's a nasty bitch who insists on sieging you with magic? Then cut down the distance immediately, don't let them force you into a disadvantageous position! If you are fighting against someone on equal terms, dance. Look at the next incoming blow, and position yourself in such a way that deflecting it and attacking back is a natural extension of the same movement. If you're outnumbered...
+
+What do you mean I love the sound of my own voice!? We're working over here! Passing down my knowledge for the future generations...! What a nasty brat. Ignore that. Anyhow, if you're outnumbered, keep looking for the position where you'll have to deal with the least amount of attacks at the same time. Don't let yourself get flanked! This often means you'll have to keep moving across the battlefield, showing constant initiative to create the clashes that favor yourself, rather than letting the enemy picking them for you. It's still quite the cursed situation, however - take care of your allies and break down your enemies with haste so that you don't find yourself in it! In that line, my most important lesson is that...
+
+You again!? You're looking for a practical demonstration, or you're just trying to get punished!? Is your lusty ass so thirsty for my attention that you're risking to...!? That's it, we're spending the rest of the day in the dungeon. And perhaps the night as well! No, don't call me that, you were looking for this!"
+
+Note from the scribe: Mistress left the room a few minutes ago and is showing no signs of being about to come back any time soon. We will continue the lesson in a different scroll, if she ever feels like it.`
+	return content;
+}
+window.createScrollOnMartialArts = function() {
+	var scr = new Scroll("onMartialArts","On the Martial Arts","lore");
+	scr.firstTimeEffect = function(characters) {
+		var textResults = charactersLearnSceneActions(characters,["headbutt","twistNhit","rally","warcry"]);
+		return textResults;
+	}
+	scr.getContent = getScrollOnMartialArts;
+	scr.mayBeFound = function(characters) {
+		var flag = false;
+		if ( State.variables.daycycle.month > 1 ) {
+			flag = true;
+		}
+		return flag;
+	}
+	return scr;
+}
+
 		// SHORT STORIES
 // Basic of sex
 window.getScrollTheBasicsOfSexContent = function() {
@@ -854,6 +888,7 @@ setup.scrollsList.relsNuance = createScrollRelationshipsNuance();
 setup.scrollsList.shSlopes = createScrollShartrishSlopes();
 setup.scrollsList.ashCustoms = createScrollAshwalkerCustoms();
 setup.scrollsList.intCom = createScrollIntertribalCommunication();
+setup.scrollsList.onMartialArts = createScrollOnMartialArts();
 
 window.getScrollsStringList = function() {
 	var scrollsList = [];

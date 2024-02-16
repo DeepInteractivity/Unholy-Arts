@@ -154,6 +154,70 @@ window.createASfrozenFeet = function(intensity) {
 	return as;
 }
 
+window.createASdisorientation = function(intensity) {
+	// Intelligence, perception, agility loss, control recovery reduction, (sum, mult) // Turns
+	var crc = 0.07 + intensity * 0.007; // 0.07 ~ 0.14
+	var sls = 3 + intensity * 0.3; // 3 ~ 6
+	var slm = 0.1 + intensity * 0.01; // 0.1 ~ 0.2
+	var turns = 2 + limitedRandomInt(1); // 2 ~ 3
+	var provokeEffect = function(charKey) {
+		gC(charKey).controlRecovery -= crc;
+		gC(charKey).agility.sumModifier -= sls;
+		gC(charKey).agility.multModifier -= slm;
+		gC(charKey).intelligence.sumModifier -= sls;
+		gC(charKey).intelligence.multModifier -= slm;
+		gC(charKey).perception.sumModifier -= sls;
+		gC(charKey).perception.multModifier -= slm;
+	}
+	var cancelEffect = function(charKey) {
+		gC(charKey).controlRecovery += crc;
+		gC(charKey).agility.sumModifier += sls;
+		gC(charKey).agility.multModifier += slm;
+		gC(charKey).intelligence.sumModifier += sls;
+		gC(charKey).intelligence.multModifier += slm;
+		gC(charKey).perception.sumModifier += sls;
+		gC(charKey).perception.multModifier += slm;
+	}
+	var description = "This character is having trouble to find themselves.\n"
+					+ "Loss of agility, intelligence, and perception, and weakened control recovery.";
+	var as = new alteredState("Disorientation","Dsrt","scene",turns,provokeEffect,cancelEffect,description);
+	as.type = "debuff";
+	return as;
+}
+
+window.createAStwistedArm = function(intensity) {
+	// Physique, agility, resilience loss, physical and weapon frailty, (sum, mult) // Turns
+	var caf = 8 + intensity * 16; // 8 ~ 16
+	var sls = 3 + intensity * 0.3; // 3 ~ 6
+	var slm = 0.1 + intensity * 0.01; // 0.1 ~ 0.2
+	var turns = 2 + limitedRandomInt(1); // 2 ~ 3
+	var provokeEffect = function(charKey) {
+		gC(charKey).agility.sumModifier -= sls;
+		gC(charKey).agility.multModifier -= slm;
+		gC(charKey).physique.sumModifier -= sls;
+		gC(charKey).physique.multModifier -= slm;
+		gC(charKey).resilience.sumModifier -= sls;
+		gC(charKey).resilience.multModifier -= slm;
+		gC(charKey).combatAffinities.physical.frailty += caf;
+		gC(charKey).combatAffinities.weapon.frailty += caf;
+	}
+	var cancelEffect = function(charKey) {
+		gC(charKey).agility.sumModifier += sls;
+		gC(charKey).agility.multModifier += slm;
+		gC(charKey).physique.sumModifier += sls;
+		gC(charKey).physique.multModifier += slm;
+		gC(charKey).resilience.sumModifier += sls;
+		gC(charKey).resilience.multModifier += slm;
+		gC(charKey).combatAffinities.physical.frailty -= caf;
+		gC(charKey).combatAffinities.weapon.frailty -= caf;
+	}
+	var description = "This character is suffering damage in their arm from a recent attack.\n"
+					+ "Loss of physique, agility, resilience, physical and weapon frailty.";
+	var as = new alteredState("Twisted Arm","TwAr","scene",turns,provokeEffect,cancelEffect,description);
+	as.type = "debuff";
+	return as;
+}
+
 window.createASsensitizedGenitals = function(intensity) {
 	// Extra sex weakness // Turns
 	var esw = 10 + intensity * 1; // 10 - 20
@@ -201,6 +265,78 @@ window.createAScoldGuts = function(intensity) {
 	as.type = "buff";
 	return as;
 }
+
+window.createASrallied = function(intensity) {
+	// Stats gain (phy,res,will) , increased lust resistance
+	var sgs = 2 + intensity * 0.2; // 2 ~ 4
+	var sgm = 0.08 + intensity * 0.07; // 0.08 ~ 0.15
+	var cri = 0.1 + intensity * 0.01; // 0.1 ~ 0.2
+	var turns = 5 + limitedRandomInt(2); // 5 ~ 7
+	var provokeEffect = function(charKey) {
+		gC(charKey).physique.sumModifier += sgs;
+		gC(charKey).physique.multModifier += sgm;
+		gC(charKey).resilience.sumModifier += sgs;
+		gC(charKey).resilience.multModifier += sgm;
+		gC(charKey).will.sumModifier += sgs;
+		gC(charKey).will.multModifier += sgm;
+		gC(charKey).luck.sumModifier += sgs;
+		gC(charKey).luck.multModifier += sgm;
+		gC(charKey).controlRecovery += cri;
+	}
+	var cancelEffect = function(charKey) {
+		gC(charKey).physique.sumModifier -= sgs;
+		gC(charKey).physique.multModifier -= sgm;
+		gC(charKey).resilience.sumModifier -= sgs;
+		gC(charKey).resilience.multModifier -= sgm;
+		gC(charKey).will.sumModifier -= sgs;
+		gC(charKey).will.multModifier -= sgm;
+		gC(charKey).luck.sumModifier -= sgs;
+		gC(charKey).luck.multModifier -= sgm;
+		gC(charKey).controlRecovery -= cri;
+	}
+	var description = "This character has their spirits heightened, and will give it their all.\n"
+					+ "Increased physique, resilience, will, luck and control recovery.";
+	var as = new alteredState("Rallied","Rlld","scene",turns,provokeEffect,cancelEffect,description);
+	as.type = "buff";
+	return as;
+}
+
+window.createASfrightened = function(intensity) {
+	// Stats loss (agi,res,wll,per,cha)
+	var sgs = 1 + intensity * 0.3; // 1 ~ 3
+	var sgm = 0.06 + intensity * 0.06; // 0.06 ~ 0.12
+	var turns = 4 + limitedRandomInt(2); // 4 ~ 6
+	var provokeEffect = function(charKey) {
+		gC(charKey).agility.sumModifier -= sgs;
+		gC(charKey).agility.multModifier -= sgm;
+		gC(charKey).resilience.sumModifier -= sgs;
+		gC(charKey).resilience.multModifier -= sgm;
+		gC(charKey).will.sumModifier -= sgs;
+		gC(charKey).will.multModifier -= sgm;
+		gC(charKey).perception.sumModifier -= sgs;
+		gC(charKey).perception.multModifier -= sgm;
+		gC(charKey).charisma.sumModifier -= sgs;
+		gC(charKey).charisma.multModifier -= sgm;
+	}
+	var cancelEffect = function(charKey) {
+		gC(charKey).agility.sumModifier += sgs;
+		gC(charKey).agility.multModifier += sgm;
+		gC(charKey).resilience.sumModifier += sgs;
+		gC(charKey).resilience.multModifier += sgm;
+		gC(charKey).will.sumModifier += sgs;
+		gC(charKey).will.multModifier += sgm;
+		gC(charKey).perception.sumModifier += sgs;
+		gC(charKey).perception.multModifier += sgm;
+		gC(charKey).charisma.sumModifier += sgs;
+		gC(charKey).charisma.multModifier += sgm;
+	}
+	var description = "This character has gotten scared, and their reflexes will suffer for a while.\n"
+					+ "Decreased agility, resilience, will, perception and charisma.";
+	var as = new alteredState("Frightened","Frgt","scene",turns,provokeEffect,cancelEffect,description);
+	as.type = "debuff";
+	return as;
+}
+
 
 window.createAStaunted = function(intensity) {
 	// Stats loss , Extra physical strength eps // Turns
@@ -487,6 +623,7 @@ window.createASscrewed = function(intensity) {
 		}
 	}
 	var cancelEffect = function(charKey) {
+		var intensity = this.intensity;
 		for ( var st of getStatNamesArray() ) {
 			gC(charKey)[st].multModifier += 0.1 * intensity;
 		}

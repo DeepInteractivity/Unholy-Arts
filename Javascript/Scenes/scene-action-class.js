@@ -95,6 +95,12 @@ window.isActionUsable = function(actionKey,actorKey,targetsKeys,skipLinkedCheck)
 					if ( State.variables.settings.debugFunctions ) { iAU.explanation += "This action requires the user to have control higher than 0.\n"; }
 				}
 				break;
+			case "tControl":											// Must have control in battle
+				if ( gC(targetsKeys[0]).control <= 0 ) {
+					iAU.isUsable = false;
+					if ( State.variables.settings.debugFunctions ) { iAU.explanation += "This action requires the target to have control higher than 0.\n"; }
+				}
+				break;
 			case "activePosition":									// Shares a position with the target where the actor is the initiator
 				var flagActivePosition = false;
 				if ( gC(actorKey).position.type == "active" ) {
@@ -639,7 +645,11 @@ window.sceneAction = function() {
 	// NPC AI
 	this.strategyTags = [];
 	this.actorStatWeights = [0,0,0,0,0,0,0,0,0];
+	this.allyStatWeights = [0,0,0,0,0,0,0,0,0];
 	this.targetStatWeights = [0,0,0,0,0,0,0,0,0];
+		// 0.1 stat-damage -> 20 points per stat
+		// 1 control damage -> 25 points per stat
+		// Taunt -> 50 points
 	this.statWeightDivider = 100;
 	this.overallWeightMultiplier = 1;
 	
@@ -933,6 +943,9 @@ window.saList = function() {
 	this.kick = createSaKick();
 	this.coldGuts = createSaColdGuts();
 	
+	this.headbutt = createSaHeadbutt();
+	this.twistNhit = createSaTwistNhit();
+	
 	this.tackle = createTackle();
 	this.savageCrush = createSavageCrush();
 	this.daringAssault = createDaringAssault();
@@ -959,6 +972,8 @@ window.saList = function() {
 	
 	this.taunt = createSaTaunt();
 	this.baTease = createSaBaTease();
+	this.rally = createSaRally();
+	this.warcry = createSaWarcry();
 	
 		// Hypnosis
 	
@@ -1015,6 +1030,9 @@ window.returnBaList = function() { // Outdated?
 }
 window.returnFirstScrollGroupActionsList = function() {
 	return ["pushHipsBack","pushAssBack","scissor","thrust","mountFromBehind","rideDick","pushDickBack","kneel","makeKneel","legHoldHead","getBlowjob","fuckFace","suckDick","lickPussy","rideFace","giveCunnilingus","giveBlowjob",'strokeAss','penetrateAss','analThrust','doublePenetration','doubleThrust','analMountDick','analRideDick','analPushDickBack','spanking','holdArms','vinesHoldArms','dickFootjob','pussyFootjob','lickLegs','denyOrgasm','teaseLockedPussy','teaseLockedDick','baTeaseLockedDick','baTeaseLockedPussy','extraMountFromBehind','extraKneel','extraMakeKneel','extraLegHoldHead','coldGuts','pounceFrontal'];
+}
+window.returnSecondScrollGroupActionsList = function() {
+	return ["headbutt","twistNhit","rally","warcry"];
 }
 
 // Constructors, serializers, etc.

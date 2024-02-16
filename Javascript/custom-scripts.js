@@ -410,8 +410,9 @@ window.setUpMultiBattleTest = function() {
 									"taunt","baTease"
 									,"baHypnoticGlance"
 									,"baEnergyDrainingKiss","baDrainingKiss","baEtherealChains",
-									"baBorrowedIdentity","fireBreath","daringAssault"
+									"baBorrowedIdentity","fireBreath","daringAssault","baRelaxingScent"
 		]);
+	charactersLearnSceneActions(["chPlayerCharacter"],returnSecondScrollGroupActionsList());
 	charactersLearnSceneActions(["chNash","chClaw"],[
 									"kick","coldGuts",
 									"taunt"
@@ -431,6 +432,8 @@ window.setUpMultiBattleTest = function() {
 		
 	var speID = createEquipment("w6","chPlayerCharacter");
 	equipObjectOnWearer(speID,"chPlayerCharacter",-1);
+	
+	gC("chPlayerCharacter").race = "leirien";
 	
 	// Start scene
 	State.variables.sc.startScene("bs", "none",
@@ -456,6 +459,7 @@ window.setUpMultiSexTest = function() {
 	charactersLearnSceneActions(getCandidatesKeysArray(),["strokePussy","strokeBreasts","kissLips","frottage","frenchKiss","kneel","makeKneel","lickGroin",
 	"legHoldHead","mountFromBehind","penetratePussy","thrust","piston","finalPush","mountFaceToFace","getBlowjob","suckDick","lickPussy","interlockLegs",
 	"scissor","strokeAss","penetrateAss","analThrust","holdArms","vinesHoldArms","dickFootjob","pussyFootjob","lickLegs","rideDick","pushDickBack","extraMountFromBehind","analMountDick","analRideDick","analPushDickBack","holdHands","kissNeck","whisperSNs","giveCunnilingus","giveBlowjob","mountFaceToGroin","askMountFromBehind","extraAskMountFromBehind"]);
+	charactersLearnSceneActions(getCandidatesKeysArray(),returnFirstScrollGroupActionsList());
 	
 	//addSceneTagToChar("noLead","chMir");
 	
@@ -481,6 +485,7 @@ window.setUpMultiSexTestAlt = function() {
 	charactersLearnSceneActions(getCandidatesKeysArray(),["strokePussy","strokeBreasts","kissLips","frottage","frenchKiss","kneel","makeKneel","lickGroin",
 	"legHoldHead","mountFromBehind","penetratePussy","thrust","piston","finalPush","mountFaceToFace","getBlowjob","suckDick","lickPussy","interlockLegs",
 	"scissor","strokeAss","penetrateAss","analThrust","holdArms","vinesHoldArms","dickFootjob","pussyFootjob","lickLegs","rideDick","pushDickBack","extraMountFromBehind","analMountDick","analRideDick","analPushDickBack","holdHands","kissNeck","whisperSNs","giveCunnilingus","giveBlowjob","mountFaceToGroin","askMountFromBehind","extraAskMountFromBehind","gallopDick"]);
+	charactersLearnSceneActions(getCandidatesKeysArray(),returnFirstScrollGroupActionsList());
 	
 	addSceneTagToChar("noLead","chMir");
 	addSceneTagToChar("noLead","chVal");

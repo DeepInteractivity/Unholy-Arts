@@ -753,7 +753,7 @@ window.findTrapRoomInMap = function() {
 	return trapRoom;
 }
 window.getStandardMonsterDefeatMsgEffects = function(characters) {
-	var n = getCurrentStoryState() * 5;
+	var n = ((1 + getCurrentStoryState()) / 2) * 1;
 	for ( var cK of characters ) {
 		if ( gC(cK).hasOwnProperty("merit") ) {
 			gC(cK).changeMerit(-n);

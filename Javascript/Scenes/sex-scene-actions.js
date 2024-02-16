@@ -291,7 +291,9 @@ window.createSaDickFootjob = function() {
 		var results = new saResults;
 		
 		for (var target of targetActors) {
-			var multAr = getSexDamageMult(actorKey,target,this.key);
+			var aFlavorTags = this.flavorTags;
+			if ( gC(actorKey).hasLead == true ) { aFlavorTags.push("domination") }
+			var multAr = getSexDamageMultAlt(actorKey,target,aFlavorTags);
 			var lustDamage = ((getChar(actorKey).agility.getValue() * 2) / 8) * multAr[0];
 			getChar(target).lust.changeValue(-lustDamage);
 			
@@ -336,7 +338,9 @@ window.createSaPussyFootjob = function() {
 		var results = new saResults;
 		
 		for (var target of targetActors) {
-			var multAr = getSexDamageMult(actorKey,target,this.key);
+			var aFlavorTags = this.flavorTags;
+			if ( gC(actorKey).hasLead == true ) { aFlavorTags.push("domination") }
+			var multAr = getSexDamageMultAlt(actorKey,target,aFlavorTags);
 			var lustDamage = ((getChar(actorKey).agility.getValue() * 2) / 8) * multAr[0];
 			getChar(target).lust.changeValue(-lustDamage);
 			
@@ -487,11 +491,11 @@ window.createSaKissLips = function() {
 		// Try virginities
 		if ( gC(target).virginities.fKiss.taken == false ) {
 			var vd3 = colorText((gC(actor).name + " has taken " + gC(target).name + "'s first kiss! "),"red") + provokeVirginityBonusRelationship(actor,target);
-			gC(target).virginities.fSex.tryTakeVirginity(actor,"kissLips",vd3);
+			gC(target).virginities.fKiss.tryTakeVirginity(actor,"kissLips",vd3);
 		}
 		if ( gC(actor).virginities.fKiss.taken == false ) {
 			var vd4 = colorText((gC(target).name + " has taken " + gC(actor).name + "'s first kiss! "),"red") + provokeVirginityBonusRelationship(target,actor);
-			gC(actor).virginities.fSex.tryTakeVirginity(target,"kissLips",vd4);
+			gC(actor).virginities.fKiss.tryTakeVirginity(target,"kissLips",vd4);
 		}		
 		
 		results.description += randomFromList( [
@@ -649,7 +653,7 @@ window.createSaKissNeck = function() {
 	sa.actorBpReqs.push("mouth");
 	sa.unvalidRelationalPositions.push(["kneeling","standing"],["takenFromBehind","takingFromBehind"],["spitroastBehind","spitroastTarget"],
 									   ["spitroastTarget","spitroastBehind"]);
-	sa.unvalidRelationalPositions.push(["mountingFromBehind","mountingAndMounted"],["mountingAndMounted","mountingFromBehind"],["mountingAndMounted","mountedFromBehind"],["mountedFromBehind","mountingAndMounted"]);
+	sa.unvalidRelationalPositions.push(["mountingAndMounted","mountingFromBehind"],["mountedFromBehind","mountingAndMounted"]);
 	sa.unvalidRelationalPositions.push(["mountingFaceToGroin","mountedFaceToGroin"],["mountedFaceToGroin","mountingFaceToGroin"]);
 	
 	sa.flavorTags.push("foreplay","useMouth","teasing");
@@ -1818,8 +1822,11 @@ window.createSaFuckFace = function() {
 		var actor = actorKey;
 		var target = targetActors[0];
 		
-		var multAr = getSexDamageMult(actorKey,actorKey,this.key);
-		var multAr2 = getSexDamageMult(actorKey,target,this.key);
+		var aFlavorTags = this.flavorTags;
+		if ( gC(actorKey).hasLead == true ) { aFlavorTags.push("domination") }
+		
+		var multAr = getSexDamageMultAlt(actorKey,actorKey,aFlavorTags);
+		var multAr2 = getSexDamageMultAlt(actorKey,target,aFlavorTags);
 		var posMult = 1;
 		var exTags = [];
 		if ( gC(actor).position.key == "standing" && gC(target).position.key == "kneeling" ) {
@@ -1929,8 +1936,12 @@ window.createSaRideFace = function() {
 		var actor = actorKey;
 		var target = targetActors[0];
 		
-		var multAr = getSexDamageMult(actorKey,actorKey,this.key);
-		var multAr2 = getSexDamageMult(actorKey,target,this.key);
+		var aFlavorTags = this.flavorTags;
+		if ( gC(actorKey).hasLead == true ) { aFlavorTags.push("domination") }
+		
+		var multAr = getSexDamageMultAlt(actorKey,actorKey,aFlavorTags);
+		var multAr2 = getSexDamageMultAlt(actorKey,target,aFlavorTags);
+		
 		var posMult = 1;
 		var exTags = [];
 		if ( gC(actor).position.key == "mountingFaceToGroin" && gC(target).position.key == "mountedFaceToGroin" ) {
@@ -2467,11 +2478,11 @@ window.createSaFrenchKiss = function() {
 		// Try virginities
 		if ( gC(target).virginities.fKiss.taken == false ) {
 			var vd3 = colorText((gC(actor).name + " has taken " + gC(target).name + "'s first kiss! "),"red") + provokeVirginityBonusRelationship(actor,target);
-			gC(target).virginities.fSex.tryTakeVirginity(actor,"frenchKiss",vd3);
+			gC(target).virginities.fKiss.tryTakeVirginity(actor,"frenchKiss",vd3);
 		}
 		if ( gC(actor).virginities.fKiss.taken == false ) {
 			var vd4 = colorText((gC(target).name + " has taken " + gC(actor).name + "'s first kiss! "),"red") + provokeVirginityBonusRelationship(target,actor);
-			gC(actor).virginities.fSex.tryTakeVirginity(target,"frenchKiss",vd4);
+			gC(actor).virginities.fKiss.tryTakeVirginity(target,"frenchKiss",vd4);
 		}	
 		
 		results.value += lustDamage;
@@ -2652,7 +2663,7 @@ window.createGiveCunnilingus = function() {
 	sa.targetRequiredPositions.push("mountedFaceToGroin","mountingFaceToGroin");
 	sa.linkedPositions = true;
 	
-	sa.flavorTags.push("oral","useMouth","targetPussy","continuedAction");
+	sa.flavorTags.push("oral","top","useMouth","targetPussy","continuedAction");
 	
 	sa.description = "The character holds their target's head with one or two legs, forcing them to lick what's between them.\n"
 				   + "Requires the actor to be kneeling before the target.\n"
@@ -3177,7 +3188,7 @@ window.createSaGiveBlowjob = function() {
 	sa.targetRequiredPositions.push("mountedFaceToGroin","mountingFaceToGroin");
 	sa.linkedPositions = false; // If true, the actor and its targets require to be referenced as initiator or target in their respective positions
 	
-	sa.flavorTags.push("oral","targetDick","useMouth","top","domination","continuedAction");
+	sa.flavorTags.push("oral","targetDick","useMouth","top","continuedAction");
 	
 	sa.description = "The character starts sucking and licking their target's cock.\n"
 				   + "Target must have a free dick, actor must have a free mouth.\n\nSingle target continued action.\n"

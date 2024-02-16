@@ -1048,6 +1048,8 @@ window.createSillan = function() {
 	character.assignFemeninePronouns();
 	//character.mapAi.type = "protagonist";
 	
+	character.likedTopics.push("dramas");
+	
 	// Images
 	character.fullPortrait = function() {
 		return "[img[img/portraits/sillan-full.png]]";

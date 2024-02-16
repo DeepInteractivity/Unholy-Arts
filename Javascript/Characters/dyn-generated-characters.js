@@ -128,6 +128,7 @@ window.generateFemaleAnonShapeshifter = function(usedNames) {
 	character.saList = ["strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","slimeHug","mountDick"].concat(returnGenericShapeshifterBaList().concat(returnFirstScrollGroupActionsList()));
 	var color = randomFromList(["salmon","hotpink","orchid","fuchsia","blueviolet","palegreen","mediumspringgreen"]);
 	character.setColors(color,color);
+	character.makeVirginitiesUnknown();
 	return chKey;
 }
 window.generateMaleAnonShapeshifter = function(usedNames) {
@@ -150,6 +151,7 @@ window.generateMaleAnonShapeshifter = function(usedNames) {
 	character.saList = ["strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","slimeHug","mountDick"].concat(returnBaList().concat(returnFirstScrollGroupActionsList()));
 	var color = randomFromList(["darksalmon","red","orchid","darkorchid","darkslateblue","greenyellow","springgreen"]);
 	character.setColors(color,color);
+	character.makeVirginitiesUnknown();
 	return chKey;
 }
 

@@ -17,6 +17,7 @@ Config.history.maxStates = 1;
 // monActUs
 // go0
 // chTts
+// nAtfKn
 // ******************** SPOILERS ******************** //
 	// First adventure
 		// Map scenes
@@ -60,10 +61,12 @@ Config.history.maxStates = 1;
 // * END FIRST ADVENTURE
 // * VlTtAt , PlTtAt -> Valtan tutored Ate, Player tutored Ate
 // * ShTNgt
+// * DbLlEx -> Doubts on Lizardlin Expedition
+// * SpTtCv -> Suspects a Traitor in the Confined Valley
   // Special experiences
 // VarDom -> Varyonte's domination
 
-// State.variables.StVarsList = []; // Ex.: isStVarOn("GcEndC") // removeFromStVarsList("HdRlts"); addToStVarsList("VlTtAt");
+// State.variables.StVarsList = []; // Ex.: isStVarOn("GcEndA") // removeFromStVarsList("nAtfKn"); addToStVarsList("SpTtCv");
 
 	// Tf Settings constants and definitions
 const tfSetTarget = {
@@ -108,7 +111,7 @@ setup.tfExtraSettingsNames = [ "No transformations", "Temporary", "Permanent", "
 
 ////////// GAME SETTINGS CLASS //////////
 
-setup.versionName = "Unholy Arts v0.4.1";
+setup.versionName = "Unholy Arts v0.4.2";
 
 setup.infamySecondThreshold = 1.2;
 setup.infamyThirdThreshold = 1.4;

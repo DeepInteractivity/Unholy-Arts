@@ -17,7 +17,6 @@ window.createCandidateGlobalAi = function(charKey) {
 	var globalAi = new NpcGlobalAi(charKey);
 	globalAi.type = "candidateTemple";
 	globalAi.attackedToday = false;
-	
 
 	return globalAi;
 }

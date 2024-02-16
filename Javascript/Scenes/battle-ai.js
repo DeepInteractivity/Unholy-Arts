@@ -122,11 +122,55 @@ window.bAiProcessTurn = function(actor,allyCharacters,enemyCharacters,currentTur
 		  || ( setup.saList[action].strategyTags.includes("targetSelf") && target == actor ) ) {
 			// Stats
 			var si = 0;
+			var participatingChars = getRemainingCharsAllyTeam(actor).concat(getRemainingCharsEnemyTeam(actor));
+			for ( var cK of participatingChars ) {
+				si = 0;
+				var baseStatWeight = 0.5; // Base stat without modifiers, usually used for buff/debuff actions
+				var effStatWeight = 0.5; // Stat after modifiers, usually used for damage and intensity calculations
+				if ( (setup.saList[action].strategyTags.includes("damage") || setup.saList[action].strategyTags.includes("recovery")) &&
+					 (setup.saList[action].strategyTags.includes("buff") || setup.saList[action].strategyTags.includes("debuff")) ) {
+				} else if ( setup.saList[action].strategyTags.includes("damage") || setup.saList[action].strategyTags.includes("recovery") ) {
+					baseStatWeight = 0;
+					effStatWeight = 1;
+				} else if ( setup.saList[action].strategyTags.includes("buff") || setup.saList[action].strategyTags.includes("debuff") ) {
+					baseStatWeight = 1;
+					effStatWeight = 0;
+				} else {
+				}	
+				if ( cK == actor ) {
+					while ( si < 9 ) {
+						w += setup.saList[action].actorStatWeights[si] * gCstat(cK,setup.baseStats[si]) * effStatWeight * (1/setup.saList[action].statWeightDivider);
+						w += setup.saList[action].actorStatWeights[si] * gC(cK)[setup.baseStats[si]].value * baseStatWeight * (1/setup.saList[action].statWeightDivider);
+						si++;
+					}
+				} else if ( cK == target || ( (setup.saList[action].strategyTags.includes("targetsAllOtherChars") || setup.saList[action].strategyTags.includes("targetsEnemyTeam")) && enemyCharacters.includes(cK) ) ) {
+					while ( si < 9 ) {
+						w += setup.saList[action].targetStatWeights[si] * gCstat(cK,setup.baseStats[si]) * effStatWeight * (1/setup.saList[action].statWeightDivider);
+						w += setup.saList[action].targetStatWeights[si] * gC(cK)[setup.baseStats[si]].value * baseStatWeight * (1/setup.saList[action].statWeightDivider);
+						si++;
+					}
+				} else if ( setup.saList[action].strategyTags.includes("targetsAllOtherChars") && allyCharacters.includes(cK) ) {
+					while ( si < 9 ) {
+						w += -1 * setup.saList[action].targetStatWeights[si] * gCstat(cK,setup.baseStats[si]) * effStatWeight * (1/setup.saList[action].statWeightDivider);
+						w += -1 * setup.saList[action].targetStatWeights[si] * gC(cK)[setup.baseStats[si]].value * baseStatWeight * (1/setup.saList[action].statWeightDivider);
+						si++;
+					}
+				} else if ( setup.saList[action].strategyTags.includes("targetsAlliedTeam") && allyCharacters.includes(cK) ) {
+					while ( si < 9 ) {
+						w += setup.saList[action].allyStatWeights[si] * gCstat(cK,setup.baseStats[si]) * effStatWeight * (1/setup.saList[action].statWeightDivider);
+						w += setup.saList[action].allyStatWeights[si] * gC(cK)[setup.baseStats[si]].value * baseStatWeight * (1/setup.saList[action].statWeightDivider);
+						si++;
+					}
+				}
+			}
+			
+			/*
 			while ( si < 9 ) {
 				w += setup.saList[action].actorStatWeights[si] * gCstat(actor,setup.baseStats[si]) * (1/setup.saList[action].statWeightDivider);
 				w += setup.saList[action].targetStatWeights[si] * gCstat(target,setup.baseStats[si]) * (1/setup.saList[action].statWeightDivider);
 				si++;
 			}
+			*/
 			
 			if ( preferredTarget != "" ) {
 				if ( target == actor ) {

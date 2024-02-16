@@ -226,6 +226,16 @@ window.unequipToolTypeFromChar = function(type,charKey) {
 window.getCharsWeaponId = function(charKey) {
 	return gC(charKey).weaponID;
 }
+window.getCharsWeaponType = function(charKey) {
+	var type = null;
+	var wID = gC(charKey).weaponID;
+	if ( wID != -1 ) {
+		type = getEquipById(gC(charKey).weaponID).type;
+	}
+	return type;
+}
+
+// getEquipById(getCharsWeaponId(charKey));
 
 	// Bug fixing
 window.fixOwnedEquipmentLists = function() {
@@ -689,6 +699,28 @@ setup.equipDataList[equipmentType.DILDO] = new equipmentData("Dildo","tool","wea
 		+ "\nIncreases physique and agility, as well as sex strength and weakness. Provides with several actions in sex and combat scenes.",
 	3000,0,
 	[["physique",1],["agility",1]],["dildoTeaseGenitals","dildoPenetratePussy","dildoPenetrateAss","dildoPenetrateMouth","thrustDildo","doubleDildoPussyPenetration","baDildoPenetratePussy","baThrustDildo"],1.5);
+
+// Weapon auxiliar functions
+window.isWeaponTypeMelee = function(wT) {
+	var result = false;
+	
+	var meleeWeaponTypes = [equipmentType.STAFFOFBATTLE,equipmentType.KNUCKLES,equipmentType.HANDFAN,equipmentType.SPEAR,equipmentType.DILDO];
+	if ( meleeWeaponTypes.includes(wT) ) {
+		result = true;
+	}
+	
+	return result;
+}
+window.isWeaponContactRange = function(wT) {
+	var result = false;
+	
+	var meleeWeaponTypes = [equipmentType.KNUCKLES,equipmentType.HANDFAN,equipmentType.DILDO];
+	if ( meleeWeaponTypes.includes(wT) ) {
+		result = true;
+	}
+	
+	return result;
+}
 
 // AI
 

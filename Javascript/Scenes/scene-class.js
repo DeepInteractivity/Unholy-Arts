@@ -2,7 +2,7 @@
 
 window.scene = function() {
 	this.sceneLog = ""; // Debug console
-	this.logAi = false;
+	this.logAi = true;
 	
 	this.scenePassage = "";
 	
@@ -630,7 +630,9 @@ window.scene = function() {
 				i++;
 			}
 			
-			var ctx = new sceneDialogContext(charKey,this.teamAchosenActions[charPos],this.teamAchosenTargets[charPos],charsOnActor,actionsOnActor);
+			var action = this.teamAchosenActions[charPos];
+			if ( action == undefined ) { action = "doNothing"; }
+			var ctx = [charKey,action,this.teamAchosenTargets[charPos],charsOnActor,actionsOnActor];
 			return ctx;
 		}
 		else if ( this.teamBcharKeys.includes(charKey) ) {
@@ -652,12 +654,19 @@ window.scene = function() {
 				i++;
 			}
 			
-			var ctx = new sceneDialogContext(charKey,this.teamBchosenActions[charPos],this.teamBchosenTargets[charPos],charsOnActor,actionsOnActor);
+			var action = this.teamBchosenActions[charPos];
+			if ( action == undefined ) { action = "doNothing"; }
+			var ctx = [charKey,action,this.teamBchosenTargets[charPos],charsOnActor,actionsOnActor];
 			return ctx;
 		}
 		else {
 			return null;
 		}
+	}
+	scene.prototype.getActionSelectedByTarget = function(charKey) {
+		var act = "";
+		act = getCharacterContext(charKey);
+		return act[1];
 	}
 	
 	scene.prototype.isPlayerInScene = function() {
@@ -1345,6 +1354,10 @@ window.scene = function() {
 		
 		// Format Scene Passage
 		this.formatScenePassage();
+		
+		if ( this.logAi == true ) {
+			this.scenePassage += "\n\n\n\n" + this.sceneLog;
+		}
 	}
 	
 	// Logic 2
@@ -1519,7 +1532,7 @@ window.scene = function() {
 					if ( gC(this.teamAcharKeys[i]).hasFreeBodypart("mouth") == false ) {
 						(100 - threshold) / 1.5;
 					}
-					if ( this.muteChars.includes(gC(this.teamAcharKeys[i]) == false ) ) {
+					if ( this.muteChars.includes(this.teamAcharKeys[i]) == false ) {
 						if ( limitedRandomInt(100) > (threshold + extraThreshold) && (this.teamAcharKeys[i] != this.teamAchosenTargets[i] && this.teamAchosenTargets[i][0] != undefined ) ) { // Activate dialog
 							var actionsAgainstActor = getActionsAgainstTarget(this.teamAcharKeys[i]);					
 							var nd = chooseDialogFromList(setup.dialogDB[this.getDialogsList()],this.teamAcharKeys[i],this.teamAchosenTargets[i][0],this.teamAchosenActions[i],actionsAgainstActor);
@@ -1537,7 +1550,7 @@ window.scene = function() {
 					if ( gC(this.teamBcharKeys[i]).hasFreeBodypart("mouth") == false ) {
 						(100 - threshold) / 1.5;
 					}
-					if ( this.muteChars.includes(gC(this.teamBcharKeys[i]) == false ) ) {
+					if ( this.muteChars.includes(this.teamBcharKeys[i]) == false ) {
 						if ( limitedRandomInt(100) > (threshold + extraThreshold) && (this.teamBcharKeys[i] != this.teamBchosenTargets[i] && this.teamBchosenTargets[i][0] != undefined) ) { // Activate dialog
 							var actionsAgainstActor = getActionsAgainstTarget(this.teamBcharKeys[i]);					
 							var nd = chooseDialogFromList(setup.dialogDB[this.getDialogsList()],this.teamBcharKeys[i],this.teamBchosenTargets[i][0],this.teamBchosenActions[i],actionsAgainstActor);
@@ -2590,6 +2603,16 @@ window.endSceneScriptCharactersBecomeHealedAndTired = function() {
 }
 
 	// Data
+window.getCharsAllyTeam = function(cK) { // Checks if the "cK" character is in any team. If so, returns the opposite team
+	var team = [];
+	if ( State.variables.sc.teamAcharKeys.includes(cK) ) {
+		team = State.variables.sc.teamAcharKeys;
+	}
+	if ( State.variables.sc.teamBcharKeys.includes(cK) ) {
+		team = State.variables.sc.teamBcharKeys;
+	}
+	return team;
+}
 window.getCharsEnemyTeam = function(cK) { // Checks if the "cK" character is in any team. If so, returns the opposite team
 	var team = [];
 	if ( State.variables.sc.teamAcharKeys.includes(cK) ) {
@@ -2599,6 +2622,38 @@ window.getCharsEnemyTeam = function(cK) { // Checks if the "cK" character is in 
 		team = State.variables.sc.teamAcharKeys;
 	}
 	return team;
+}
+window.getRemainingCharsAllyTeam = function(cK) { // Checks if the "cK" character is in any team. If so, returns the opposite team
+	var team = [];
+	var rTeam = [];
+	if ( State.variables.sc.teamAcharKeys.includes(cK) ) {
+		team = State.variables.sc.teamAcharKeys;
+	}
+	if ( State.variables.sc.teamBcharKeys.includes(cK) ) {
+		team = State.variables.sc.teamBcharKeys;
+	}
+	for ( var cK of team ) {
+		if ( gC(cK).koed == false ) {
+			rTeam.push(cK);
+		}
+	}
+	return rTeam;
+}
+window.getRemainingCharsEnemyTeam = function(cK) { // Checks if the "cK" character is in any team. If so, returns the opposite team
+	var team = [];
+	var rTeam = [];
+	if ( State.variables.sc.teamAcharKeys.includes(cK) ) {
+		team = State.variables.sc.teamBcharKeys;
+	}
+	if ( State.variables.sc.teamBcharKeys.includes(cK) ) {
+		team = State.variables.sc.teamAcharKeys;
+	}
+	for ( var cK of team ) {
+		if ( gC(cK).koed == false ) {
+			rTeam.push(cK);
+		}
+	}
+	return rTeam;
 }
 
 // Custom action allowed functions

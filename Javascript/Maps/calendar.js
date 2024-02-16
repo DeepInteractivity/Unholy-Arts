@@ -174,13 +174,31 @@ window.EventsCalendar = function() {
 					case 6:
 						this.customEventScript = initializeTributeForTheGoddess;
 						this.getEndDayButton = function() {
-							return this.getButtonToEvent("TftG Init1");
+							return this.getButtonToEvent("AeEx 0");
 						}
 						break;
 					case 9:
 						this.customEventScript = initializeSeMonsterAdept;
 						this.getEndDayButton = function() {
 							return this.getButtonToEvent("SE Monster Adept Start");
+						}
+						break;
+					case 14:
+						this.customEventScript = initializeSeResponseOfTheTribes;
+						this.getEndDayButton = function() {
+							return this.getButtonToEvent("SE Tribes Response Start");
+						}
+						break;
+					case 16:
+						this.customEventScript = initializeShartrishSlopesOverview;
+						this.getEndDayButton = function() {
+							return this.getButtonToEvent("SE Shartrish Slopes Overview Start");
+						}
+						break;
+					case 24:
+						this.customEventScript = function() { return 1; };
+						this.getEndDayButton = function() {
+							return this.getButtonToEvent("SA PlaceholderStart");
 						}
 						break;
 				}
@@ -593,7 +611,7 @@ setup.eventsMetaInfo["mt1"] = new eventMetaInfo( // "Martial Tutorship I"
 		return allowed;
 	},
 	function() { // Weight
-		var weight = 1500;
+		var weight = 2500;
 		return weight;
 	}
 );
@@ -1334,7 +1352,10 @@ setup.eventsMetaInfo["ViCo"] = new eventMetaInfo( // "Virginities Collector"
 		return allowed;
 	},
 	function() { // Weight
-		var weight = 500 + gC("chVal").dPleasure.level * 100;
+		var weight = gC("chVal").dPleasure.level * 100 + State.variables.daycycle.day * 100 - 1300;
+		if ( weight < 0 ) {
+			weight = 0;
+		}
 		
 		return weight;
 	}
@@ -1439,8 +1460,6 @@ setup.eventsMetaInfo["ViCo"].clairvoyanceData = new emiClaivoyanceData(
 	null // Hints
 );
 
-
-/*
 setup.eventsMetaInfo["gd3"] = new eventMetaInfo( // "A Sacrifice of Aether"
 	true,false,
 	"A Sacrifice of Aether",
@@ -1450,7 +1469,7 @@ setup.eventsMetaInfo["gd3"] = new eventMetaInfo( // "A Sacrifice of Aether"
 	function() { // Reqs
 		var allowed = false;
 		
-		if ( State.variables.storyState >= storyState.secondLoop && ( State.variables.daycycle.month > 2 || State.variables.daycycle.day >= 10 ) ) {
+		if ( State.variables.storyState >= storyState.secondLoop && ( State.variables.daycycle.month > 1 || State.variables.daycycle.day >= 10 ) ) {
 			allowed = true;
 		}
 		
@@ -1461,7 +1480,7 @@ setup.eventsMetaInfo["gd3"] = new eventMetaInfo( // "A Sacrifice of Aether"
 		return weight;
 	}
 );
-*/
+
 window.chooseRandomStoryEvent = function() {
 	var result = "errorWList"; // Default error string returned by bugged weighted lists. If this is the end result, no event will be initialized
 	var validEvents = []; // Event tags

@@ -337,6 +337,7 @@ window.initializeSeDiscoveringTheOthers = function() {
 }
 
 window.effectsSeDiscoveringTheOthersEarlyEnd = function() {
+	addToStVarsList("nAtfKn");
 	if ( limitedRandomInt(100) > 49 ) {
 		// Val gives advice to Ate
 		State.variables.chVal.relations.chAte.friendship.stv += 350;
@@ -1124,7 +1125,6 @@ window.gCepigInitGuestsChecks = function() {
 	State.variables.StVars.check10 = isStVarOn("GcEndA"); // Nersmias tip
 }
 window.endGleamingCavernsEpilogue = function() {
-	State.variables.logL1.push(3);
 	var chars = ["chVal","chMir","chAte"];
 	if ( State.variables.StVars.check1 != 3 ) {
 		chars.push("chSil");
@@ -1136,7 +1136,6 @@ window.endGleamingCavernsEpilogue = function() {
 		gC(ch).merit += 7;
 	}
 	
-	State.variables.logL1.push(6);
 	chars.push("chNash","chRock");
 	for ( var ch of chars ) {
 		for ( var stat of setup.baseStats ) {
@@ -1151,11 +1150,9 @@ window.endGleamingCavernsEpilogue = function() {
 	}
 	
 	
-	State.variables.logL1.push(9);
 	addPointsToDrive(gC("chClaw").dImprovement,250);
 	
 	gCaddSelectedGuests();
-	State.variables.logL1.push(12);
 	finishGleamingCavernsAdventure();
 }
 window.gCaddSelectedGuests = function() {
@@ -1938,6 +1935,8 @@ window.initializeCommunicationTeacher = function() { // CTch
 	// gC("chAte").empathy.affinity += 0.1;
 }
 
+// Version 0.4
+
 // Virginities Collector
 window.initializeVirgCollector = function() {
 	setRoomIntro("mapTrainingGrounds","diningHall");
@@ -2029,10 +2028,7 @@ window.viCoGangbansSequenceStart = function() {
 	viCoFirstGangbang();
 }
 
-
-
 window.viCoGangbangsEnding = function() {
-	State.variables.logL1.push(100);
 	if ( gC("chPlayerCharacter").willpower.current < gC("chPlayerCharacter").willpower.max * 0.5 ) {
 		State.variables.StVars.check2++;
 	}
@@ -2040,9 +2036,9 @@ window.viCoGangbangsEnding = function() {
 	gC("chPlayerCharacter").changeMerit(-5);
 	for ( var ch of ["chNash","chMir","chClaw","chVal","chAte"] ) {
 		addPointsToDrive(gC(ch).dPleasure,100);
+		addPointsToDrive(gC(ch).dCooperation,100);
 		gC(ch).restoreBars();
 	}
-	State.variables.logL1.push(200);
 	for ( var ch of ["chNash","chMir","chClaw","chAte"] ) {
 		State.variables[ch].relations.chPlayerCharacter.friendship.stv -= 100;
 		State.variables.chPlayerCharacter.relations[ch].friendship.stv -= 100;
@@ -2054,7 +2050,6 @@ window.viCoGangbangsEnding = function() {
 	State.variables.chPlayerCharacter.relations.chVal.rivalry.stv += 500;
 	State.variables.chVal.relations.chPlayerCharacter.sexualTension.stv += 500;
 	
-	State.variables.logL1.push(300);
 	if ( State.variables.StVars.check2 > 3 ) {
 		gC("chPlayerCharacter").combatAffinities.sex.wkn += 10;
 		for ( var ch of ["chNash","chMir","chClaw","chVal","chAte"] ) {
@@ -2082,7 +2077,35 @@ window.viCoGangbangsEnding = function() {
 		}
 		applyAlteredState(["chPlayerCharacter"],createASscrewed(1));
 	}
-	State.variables.logL1.push(400);
+}
+
+// Response of the Tribes
+window.initializeSeResponseOfTheTribes = function() {
+	State.variables.StVars.check1 = (gCstat("chPlayerCharacter","perception") >= 13);
+	State.variables.StVars.check2 = ((rLvlAbt("chMir","chPlayerCharacter","friendship") + rLvlAbt("chMir","chPlayerCharacter","romance") - rLvlAbt("chMir","chPlayerCharacter","enmity") * 3) >= 6);
+	State.variables.StVars.check3 = isStVarOn("nAtfKn"); // If true, player character does not know about artifacts
+	State.variables.StVars.check4 = ((gCstat("chPlayerCharacter","perception") + gCstat("chPlayerCharacter","empathy") + gCstat("chPlayerCharacter","intelligence") * 0.5 + gCstat("chPlayerCharacter","luck") * 0.5 + gCstat("chPlayerCharacter","resilience") * 0.5) >= 50);
+	State.variables.StVars.check5 = false;
+}
+
+// Shartrish Slopes Overview
+window.initializeShartrishSlopesOverview = function() {
+	setPasChars([getPresentCharByKey("chNash"),getPresentCharByKey("chAte"),getPresentCharByKey("chMir"),getPresentCharByKey("chVal"),getPresentCharByKey("chClaw")]);
+	setRoomIntro("mapTrainingGrounds","diningHall");
+	for ( var cK of getCandidatesKeysArray() ) {
+		for ( var at of setup.baseStats ) {
+			gC(cK)[at].affinity -= 0.1;
+		}
+		gC(cK).agility.affinity += 0.30;
+		gC(cK).physique.affinity += 0.30;
+		gC(cK).resilience.affinity += 0.30;
+	}
+	State.variables.StVars.check1 = "c";
+	if ( isStVarOn("GcEndA") ) {
+		State.variables.StVars.check1 = "a";
+	} else if ( isStVarOn("GcEndB") ) {
+		State.variables.StVars.check1 = "b";
+	}
 }
 
 

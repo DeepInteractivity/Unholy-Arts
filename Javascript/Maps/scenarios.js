@@ -220,6 +220,10 @@ window.callFtmiwse = function() { // Functions that might interfere with story e
 		activeNPCsDeclareRivalries();
 	}
 }
+window.abortMapSimulation = function() { // Best used only at the very start of a simulation
+	State.variables.compass.signalFinishMapSimulation();
+	State.variables.compass.finishMapSimulation();
+}
 
 	// Tests
 window.initCommandTestsPeriodPassionTemple = function() {

@@ -334,22 +334,52 @@ window.SupToolsData = function() {
 			case '1':
 			switch (this.talkLater) {
 				case '1':
-					State.variables.chPlayerCharacter.relations.chMir.romance.stv += 750;
-					State.variables.chMir.relations.chPlayerCharacter.romance.stv += 750;
-					State.variables.chPlayerCharacter.relations.chMir.sexualTension.stv += 750;
-					State.variables.chMir.relations.chPlayerCharacter.sexualTension.stv += 750;
+					State.variables.chPlayerCharacter.relations.chMir.romance.stv += 500;
+					State.variables.chMir.relations.chPlayerCharacter.romance.stv += 500;
+					State.variables.chPlayerCharacter.relations.chMir.sexualTension.stv += 500;
+					State.variables.chMir.relations.chPlayerCharacter.sexualTension.stv += 500;
+					gC("chPlayerCharacter").virginities.fKiss.tryTakeVirginity("chMir","storyGiven","Taken by Padmiri.");
+					gC("chPlayerCharacter").virginities.fSex.tryTakeVirginity("chMir","storyGiven","Taken by Padmiri.");
+					gC("chPlayerCharacter").virginities.tribbing.tryTakeVirginity("chMir","storyGiven","Taken by Padmiri.");
+					provokeVirginityBonusRelationshipFixedType("chPlayerCharacter","chMir","storyGiven");
+					provokeVirginityBonusRelationshipFixedType("chPlayerCharacter","chMir","storyGiven");
+					provokeVirginityBonusRelationshipFixedType("chPlayerCharacter","chMir","storyGiven");
+					gC("chMir").virginities.fKiss.tryTakeVirginity("chPlayerCharacter","storyGiven","Taken by " + gC("chPlayerCharacter").name + ".");
+					gC("chMir").virginities.fSex.tryTakeVirginity("chPlayerCharacter","storyGiven","Taken by " + gC("chPlayerCharacter").name + ".");
+					gC("chMir").virginities.tribbing.tryTakeVirginity("chPlayerCharacter","storyGiven","Taken by " + gC("chPlayerCharacter").name + ".");
+					provokeVirginityBonusRelationshipFixedType("chMir","chPlayerCharacter","storyGiven");
+					provokeVirginityBonusRelationshipFixedType("chMir","chPlayerCharacter","storyGiven");
+					provokeVirginityBonusRelationshipFixedType("chMir","chPlayerCharacter","storyGiven");
 					break;
 				case '2':
-					State.variables.chPlayerCharacter.relations.chNash.romance.stv += 750;
-					State.variables.chNash.relations.chPlayerCharacter.romance.stv += 750;
-					State.variables.chPlayerCharacter.relations.chNash.sexualTension.stv += 750;
-					State.variables.chNash.relations.chPlayerCharacter.sexualTension.stv += 750;
+					State.variables.chPlayerCharacter.relations.chNash.romance.stv += 500;
+					State.variables.chNash.relations.chPlayerCharacter.romance.stv += 500;
+					State.variables.chPlayerCharacter.relations.chNash.sexualTension.stv += 500;
+					State.variables.chNash.relations.chPlayerCharacter.sexualTension.stv += 500;
+					gC("chPlayerCharacter").virginities.fKiss.tryTakeVirginity("chNash","storyGiven","Taken by Nashillbyir.");
+					gC("chPlayerCharacter").virginities.fSex.tryTakeVirginity("chNash","storyGiven","Taken by Nashillbyir");
+					gC("chPlayerCharacter").virginities.tribbing.tryTakeVirginity("chNash","storyGiven","Taken by Nashillbyir");
+					provokeVirginityBonusRelationshipFixedType("chPlayerCharacter","chNash","storyGiven");
+					provokeVirginityBonusRelationshipFixedType("chPlayerCharacter","chNash","storyGiven");
+					provokeVirginityBonusRelationshipFixedType("chPlayerCharacter","chNash","storyGiven");
+					gC("chNash").virginities.fKiss.tryTakeVirginity("chPlayerCharacter","storyGiven","Taken by " + gC("chPlayerCharacter").name + ".");
+					gC("chNash").virginities.fSex.tryTakeVirginity("chPlayerCharacter","storyGiven","Taken by " + gC("chPlayerCharacter").name + ".");
+					gC("chNash").virginities.tribbing.tryTakeVirginity("chPlayerCharacter","storyGiven","Taken by " + gC("chPlayerCharacter").name + ".");
+					provokeVirginityBonusRelationshipFixedType("chNash","chPlayerCharacter","storyGiven");
+					provokeVirginityBonusRelationshipFixedType("chNash","chPlayerCharacter","storyGiven");
+					provokeVirginityBonusRelationshipFixedType("chNash","chPlayerCharacter","storyGiven");
 					break;
 				case '3':
-					State.variables.chPlayerCharacter.relations.chVal.romance.stv += 750;
-					State.variables.chVal.relations.chPlayerCharacter.romance.stv += 750;
-					State.variables.chPlayerCharacter.relations.chVal.sexualTension.stv += 750;
-					State.variables.chVal.relations.chPlayerCharacter.sexualTension.stv += 750;
+					State.variables.chPlayerCharacter.relations.chVal.romance.stv += 500;
+					State.variables.chVal.relations.chPlayerCharacter.romance.stv += 500;
+					State.variables.chPlayerCharacter.relations.chVal.sexualTension.stv += 500;
+					State.variables.chVal.relations.chPlayerCharacter.sexualTension.stv += 500;
+					gC("chPlayerCharacter").virginities.fKiss.tryTakeVirginity("chVal","storyGiven","Taken by Valtan.");
+					gC("chPlayerCharacter").virginities.fSex.tryTakeVirginity("chVal","storyGiven","Taken by Valtan.");
+					gC("chPlayerCharacter").virginities.tribbing.tryTakeVirginity("chVal","storyGiven","Taken by Valtan.");
+					provokeVirginityBonusRelationshipFixedType("chPlayerCharacter","chVal","storyGiven");
+					provokeVirginityBonusRelationshipFixedType("chPlayerCharacter","chVal","storyGiven");
+					provokeVirginityBonusRelationshipFixedType("chPlayerCharacter","chVal","storyGiven");
 					break;
 			}
 				break;
