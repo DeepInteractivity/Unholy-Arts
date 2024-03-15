@@ -10,7 +10,7 @@ window.createPlayerCharacter = function() {
 	character.setColors("Red","Crimson");
 	// Moves
 	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","mountDick","holdHands");
-	character.saList.push("baKissLips","baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","taunt","baTease","runAway");
+	character.saList.push("baPressDown","baKissLips","baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","taunt","baTease","runAway");
 		// Don't push ("strokePussy","strokeBreasts","kissLips","frottage","frenchKiss","kneel","makeKneel","lickGroin","legHoldHead","mountFromBehind",
 	//"penetratePussy","thrust","piston","finalPush",	"mountFaceToFace","getBlowjob","suckDick","lickPussy","interlockLegs","scissor");
 	// Body
@@ -93,7 +93,7 @@ window.createNashillbyir = function() {
 	
 	// Moves
 	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","mountDick","runAway");
-	character.saList.push("baKissLips","baStrokeDick","baStrokePussy","pounceFrontal","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","coldGuts","taunt","baTease","embers","freezeFeet","sparkingRubbing");
+	character.saList.push("baPressDown","baKissLips","baStrokeDick","baStrokePussy","pounceFrontal","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","coldGuts","taunt","baTease","embers","freezeFeet","sparkingRubbing");
 	
 	// Body
 	character.addFemaleParts();
@@ -176,7 +176,7 @@ window.createPadmiri = function() {
 	// Moves
 	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","mountDick","vinesHoldArms","holdHands");
 	
-	character.saList.push("baKissLips","baStrokeDick","baStrokePussy","pounceFrontal","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","embers","freezeFeet","sparkingRubbing","taunt","baTease","baVineArmLock","baRelaxingScent","runAway");
+	character.saList.push("baPressDown","baKissLips","baStrokeDick","baStrokePussy","pounceFrontal","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","embers","freezeFeet","sparkingRubbing","taunt","baTease","baVineArmLock","baRelaxingScent","runAway");
 	character.extraSocIntList.push("relaxingScent");
 	
 	// Body
@@ -277,7 +277,7 @@ window.createCarine = function() {
 	// Moves
 	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","biteNeck","mountDick");
 	
-	character.saList.push("baKissLips","baStrokeDick","baStrokePussy","pounceFrontal","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","taunt","baTease","embers","freezeFeet","sparkingRubbing","catAspect","baScratch","runAway"); // 
+	character.saList.push("baPressDown","baKissLips","baStrokeDick","baStrokePussy","pounceFrontal","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","taunt","baTease","embers","freezeFeet","sparkingRubbing","catAspect","baScratch","runAway"); // 
 	
 	// Body
 	character.addFemaleParts();
@@ -376,7 +376,7 @@ window.createValtan = function() {
 	/* ["embers","freezeFeet","sparkingRubbing"]
 	character.saList.push("baKissLips","baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","coldGuts","taunt","baTease");
 	*/
-	character.saList.push("baKissLips","baStrokeDick","baStrokePussy","pounceFrontal","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","coldGuts","taunt","baTease","embers","freezeFeet","sparkingRubbing","runAway");
+	character.saList.push("baPressDown","baKissLips","baStrokeDick","baStrokePussy","pounceFrontal","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","coldGuts","taunt","baTease","embers","freezeFeet","sparkingRubbing","runAway");
 	
 	// Body
 	character.addFemaleParts();
@@ -485,7 +485,7 @@ window.createMaaterasu = function() {
 	// Moves
 	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","mountDick");
 	
-	character.saList.push("baKissLips","baStrokeDick","baStrokePussy","pounceFrontal","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","coldGuts","taunt","baTease","embers","freezeFeet","sparkingRubbing","lightningDarts","runAway");
+	character.saList.push("baPressDown","baKissLips","baStrokeDick","baStrokePussy","pounceFrontal","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","coldGuts","taunt","baTease","embers","freezeFeet","sparkingRubbing","lightningDarts","runAway");
 	
 	// Body
 	character.addFemaleParts();
@@ -582,7 +582,7 @@ window.createArtume = function() {
 	// Moves
 	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","mountDick","holdHands");
 	
-	character.saList.push("baKissLips","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","taunt","embers","freezeFeet","runAway");
+	character.saList.push("baPressDown","baKissLips","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","taunt","embers","freezeFeet","runAway");
 	
 	
 	// Body
@@ -675,7 +675,7 @@ window.createWarmestHope = function() {
 	/* ["embers","freezeFeet","sparkingRubbing"]
 	character.saList.push("baKissLips","baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","coldGuts","taunt","baTease");
 	*/
-	character.saList.push("baKissLips","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","embers","freezeFeet","sparkingRubbing","coldGuts","taunt","baTease","kick","flamingFan","flaringFeint","runAway");
+	character.saList.push("baPressDown","baKissLips","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","embers","freezeFeet","sparkingRubbing","coldGuts","taunt","baTease","kick","flamingFan","flaringFeint","runAway");
 	// Body
 	character.addFemaleParts();
 	// Others
@@ -768,7 +768,7 @@ window.createSturdiestRock = function() {
 	// Moves
 	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","biteNeck","mountDick","holdHands");
 	
-	character.saList.push("baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","taunt","baScratch","freezeFeet","earthWall","quake","runAway"); // 
+	character.saList.push("baPressDown","baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","taunt","baScratch","freezeFeet","earthWall","quake","runAway"); // 
 	
 	// Body
 	character.addMaleParts();
@@ -857,7 +857,7 @@ window.createNersmias = function() {
 	// Moves
 	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","biteNeck","mountDick");
 	
-	character.saList.push("baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","taunt","freezeFeet","sparkingRubbing","embers","realHypnoticGlance","slimeHug","baHypnoticGlance","baOrderKneeling","baOrderMasturbation","baCorrodeMind","runAway"); // 
+	character.saList.push("baPressDown","baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","taunt","freezeFeet","sparkingRubbing","embers","realHypnoticGlance","slimeHug","baHypnoticGlance","baOrderKneeling","baOrderMasturbation","baCorrodeMind","runAway"); // 
 	
 	// Body
 	character.addMaleParts();
@@ -948,7 +948,7 @@ window.createMesquelles = function() {
 	// Moves
 	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","slimeHug","mountDick","holdHands");
 	
-	character.saList.push("baKissLips","baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","coldGuts","baTease","taunt","embers","freezeFeet","sparkingRubbing","runAway");
+	character.saList.push("baPressDown","baKissLips","baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","coldGuts","baTease","taunt","embers","freezeFeet","sparkingRubbing","runAway");
 	// Body
 	character.addFemaleParts();
 	character.chestSize = "big";
@@ -1036,7 +1036,7 @@ window.createSillan = function() {
 	// Moves
 	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","slimeHug","mountDick","holdHands");
 	
-	character.saList.push("baKissLips","baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","coldGuts","baTease","taunt","embers","freezeFeet","sparkingRubbing","runAway");
+	character.saList.push("baPressDown","baKissLips","baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","coldGuts","baTease","taunt","embers","freezeFeet","sparkingRubbing","runAway");
 	// Body
 	character.addFemaleParts();
 	// Others
@@ -1136,7 +1136,7 @@ window.createAtelechinol = function() {
 	
 	character.setColors("greenyellow","greenyellow");
 	// Moves
-	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","mountDick","biteNeck","holdHands");
+	character.saList.push("baPressDown","strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","mountDick","biteNeck","holdHands");
 	/* ["embers","freezeFeet","sparkingRubbing"]
 	character.saList.push("baKissLips","baStrokeDick","baStrokePussy","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","coldGuts","taunt","baTease");
 	*/
@@ -1269,25 +1269,25 @@ setup.catriaColor = "peachpuff"; // Leap, Claw's mother
 setup.meleshColor = "mediumaquamarine"; // Shapeshifter green genderfluid judge
 setup.seeriaColor = "palevioletred"; // Shapeshifter purple female judge
 
-
 // Test chars
-window.createNimereshTest = function() {
+window.createNimeresh = function() {
 	var character  = new Character("Nimeresh","chNim");
 	character.type = "candidate";
 	
 	character.setColors("Gainsboro","Gainsboro");
 	// Moves
 	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","mountDick","runAway");
-	character.saList.push("baKissLips","baStrokeDick","baStrokePussy","pounceFrontal","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","coldGuts","taunt","baTease");
+	character.saList.push("baPressDown","baKissLips","baStrokeDick","baStrokePussy","pounceFrontal","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","coldGuts","taunt","baTease","headbutt","twistNhit","rally","warcry","openingLotus");
 	
 	// Body
-	//character.addMaleParts();
+	character.addFemaleParts();
+	
 	// Others
 	character.names.push("Nim");
 	character.names.push("the toy-maker");
 	character.names.push("the fickle Ashwalker");
 	character.names.push("the longing woman");
-	//character.assignMasculinePronouns();
+	character.assignFemeninePronouns();
 	
 	character.likedTopics.push("dramas","music");
 	
@@ -1302,6 +1302,8 @@ window.createNimereshTest = function() {
 	
 	character.fullPortraitL = "img/portraits/nim-full.png";
 	character.avatarL = "img/portraits/nim-avatar.png";
+	
+	character.icon = "nimIcon";
 	
 	// AI
 	character.globalAi = createCandidateGlobalAi("chNim");
@@ -1349,19 +1351,22 @@ window.createNimereshTest = function() {
 	character.setBaseAttributes(14,16,8,10,12,14,10,12,12);
 	character.setAffinities(1.1,1.2,0.8,0.9,1,1.1,0.9,1,1);
 	
+	// Virginities
+	character.makeSpecificVirginitiesUnknown(["fSex","anus","pussy","fKiss","tribbing"]);
+	
 	character.refugeRooms = [["mapTrainingGrounds","storage"]];
 	
 	return character;
 }
 
-window.createNimereshTest = function() {
+window.createEshir = function() {
 	var character  = new Character("Eshir","chEsh");
 	character.type = "candidate";
 	
 	character.setColors("royalblue","royalblue");
 	// Moves
 	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","mountDick","runAway");
-	character.saList.push("baKissLips","baStrokeDick","baStrokePussy","pounceFrontal","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","coldGuts","taunt","baTease","embers","freezeFeet","sparkingRubbing","lightningDarts");
+	character.saList.push("baPressDown","baKissLips","baStrokeDick","baStrokePussy","pounceFrontal","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","coldGuts","taunt","baTease","embers","freezeFeet","sparkingRubbing","lightningDarts","twistNhit","infuseBody");
 	
 	// Body
 	character.addMaleParts();
@@ -1369,7 +1374,7 @@ window.createNimereshTest = function() {
 	character.names.push("Eshir");
 	character.names.push("the Ashwalker magician");
 	character.names.push("the well-mannered man");
-	//character.assignMasculinePronouns();
+	character.assignMasculinePronouns();
 	
 	character.likedTopics.push("training","dramas");
 	
@@ -1385,6 +1390,8 @@ window.createNimereshTest = function() {
 	character.fullPortraitL = "img/portraits/esh-full.png";
 	character.avatarL = "img/portraits/esh-avatar.png";
 	
+	character.icon = "eshIcon";
+	
 	// AI
 	character.globalAi = createCandidateGlobalAi("chEsh");
 	
@@ -1397,23 +1404,190 @@ window.createNimereshTest = function() {
 	
 	// Personality
 		// Tastes
-	character.tastes.foreplay = 105;
-	character.tastes.oral = 95;
-	character.tastes.fullsex = 110;
-	character.tastes.talk = 90;
-	character.tastes.useDick = 110;
-	character.tastes.useAnus = 105;
-	character.tastes.useEyes = 95;
-	character.tastes.useHands = 105;
-	character.tastes.targetBreasts = 105;
-	character.tastes.targetPussy = 110;
-	character.tastes.targetAnus = 110;
-	character.tastes.top = 110;
-	character.tastes.bottom = 105;
-	character.tastes.domination = 105;
-	character.tastes.submission = 105;
-	character.tastes.usePain = 80;
-	character.tastes.receivePain = 70;
+	character.tastes.foreplay.w = 105;
+	character.tastes.oral.w = 95;
+	character.tastes.fullsex.w = 110;
+	character.tastes.talk.w = 90;
+	character.tastes.useDick.w = 110;
+	character.tastes.useAnus.w = 105;
+	character.tastes.useEyes.w = 95;
+	character.tastes.useHands.w = 105;
+	character.tastes.targetBreasts.w = 105;
+	character.tastes.targetPussy.w = 110;
+	character.tastes.targetAnus.w = 110;
+	character.tastes.top.w = 110;
+	character.tastes.bottom.w = 105;
+	character.tastes.domination.w = 105;
+	character.tastes.submission.w = 105;
+	character.tastes.usePain.w = 80;
+	character.tastes.receivePain.w = 70;
+	
+	rankSexPreferences(character.tastes);
+	
+	// Base mood
+	//character.baseMood.flirty = 5;
+	
+	// Drives
+	setDriveValues(character.dImprovement,1200,4);
+	setDriveValues(character.dPleasure,500,2);
+	setDriveValues(character.dLove,450,2);
+	setDriveValues(character.dCooperation,1200,4);
+	setDriveValues(character.dDomination,250,1);
+	setDriveValues(character.dAmbition,1050,4);
+	
+	// Attributes
+	character.setBaseAttributes(10,10,14, 14,16,8, 14,10,8);
+	character.setAffinities(0.9,0.9,1.1,1.1,1.2,0.8,1.1,0.9,0.8);
+	
+	character.refugeRooms = [["mapTrainingGrounds","storage"]];
+	
+	return character;
+}
+
+window.createVeel = function() {
+	var character  = new Character("Veel","chVeel");
+	character.type = "candidate";
+	
+	character.setColors("seagreen","seagreen");
+	// Moves
+	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","mountDick","runAway");
+	character.saList.push("baPressDown","baKissLips","baStrokeDick","baStrokePussy","pounceFrontal","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","coldGuts","taunt","baTease","headbutt","warcry","confHarassment");
+	
+	// Body
+	character.addMaleParts();
+	// Others
+	character.names.push("Veel");
+	character.names.push("the Gaanidan ranger");
+	character.names.push("the troubled warrior");
+	character.assignMasculinePronouns();
+	
+	character.likedTopics.push("training","fauna");
+	
+	// Images
+	character.fullPortrait = function() {
+		return "[img[img/portraits/veel-full.png]]";
+	}
+	character.avatar = function() {
+		return "[img[img/portraits/veel-avatar.png]]";
+	}
+	character.icon = "npcIcon";
+	
+	character.fullPortraitL = "img/portraits/veel-full.png";
+	character.avatarL = "img/portraits/veel-avatar.png";
+	
+	character.icon = "veelIcon";
+	
+	// AI
+	character.globalAi = createCandidateGlobalAi("chVeel");
+	
+	// Affinities
+	character.combatAffinities.weapon.strength += 5;
+	character.combatAffinities.weapon.rst += 5;
+	character.combatAffinities.taunt.rst += 25;
+	character.combatAffinities.affection.frlt += 25;
+	character.combatAffinities.affection.rst += 25;
+	
+	// Personality
+		// Tastes
+	character.tastes.foreplay.w = 115;
+	character.tastes.oral.w = 105;
+	character.tastes.fullsex.w = 105;
+	character.tastes.talk.w = 90;
+	character.tastes.useDick.w = 110;
+	character.tastes.useMouth.w = 105;
+	character.tastes.useHands.w = 115;
+	character.tastes.targetDick.w = 110;
+	character.tastes.targetPussy.w = 110;
+	character.tastes.targetAnus.w = 105;
+	character.tastes.top.w = 115;
+	character.tastes.bottom.w = 90;
+	character.tastes.domination.w = 95;
+	character.tastes.submission.w = 105;
+	character.tastes.romantic.w = 105;
+	
+	rankSexPreferences(character.tastes);
+	
+	// Base mood
+	//character.baseMood.flirty = 5;
+	
+	// Drives
+	setDriveValues(character.dImprovement,1000,4);
+	setDriveValues(character.dPleasure,450,2);
+	setDriveValues(character.dLove,700,3);
+	setDriveValues(character.dCooperation,1100,4);
+	setDriveValues(character.dDomination,700,3);
+	setDriveValues(character.dAmbition,500,2);
+	
+	// Attributes
+	character.setBaseAttributes(16,14,12, 10,10,14, 12,8,12);
+	character.setAffinities(1.2,1.1,1, 0.9,0.9,1.1, 1,0.8,1);
+	
+	// Virginities
+	character.makeSpecificVirginitiesUnknown(["fSex","fKiss","dick"]);
+	
+	character.refugeRooms = [["mapTrainingGrounds","storage"]];
+	
+	return character;
+}
+
+window.createSethra = function() {
+	var character = new Character("Sethra","chSet");
+	character.type = "candidate";
+	
+	character.setColors("yellowgreen","yellowgreen");
+	// Moves
+	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","mountDick","runAway");
+	character.saList.push("baPressDown","baKissLips","baStrokeDick","baStrokePussy","pounceFrontal","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","coldGuts","taunt","baTease","headbutt","rally","warcry","gambitDeceit","gambitHonesty");
+	
+	// Body
+	character.addFemaleParts();
+	
+	// Others
+	character.names.push("Sethra");
+	character.names.push("the Gaanidan merchant");
+	character.names.push("the manipulative trader");
+	character.names.push("the sly woman");
+	character.assignFemeninePronouns();
+	
+	character.likedTopics.push("dramas","flora");
+	
+	// Images
+	character.fullPortrait = function() {
+		return "[img[img/portraits/set-full.png]]";
+	}
+	character.avatar = function() {
+		return "[img[img/portraits/set-avatar.png]]";
+	}
+	character.icon = "npcIcon";
+	
+	character.fullPortraitL = "img/portraits/set-full.png";
+	character.avatarL = "img/portraits/set-avatar.png";
+	
+	character.icon = "setIcon";
+	
+	// AI
+	character.globalAi = createCandidateGlobalAi("chSet");
+	
+	// Affinities
+	character.combatAffinities.social.strength += 10;
+	character.combatAffinities.social.rst += 10;
+	
+	// Personality
+		// Tastes
+	character.tastes.foreplay.w = 95;
+	character.tastes.fullsex.w = 110;
+	character.tastes.oral.w = 105;
+	character.tastes.talk.w = 110;
+	character.tastes.usePussy.w = 115;
+	character.tastes.useHands.w = 95;
+	character.tastes.useAnus.w = 90;
+	character.tastes.targetDick.w = 110;
+	character.tastes.targetMouth.w = 115;
+	character.tastes.domination.w = 110;
+	character.tastes.submission.w = 90;
+	character.tastes.teasing.w = 90;
+	character.tastes.romantic.w = 90;
+	character.tastes.usePain.w = 105;
 	
 	rankSexPreferences(character.tastes);
 	
@@ -1422,19 +1596,224 @@ window.createNimereshTest = function() {
 	
 	// Drives
 	setDriveValues(character.dImprovement,750,3);
-	setDriveValues(character.dPleasure,500,2);
-	setDriveValues(character.dLove,450,2);
-	setDriveValues(character.dCooperation,1200,4);
+	setDriveValues(character.dPleasure,700,2);
+	setDriveValues(character.dLove,430,2);
+	setDriveValues(character.dCooperation,350,1);
 	setDriveValues(character.dDomination,750,3);
-	setDriveValues(character.dAmbition,750,3);
+	setDriveValues(character.dAmbition,1000,4);
 	
 	// Attributes
-	character.setBaseAttributes(10,10,14,14,16,8,14,10,8);
-	character.setAffinities(0.9,0.9,1.1,1.1,1.2,0.8,1.1,0.9,0.8);
+	character.setBaseAttributes(14,12,10, 12,14,12, 8,16,10);
+	character.setAffinities(1.1,1,0.9, 1,1.1,1, 0.9,1.2,0.9);
+	
+	// Virginities
+	character.makeSpecificVirginitiesUnknown(["fSex","pussy","fKiss","tribbing"]);
 	
 	character.refugeRooms = [["mapTrainingGrounds","storage"]];
 	
 	return character;
 }
+
+window.createTenko = function() {
+	var character  = new Character("Pain","chPain");
+	character.type = "candidate";
+	character.race = "beastkin";
+	
+	character.setColors("lightslategray","lightslategray");
+	// Moves
+	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","biteNeck","mountDick");
+	
+	character.saList.push("baPressDown","baKissLips","baStrokeDick","baStrokePussy","pounceFrontal","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","taunt","baTease","baScratch","runAway","headbutt","warcry","savageCrush","bearAspect"); // 
+	
+	// Body
+	character.addFemaleParts();
+	// Others
+	character.names.push("Tenko");
+	character.names.push("Unending Pain");
+	character.names.push("the sadistic Beastkin");
+	character.names.push("the bear-girl");
+	character.assignFemeninePronouns();
+	
+	character.likedTopics.push("fauna","training");
+	
+	// Images
+	character.fullPortrait = function() {
+		return "[img[img/portraits/pain-full.png]]";
+	}
+	
+	character.fullPortraitL = "img/portraits/pain-full.png";
+	character.avatarL = "img/portraits/pain-avatar.png";
+	
+	character.icon = "painIcon";
+	
+	// Affinities
+	character.combatAffinities.physical.strength += 5;
+	character.combatAffinities.physical.rst += 5;
+	character.combatAffinities.pounce.strength += 5;
+	character.combatAffinities.pounce.rst += 5;
+	character.combatAffinities.magic.frlt += 20;
+	character.combatAffinities.fire.wkn += 10;
+	character.combatAffinities.ice.rst += 10;
+	character.combatAffinities.social.wkn += 20;
+	character.combatAffinities.taunt.wkn += 25;
+	character.combatAffinities.pain.strength += 10;
+	
+	// Personality
+		// Tastes
+	character.tastes.foreplay.w = 90;
+	character.tastes.oral.w = 105;
+	character.tastes.fullsex.w = 115;
+	character.tastes.talk.w = 80;
+	character.tastes.usePussy.w = 120;
+	character.tastes.useBreasts.w = 105;
+	character.tastes.useLegs.w = 110;
+	character.tastes.useMouth.w = 80;
+	character.tastes.targetDick.w = 110;
+	character.tastes.targetPussy.w = 110;
+	character.tastes.targetMouth.w = 120;
+	character.tastes.domination.w = 130;
+	character.tastes.submission.w = 70;
+	character.tastes.teasing.w = 85;
+	character.tastes.romantic.w = 70;
+	character.tastes.bondage.w = 120;
+	character.tastes.usePain.w = 130;
+	rankSexPreferences(character.tastes);
+	
+	// Drives
+	setDriveValues(character.dImprovement,1100,4); 
+	setDriveValues(character.dPleasure,1000,4); 
+	setDriveValues(character.dLove,0,0);
+	setDriveValues(character.dCooperation,0,0); 
+	setDriveValues(character.dDomination,2000,6); 
+	setDriveValues(character.dAmbition,1750,6); 
+	
+	// Attributes
+	character.setBaseAttributes(16,10,16, 14,10,10, 10,12,10);
+	character.setAffinities(1.2,0.9,1.2, 1.1,0.9,0.9, 0.9,1,0.9);
+	
+	// Virginities
+	character.makeSpecificVirginitiesUnknown(["fSex","anus","pussy","fKiss","tribbing"]);
+	
+	character.refugeRooms = [["mapTrainingGrounds","storage"]];
+	
+	return character;
+}
+
+window.createSheze = function() {
+	var character  = new Character("Sheze","chSheze");
+	character.type = "candidate";
+	character.race = "beastkin";
+	
+	character.setColors("peachpuff","peachpuff");
+	// Moves
+	character.saList.push("strokePussy","strokeBreasts","strokeDick","kissLips","frottage","frenchKiss","mountFaceToFace","penetratePussy","interlockLegs","lickGroin","biteNeck","mountDick","energyDrainingKiss","realHypnoticGlance");
+	
+	character.saList.push("baPressDown","baKissLips","baStrokeDick","baStrokePussy","pounceFrontal","pounceFrontalD2P","pounceFrontalP2P","pounceFrontalP2D","baThrust","baPushHipsBack","baScissor","baScissorBack","baRideDick","baPushDickBack","kick","taunt","baTease","baScratch","runAway","embers","freezeFeet","lightningDarts","sparkingRubbing","baHypnoticGlance","baDrainingKiss","baEnergyDrainingKiss","bakuAspect"); // 
+	
+	// Body
+	character.addFemaleParts();
+	// Others
+	character.names.push("Sheze");
+	character.names.push("the enslaved baku");
+	character.names.push("the reserved Beastkin");
+	character.names.push("the baku-girl");
+	character.assignFemeninePronouns();
+	
+	character.icon = "shezeIcon";
+	
+	character.likedTopics.push("fauna","flora","dramas","music");
+	
+	// Images
+	character.fullPortrait = function() {
+		return "[img[img/portraits/sheze-full.png]]";
+	}
+	
+	character.fullPortraitL = "img/portraits/sheze-full.png";
+	character.avatarL = "img/portraits/sheze-avatar.png";
+	
+	// Affinities
+	character.combatAffinities.physical.frlt += 10;
+	character.combatAffinities.physical.wkn += 10;
+	character.combatAffinities.magic.strength += 10;
+	character.combatAffinities.magic.rst += 10;
+	character.combatAffinities.drain.strength += 10;
+	character.combatAffinities.hypnosis.strength += 10;
+	character.combatAffinities.hypnosis.rst += 10;
+	
+	// Personality
+		// Tastes
+	character.tastes.foreplay.w = 105;
+	character.tastes.oral.w = 110;
+	character.tastes.fullsex.w = 95;
+	character.tastes.talk.w = 90;
+	character.tastes.usePussy.w = 110;
+	character.tastes.useEyes.w = 115;
+	character.tastes.useHands.w = 110;
+	character.tastes.useMouth.w = 120;
+	character.tastes.targetDick.w = 105;
+	character.tastes.targetPussy.w = 115;
+	character.tastes.targetLegs.w = 110;
+	character.tastes.targetAnus.w = 85;
+	character.tastes.domination.w = 105;
+	character.tastes.submission.w = 115;
+	character.tastes.romantic.w = 90;
+	character.tastes.bondage.w = 115;
+	character.tastes.receivePain.w = 105;
+	character.tastes.hypnosis.w = 125;
+	character.tastes.draining.w = 125;
+	rankSexPreferences(character.tastes);
+	
+	// Drives
+	setDriveValues(character.dImprovement,950,4);
+	setDriveValues(character.dPleasure,700,3);
+	setDriveValues(character.dLove,500,3);
+	setDriveValues(character.dCooperation,450,2); 
+	setDriveValues(character.dDomination,1100,4);
+	setDriveValues(character.dAmbition,1500,5);
+	
+	// Attributes
+	character.setBaseAttributes(10,14,8, 16,14,12, 14,10,10);
+	character.setAffinities(0.9,1.1,0.8, 1.2,1.1,1, 1.1,0.9,0.9);
+	
+	// Virginities
+	character.virginities.fKiss.taken = true;
+	character.virginities.fKiss.taker = "chPain";
+	character.virginities.fKiss.takerName = "Pain";
+	character.virginities.fKiss.method = "storyGiven";
+	character.virginities.fKiss.ctxt = "storyGiven";
+	character.virginities.fSex.taken = true;
+	character.virginities.fSex.taker = "chPain";
+	character.virginities.fSex.takerName = "Pain";
+	character.virginities.fSex.method = "storyGiven";
+	character.virginities.fSex.ctxt = "storyGiven";
+	character.virginities.tribbing.taken = true;
+	character.virginities.tribbing.taker = "chPain";
+	character.virginities.tribbing.takerName = "Pain";
+	character.virginities.tribbing.method = "storyGiven";
+	character.virginities.tribbing.ctxt = "storyGiven";
+	
+	character.refugeRooms = [["mapTrainingGrounds","storage"]];
+	
+	return character;
+}
+
+window.adjustSecondAdventureCharStats = function() {
+	for ( var cK of ["chNim","chVeel","chSet","chSheze"] ) {
+		gC(cK).adjustAttributes(0,6);
+	}
+	gC("chPain").adjustAttributes(0,10);
+	gC("chEsh").adjustAttributes(0,14);
+	
+	for ( var cK of ["chNim","chVeel","chSet","chSheze","chPain","chEsh"] ) {
+		recalculateMaxBars(cK);
+	}
+}
+
+Character.prototype.adjustAttributes = function(statVariance,statBuff) {
+	for ( var st of getStatNamesArray() ) {
+		this[st].value += limitedRandomInt(statVariance) + statBuff;
+	}
+}
+
 
 

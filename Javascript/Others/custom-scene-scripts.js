@@ -1787,6 +1787,8 @@ window.gCepFirstBattleLizardlins = function() {
 		difficultyBuff = 0;
 	} else if ( gSettings().difficulty == "hard" ) {
 		difficultyBuff = 1;
+	} else if ( gSettings().difficulty == "masochist" ) {
+		difficultyBuff = 2;
 	}
 	while ( i < 4 ) {
 		i++;
@@ -1839,6 +1841,8 @@ window.gCepSecondBattleLizardlins = function() {
 		difficultyBuff = 0;
 	} else if ( gSettings().difficulty == "hard" ) {
 		difficultyBuff = 1;
+	} else if ( gSettings().difficulty == "masochist" ) {
+		difficultyBuff = 2;
 	}
 	while ( i < 3 ) {
 		i++;
@@ -1893,6 +1897,8 @@ window.gCepBossBattleLizardlins = function() {
 		difficultyBuff = 0;
 	} else if ( gSettings().difficulty == "hard" ) {
 		difficultyBuff = 1;
+	} else if ( gSettings().difficulty == "masochist" ) {
+		difficultyBuff = 2;
 	}
 	while ( i < 4 ) {
 		i++;

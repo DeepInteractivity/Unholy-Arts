@@ -108,6 +108,8 @@ window.unequipObject = function(id) {
 			equipment.days = -2;
 			var data = getEquipDataById(id);
 			if ( data.slotType == "bodypart" ) {
+				cleanCharsUnblockedBodypartState(equipment.equippedOn,data.slot); // Clean potentially contradicting "Unblocked" altered states
+				
 				gC(equipment.equippedOn).body[data.slot].bondage = -1;
 				gC(equipment.equippedOn).body[data.slot].state = "free";
 			} else if ( data.slotType == "tool" ) {
@@ -215,6 +217,17 @@ window.setCharsWeaponUnused = function(charKey) {
 	}
 }
 
+window.cleanCharsUnblockedBodypartState = function(cK,bodypart) {
+	for ( var as of gC(cK).alteredStates ) {
+		if ( as.acr == "UnBp") {
+			if ( as.bodypart == bodypart ) {
+				as.flagRemove = true;
+			}
+		}
+	}
+	gC(cK).cleanStates();
+}
+
 	// Specific unequip
 window.unequipToolTypeFromChar = function(type,charKey) {
 	if ( gC(charKey)[type] != -1 ) {
@@ -308,7 +321,10 @@ const equipmentType = {
 	HANDFAN: "w3",
 	HUNTINGBOW: "w4",
 	DILDO: "w5",
-	SPEAR: "w6"
+	SPEAR: "w6",
+	WHIP: "w7",
+	BNBOARD: "w8",
+	BLUDGEON: "w9"
 }
 /*const equipmentType = {
 	COLLAR: 0,
@@ -675,6 +691,58 @@ setup.equipDataList[equipmentType.SPEAR] = new equipmentData("Spear","tool","wea
 		+ "\nIncreases agility, resilience and control recovery.",
 	2000,0,
 	[["agility",1],["resilience",1]],["weaponPlunge","staffSwipe"],1.5);
+setup.equipDataList[equipmentType.WHIP] = new equipmentData("Whip","tool","weapon",
+	function(owner,wearer) { // Put on
+		gC(wearer).agility.sumModifier += 2;
+		gC(wearer).agility.multModifier += 0.1;
+		gC(wearer).will.sumModifier += 2;
+		gC(wearer).will.multModifier += 0.1;
+	},
+	function(owner,wearer) { // Put out
+		gC(wearer).agility.sumModifier -= 2;
+		gC(wearer).agility.multModifier -= 0.1;
+		gC(wearer).will.sumModifier -= 2;
+		gC(wearer).will.multModifier -= 0.1;
+	}, "A leather, flexible weapon, able to extend itself to deliver lashes against distant enemies."
+		+ "\nIncreases agility and will.",
+	2500,0,
+	[["agility",1],["will",1]],["sadisticFlurry"],1.1);
+setup.equipDataList[equipmentType.BNBOARD] = new equipmentData("Blade and Board","tool","weapon",
+	function(owner,wearer) { // Put on
+		gC(wearer).resilience.sumModifier += 2;
+		gC(wearer).resilience.multModifier += 0.1;
+		gC(wearer).combatAffinities.physical.rst += 10;
+		gC(wearer).combatAffinities.weapon.rst += 10;
+	},
+	function(owner,wearer) { // Put out
+		gC(wearer).resilience.sumModifier -= 2;
+		gC(wearer).resilience.multModifier -= 0.1;
+		gC(wearer).combatAffinities.physical.rst -= 10;
+		gC(wearer).combatAffinities.weapon.rst -= 10;
+	}, "Blade and shield set, for those who prioritize safety."
+		+ "\nIncreases resilience and resistance to weapon and physical attacks.",
+	2500,0,
+	[["resilience",2]],["shieldBash"],1.1);
+setup.equipDataList[equipmentType.BLUDGEON] = new equipmentData("Bludgeon","tool","weapon",
+	function(owner,wearer) { // Put on
+		gC(wearer).physique.sumModifier += 4;
+		gC(wearer).physique.multModifier += 0.2;
+		gC(wearer).resilience.sumModifier += 2;
+		gC(wearer).resilience.multModifier += 0.1;
+		gC(wearer).agility.sumModifier -= 2;
+		gC(wearer).agility.multModifier -= 0.1;
+	},
+	function(owner,wearer) { // Put out
+		gC(wearer).physique.sumModifier -= 4;
+		gC(wearer).physique.multModifier -= 0.2;
+		gC(wearer).resilience.sumModifier -= 2;
+		gC(wearer).resilience.multModifier -= 0.1;
+		gC(wearer).agility.sumModifier += 2;
+		gC(wearer).agility.multModifier += 0.1;
+	}, "A bloody club crowned with spikes. Difficult to maneuver with, but painful on its receiving end."
+		+ "\nIncreases physique and resilience, reduces agility.",
+	2500,0,
+	[["physique",2],["resilience",1],["agility",-1]],["crush","recklessSwing"],1.2);
 
 
 setup.equipDataList[equipmentType.DILDO] = new equipmentData("Dildo","tool","weapon",
@@ -704,7 +772,7 @@ setup.equipDataList[equipmentType.DILDO] = new equipmentData("Dildo","tool","wea
 window.isWeaponTypeMelee = function(wT) {
 	var result = false;
 	
-	var meleeWeaponTypes = [equipmentType.STAFFOFBATTLE,equipmentType.KNUCKLES,equipmentType.HANDFAN,equipmentType.SPEAR,equipmentType.DILDO];
+	var meleeWeaponTypes = [equipmentType.STAFFOFBATTLE,equipmentType.KNUCKLES,equipmentType.HANDFAN,equipmentType.SPEAR,equipmentType.DILDO,equipmentType.BNBOARD];
 	if ( meleeWeaponTypes.includes(wT) ) {
 		result = true;
 	}
@@ -715,6 +783,16 @@ window.isWeaponContactRange = function(wT) {
 	var result = false;
 	
 	var meleeWeaponTypes = [equipmentType.KNUCKLES,equipmentType.HANDFAN,equipmentType.DILDO];
+	if ( meleeWeaponTypes.includes(wT) ) {
+		result = true;
+	}
+	
+	return result;
+}
+window.isWeaponTypeWhip = function(wT) {
+	var result = false;
+	
+	var meleeWeaponTypes = [equipmentType.WHIP];
 	if ( meleeWeaponTypes.includes(wT) ) {
 		result = true;
 	}

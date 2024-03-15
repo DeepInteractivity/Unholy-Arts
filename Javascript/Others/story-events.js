@@ -526,7 +526,7 @@ window.initializeShunnedByHerOwn = function() {
 	gC("chClaw").supsValPardon += rLvlAbt("chClaw","chVal","friendship") * 1 + rLvlAbt("chClaw","chVal","romance") - rLvlAbt("chClaw","chVal","rivalry") - rLvlAbt("chClaw","chVal","enmity") * 2 - getCharsDrive("chClaw","dDomination") + getCharsDrive("chClaw","dCooperation") - getCharsDrive("chClaw","dAmbition") + getCharsDrive("chClaw","dLove");
 	gC("chClaw").supsValLove += rLvlAbt("chClaw","chVal","friendship") * 2 + rLvlAbt("chClaw","chVal","romance") - rLvlAbt("chClaw","chVal","enmity") * 2 - getCharsDrive("chClaw","dDomination") + getCharsDrive("chClaw","dCooperation") + getCharsDrive("chClaw","dLove") - 3;
 	gC("chMir").supsValLove += rLvlAbt("chMir","chVal","friendship") - rLvlAbt("chMir","chVal","enmity") + getCharsDrive("chVal","dLove") - getCharsDrive("chVal","dPleasure") + getCharsDrive("chMir","dLove") - getCharsDrive("chVal","dPleasure");
-	gC("chMir").supsValPardon += rLvlAbt("chMir","chVal","friendship") - rLvlAbt("chMir","chVal","enmity") + getCharsDrive("chVal","dLove") - getCharsDrive("chVal","dPleasure") + getCharsDrive("chMir","dLove") + getCharsDrive("chMir","dCooperation") +  + getCharsDrive("chMir","dAmbition") - getCharsDrive("chVal","dPleasure");
+	gC("chMir").supsValPardon += rLvlAbt("chMir","chVal","friendship") - rLvlAbt("chMir","chVal","enmity") + getCharsDrive("chVal","dLove") - getCharsDrive("chVal","dPleasure") + getCharsDrive("chMir","dLove") + getCharsDrive("chMir","dCooperation") + getCharsDrive("chMir","dAmbition") - getCharsDrive("chVal","dPleasure");
 	gC("chAte").supsValLove += rLvlAbt("chAte","chVal","friendship") + rLvlAbt("chAte","chVal","romance") - rLvlAbt("chAte","chVal","enmity") + getCharsDrive("chAte","dLove") + getCharsDrive("chAte","dCooperation") + (- getCharsDrive("chAte","dImprovement") - getCharsDrive("chAte","dAmbition")) * 0.5 - getCharsDrive("chVal","dPleasure");
 	gC("chAte").supsValPardon += rLvlAbt("chAte","chVal","friendship") + rLvlAbt("chAte","chVal","romance") - rLvlAbt("chAte","chVal","enmity") + getCharsDrive("chAte","dLove") + getCharsDrive("chAte","dCooperation") + getCharsDrive("chAte","dAmbition") - getCharsDrive("chAte","dDomination") - getCharsDrive("chVal","dPleasure");
 	
@@ -1021,6 +1021,7 @@ window.twistedFestivalEndingBeffects = function() {
 	gC("chVal").baseMood.friendly += 10;
 	gC("chVal").baseMood.intimate += 20;
 	gC("chVal").baseMood.flirty += 10;
+	getRelation("chSil","chVal").enmity.stv -= 3000;
 	tempText = "//This will have large consequences for Valtan.\nValtan's love and pleasure drives have increased.\nValtan's ambition drive has decreased.\nValtan's charisma and empathy affinities have increased.//";
 	State.variables.temp = tempText;
 	return tempText;
@@ -1035,6 +1036,7 @@ window.twistedFestivalEndingAeffects = function() {
 	gC("chVal").will.affinity += 0.1;
 	gC("chVal").baseMood.intimate += 20;
 	gC("chVal").baseMood.dominant += 20;
+	getRelation("chSil","chVal").enmity.stv -= 3000;
 	if ( isStVarOn("tfNsSp") ) {
 		State.variables.chVal.relations["chNash"].friendship.stv += 1000;
 		gC("chNash").ssRsp += 50;
@@ -1076,6 +1078,19 @@ window.twistedFestivalEndingAeffects = function() {
 	tempText += "\nValtan has gained the respect of her tribe.//";
 	State.variables.temp = tempText;
 	return tempText;
+}
+window.coolDownFirstAdventuresValtanMoods = function() {
+	if ( isStVarOn("GcEndA") ) {
+		gC("chVal").baseMood.intimate -= 10;
+		gC("chVal").baseMood.dominant -= 10;
+	} else if ( isStVarOn("GcEndB") ) {
+		gC("chVal").baseMood.friendly -= 5;
+		gC("chVal").baseMood.intimate -= 10;
+		gC("chVal").baseMood.flirty -= 5;
+	} else if ( isStVarOn("GcEndC") ) {	
+		gC("chVal").baseMood.submissive -= 10;
+		gC("chVal").baseMood.bored -= 10;
+	}
 }
 
 window.initGleamingCavernsEpilogue = function() {

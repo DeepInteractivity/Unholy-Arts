@@ -929,6 +929,8 @@ window.saList = function() {
 	this.baRideDick = createSaBaRideDick();
 	this.baPushDickBack = createSaBaPushDickBack();
 	
+	this.baPressDown = createSaBaPressDown();
+	
 		// Items
 	this.baDildoPenetratePussy = createSaBaDildoPenetratePussy();
 	
@@ -950,11 +952,16 @@ window.saList = function() {
 	this.savageCrush = createSavageCrush();
 	this.daringAssault = createDaringAssault();
 	
+	this.gambitHonesty = createSaGambitOfHonesty();
+	this.gambitDeceit = createSaGambitOfDeceit();
+	
 		// Pain
 		
 	this.baScratch = createSaBaScratch();
 	
 	this.catAspect = createSaCatAspect();
+	this.bearAspect = createSaBearAspect();
+	this.bakuAspect = createSaBakuAspect();
 	
 	// Magic
 	
@@ -969,6 +976,8 @@ window.saList = function() {
 	this.earthWall = createEarthWall();
 	this.quake = createSaQuake();
 	this.fireBreath = createSaFireBreath();
+	
+		// Social
 	
 	this.taunt = createSaTaunt();
 	this.baTease = createSaBaTease();
@@ -1012,6 +1021,17 @@ window.saList = function() {
 	this.flaunt = createSaFlaunt();
 	this.disablingShot = createDisablingShot();
 	this.weaponPlunge = createWeaponPlunge();
+	this.sadisticFlurry = createSadisticFlurry();
+	this.shieldBash = createSaShieldBash();
+	this.crush = createSaCrush();
+	this.recklessSwing = createSaRecklessSwing();
+	
+	// Mixed
+	this.openingLotus = createOpeningLotus();
+	this.confHarassment = createSaConfidentHarassment();
+	
+	// Modes
+	this.infuseBody = createSaInfuseBody();
 };
 
 window.getAllActions = function() {
@@ -1033,6 +1053,9 @@ window.returnFirstScrollGroupActionsList = function() {
 }
 window.returnSecondScrollGroupActionsList = function() {
 	return ["headbutt","twistNhit","rally","warcry"];
+}
+window.returnSecondAdventureGroupActionsList = function() {
+	return ["openingLotus","infuseBody","confHarassment","gambitHonesty","gambitDeceit","bakuAspect","bearAspect"];
 }
 
 // Constructors, serializers, etc.

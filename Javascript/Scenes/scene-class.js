@@ -453,7 +453,7 @@ window.scene = function() {
 		for ( var key of charKeys) {
 			cleanStates = false;
 			for ( var as of gC(key).alteredStates ) {
-				if ( as.scope == "scene" ) {
+				if ( as.scope == "scene" || as.scope == "mode" ) {
 					as.flagRemove = true; // Finish effect
 					cleanStates = true;
 				}
@@ -1270,6 +1270,7 @@ window.scene = function() {
 		this.endRoundEffects = [];
 		
 		// Execute altered states
+		checkAlteredStatesMaintenance();
 		executeAlteredStatesTurnEffects();
 		
 		// Lead (Part 1)
@@ -1303,7 +1304,7 @@ window.scene = function() {
 		
 		// Altered States
 		this.alteredStatesTurnEffects();
-
+		
 		// Custom Script
 		this.customScript();
 		// Check importantMessages
@@ -2439,6 +2440,41 @@ window.executeAlteredStatesTurnEffects = function() {
 			}
 		}
 	}
+}
+window.checkAlteredStatesMaintenance = function() {
+	for ( var charKey of State.variables.sc.teamAcharKeys.concat(State.variables.sc.teamBcharKeys) ) {
+		var cleanStates = false;
+		for ( var as of gC(charKey).alteredStates ) {
+			var maintenance = getAsMaintenance(as);
+			if ( maintenance ) {
+				if ( gC(charKey).koed == true ) {
+					as.flagRemove = true;
+					cleanStates = true;
+				} else {
+					var mtResults = maintenance(charKey);
+					addExtraEffectDescription(mtResults[1]);
+					if ( mtResults[0] ) { // Cancel action
+						as.flagRemove = true;
+						cleanStates = true;
+					} else { // Add button to cancel action // Questionable UI practice
+						if ( charKey == "chPlayerCharacter" ) {
+							State.variables.sc.extraEffectsDescription += " " + addButtonCancelMode(as.acr);
+						}
+					}
+				}
+			}
+		}
+		if ( cleanStates ) {
+			gC(charKey).cleanStates();
+		}
+	}
+}
+window.addButtonCancelMode = function(asAcr) {
+	var cButton = '[<<l' + 'ink [[Cancel|Scene]]>>\n<<sc' + 'ript>>\n'
+				+ 'removeAlteredStateByAcr("chPlayerCharacter","' + asAcr + '");\n'
+				+ 'State.variables.sc.formatScenePassage();\n'
+				+ '<</s' + 'cript>><</l' + 'ink>>]';
+	return cButton;
 }
 
 window.cleanTurnTags = function() {

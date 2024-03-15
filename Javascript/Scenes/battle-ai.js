@@ -226,10 +226,16 @@ window.bAiProcessTurn = function(actor,allyCharacters,enemyCharacters,currentTur
 					if ( enemiesLosingControl.includes(target) ) { // Target is losing control
 						w *= 2;
 					} else if ( gC(target).control > 0 && getBarPercentage(target,"lust") > 0.8 ) {
-						w *= 1.2;
+						w *= 1.35;
 					}
 				} else if ( gC(target).control <= 1.5 && getBarPercentage(target,"lust") > 0.6 && ( setup.saList[action].strategyTags.includes("pounce") == false ) ) {
 					w *= 0.7;
+				}
+				
+				if ( setup.saList[action].strategyTags.includes("damage") && setup.saList[action].strategyTags.includes("damageControl") == false && setup.saList[action].strategyTags.includes("buff") == false && setup.saList[action].strategyTags.includes("debuff") == false ) {
+					if ( getBarPercentage(target,"lust") > 0.8 ) {
+						w *= 0.8;
+					}
 				}
 				
 				if ( alliesNeedHelp.length > 0 ) { // alliesNeedHelp
@@ -238,6 +244,27 @@ window.bAiProcessTurn = function(actor,allyCharacters,enemyCharacters,currentTur
 					}
 					if ( setup.saList[action].strategyTags.includes("teamProtection") ) {
 						w *= 5;
+					}
+				}
+				
+				// Modes
+				if ( setup.saList[action].strategyTags.includes("mode") ) {
+					if ( State.variables.sc.currentTurn < 4 ) {
+						w *= 2.8 - ( State.variables.sc.currentTurn * 0.5 );
+						if ( powerProportion < 0.9 ) {
+							w *= 1.5;
+						}
+					}
+					w *= getBarPercentage(actor,"lust");
+					w *= ( gC(actor).control / gC(actor).maxControl );
+					if ( setup.saList[action].strategyTags.includes("willpowerMode") ) {
+						w *= getBarPercentage(actor,"willpower");
+					}
+					if ( setup.saList[action].strategyTags.includes("energyMode") ) {
+						w *= getBarPercentage(actor,"energy");
+					}
+					if ( setup.saList[action].strategyTags.includes("socialdriveMode") ) {
+						w *= getBarPercentage(actor,"socialDrive");
 					}
 				}
 				
@@ -355,6 +382,33 @@ window.bAiProcessTurn = function(actor,allyCharacters,enemyCharacters,currentTur
 					}
 				}
 				
+				// Misc
+					// Gambit of Honesty
+				if ( setup.saList[action].strategyTags.includes("gambitHonesty") ) {
+					if ( doesCharHaveState(target,"Cynl") ) {
+						w *= 1.7;
+					}
+					if ( actor == "chSet" ) {
+						w *= 1.3;
+					}
+				}
+					// Gambit of Deceit
+				if ( setup.saList[action].strategyTags.includes("gambitDeceit") ) {
+					if ( doesCharHaveState(target,"Trst") ) {
+						w *= 1.4;
+					}
+					if ( actor == "chSet" ) {
+						w *= 1.3;
+					}
+				}
+					// RecklessSwing
+				if ( setup.saList[action].strategyTags.includes("recklessSwing") ) {
+					var allyTeam = getRemainingCharsAllyTeam(actor);
+					var enemyTeam = getRemainingCharsEnemyTeam(actor);
+					w *= 1 - ((allyTeam.length-1)*0.25);
+					w *= 1 - ((enemyTeam.length-1)*0.1);
+				}
+
 				// Elemental damage
 				if ( setup.saList[action].strategyTags.includes("damage") ) {
 					for ( var el of setup.checkElementalDamage ) {
@@ -362,6 +416,13 @@ window.bAiProcessTurn = function(actor,allyCharacters,enemyCharacters,currentTur
 							var expectedDamMult = (gC(actor).combatAffinities[el].strength - gC(actor).combatAffinities[el].frlt + gC(target).combatAffinities[el].wkn - gC(actor).combatAffinities[el].rst) * 0.01;
 							w *= (1 + expectedDamMult * 0.5);
 						}
+					}
+				}
+				
+				// Avoid when vulnerable
+				if ( setup.saList[action].strategyTags.includes("damage") ) {
+					if ( (gC(actor).control / gC(actor).maxControl) < 0.4 ) {
+						w *= 0.4;
 					}
 				}
 				
@@ -489,9 +550,9 @@ window.bAiProcessTurn = function(actor,allyCharacters,enemyCharacters,currentTur
 	var i = 0;
 	for ( var comb of ATcombs ) { // [action,target,successChance,weight]
 		if ( comb[3] > weightUpperThreshold ) {
-			comb[3] = Math.pow(comb[3],1.2);
+			comb[3] = Math.pow(comb[3],1.4);
 		} else if ( comb[3] > weightMiddleThreshold ) {
-			comb[3] = Math.pow(comb[3],1.1);
+			comb[3] = Math.pow(comb[3],1.2);
 		}
 		if ( comb[3] > 0 && comb[3] > weightLowerThreshold ) { // Remove combinations with non-positive weight, combinations below weight threshold
 			wL[i] = new weightedElement([comb[0],comb[1]],comb[3]); // Element: [action,target], Weight: weight

@@ -1,4 +1,5 @@
 ﻿a-log-tools.js
+Others\tips.js
 config.js
 general-functions.js
 a-common-functions.js

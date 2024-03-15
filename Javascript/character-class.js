@@ -473,6 +473,10 @@ Character.prototype.statsDifficultyAdjustments = function(difficultyVariance) {
 		vMult = -1;
 	} else if ( gSettings().difficulty == "hard" ) {
 		vMult = 1;
+	} else if ( gSettings().difficulty == "baby" ) {
+		vMult = -2;
+	} else if ( gSettings().difficulty == "masochist" ) {
+		vMult = 2;
 	}
 	for ( var st of setup.baseStats ) {
 		this[st].value += (difficultyVariance * vMult);
@@ -656,6 +660,8 @@ Character.prototype.textAlteredStates = function() {
 				}
 				if ( as.scope == "scene" ) {
 					tooltip += "\nRemaining turns: " + as.remainingTurns.toFixed(1);
+				} else if ( as.scope == "mode" ) {
+					tooltip += "\nActive mode. Must be canceled manually.";
 				} else if ( as.scope == "days" ) {
 					tooltip += "\nRemaining days: " + as.remainingDays.toFixed(1);
 				}
@@ -760,6 +766,55 @@ Character.prototype.textSpecialRelationships = function() {
 			}
 		}
 	return text;
+}
+
+Character.prototype.textCombatAffinities = function() {
+	var text = "";
+	var character = this.varName;
+	var flagCanBeSeenData = areCombatAffinitiesAvailable(character);
+	var diffCheckData = " (DC: " + flagCanBeSeenData[1].toFixed(0) + "/" + flagCanBeSeenData[2].toFixed(0) + ")";
+	if ( character == "chPlayerCharacter" ) {
+		diffCheckData = "";
+	}
+	
+	if ( flagCanBeSeenData[0] ) {
+		text += "__Combat affinities__" + diffCheckData;
+		var addText = "";
+		for ( var ca in gC(character).combatAffinities ) {
+			var cad = gC(character).combatAffinities[ca];
+			if ( cad instanceof flavorAffinity ) {
+				var netStr = cad.strength - cad.frlt;
+				var netRst = cad.rst - cad.wkn;
+				if ( (netStr > 0.1 || netStr < -0.1 || netRst > 0.1 || netRst < -0.1 ) ) {
+					addText += "\n" + firstToCap(cad.type) + " ·";
+					if ( netStr < 0 ) { addText += " Frailty: " + (-netStr).toFixed(0); }
+					else { addText += " Strength: " + (netStr).toFixed(0); }
+					if ( netRst < 0 ) { addText += " | Weakness: " + (-netRst).toFixed(0); }
+					else { addText += " | Resistance: " + (netRst).toFixed(0); }
+					
+				}
+			}
+		}
+		if ( addText != "" ) {
+			text += addText;
+		} else {
+			text = "Neutral combat affinities." + diffCheckData;
+		}		
+	} else {
+		text += "//Combat affinities are not available.//" + hoverText("^^(?)^^","To see the combat affinities of another character, raise any relationship stat levels (including negative ones), as well as your intelligence, empathy, luck, and most importantly, perception.") + diffCheckData;
+	}
+	
+	return text;
+}
+window.areCombatAffinitiesAvailable = function(cK) {
+	var result = false;
+	var difficulty = 50 + quantifyCharacterVacuumStrength(cK);
+	var relPoints = (rLvlAbt("chPlayerCharacter",cK,"friendship") + rLvlAbt("chPlayerCharacter",cK,"romance") + rLvlAbt("chPlayerCharacter",cK,"sexualTension") + rLvlAbt("chPlayerCharacter",cK,"domination") + rLvlAbt("chPlayerCharacter",cK,"submission") + rLvlAbt("chPlayerCharacter",cK,"rivalry") + rLvlAbt("chPlayerCharacter",cK,"enmity")) * 3;
+	var statPoints = gCstat("chPlayerCharacter","perception") * 4 + gCstat("chPlayerCharacter","intelligence") * 2 + gCstat("chPlayerCharacter","luck") * 2 + gCstat("chPlayerCharacter","empathy") * 4;
+	if ( cK == "chPlayerCharacter" || ( (statPoints + relPoints) >= difficulty ) ) {
+		result = true;
+	}
+	return [result,(statPoints+relPoints),difficulty];
 }
 
 Character.prototype.textIntimacyTowardsPlayer = function() {
@@ -971,7 +1026,7 @@ Character.prototype.getCharacterScreenInfo = function() { // Returns a string th
 		string += this.textBars();
 		if ( gSettings().challengingAllowed || gSettings().assaultingAllowed ) {
 			string += "Merit" + getMeritTooltip() + ": " + this.merit;
-			string += " | Infamy" + getInfamyTooltip() + ": " + this.infamy + "/" + State.variables.settings.infamyLimit;
+			string += " | Infamy" + getInfamyTooltip() + ": " + this.infamy.toFixed(1) + "/" + State.variables.settings.infamyLimit;
 			if ( this.varName == "chPlayerCharacter" ) {
 				string += " | Money: " + this.money.toFixed(0);
 			}
@@ -998,6 +1053,9 @@ Character.prototype.getCharacterScreenInfo = function() { // Returns a string th
 		if ( spRelsString != "" ) {
 			string += "\n\n__Special Relationships__:\n" + spRelsString;
 		}
+		
+		var combatAffinitiesString = this.textCombatAffinities();
+		string += "\n\n" + combatAffinitiesString;
 		
 		return string;
 	}

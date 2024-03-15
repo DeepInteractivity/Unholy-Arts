@@ -413,6 +413,7 @@ window.setUpMultiBattleTest = function() {
 									"baBorrowedIdentity","fireBreath","daringAssault","baRelaxingScent"
 		]);
 	charactersLearnSceneActions(["chPlayerCharacter"],returnSecondScrollGroupActionsList());
+	charactersLearnSceneActions(["chPlayerCharacter"],returnSecondAdventureGroupActionsList());
 	charactersLearnSceneActions(["chNash","chClaw"],[
 									"kick","coldGuts",
 									"taunt"
@@ -430,10 +431,10 @@ window.setUpMultiBattleTest = function() {
 		gC(character).restoreBars();
 	}
 		
-	var speID = createEquipment("w6","chPlayerCharacter");
-	equipObjectOnWearer(speID,"chPlayerCharacter",-1);
+	var weaponID = createEquipment("w9","chPlayerCharacter");
+	equipObjectOnWearer(weaponID,"chPlayerCharacter",-1);
 	
-	gC("chPlayerCharacter").race = "leirien";
+	gC("chPlayerCharacter").race = "beastkin";
 	
 	// Start scene
 	State.variables.sc.startScene("bs", "none",
@@ -502,6 +503,31 @@ window.setUpMultiSexTestAlt = function() {
 	State.variables["chVal"].aiAlgorythm = createAiWeightedMissionsByTaste();
 	State.variables["chMir"].aiAlgorythm.setRoleEqualFooting();
 	State.variables["chVal"].aiAlgorythm.setRoleEqualFooting();
+}
+
+window.setUpTestGiveWeaponsToChars = function() {
+	var wea1 = createEquipment(equipmentType.KNUCKLES,"chClaw");
+	var wea1 = createEquipment(equipmentType.WAND,"chMir");
+	var wea1 = createEquipment(equipmentType.HANDFAN,"chVal");
+	var wea1 = createEquipment(equipmentType.WAND,"chAte");
+	if ( State.variables.activeSimulationCharacters.includes("chNim") ) {
+		var artWeaID = createEquipment(equipmentType.WHIP,"chNim");
+	}
+	if ( State.variables.activeSimulationCharacters.includes("chEsh") ) {
+		var eshWeaID = createEquipment(equipmentType.STAFFOFBATTLE,"chEsh");
+	}
+	if ( State.variables.activeSimulationCharacters.includes("chVeel") ) {
+		var veelWeaID = createEquipment(equipmentType.BNBOARD,"chVeel");
+	}
+	if ( State.variables.activeSimulationCharacters.includes("chSet") ) {
+		var setWeaID = createEquipment(equipmentType.BNBOARD,"chSet");
+	}
+	if ( State.variables.activeSimulationCharacters.includes("chPain") ) {
+		var painWeaID = createEquipment(equipmentType.BLUDGEON,"chPain");
+	}
+	if ( State.variables.activeSimulationCharacters.includes("chSheze") ) {
+		var sheWeaID = createEquipment(equipmentType.WAND,"chSheze");
+	}
 }
 
 // Training

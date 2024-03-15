@@ -111,7 +111,7 @@ setup.tfExtraSettingsNames = [ "No transformations", "Temporary", "Permanent", "
 
 ////////// GAME SETTINGS CLASS //////////
 
-setup.versionName = "Unholy Arts v0.4.2";
+setup.versionName = "Unholy Arts v0.4.3";
 
 setup.infamySecondThreshold = 1.2;
 setup.infamyThirdThreshold = 1.4;
@@ -138,7 +138,7 @@ window.Settings = function() {
 
 	this.autosaving = "enable"; // "enable" / "disable"
 
-	this.difficulty = "normal"; // "easy" / "normal" / "hard"
+	this.difficulty = "normal"; // "baby" / "easy" / "normal" / "hard" / "masochist"
 	
 	this.animations = "enable"; // "hidden" / "enable" / "disable"
 	
@@ -203,15 +203,20 @@ window.Settings = function() {
 
 // Methods
 Settings.prototype.formatDifficultyChoices = function() {
-		this.difficultyChoices = '__Difficulty__' + getDifficultyTooltip() + ':\n' + '<label><<radiobutton "$settings.difficulty" "easy"';
+		this.difficultyChoices = '__Difficulty__' + getDifficultyTooltip() + ':\n' + '<label><<radiobutton "$settings.difficulty" "baby"';
+		if ( this.difficulty == "baby" ) { this.difficultyChoices += " checked"; }
+		this.difficultyChoices += '>> Baby</label> ~ //A cheap power fantasy//\n'+ '<label><<radiobutton "$settings.difficulty" "easy"';
 		if ( this.difficulty == "easy" ) { this.difficultyChoices += " checked"; }
 		this.difficultyChoices += '>> Easy</label>\n'
 						   + '<label><<radiobutton "$settings.difficulty" "normal"';
 		if ( this.difficulty == "normal" ) { this.difficultyChoices += " checked"; }				   
-		this.difficultyChoices += '>> Normal</label>\n'
+		this.difficultyChoices += '>> Normal</label> ~ //The canon journey//\n'
 						   + '<label><<radiobutton "$settings.difficulty" "hard"';
 		if ( this.difficulty == "hard" ) { this.difficultyChoices += " checked"; }	
-		this.difficultyChoices += '>> Hard</label>';
+		this.difficultyChoices += '>> Hard</label>\n'
+						   + '<label><<radiobutton "$settings.difficulty" "masochist"';
+		if ( this.difficulty == "masochist" ) { this.difficultyChoices += " checked"; }	
+		this.difficultyChoices += '>> Masochist</label> ~ //The ragdoll experience//';
 	}
 	Settings.prototype.formatFutaChoices = function() {
 		this.futaChoices = '__Futanari__' + getFutanariTooltip() + ':\n';
@@ -484,6 +489,12 @@ window.formatPainChoices = function() {
 
 window.applyDifficultyChanges = function() {
 	switch(gSettings().difficulty) {
+		case "baby":
+			for ( var st of getStatNamesArray() ) {
+				gC("chPlayerCharacter")[st].value += 5;
+				gC("chPlayerCharacter")[st].affinity += 0.25;
+			}
+			break;
 		case "easy":
 			for ( var st of getStatNamesArray() ) {
 				gC("chPlayerCharacter")[st].value += 2;
@@ -497,6 +508,12 @@ window.applyDifficultyChanges = function() {
 			for ( var st of getStatNamesArray() ) {
 				gC("chPlayerCharacter")[st].value -= 2;
 				gC("chPlayerCharacter")[st].affinity -= 0.1;
+			}			
+			break;
+		case "masochist":
+			for ( var st of getStatNamesArray() ) {
+				gC("chPlayerCharacter")[st].value -= 3;
+				gC("chPlayerCharacter")[st].affinity -= 0.25;
 			}			
 			break;
 	}
@@ -557,7 +574,7 @@ window.getAnimationsTooltip = function() {
 
 window.getDifficultyTooltip = function() {
 	var tText = '<span title="When selected at the start of the game, changes the starting stats and affinities of the player.'
-			  + '\nHard may make you suffer.">^^(?)^^</span>';
+			  + '\nNormal is the intended difficulty. Just remember that not winning all the time is not that bad.">^^(?)^^</span>';
 	return tText;
 }
 window.getFutanariTooltip = function() {

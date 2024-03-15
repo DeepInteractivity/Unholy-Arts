@@ -2,6 +2,7 @@
 
 window.applyRequiredPatches = function() {
 	genericPatches();
+	v043LearnPressDown();
 }
 
 window.genericPatches = function() {
@@ -127,5 +128,15 @@ window.v041FixClawsAngerButton = function() {
 	gC("chClaw").baseMood.angry = 0;
 }
 
+window.v043FixNPCsGenders = function() {
+	for ( var cK of ["chSet","chNim"] ) {
+		if ( getActiveSimulationCharactersArray().includes(cK) ) {
+			gC(cK).assignFemeninePronouns();
+		}
+	}
+}
 
+window.v043LearnPressDown = function() {
+	charactersLearnSceneActions(getActiveSimulationCharactersArray(),["baPressDown"]);
+}
 

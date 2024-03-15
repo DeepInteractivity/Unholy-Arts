@@ -22,6 +22,7 @@ window.PersonalRoom = function() {
 
 // Methods
 PersonalRoom.prototype.formatRoomText = function() {
+	State.variables.tip = "";
 		switch(this.roomState) {
 			case "main":
 				this.roomText = '<div style="text-align: center;">' + State.variables.daycycle.returnMonthDay() + "</div>\n"
@@ -51,8 +52,10 @@ PersonalRoom.prototype.formatRoomText = function() {
 								   + "\n" + getButtonAnTagBlack()
 								   + "\n" + getButtonAnTagGray();
 				}
-				//this.roomText += getHotfixButton();
-				this.roomText += getClawHotfixButton();
+				this.roomText += '\n\n<p style="text-align:center;">' + colorText(getRandomTip(),"khaki") + '</p>';
+				this.roomText += getHotfixButton();
+				// this.roomText += getClawHotfixButton();
+				this.roomText += getJokeMessage();
 				break;
 			case "charInfo": 																	// Char info screen
 				this.roomText  = "" + this.getButtonBackToMain() + "\n";
@@ -277,7 +280,7 @@ PersonalRoom.prototype.getCharacterInfo = function(character) {
 		iText += "<div class='standardBox'>    __" + gC(this.checkedCharacter).getFormattedName() + "__:\n";							// Name
 		if ( gC(character).type == "candidate" ) {
 			iText += "Merit" + getMeritTooltip() + ": " + gC(character).merit;
-			iText += " | Infamy" + getInfamyTooltip() + ": " + gC(character).infamy + "/" + State.variables.settings.infamyLimit;
+			iText += " | Infamy" + getInfamyTooltip() + ": " + gC(character).infamy.toFixed(1) + "/" + State.variables.settings.infamyLimit;
 			if ( character == "chPlayerCharacter" ) {
 				iText += " | Money: " + gC(character).money.toFixed(0);
 			}
@@ -401,6 +404,10 @@ PersonalRoom.prototype.getCharacterInfo = function(character) {
 			iText += "\nST stands for Short Term, LT stands for Long Term. ST values slowly decay, and a portion is turned into LT at the end of the day.\n"
 		}
 		
+			// Combat affinities
+		var combAffDesc = gC(character).textCombatAffinities();
+		iText += "\n<div class='standardBox'>" + combAffDesc + "</div>";
+		
 			// Drives
 		if ( character != "chPlayerCharacter" ) {
 			// Extra conditions
@@ -472,27 +479,39 @@ PersonalRoom.prototype.getCandidatesComparisonPassage = function() {
 		var passageText = "__Candidates Comparison__:\n";
 		passageText += '<table><tr><td>__Candidate__</td><td>__Merit__</td><td>__Infmy__</td><td>__Ph__</td><td>__Ag__</td><td>__Re__</td><td>__Wi__</td><td>__In__</td><td>__Pe__</td><td>__Ch__</td><td>__Em__</td><td>__Lu__</td></tr>';
 		for ( var charKey of getCandidatesKeysArray() ) {
-			passageText += '<tr><td>' + gC(charKey).getFormattedName() + '</td><td>' + gC(charKey).merit + '</td><td>' + gC(charKey).infamy + '</td><td>' + gC(charKey).physique.value + '</td><td>' + gC(charKey).agility.value + '</td><td>' + gC(charKey).resilience.value + '</td><td>' + gC(charKey).will.value + '</td><td>' + gC(charKey).intelligence.value + '</td><td>' + gC(charKey).perception.value + '</td><td>' + gC(charKey).charisma.value + '</td><td>' + gC(charKey).empathy.value + '</td><td>' + gC(charKey).luck.value + '</td></tr>';
+			passageText += '<tr><td>' + gC(charKey).getFormattedName() + '</td><td>' + gC(charKey).merit + '</td><td>' + gC(charKey).infamy.toFixed(1) + '</td><td>' + gC(charKey).physique.value + '</td><td>' + gC(charKey).agility.value + '</td><td>' + gC(charKey).resilience.value + '</td><td>' + gC(charKey).will.value + '</td><td>' + gC(charKey).intelligence.value + '</td><td>' + gC(charKey).perception.value + '</td><td>' + gC(charKey).charisma.value + '</td><td>' + gC(charKey).empathy.value + '</td><td>' + gC(charKey).luck.value + '</td></tr>';
 		}
 		if ( State.variables.activeSimulationCharacters.length > 6 && isCurrentStoryStateInMainLoop() ) {
 			passageText += '<tr><td>' + "Guests" + '</td><td>' + '</td><td>' + '</td><td>' + '</td><td>' + '</td><td>' + '</td><td>' + '</td><td>' + '</td><td>' + '</td><td>' + '</td><td>' + '</td><td>' + '</td></tr>';
 			for ( var charKey of getActiveSimulationCharactersArray() ) {
 				if ( getCandidatesKeysArray().includes(charKey) == false ) {
-					passageText += '<tr><td>' + gC(charKey).getFormattedName() + '</td><td>' + gC(charKey).merit + '</td><td>' + gC(charKey).infamy + '</td><td>' + gC(charKey).physique.value + '</td><td>' + gC(charKey).agility.value + '</td><td>' + gC(charKey).resilience.value + '</td><td>' + gC(charKey).will.value + '</td><td>' + gC(charKey).intelligence.value + '</td><td>' + gC(charKey).perception.value + '</td><td>' + gC(charKey).charisma.value + '</td><td>' + gC(charKey).empathy.value + '</td><td>' + gC(charKey).luck.value + '</td></tr>';
+					passageText += '<tr><td>' + gC(charKey).getFormattedName() + '</td><td>' + gC(charKey).merit + '</td><td>' + gC(charKey).infamy.toFixed(1) + '</td><td>' + gC(charKey).physique.value + '</td><td>' + gC(charKey).agility.value + '</td><td>' + gC(charKey).resilience.value + '</td><td>' + gC(charKey).will.value + '</td><td>' + gC(charKey).intelligence.value + '</td><td>' + gC(charKey).perception.value + '</td><td>' + gC(charKey).charisma.value + '</td><td>' + gC(charKey).empathy.value + '</td><td>' + gC(charKey).luck.value + '</td></tr>';
 				}
 			}
 		}
 		passageText += '</table>\n';
 		
 		if ( gC("chPlayerCharacter").hasOwnProperty("ssRsp") ) { // Respect tables if respect enabled
-			var columns = ["ssRsp"];
+			var columns = ["ssRsp","awRsp","lrRsp","gdRsp","bkRsp","asRsp"];
 			passageText += "\n__Tribes Respect__:\n";
-			passageText += '<table><tr><td>Tribe</td><td>__Shapeshifters__</td></tr>';
-			passageText += '<tr><td>' + colorText('Passion Temple','darkorchid') + '</td><td>' + State.variables.tribes.ssRpt.toFixed(1) + '</td>' + '</tr>';
+			passageText += '<table><tr><td>Tribe</td><td>__Shapeshifters__</td><td>__Ashwalkers__</td><td>__Leirien__</td><td>__Gaanidan__</td><td>__Beastkin__</td><td>__Aiishen__</td></tr>';
+			passageText += '<tr><td>' + colorText('Passion Temple','darkorchid') + '</td><td>' + State.variables.tribes.ssRpt.toFixed(1) + '</td>';
+			for ( var rpt of ["awRsp","lrRsp","gdRsp","bkRsp","asRsp"] ) {
+				if ( State.variables.tribes[rpt] != undefined ) {
+					passageText += '<td>' + State.variables.tribes[rpt].toFixed(1) + '</td>';
+				} else {
+					passageText += '<td>' + 'X' + '</td>';
+				}
+			}
+			passageText += '</tr>';
 			for ( var cK of getCandidatesKeysArray() ) {
 				passageText += '<tr><td>' + gC(cK).getFormattedName() + '</td>';
 				for ( var cl of columns ) {
-					passageText += '<td>' + gC(cK)[cl].toFixed(1) + '</td>';
+					if ( gC(cK)[cl] != undefined ) {
+						passageText += '<td>' + gC(cK)[cl].toFixed(1) + '</td>';
+					} else {
+						passageText += '<td>' + 'X' + '</td>';
+					}
 				}
 				passageText += '</tr>';
 			}
@@ -2081,6 +2100,25 @@ window.getButtonAnTagGray = function() {
 			+ "charReceivesAnTags('chPlayerCharacter',['gc']);\n"
 			+ "<</s" + "cript>><</l" + "ink>>";
 	return bText;
+}
+
+window.getJokeMessage = function() {
+	var msg = "";
+	
+	switch(gSettings().difficulty) {
+		case "baby":
+			if ( getCandidatesMeritPosition("chPlayerCharacter") == 1 && gC("chPlayerCharacter").merit > 10 && limitedRandomInt(100) > 98 ) {
+				msg += "\n\n" + colorText("//You cheated not only the game, but yourself. You didn't grow, you didn't improve, you took a shortcut and gained nothing. You experienced a hollow victory. Nothing was risked and nothing was gained. It's sad that you don't know the difference.//","purple");
+			}
+			break;
+		case "masochist":
+			if ( getCandidatesMeritPosition("chPlayerCharacter") == 6 && limitedRandomInt(100) > 95 ) {
+				msg += "\n\n" + colorText("//You've accepted your rightful place yet? What a good girl you are.//","purple");
+			}
+			break;
+	}
+	
+	return msg;
 }
 
 // AI

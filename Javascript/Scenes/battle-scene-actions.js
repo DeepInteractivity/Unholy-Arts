@@ -1410,6 +1410,84 @@ window.createSaBaPushDickBack = function() {
 	return sa;
 }
 
+window.createSaBaPressDown = function() {
+	var sa = new sceneAction();
+	
+	sa.name = "Press Down";
+	sa.key = "baPressDown";
+	sa.actionType = "contact";
+	sa.targetType = "single";
+	
+	sa.tags.push("bs");
+	sa.tags.push("sUse");
+	sa.reqTags.push("diffTarget");
+	
+	sa.affinities.push("physical","domination");
+	
+	sa.strategyTags.push("targetEnemy","damage");
+	sa.actorStatWeights = [60,0,0,60,0,0,0,0,0];
+	sa.targetStatWeights = [0,0,0,-40,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1;
+	
+	sa.description = "The character pushes their target down, forcing them to submit.\nActor must be leading in a position against the target."
+				   + "This attack slightly damages the target.\n\nSingle target action."
+				   + "\n\nPhysical domination contact attack."
+				   + "\n\n__Influences__:\nDamage: Actor's physique x3, actor's will x3, target's will x-2.";
+				   
+	sa.doesHitLand = function(actor,target) {
+		var evasionPlus = 1;
+		var evasionMinus = 1;
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
+	}		   			
+				   
+	sa.getIsCustomAllowed = function(actionKey,actorKey,targetsKeys,skipLinkedCheck) {
+		State.variables.logL1.push("Try");
+		var isAllowed = false;
+		if ( gC(actorKey).position.type == "active" ) {
+			if ( gC(actorKey).position.targetsList.includes(targetsKeys[0]) ) {
+				isAllowed = true;
+			}
+		}
+		State.variables.logL1.push("Result:",isAllowed);
+		return isAllowed;
+	}
+				   
+	sa.execute = function(actor,targetActors) {
+		applySaCosts(this,actor);
+		
+		var results = new saResults;
+		var target = targetActors[0];
+		
+		// Evasion
+		var evResults = this.doesHitLand(actor,target);
+		
+		if ( evResults.hit ) { // Hit lands
+			// Damage
+			var inDamValue = gCstat(actor,"physique") * 0.3 + gCstat(actor,"will") * 0.3 - gCstat(target,"will") * 0.2;
+			inDamValue = addLuckFactor(inDamValue,0.1,gCstat(actor,"luck"));
+			var damage = calculateAttackEffects("lust",actor,target,this.affinities,inDamValue);
+			var dmgEffMsg = getWeaknessToAttackText(this.affinities,target);			
+			// Apply
+			gC(target).lust.attack(-damage);
+			results.value = damage;
+			// Description
+			results.description += randomFromList( [
+									(ktn(actor) + " pinned " + ktn(target) + " down."),
+									(ktn(actor) + " forcefully keeps " + ktn(target) + " in place, wearing " + gC(target).comPr + " off."),
+									(ktn(actor) + " prevents " + ktn(target) + " from moving, pushing them towards submission.")
+								] );
+			results.description += " " + dmgEffMsg + ktn(target) + " received " + textLustDamage(damage) + ". " + evResults.explanation;
+		} else { // Hit fails
+			results.value = 0;
+			results.description = "This shouldn't happen.";
+		}
+		
+		return results;
+	}
+	return sa;
+}
+
 	// Draining
 	
 window.createSaBaEnergyDrainingKiss = function() {
@@ -1644,13 +1722,13 @@ window.createTackle = function() {
 	sa.affinities.push("physical");
 	
 	sa.actorStatWeights = [30,20,50,0,0,0,0,0,0];
-	sa.targetStatWeights = [0,20,20,0,0,0,0,0,0];
+	sa.targetStatWeights = [0,-20,-20,0,0,0,0,0,0];
 	sa.statWeightDivider = 100;
 	sa.overallWeightMultiplier = 1.3;
 	
 	sa.description = "The character charges with their whole body, attempting to use their weight to throw their target to the ground. Risky.\n"
 				   + "This attack damages the target and their control if it lands, but damages the actor's control otherwise.\nCosts 3 energy.\n\nSingle target action."
-				   + "Actor requires control."
+				   + "\nActor requires control."
 				   + "\n\nPhysical hit attack."
 				   + "\n\n__Influences__:\nDamage: Actor's resilience x6, actor's physique x3, actor's agility x2, target's resilience x-1, target's agility x-1."
 				   + "\nEvasion: Actor's agility x6, target's perception x4, actor's control.\nTarget's perception x5, target's agility 5, target's control.";
@@ -2053,8 +2131,233 @@ window.createSaTwistNhit = function() {
 								 + ".\n" + evResults.explanation;
 		} else { // Hit fails
 			results.value = 0;
-			results.description = ktn(actor) + " failed to assault " + ktn(target) + ", but failed! " + generateSaCostsText(this,actor)
+			results.description = ktn(actor) + " tried to assault " + ktn(target) + ", but failed! " + generateSaCostsText(this,actor)
 								+ ".\n" + evResults.explanation;
+		}
+		
+		return results;
+	}
+	return sa;
+}
+
+window.createSaGambitOfHonesty = function() {
+	var sa = new sceneAction();
+	sa.name = "Gambit of Honesty";
+	sa.key = "gambitHonesty";
+	
+	sa.actionType = "hit";
+	sa.targetType = "single";
+	sa.energyCost = 1;
+	sa.socialdriveCost = 3;
+	
+	sa.tags.push("bs");
+	sa.tags.push("sUse");
+	sa.reqTags.push("diffTarget","control","tControl");
+	sa.actorBpReqs.push("arms");
+	
+	sa.requiresFree = true;
+	
+	sa.strategyTags.push("targetEnemy","damage","physical","consumeEnergy","consumeSocialDrive","physicalDamage","damageControl","gambitHonesty");
+	sa.affinities.push("physical","social");
+	
+	sa.actorStatWeights = [50,0,0,0,0,0,0,30,0];
+	sa.targetStatWeights = [0,0,-20,15,0,15,-20,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1;
+	
+	sa.description = "The character boasts about their next attack, then following with a physical blow true to their previous warning.\n"
+				   + "This attack damages the target. If the target is cynical, the damage is increased and also deals control damage.\n"
+				   + "Removes 'Cynical' from the target and provokes 'Trusting', reducing will and perception, even if the attack fails.\nCosts 1 energy and 3 social drive.\n\nSingle target action."
+				   + "Actor requires free arms. Both the actor and the target must have control."
+				   + "\n\nPhysical and social hit attack."
+				   + "\n\n__Influences__:\nDamage: Actor's physique x5, actor's charisma x3, target's resilience x-2, target's empathy x-2.\nControl damage: Actor's physique x5."
+				   + "\nEvasion: Actor's agility x4, actor's perception x4, actor's charisma x4, actor's control.\nTarget's agility x6, target's perception x6, target's empathy x6, target's control.\nHarder to land if the target isn't Cynical.";
+	
+	sa.doesHitLand = function(actor,target) {
+		var evasionPlus = gCstat(actor,"agility") * 0.2 + gCstat(actor,"perception") * 0.2 + gCstat(actor,"charisma") * 0.2 + gC(actor).control * 4;
+		var evasionMinus = gCstat(target,"agility") * 0.3 + gCstat(target,"perception") * 0.3 + gCstat(target,"empathy") * 0.3 + gC(target).control * 4;
+		if ( doesCharHaveState(target,"Cynl") == false ) {
+			evasionMinus += 10;
+		} else {
+			evasionPlus += 10;
+		}
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
+	}		   				   
+	sa.execute = function(actor,targetActors) {
+		applySaCosts(this,actor);
+		
+		var results = new saResults;
+		var target = targetActors[0];
+		
+		var isTargetCynical = doesCharHaveState(target,"Cynl");
+			
+		// Evasion
+		var evResults = this.doesHitLand(actor,target);
+		
+		if ( evResults.hit ) { // Hit lands			
+			var inDamValue = gCstat(actor,"physique") * 0.25 + gCstat(actor,"charisma") * 0.15 - gCstat(target,"resilience") * 0.1 - gCstat(target,"empathy") * 0.1;
+			if ( isTargetCynical ) {
+				inDamValue *= 2;
+			}
+			inDamValue = addLuckFactor(inDamValue,0.1,gCstat(actor,"luck"));
+			var damage = calculateAttackEffects("lust",actor,target,this.affinities,inDamValue);
+			var dmgEffMsg = getWeaknessToAttackText(this.affinities,target);
+			// Control damage
+			var controlDamage = 1; // 1 ~ 2.2
+			controlDamage += ((luckedDiceThrow(gCstat(actor,"luck")) * 0.7) + (gCstat(actor,"physique") * 0.005));
+			// Apply
+			applyBarDamage(target,"lust",-damage);
+			if ( isTargetCynical ) {
+				attackControl(target,controlDamage);
+			}
+			
+			// Description
+			if ( isTargetCynical ) {
+				results.description += randomFromList( [
+										(ktn(actor) + " declares " + gC(actor).posPr + " intention to attack " + ktn(target) + ", and to " + gC(actor).posPr + " opponent's disbelief, follows through."),
+										(ktn(target) + " fails to mitigate the damage of " + ktn(actor) + "'s attack, after refusing to believe " + gC(actor).posPr + " opponent's declared intentions."),
+										(ktn(actor) + " describes how " + gC(actor).perPr + " intends to pierce through " + ktn(target) + "'s defenses. " + ktn(target) + " does not heed the warning, and fails to protect " + gC(target).refPr + ".")
+									] ) + " //The successful gambit increases the damage of the attack.//";
+			} else {
+				results.description += randomFromList( [
+										(ktn(actor) + " declares " + gC(actor).posPr + " intention to attack " + ktn(target) + ", and follows through."),
+										(ktn(target) + " manages to mitigate the damage of " + ktn(actor) + "'s attack, after " + gC(actor).posPr + " opponent declares " + gC(actor).posPr + " intentions."),
+										(ktn(actor) + " describes how " + gC(actor).perPr + " intends to pierce through " + ktn(target) + "'s defenses, letting " + gC(target).comPr + " mitigate the damage.")
+									] );
+			}
+			results.description += " " + dmgEffMsg + ktn(target) + " received " + textLustDamage(damage) + ". ";
+			if ( isTargetCynical ) {
+				results.description += " The successful gambit also provoked " + controlDamage.toFixed(1) + " control damage. ";
+			} 
+			results.description +=  generateSaCostsText(this,actor) + ".\n" + evResults.explanation;
+		} else { // Hit fails
+			results.value = 0;
+			results.description = ktn(actor) + " boasted about " + gC(actor).posPr + " incoming attack against " + ktn(target) + ", but failed! " + generateSaCostsText(this,actor)
+								+ ".\n" + evResults.explanation;
+		}
+		
+		// Altered State
+		var inIntensity = (gCstat(actor,"charisma") + gCstat(actor,"empathy")) * 0.07;
+		var asIntensity = addLuckFactor(inIntensity,0.1,gCstat(actor,"luck"));
+		asIntensity = fixIntensity(asIntensity);
+		if ( doesCharHaveState(target,"Trst") == false ) {
+			applyAlteredState([target],createAStrusting(asIntensity));
+		}
+		results.value = damage;
+		if ( isTargetCynical ) {
+			gC(target).removeSpecificState("Cynl");
+		}
+		
+		return results;
+	}
+	return sa;
+}
+window.createSaGambitOfDeceit = function() {
+	var sa = new sceneAction();
+	sa.name = "Gambit of Deceit";
+	sa.key = "gambitDeceit";
+	
+	sa.actionType = "hit";
+	sa.targetType = "single";
+	sa.energyCost = 1;
+	sa.socialdriveCost = 3;
+	
+	sa.tags.push("bs");
+	sa.tags.push("sUse");
+	sa.reqTags.push("diffTarget","control","tControl");
+	sa.actorBpReqs.push("arms");
+	
+	sa.requiresFree = true;
+	
+	sa.strategyTags.push("targetEnemy","damage","physical","consumeEnergy","consumeSocialDrive","physicalDamage","damageControl","gambitDeceit");
+	sa.affinities.push("physical","social");
+	
+	sa.actorStatWeights = [90,0,0,0,0,0,0,40,0];
+	sa.targetStatWeights = [0,0,-20,-15,0,-15,-5,15,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1.1;
+	
+	sa.description = "The character lies about their next attack, attempting to catch their opponent off-guard.\n"
+				   + "This attack damages the target. Deals additional damage against trusting targets, and control damage non-cynical targets.\n"
+				   + "Removes 'Trusting' from the target and provokes 'Cynical', reducing charisma and empathy, but increasing will and perception, even if the attack fails.\nCosts 1 energy and 3 social drive.\n\nSingle target action.\n"
+				   + "Actor requires free arms. Both the actor and the target must have control."
+				   + "\n\nPhysical and social hit attack."
+				   + "\n\n__Influences__:\nDamage: Actor's physique x6, actor's charisma x4, target's resilience x-2, target's empathy x-2.\nControl damage: Actor's physique x5."
+				   + "\nEvasion: Actor's agility x2, actor's perception x2, actor's charisma x2, actor's control.\nTarget's agility x3, target's perception x3, target's empathy x2, target's control.\nHarder to land if the target is Cynical, easier to land if the target is Trusting.";
+	
+	sa.doesHitLand = function(actor,target) {
+		var evasionPlus = gCstat(actor,"agility") * 0.2 + gCstat(actor,"perception") * 0.2 + gCstat(actor,"charisma") * 0.2 + gC(actor).control * 4;
+		var evasionMinus = gCstat(target,"agility") * 0.3 + gCstat(target,"perception") * 0.3 + gCstat(target,"empathy") * 0.2 + gC(target).control * 4;
+		if ( doesCharHaveState(target,"Trst") == true ) {
+			evasionPlus += 15;
+		} else if ( doesCharHaveState(target,"Cynl") ) {
+			evasionMinus += 15;
+		} else {
+			evasionPlus += 5;
+		}
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
+	}		   				   
+	sa.execute = function(actor,targetActors) {
+		applySaCosts(this,actor);
+		
+		var results = new saResults;
+		var target = targetActors[0];
+		
+		var isTargetTrusting = doesCharHaveState(target,"Trst");
+		var isTargetCynical = doesCharHaveState(target,"Cynl");
+			
+		// Evasion
+		var evResults = this.doesHitLand(actor,target);
+		
+		if ( evResults.hit ) { // Hit lands			
+			var inDamValue = gCstat(actor,"physique") * 0.3 + gCstat(actor,"charisma") * 0.2 - gCstat(target,"resilience") * 0.1 - gCstat(target,"empathy") * 0.1;
+			if ( isTargetTrusting ) {
+				inDamValue *= 1.2;
+			} else if ( isTargetCynical ) {
+				inDamValue *= 0.7;
+			}
+			inDamValue = addLuckFactor(inDamValue,0.1,gCstat(actor,"luck"));
+			var damage = calculateAttackEffects("lust",actor,target,this.affinities,inDamValue);
+			var dmgEffMsg = getWeaknessToAttackText(this.affinities,target);
+			// Control damage
+			var controlDamage = 1; // 1.0 ~ 2.2
+			controlDamage += ((luckedDiceThrow(gCstat(actor,"luck")) * 0.5) + (gCstat(actor,"physique") * 0.005));
+			if ( isTargetTrusting ) {
+				controlDamage += 0.2;
+			}
+			// Apply
+			applyBarDamage(target,"lust",-damage);
+			if ( isTargetCynical == false ) {
+				attackControl(target,controlDamage);
+			}
+			
+			// Description
+			results.description += randomFromList( [
+									(ktn(actor) + " lies about " + gC(actor).posPr + " next attack, attempting to catch " + ktn(target) + " off-guard."),
+									(ktn(actor) + " feints against " + ktn(target) + " fooling " + gC(target).comPr + " with verbal trickery."),
+									(ktn(actor) + " warns " + ktn(target) + " to defend on one side, then attacks from the opposite one.")
+								] );	
+			results.description += " " + dmgEffMsg + ktn(target) + " received " + textLustDamage(damage) + ". ";
+			if ( isTargetCynical == false ) {
+				results.description += " //Attacking a non-cynical opponent increased the attack's damage.// The successful gambit also provoked " + controlDamage.toFixed(1) + " control damage. ";
+			}
+			results.description +=  generateSaCostsText(this,actor) + ".\n" + evResults.explanation;
+		} else { // Hit fails
+			results.value = 0;
+			results.description = ktn(actor) + " attempted to trick " + ktn(target) + " about " + gC(actor).posPr + " incoming attack, but failed! " + generateSaCostsText(this,actor)
+								+ ".\n" + evResults.explanation;
+		}
+		
+		// Altered State
+		var inIntensity = (gCstat(actor,"charisma") + gCstat(actor,"empathy")) * 0.07;
+		var asIntensity = addLuckFactor(inIntensity,0.1,gCstat(actor,"luck"));
+		var asIntensity = fixIntensity(asIntensity);
+		if ( doesCharHaveState(target,"Cynl") == false ) {
+			applyAlteredState([target],createAScynical(asIntensity));
+		}
+		results.value = damage;
+		if ( isTargetTrusting ) {
+			gC(target).removeSpecificState("Trst");
 		}
 		
 		return results;
@@ -2120,7 +2423,7 @@ window.createSaColdGuts = function() {
 			//					 + ".\n" + evResults.explanation;
 		} else { // Hit fails
 			results.value = 0;
-			results.description = "This shouldn't ever happen. Please notify me.";
+			results.description = "This shouldn't ever happen. Please notify the developers.";
 		}
 		
 		return results;
@@ -2130,7 +2433,7 @@ window.createSaColdGuts = function() {
 
 window.createSaCatAspect = function() {
 	var sa = new sceneAction();
-	sa.name = "Cat aspect";
+	sa.name = "Cat Aspect";
 	sa.key = "catAspect";
 	
 	sa.actionType = "special";
@@ -2156,7 +2459,7 @@ window.createSaCatAspect = function() {
 	sa.description = "The character enters in contact with their feline self, increasing their capabilities.\n"
 				   + "The action increases the actor's agility, perception, control recovery and pounce affinity.\n\nSelf targeted action."
 				   + "\n\nPhysical special attack."
-				   + "\n\n__Influences__:\nIntensity: Actor's agility x1, actor's will x1, actor's luck x1."; 
+				   + "\n\n__Influences__:\nIntensity: Actor's agility x3, actor's will x1, actor's luck x1."; 
 				   
 	sa.doesHitLand = function(actor,target) {
 		return new evasionResults(true,"");
@@ -2185,10 +2488,146 @@ window.createSaCatAspect = function() {
 										(ktn(actor) + "'s eyes have darkened, and " + gC(actor).posPr + " nails are looking sharper. " + ktn(actor) + " is turning into a Cat Aspect."),
 										(ktn(actor) + " feels the Cat's nimbleness flow through " + gC(actor).posPr + " body.")
 									] );
-			 results.description += " " + generateSaCostsText(this,actor);
+			 results.description += " " + generateSaCostsText(this,actor) + ".";
 		} else { // Hit fails
 			results.value = 0;
-			results.description = "This shouldn't ever happen. Please notify me.";
+			results.description = "This shouldn't ever happen. Please notify the developers.";
+		}
+		
+		return results;
+	}
+	return sa;
+}
+window.createSaBearAspect = function() {
+	var sa = new sceneAction();
+	sa.name = "Bear Aspect";
+	sa.key = "bearAspect";
+	
+	sa.actionType = "special";
+	sa.targetType = "self";
+	
+	sa.energyCost = 3;
+	sa.willpowerCost = 3;
+	
+	sa.tags.push("bs");
+	sa.tags.push("sUse");
+	
+	sa.requiredRace = [ "beastkin" ];
+	sa.actorDisabledByAs = [ "BeAs" ];
+	
+	sa.strategyTags.push("targetSelf","buff","physical","alteredState");
+	sa.affinities.push();
+	
+	sa.actorStatWeights = [33,-33,63,10,0,0,0,0,10];
+	sa.targetStatWeights = [0,0,0,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1.16;
+	
+	sa.description = "The character gives in to their animal instinct, adopting the fortitude of a bear.\n"
+				   + "The action increases the actor's physique, resilience, and physical resistance, and reduces their agility.\n\nSelf targeted action."
+				   + "\n\nPhysical special attack."
+				   + "\n\n__Influences__:\nIntensity: Actor's resilience x3, actor's will x1, actor's luck x1."; 
+				   
+	sa.doesHitLand = function(actor,target) {
+		return new evasionResults(true,"");
+	}		   				   
+	
+	sa.execute = function(actor,targetActors) {
+		applySaCosts(this,actor);
+		
+		var results = new saResults;
+		var target = actor;
+		
+		// Evasion
+		var evResults = this.doesHitLand(actor,target);
+		
+		if ( evResults.hit ) { // Hit lands
+			// Altered State
+			var inIntensity = (gCstat(actor,"resilience") * 3 + gCstat(actor,"will") + gCstat(actor,"luck")) / 30;
+			var asIntensity = addLuckFactor(inIntensity,0.1,gCstat(actor,"luck"));
+			var asIntensity = fixIntensity(asIntensity);
+			var altState = createASbearAspect(asIntensity);
+			// Apply
+			applyAlteredState([actor],altState);
+			results.value = asIntensity;
+			// Description
+			results.description += randomFromList( [
+										(ktn(actor) + " growls vicious, " + gC(actor).posPr + " eyes dead set on " + gC(actor).posPr + " opponent. " + ktn(actor) + " is turning into a Bear Aspect."),
+										(ktn(actor) + "'s skin twitches and tenses, " + gC(actor).posPr + " muscles gaining mass as the Bear's fortitude flows through " + gC(actor).posPr + " body."),
+										(ktn(actor) + " groans ferociously, giving in to the spirit of the Bear inside " + gC(actor).comPr + ".")
+									] );
+			 results.description += " " + generateSaCostsText(this,actor) + ".";
+		} else { // Hit fails
+			results.value = 0;
+			results.description = "This shouldn't ever happen. Please notify the developers.";
+		}
+		
+		return results;
+	}
+	return sa;
+}
+window.createSaBakuAspect = function() {
+	var sa = new sceneAction();
+	sa.name = "Baku Aspect";
+	sa.key = "bakuAspect";
+	
+	sa.actionType = "special";
+	sa.targetType = "self";
+	
+	sa.energyCost = 1;
+	sa.willpowerCost = 4;
+	
+	sa.tags.push("bs");
+	sa.tags.push("sUse");
+	
+	sa.requiredRace = [ "beastkin" ];
+	sa.actorDisabledByAs = [ "BaAs" ];
+	
+	sa.strategyTags.push("targetSelf","buff","magical","alteredState");
+	sa.affinities.push();
+	
+	sa.actorStatWeights = [0,0,0,36,36,0,16,0,10];
+	sa.targetStatWeights = [0,0,0,0,0,0,0,0,0];
+	sa.statWeightDivider = 98;
+	sa.overallWeightMultiplier = 1.1;
+	
+	sa.description = "The character channels their spirit energy, adopting the aspect of a baku.\n"
+				   + "The action increases the actor's intelligence, will and empathy, and increases their hypnosis affinity.\n\nSelf targeted action."
+				   + "\n\nMagical special attack."
+				   + "\n\n__Influences__:\nIntensity: Actor's intelligence x2, actor's will x2, actor's luck x1."; 
+				   
+	sa.doesHitLand = function(actor,target) {
+		return new evasionResults(true,"");
+	}		   				   
+	
+	sa.execute = function(actor,targetActors) {
+		applySaCosts(this,actor);
+		
+		var results = new saResults;
+		var target = actor;
+		
+		// Evasion
+		var evResults = this.doesHitLand(actor,target);
+		
+		if ( evResults.hit ) { // Hit lands
+			// Altered State
+			var inIntensity = (gCstat(actor,"intelligence") * 2 + gCstat(actor,"will") * 2 + gCstat(actor,"luck")) / 30;
+			var asIntensity = addLuckFactor(inIntensity,0.1,gCstat(actor,"luck"));
+			var asIntensity = fixIntensity(asIntensity);
+			var altState = createASbakuAspect(asIntensity);
+			// Apply
+			applyAlteredState([actor],altState);
+			results.value = asIntensity;
+			// Description
+			results.description += randomFromList( [
+										(ktn(actor) + "'s eyes shine, a sinister aura getting drawn on " + gC(actor).posPr + " face. " + ktn(actor) + " is turning into a Baku Aspect."),
+										(ktn(actor) + " becomes surrounded by a purple aura, aether flowing around " + gC(actor).posPr + " body as " + gC(actor).perPr + " is overtaken by the form of a baku."),
+										("The image around " + ktn(actor) + " becomes nebulous and diffuse, as the Baku's cunning flows through " + gC(actor).posPr + " body.")
+									] );
+			 results.description += " " + generateSaCostsText(this,actor) + ".";
+		} else { // Hit fails
+			results.value = 0;
+			results.description = "This shouldn't ever happen. Please notify the developers.";
 		}
 		
 		return results;
@@ -2215,7 +2654,7 @@ window.createSavageCrush = function() {
 	sa.affinities.push("physical");
 	
 	sa.actorStatWeights = [25,0,75,0,0,0,0,0,0];
-	sa.targetStatWeights = [0,0,30,0,0,0,0,0,0];
+	sa.targetStatWeights = [0,0,-35,0,0,0,0,0,0];
 	sa.statWeightDivider = 100;
 	sa.overallWeightMultiplier = 1.5;
 	
@@ -2340,10 +2779,10 @@ window.createDaringAssault = function() {
 									(ktn(actor) + " took great impulse and charged against " + ktn(target) + " in one big jump.")
 								] );
 			results.description += " " + dmgEffMsg + ktn(target) + " received " + textLustDamage(damage) + " and " + controlDamage.toFixed(1)
-								 + " control damage. " + generateSaCostsText(this,actor);
+								 + " control damage. " + generateSaCostsText(this,actor) + ".";
 		} else { // Hit fails
 			results.value = 0;
-			results.description = ktn(actor) + " leapt against " + ktn(target) + ", but didn't manage to tackle " + gC(target).comPr + ". " + generateSaCostsText(this,actor);
+			results.description = ktn(actor) + " leapt against " + ktn(target) + ", but didn't manage to tackle " + gC(target).comPr + ". " + generateSaCostsText(this,actor) + ".";
 		}
 		results.description += ".\nThe daring assault increases " + ktn(actor) + "'s momentum.\n" + evResults.explanation;;
 				
@@ -2383,7 +2822,7 @@ window.createSaBaScratch = function() {
 	
 	sa.description = "The character cuts their target with their claws.\n"
 				   + "This attack damages the target's lust and energy, erodes their agility, increases their energy cost and weakness to pain damage.\nCosts 1 energy.\n\nSingle target action."
-				   + "Actor requires free arms."
+				   + "\nActor requires free arms."
 				   + "\n\nPain contact attack."
 				   + "\n\n__Influences__:\nDamage, energy damage: Actor's agility x4, actor's physique x2, target's agility x-1, target's resilience x-1.\nEvasion: Actor's agility x7, actor's perception x5, target's agility x-5, target's perception x-5, actor's and target's control."; 
 				   
@@ -2438,6 +2877,292 @@ window.createSaBaScratch = function() {
 	}
 	return sa;
 }
+
+		// Physical ~ Other
+		
+window.createOpeningLotus = function() {
+	var sa = new sceneAction();
+	sa.name = "Opening Lotus";
+	sa.key = "openingLotus";
+	
+	sa.actionType = "projectile";
+	sa.targetType = "single";
+	sa.energyCost = 5; 
+	
+	sa.tags.push("bs");
+	sa.tags.push("sUse");
+	sa.reqTags.push("diffTarget","control");
+	sa.actorBpReqs.push("arms");
+	
+	sa.requiresFree = true;
+	
+	sa.strategyTags.push("targetEnemy","damage","physical","consumeEnergy","physicalDamage","damageControl","targetsEnemyTeam");
+	sa.affinities.push("physical");
+	
+	sa.actorStatWeights = [50,30,0,0,0,0,0,0,0];
+	sa.targetStatWeights = [0,0,-20,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 0.95;
+	
+	sa.description = "The character links wide horizontal whips with a vertical finishing blow, keeping all enemies in check.\n"
+				   + "Deals lust and control damages to the whole enemy team, with the chosen target receiving an extra blow."
+				   + "\nCosts 5 energy.\n\nFocused target action."
+				   + "Actor requires control, free arms, and either using a whip or being a Leirien."
+				   + "\n\nPhysical projectile attack."
+				   + "\n\n__Influences__:\n\nLust damage: Actor's physique x2, agility x1, target's resilience x-1.\nControl damage: Actor's physique x3, agility x3, luck x%3.\nEvasion: Actor's agility x3, perception x2, target's agility x-3, perception x-2."; 
+				   
+	sa.getIsCustomAllowed = function(actionKey,actorKey,targetsKeys,skipLinkedCheck) {
+		var isAllowed = false;
+		
+		if ( isWeaponTypeWhip(getCharsWeaponType(actorKey)) || gC(actorKey).race == "leirien" ) {
+			isAllowed = true;
+		}
+		
+		return isAllowed;
+	}
+	sa.doesHitLand = function(actor,target) {
+		var evasionPlus = gCstat(actor,"agility") * 0.3 + gCstat(actor,"perception") * 0.2 + gC(actor).control * 4 + 10;
+		var evasionMinus = gCstat(target,"agility") * 0.3 + gCstat(target,"perception") * 0.2 + gC(target).control * 4;
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
+	}		   				   
+	sa.execute = function(actor,targetActors) {
+		applySaCosts(this,actor);
+		
+		var results = new saResults;
+		var target = targetActors[0];
+		
+		// Evasion
+		var evResults = this.doesHitLand(actor,target);
+		
+		if ( evResults.hit ) { // Hit lands
+			var affinities = ["physical"];
+			if ( isWeaponTypeWhip(getCharsWeaponType(actor)) ) {
+				affinities.push("weapon");
+			}
+			var targets = [];
+			var targetsTeam = getRemainingCharsAllyTeam(target);
+			for ( var cK of targetsTeam ) {
+				if ( cK != actor ) {
+					targets.push(cK);
+				}
+			}
+			
+			// Damage
+			var inDamValue = gCstat(actor,"physique") * 0.2 + gCstat(actor,"agility") * 0.1;
+			var lustDamages = [];
+			var controlDamages = [];
+			var dmgEffMsgs = [];
+			for ( var cK of targets ) {
+				// Lust damage
+				var lustDamage = inDamValue - gCstat(cK,"resilience") * 0.1;
+				lustDamage = addLuckFactor(lustDamage,0.1,gCstat(actor,"luck"));
+				lustDamage = calculateAttackEffects("lust",actor,cK,affinities,lustDamage);
+				if ( cK == target ) { lustDamage *= 1.7; }
+				lustDamages.push(lustDamage);
+				dmgEffMsgs.push(getWeaknessToAttackText(affinities,cK));
+				// Control damage
+				var controlDamage = 0.7; // 0.7 ~ 1.6
+				controlDamage += ((luckedDiceThrow(gCstat(actor,"luck")) * 0.3) + (gCstat(actor,"physique") * 0.003) + (gCstat(actor,"agility") * 0.003));
+				if ( cK != target ) { controlDamage *= 0.5; }
+				controlDamages.push(controlDamage);
+				// Apply
+				applyBarDamage(cK,"lust",-lustDamage);
+				attackControl(cK,controlDamage);
+				results.value = lustDamage;
+			}
+			
+			// Description
+			if ( affinities.includes("weapon") ) {
+				results.description += randomFromList( [
+										(ktn(actor) + " draws a crescent moon with " + gC(target).posPr + " whip, keeping any enemies at bay, and punishes " + ktn(target) + " with a finishing blow."),
+										(ktn(actor) + " opens " + gC(actor).posPr + " arms like a vigorous lotus, lashing any foes in " + gC(actor).posPr + " way.")
+									] );
+			} else {
+				results.description += randomFromList( [
+										(ktn(actor) + " draws a crescent moon with " + gC(target).posPr + " vines, keeping any enemies at bay, and punishes " + ktn(target) + " with a finishing blow."),
+										(ktn(actor) + " opens " + gC(actor).posPr + " arms like a vigorous lotus, lashing any foes in " + gC(actor).posPr + " way.")
+									] );
+			}
+			var i = 0;
+			for ( var cK of targets ) {
+				results.description += " " + dmgEffMsgs[i] + ktn(cK) + " received " + textLustDamage(lustDamages[i]) + " and " + controlDamages[i].toFixed(1) + " control damage."
+				i++;
+			}
+			results.description += " " + generateSaCostsText(this,actor) + ".\n" + evResults.explanation;
+		} else { // Hit fails
+			results.value = 0;
+			results.description = ktn(actor) + " tried to deliver wide whips against " + ktn(target) + ", but failed! " + generateSaCostsText(this,actor)
+								+ ".\n" + evResults.explanation;
+		}
+		
+			return results;
+	}
+	return sa;
+}
+window.createSaConfidentHarassment = function() {
+	var sa = new sceneAction();
+	sa.name = "Confident Harassment";
+	sa.key = "confHarassment";
+	sa.actionType = "hit";
+	sa.targetType = "single";
+	sa.energyCost = 3;
+	sa.priority = 1;
+	
+	sa.tags.push("bs");
+	sa.tags.push("sUse");
+	sa.reqTags.push("diffTarget","control","tControl");
+	
+	sa.strategyTags.push("targetEnemy","damage","debuff","damageControl","useArms","physical","alteredState","consumeEnergy");
+	sa.affinities.push("physical","weapon");
+	
+	sa.actorStatWeights = [52,43,0,0,0,0,0,0,0];
+	sa.targetStatWeights = [0,-20,0,0,0,0,0,0,0];
+	sa.allyStatWeights = [10,5,0,0,5,5,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1;
+	
+	sa.description = "The character harasses the enemy with constant safe blows, unlikely to deal much damage, but opening up the target's flanks."
+				   + "Delivers moderate lust and control damage.\nFor one turn, provides Playing Safe on self, increasing safety, and Open Flank on target, increasing vulnerability to attacks from other characters.\n"
+				   + "Slightly easier to land than other physical attacks.\n"
+				   + "Costs 3 energy.\n\nSingle target action, increased priority.\nBoth the actor and the target require control. The actor must be using a melee, non-contact weapon."
+				   + "\n\nPhysical weapon hit attack."
+				   + "\n\n__Influences__:\nDamage: Actor's physique x4, agility x3, target's agility x-2.\nControl damage: Actor's physique x2, agility x4, luck%3.\nEvasion: Actor's agility x7, perception x3, control, target's perception x7, agility x3, control."; 
+				   
+	sa.getIsCustomAllowed = function(actionKey,actorKey,targetsKeys,skipLinkedCheck) {
+		var isAllowed = false;
+		
+		if ( isWeaponTypeMelee(getCharsWeaponType(actorKey)) && isWeaponContactRange(getCharsWeaponType(actorKey)) == false ) {
+			isAllowed = true;
+		}
+		
+		return isAllowed;
+	}
+	sa.doesHitLand = function(actor,target) {
+		var evasionPlus = gCstat(actor,"agility") * 0.35 + gCstat(actor,"perception") * 0.15 + gC(actor).control * 6 + 15;
+		var evasionMinus = gCstat(target,"perception") * 0.35 + gCstat(target,"agility") * 0.15 + gC(target).control * 6;
+		
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
+	}		   			
+				   
+	sa.execute = function(actor,targetActors) {
+		applySaCosts(this,actor);
+		
+		var results = new saResults;
+		var target = targetActors[0];
+		
+		// Evasion
+		var evResults = this.doesHitLand(actor,target);
+		
+		if ( evResults.hit ) { // Hit lands
+			// Damage
+			var inDamValue = gCstat(actor,"physique") * 0.2 + gCstat(actor,"agility") * 0.1 - gCstat(target,"agility") * 0.1;
+			inDamValue = addLuckFactor(inDamValue,0.1,gCstat(actor,"luck"));
+			var damage = calculateAttackEffects("lust",actor,target,this.affinities,inDamValue);
+			var dmgEffMsg = getWeaknessToAttackText(this.affinities,target);
+			// Control damage
+			var controlDamage = 0.9; // 0.9 ~ 1.8
+			controlDamage += ((luckedDiceThrow(gCstat(actor,"luck")) * 0.3) + (gCstat(actor,"physique") * 0.002) + (gCstat(actor,"agility") * 0.004));
+			// Altered State: Open flank
+			var asIntensity2 = addLuckFactor(((gCstat(actor,"agility") * 0.1 + gCstat(actor,"perception")) * 0.1),0.1,gCstat(actor,"luck"));
+			var asIntensity2 = fixIntensity(asIntensity2);
+			var altState2 = createASopenFlank(asIntensity2);
+			// Apply
+			applyBarDamage(target,"lust",-damage);
+			attackControl(target,controlDamage);
+			applyAlteredState([target],altState2);
+			results.value = damage;
+			// Altered State: Playing Safe
+			var asIntensity = addLuckFactor(((gCstat(actor,"agility") * 0.1 + gCstat(actor,"perception")) * 0.1),0.1,gCstat(actor,"luck"));
+			var asIntensity = fixIntensity(asIntensity);
+			var altState = createASplayingSafe(asIntensity);
+			// Apply 2
+			applyAlteredState(getCharsTeam(actor),altState);
+			// Description
+			results.description += randomFromList( [
+										(ktn(actor) + " measures " + gC(actor).posPr + " while attacking " + ktn(target) + ", never quite committing to a full blow but remaining a constant danger."),
+										(ktn(actor) + " harasses " + ktn(target) + " from the flank, leaving " + gC(target).comPr + " vulnerable to attacks from " + gC(actor).posPr + " allies."),
+										(ktn(actor) + " advances cautiously, yet confident, sending constant blows without renouncing to " + gC(actor).posPr + " own defense.")
+									] );
+			results.description += " " + dmgEffMsg + ktn(target) + " received " + textLustDamage(damage) + " and " + controlDamage.toFixed(1) + " control damage. " + generateSaCostsText(this,actor) + ". " + ktn(actor) + " will be harder to hit during this turn. " + ktn(target) + " will be vulnerable to different attacks during this turn.\n" + evResults.explanation;
+		} else { // Hit fails
+			results.value = 0;
+			results.description = ktn(actor) + " tried to harass " + ktn(target) + ", but was outmaneuvered! " + generateSaCostsText(this,actor)
+								+ ".\n" + evResults.explanation;
+		}
+		
+		return results;
+		
+	}
+	return sa;
+}
+
+	// Modes
+window.createSaInfuseBody = function() {
+	var sa = new sceneAction();
+	sa.name = "Infuse body";
+	sa.key = "infuseBody";
+	
+	sa.actionType = "special";
+	sa.targetType = "self";
+	
+	sa.tags.push("bs");
+	sa.tags.push("sUse");
+	
+	sa.actorDisabledByAs = [ "NfBd" ];
+	
+	sa.willpowerCost = 5;
+	
+	sa.strategyTags.push("targetSelf","buff","physical","alteredState","buffAgility","buffPhysique","buffResilience","willpowerMode","mode");
+	sa.affinities.push("physical");
+	
+	sa.actorStatWeights = [40,30,30,0,0,-10,-10,-10,-10];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1;
+	
+	sa.description = "The character channels their aether to strengthen the physical properties of their body.\n"
+				   + "The action increases the actor's physique, agility and resilience of the character, scaling with their intelligence and will.\nConsumes 5 willpower initially and per turn.\n\nMode action."
+				   + "\n\n__Influences__:\nIntensity: Actor's intelligence x1, will x1."; 
+				   
+	sa.doesHitLand = function(actor,target) {
+		return new evasionResults(true,"");
+	}		   				   
+	
+	sa.execute = function(actor,targetActors) {
+		applySaCosts(this,actor);
+		
+		var results = new saResults;
+		var target = actor;
+		
+		// Evasion
+		var evResults = this.doesHitLand(actor,target);
+		
+		if ( evResults.hit ) { // Hit lands
+			// Altered State
+			var inIntensity = (gCstat(actor,"intelligence") + gCstat(actor,"will")) * 0.05;
+			var asIntensity = addLuckFactor(inIntensity,0.1,gCstat(actor,"luck"));
+			var asIntensity = fixIntensity(asIntensity);
+			var altState = createInfusedBody(asIntensity);
+			// Apply
+			applyAlteredState([actor],altState);
+			results.value = asIntensity;
+			// Description
+			results.description += randomFromList( [
+										("Aether begins to run across " + ktn(actor) + "'s fibers, turning them tense and ready."),
+										(ktn(actor) + " is using aether to reinforce " + gC(actor).posPr + " control over " + gC(actor).posPr + " own body."),
+										(ktn(actor) + " begins channeling magic along " + gC(actor).posPr + " muscles, fortifying " + gC(actor).posPr + " natural strength.")
+									] );
+			results.description += " " + ktn(target) + " is now using Infused Body. " + generateSaCostsText(this,actor) + "."
+			//					 + ".\n" + evResults.explanation;
+		} else { // Hit fails
+			results.value = 0;
+			results.description = "This shouldn't ever happen. Please notify the developers.";
+		}
+		
+		return results;
+	}
+	return sa;
+}
+
 
 
 	// Magic
@@ -2535,10 +3260,10 @@ window.createSaEmbers = function() {
 	sa.strategyTags.push("targetEnemy","damage","magic","fire");
 	sa.affinities.push("magic","fire");
 	
-	sa.actorStatWeights = [0,0,0,33,66,0,0,0,0];
-	sa.targetStatWeights = [0,0,0,-33,0,0,0,0,0];
+	sa.actorStatWeights = [0,0,0,40,80,0,0,0,0];
+	sa.targetStatWeights = [0,0,0,-40,0,0,0,0,0];
 	sa.statWeightDivider = 100;
-	sa.overallWeightMultiplier = 1.2;
+	sa.overallWeightMultiplier = 1;
 	
 	sa.description = "The character casts ignited dust and throws it against their target.\n"
 				   + "This attack damages the target.\nCosts 1 willpower.\n\nSingle target action."
@@ -2605,8 +3330,8 @@ window.createSaFlamingFan = function() {
 	sa.strategyTags.push("targetEnemy","damage","magic","fire","targetsEnemyTeam");
 	sa.affinities.push("magic","fire");
 	
-	sa.actorStatWeights = [0,0,0,40,60,0,0,0,0];
-	sa.targetStatWeights = [0,0,0,40,0,0,0,0,0];
+	sa.actorStatWeights = [0,0,0,30,60,0,0,0,0];
+	sa.targetStatWeights = [0,0,0,-30,0,0,0,0,0];
 	sa.statWeightDivider = 100;
 	sa.overallWeightMultiplier = 0.7;
 	
@@ -2616,7 +3341,7 @@ window.createSaFlamingFan = function() {
 				   + "\n\n__Influences__:\nDamage: Actor's intelligence x7, actor's will x4, target's will x-4, target's resilience x-1.\nEvasion: Actor's intelligence x4, actor's will x4, actor's perception x2, target's will x-5, target's perception x-5, actor's and target's control."; 
 				   
 	sa.doesHitLand = function(actor,target) {
-		var evasionPlus = gCstat(actor,"intelligence") * 0.2 + gCstat(actor,"perception") * 0.1 + gCstat(actor,"will") * 0.2 + gC(actor).control * 2 + 20;
+		var evasionPlus = gCstat(actor,"intelligence") * 0.2 + gCstat(actor,"perception") * 0.1 + gCstat(actor,"will") * 0.2 + gC(actor).control * 2 + 15;
 		var evasionMinus = gCstat(target,"will") * 0.25 + gCstat(target,"perception") * 0.25 + gC(target).control * 2;
 		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
 	}		   				   
@@ -2634,7 +3359,7 @@ window.createSaFlamingFan = function() {
 			var colTargets = getCharsTeamMinusSelf(target);
 			
 			// Damage
-			var inDamValue = gCstat(actor,"intelligence") * 0.35 + gCstat(actor,"will") * 0.2 - gCstat(target,"will") * 0.2;
+			var inDamValue = gCstat(actor,"intelligence") * 0.35 + gCstat(actor,"will") * 0.15 - gCstat(target,"will") * 0.15;
 			inDamValue = addLuckFactor(inDamValue,0.1,gCstat(actor,"luck"));
 			var damage = calculateAttackEffects("lust",actor,target,this.affinities,inDamValue);
 			var dmgEffMsg = getWeaknessToAttackText(this.affinities,target);
@@ -2949,8 +3674,8 @@ window.createSaLightningDarts = function() {
 	sa.strategyTags.push("targetEnemy","damage","magic","thunder","control","damageEnergy","damageWillpower","damageControl");
 	sa.affinities.push("magic","thunder");
 	
-	sa.actorStatWeights = [0,0,0,33,66,0,0,0,0];
-	sa.targetStatWeights = [0,0,0,-40,0,0,0,0,0];
+	sa.actorStatWeights = [0,0,0,37,73,0,0,0,0];
+	sa.targetStatWeights = [0,0,0,-20,0,0,0,0,0];
 	sa.statWeightDivider = 100;
 	sa.overallWeightMultiplier = 1;
 	
@@ -2985,8 +3710,8 @@ window.createSaLightningDarts = function() {
 			var willpowerDamage = calculateAttackEffects("willpower",actor,target,this.affinities,inDamValue3);
 			var dmgEffMsg = getWeaknessToAttackText(this.affinities,target);
 			// Control damage
-			var controlDamage = 0.9; // 0.9 ~ 1.4
-			controlDamage += ((luckedDiceThrow(gCstat(actor,"luck")) * 0.2) + (gCstat(actor,"intelligence") * 0.003));
+			var controlDamage = 0.9; // 0.9 ~ 1.5
+			controlDamage += ((luckedDiceThrow(gCstat(actor,"luck")) * 0.3) + (gCstat(actor,"intelligence") * 0.003));
 			// Apply
 			applyBarDamage(target,"lust",-damage);
 			var overflowMsg = applyBarDamage(target,"energy",-energyDamage);
@@ -3241,7 +3966,7 @@ window.createFlaringFeint = function() {
 										(ktn(actor) + " spins in a ring of fire as " + gC(actor).perPr + " jumps away."),
 										("Hungry flames bursted out of " + ktn(actor) + ", who is charging up " + gC(actor).posPr + " next attacks.")
 									] );
-			 results.description += " " + generateSaCostsText(this,actor);
+			 results.description += " " + generateSaCostsText(this,actor) + ".";
 			 
 			 State.variables.sc.endRoundEffects.push(function() {
 				var targets = [];
@@ -3289,7 +4014,7 @@ window.createFlaringFeint = function() {
 			 
 		} else { // Hit fails
 			results.value = 0;
-			results.description = "This shouldn't ever happen. Please notify me.";
+			results.description = "This shouldn't ever happen. Please notify the developers.";
 		}
 		
 		return results;
@@ -3400,7 +4125,7 @@ window.createEarthWall = function() {
 			 
 		} else { // Hit fails
 			results.value = 0;
-			results.description = "This shouldn't ever happen. Please notify me.";
+			results.description = "This shouldn't ever happen. Please notify the developers.";
 		}
 		
 		return results;
@@ -3664,11 +4389,11 @@ window.createSaTaunt = function() {
 	sa.tags.push("sUse");
 	sa.reqTags.push("diffTarget");
 	
-	sa.strategyTags.push("targetEnemy","social","alteredState","debuff");
+	sa.strategyTags.push("targetEnemy","social","alteredState","debuff","avoidWhenVuln");
 	sa.affinities.push("social","taunt");
 	
 	sa.actorStatWeights = [0,0,0,0,0,0,16,33,0];
-	sa.targetStatWeights = [-50,16,0,16,0,16,0,0,16];
+	sa.targetStatWeights = [-66,16,0,16,0,16,0,0,16];
 	sa.statWeightDivider = 98;
 	sa.overallWeightMultiplier = 1;
 	
@@ -3837,14 +4562,14 @@ window.createSaRally = function() {
 	sa.strategyTags.push("targetsAlliedTeam","social","buff","buffTeam","alteredState","recoverControl");
 	sa.affinities.push("social");
 	
-	sa.actorStatWeights = [12,0,12,28,0,0,0,32,12];
+	sa.actorStatWeights = [22,0,12,23,0,0,0,27,12];
 	sa.allyStatWeights = [12,0,12,12,0,0,0,0,12];
 	sa.targetStatWeights = [0,0,0,0,0,0,0,0,0];
 	sa.statWeightDivider = 96;
 	sa.overallWeightMultiplier = 1;
 	
 	sa.description = "The character shouts out raise the spirit of their allies, or at least their own.\n"
-				   + "The target and their allies gain physique, resilience, will, luck and control recovery, with the target themselves gaining extra points."
+				   + "The target and their allies gain resilience, will, luck, physical and weapon affinity, and control recovery, with the target themselves gaining extra points."
 				   + "\nCosts 4 social drive."
 				   + "\n\nSocial attack."
 				   + "\n\n__Influences__:\nIntensity: Actor's charisma x2, will x1."; 
@@ -3898,7 +4623,7 @@ window.createSaRally = function() {
 								(ktn(actor) + " boasts triumphantly, for " + gC(actor).posPr + " prowess cannot be stopped."),
 								(ktn(actor) + " shouts about " + gC(actor).posPr + " virtues and talents, far too many for " + gC(actor).posPr + " enemies to overcome.")] );
 			}
-			results.description += " " + generateSaCostsText(this,actor);
+			results.description += " " + generateSaCostsText(this,actor) + ".";
 		} else { // Hit fails
 			results.value = 0;
 			results.description = "This should not be happening. Please tell the developers to check the action 'Rally'"
@@ -3930,7 +4655,7 @@ window.createSaWarcry = function() {
 	sa.overallWeightMultiplier = 0.7;
 	
 	sa.description = "The character shouts ferociously, warning of an incoming rampage in an attempt to intimidate their opponents.\n"	
-				   + "Deals small amounts of lust and control damage to the whole team of the target, and frightens them, reducing several stats, with secondary targets receiving reduced effects.\nNo effect on monsters.\nCosts 4 social drive.\n\nSingle target action."
+				   + "Deals small amounts of lust and control damage to the whole team of the target, and frightens them, reducing several stats, with secondary targets receiving reduced effects.\nNo effect on monsters.\nCosts 4 social drive.\n\nFocused target action."
 				   + "\nSocial attack."
 				   + "\n\n__Influences__:\n\nLust damage: Actor's charisma x2, will x1, resilience x1, target's will x-1.\nControl damage: Actor's charisma x2, resilience x2, luck x%2.\nIntensity: Actor's charisma x7, will x4, resilience x4.\nEvasion: Actor's charisma x4, will x3, resilience x3, target's will x-6, resilience x-4."; 
 				   
@@ -3983,8 +4708,8 @@ window.createSaWarcry = function() {
 					if ( cK != target ) { controlDamage *= 0.5; }
 					controlDamages.push(controlDamage);
 					// Apply
-					applyBarDamage(target,"lust",-lustDamage);
-					attackControl(target,controlDamage);
+					applyBarDamage(cK,"lust",-lustDamage);
+					attackControl(cK,controlDamage);
 					results.value = lustDamage;
 				}
 			}
@@ -4433,7 +5158,7 @@ window.createSaChannelAether = function() {
 			//					 + ".\n" + evResults.explanation;
 		} else { // Hit fails
 			results.value = 0;
-			results.description = "This shouldn't ever happen. Please notify me.";
+			results.description = "This shouldn't ever happen. Please notify the developers.";
 		}
 		
 		return results;
@@ -4502,7 +5227,7 @@ window.createSaFlaunt = function() {
 			//					 + ".\n" + evResults.explanation;
 		} else { // Hit fails
 			results.value = 0;
-			results.description = "This shouldn't ever happen. Please notify me.";
+			results.description = "This shouldn't ever happen. Please notify the developers.";
 		}
 		
 		return results;
@@ -4814,6 +5539,384 @@ window.createWeaponPlunge = function() {
 	}
 	return sa;
 }
+
+// Whip
+window.createSadisticFlurry = function() {
+	var sa = new sceneAction();
+	sa.name = "Sadistic Flurry";
+	sa.key = "sadisticFlurry";
+	
+	sa.actionType = "projectile";
+	sa.targetType = "single";
+	sa.energyCost = 3; 
+	
+	sa.tags.push("bs");
+	sa.tags.push("sUse");
+	sa.reqTags.push("diffTarget","control");
+	sa.actorBpReqs.push("arms");
+	
+	sa.requiresFree = true;
+	
+	sa.strategyTags.push("targetEnemy","damage","physical","consumeEnergy","physicalDamage","damageWillpower");
+	sa.affinities.push("physical","weapon","pain");
+	
+	sa.actorStatWeights = [0,40,0,30,0,0,0,0,0];
+	sa.targetStatWeights = [0,0,-20,-20,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 2.5;
+	
+	sa.description = "The character repeatedly whips their target in a relentless sequence, leaving no room to hide from the pain.\n"
+				   + "Deals moderately high lust and willpower damage, the character loses a bit of control. Higher damage randomness."
+				   + "\nCosts 3 energy.\n\nSingle target action."
+				   + "Actor requires control, free arms and a whip."
+				   + "\n\nPhysical, pain, projectile attack."
+				   + "\n\n__Influences__:\nLust damage: Actor's agility x4, will x3, target's resilience x-2, will x-2."
+				   + "\nEvasion: Actor's agility x3, perception x2, control.\nTarget's agility x3, perception x2, control.";
+				   
+	sa.doesHitLand = function(actor,target) {
+		var evasionPlus = gCstat(actor,"agility") * 0.3 + gCstat(actor,"perception") * 0.2 + gC(actor).control * 4 + 15;
+		var evasionMinus = gCstat(target,"agility") * 0.3 + gCstat(target,"perception") * 0.2 + gC(target).control * 4;
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
+	}		   				   
+	sa.execute = function(actor,targetActors) {
+		applySaCosts(this,actor);
+		
+		var results = new saResults;
+		var target = targetActors[0];
+		
+		// Evasion
+		var evResults = this.doesHitLand(actor,target);
+		
+		if ( evResults.hit ) { // Hit lands
+			// Damage
+			var inHitValue = gCstat(actor,"agility") * 0.2 + gCstat(actor,"will") * 0.15 - gCstat(target,"resilience") * 0.1 - gCstat(target,"will") * 0.1;
+			var lustDamValue = addLuckFactor(inHitValue*2.5,0.25,gCstat(actor,"luck"));
+			var wpDamValue = addLuckFactor(inHitValue*1,0.25,gCstat(actor,"luck"));
+			var damage = calculateAttackEffects("lust",actor,target,this.affinities,lustDamValue);
+			var wpDamage = calculateAttackEffects("willpower",actor,target,this.affinities,wpDamValue);
+			var dmgEffMsg = getWeaknessToAttackText(this.affinities,target);
+			
+			var selfControlDamage = 0.2;
+			
+			// Apply
+			applyBarDamage(target,"lust",-damage);
+			var overflowMsg = applyBarDamage(target,"willpower",-wpDamage);
+			attackControl(actor,selfControlDamage);
+			
+			results.value = damage;
+			
+			// Description
+			results.description += randomFromList( [
+										(ktn(actor) + " repeatedly whips " + ktn(target) + ", punishing " + gC(target).posPr + " will to fight back!"),
+										(ktn(actor) + " unleashes a storm of whips against " + ktn(target) + "."),
+										(ktn(actor) + " blows whip after whip against " + ktn(target) + ", leaving marks that are painful to look at.")
+									] );
+			results.description += " " + dmgEffMsg + ktn(target) + " received " + textLustDamage(damage) + " and " + textWillpowerDamage(wpDamage) + "." + overflowMsg;
+			results.description += " " + generateSaCostsText(this,actor) + ". " + ktn(actor) + " lost " + selfControlDamage + " control.\n" + evResults.explanation;
+		} else { // Hit fails
+			var selfControlDamage = 0.2;
+			attackControl(actor,selfControlDamage);
+			results.value = 0;
+			results.description = ktn(actor) + " lashed out against " + ktn(target) + ", but failed! " + generateSaCostsText(this,actor)
+								+ ". " + ktn(actor) + " lost " + selfControlDamage + " control.\n" + evResults.explanation;
+		}
+		
+			return results;
+	}
+	return sa;
+}
+
+// Blade and Board
+window.createSaShieldBash = function() {
+	var sa = new sceneAction();
+	sa.name = "Shield Bash";
+	sa.key = "shieldBash";
+	sa.actionType = "hit";
+	sa.targetType = "single";
+	sa.energyCost = 3;
+	sa.priority = 2;
+	
+	sa.tags.push("bs");
+	sa.tags.push("sUse");
+	sa.reqTags.push("diffTarget","control","tControl");
+	
+	sa.strategyTags.push("targetEnemy","damage","buff","debuff","damageControl","useArms","physical","alteredState","consumeEnergy","buffResilience","selfProtection");
+	sa.affinities.push("physical","weapon");
+	
+	sa.actorStatWeights = [50,0,70,0,0,0,0,0,0];
+	sa.targetStatWeights = [10,0,-20,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1;
+	
+	sa.description = "The character delivers a direct blow with their shield, aiming to deflect a blow and hopefully disorient their target.\n"
+				   + "Delivers minor lust damage and moderate control damage.\nProvokes disorientation on the target and shield block on self if successful.\n"
+				   + "Generally difficult to land, unless the target is attacking at melee range and targeting the actor.\n"
+				   + "Costs 3 energy.\n\nSingle target action, increased priority.\nBoth the actor and the target require control."
+				   + "\n\nPhysical weapon hit attack."
+				   + "\n\n__Influences__:\nDamage: Actor's resilience x2, physique x1, target's resilience x-1.\nControl damage: Actor's physique x3, resilience x3, luck%4.\nEvasion: Actor's agility x5, resilience x5, control, target's perception x6, agility x4, control."; 
+				   
+	sa.doesHitLand = function(actor,target) {
+		var evasionPlus = gCstat(actor,"agility") * 0.25 + gCstat(actor,"resilience") * 0.25 + gC(actor).control * 4 - 10;
+		var evasionMinus = gCstat(target,"perception") * 0.3 + gCstat(target,"agility") * 0.2 + gC(target).control * 4;
+		
+		if ( State.variables.sc.currentTurn != 1 ) {
+			var targetsContext = State.variables.sc.getCharacterContext(target);
+			if ( targetsContext[1] != "" ) {
+				if ( setup.saList[targetsContext[1]].actionType == "hit" || setup.saList[targetsContext[1]].actionType == "contact" ) { // Chance of hitting increases heavily if target is using a hit
+					evasionPlus += 15;
+					if ( targetsContext[2] == actor ) { // Chance of hitting increases heavily if target is also attacking the actor
+						evasionPlus += 15;
+					}
+				}
+			}
+		}
+		
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
+	}		   			
+				   
+	sa.execute = function(actor,targetActors) {
+		applySaCosts(this,actor);
+		
+		var results = new saResults;
+		var target = targetActors[0];
+		
+		// Evasion
+		var evResults = this.doesHitLand(actor,target);
+		
+		if ( evResults.hit ) { // Hit lands
+			// Damage
+			var inDamValue = gCstat(actor,"physique") * 0.1 + gCstat(actor,"resilience") * 0.2 - gCstat(target,"resilience") * 0.1;
+			inDamValue = addLuckFactor(inDamValue,0.1,gCstat(actor,"luck"));
+			var damage = calculateAttackEffects("lust",actor,target,this.affinities,inDamValue);
+			var dmgEffMsg = getWeaknessToAttackText(this.affinities,target);
+			// Control damage
+			var controlDamage = 1.2; // 1.2 ~ 2.2
+			controlDamage += ((luckedDiceThrow(gCstat(actor,"luck")) * 0.4) + (gCstat(actor,"physique") * 0.003) + (gCstat(actor,"resilience") * 0.003));
+			// Altered State: Disorientation
+			var asIntensity2 = addLuckFactor((gCstat(actor,"resilience") * 0.15),0.1,gCstat(actor,"luck"));
+			var asIntensity2 = fixIntensity(asIntensity2);
+			var altState2 = createASdisorientation(asIntensity2);
+			// Apply
+			applyBarDamage(target,"lust",-damage);
+			attackControl(target,controlDamage);
+			applyAlteredState([target],altState2);
+			results.value = damage;
+			// Altered State: Shield Block
+			var asIntensity = addLuckFactor((gCstat(actor,"resilience") * 0.15),0.1,gCstat(actor,"luck"));
+			var asIntensity = fixIntensity(asIntensity);
+			var altState = createASshieldBlock(asIntensity);
+			// Apply 2
+			applyAlteredState([actor],altState);
+			// Description
+			results.description += randomFromList( [
+										(ktn(actor) + " deliver a blow right at the correct time, and bashes " + ktn(target) + "'s face."),
+										("A well-timed defense has been the bane of " + ktn(target) + ", who suffers in full the bash of " + ktn(actor) + "."),
+										(ktn(actor) + " charges shield first, and manages to deliver a shocking bash against " + ktn(target) + ".")
+									] );
+			results.description += " " + dmgEffMsg + ktn(target) + " received " + textLustDamage(damage) + " and " + controlDamage.toFixed(1) + " control damage. " + generateSaCostsText(this,actor) + ". " + ktn(actor) + " receives the benefits from a well-timed block.\n" + evResults.explanation;
+		} else { // Hit fails
+			results.value = 0;
+			results.description = ktn(actor) + " tried to bash " + ktn(target) + " with " + gC(actor).posPr + " a hardened surface, but failed! " + generateSaCostsText(this,actor)
+								+ ".\n" + evResults.explanation;
+		}
+		
+		return results;
+		
+	}
+	return sa;
+}
+
+// Bludgeon
+window.createSaCrush = function() {
+	var sa = new sceneAction();
+	sa.name = "Crush";
+	sa.key = "crush";
+	sa.actionType = "hit";
+	sa.targetType = "single";
+	sa.energyCost = 3;
+	
+	sa.tags.push("bs");
+	sa.tags.push("sUse");
+	sa.reqTags.push("control","diffTarget");
+	sa.actorBpReqs.push("arms");
+	
+	sa.strategyTags.push("targetEnemy","damage","physical","consumeEnergy","physicalDamage","damageControl","painDamage");
+	sa.affinities.push("physical","weapon","pain");
+	
+	sa.actorStatWeights = [66,0,66,0,0,0,0,0,10];
+	sa.targetStatWeights = [0,0,-14,6,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1;
+	
+	sa.description = "The character lets the whole weight of their weapon fall upon their enemy.\n"
+				   + "This attack provokes lust and control damage, and reduces resilience, will and physical resistance.\nSlightly difficult to land."
+				   + "\nCosts 3 energy.\n\nSingle target action."
+				   + "\nActor requires control and free arms."
+				   + "\n\nPhysical weapon pain hit attack."
+				   + "\n\n__Influences__:\nDamage: Actor's physique x2, resilience x2, target's resilience x-1.\nIntensity: actor's physique x1, resilience x1.\nControl damage: Actor's physique x1, resilience x1, luck x%1.\nEvasion: Actor's agility x4, perception x4, resilience x2, target's agility x-7, perception x-7, actor's and target's control."; 
+				   
+	sa.doesHitLand = function(actor,target) {
+		var evasionPlus = gCstat(actor,"agility") * 0.2 + gCstat(actor,"perception") * 0.2 + gCstat(actor,"resilience") * 0.1 + gC(actor).control * 4 - 5;
+		var evasionMinus = gCstat(target,"agility") * 0.35 + gCstat(target,"perception") * 0.35 + gC(target).control * 4;
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
+	}		   			
+				   
+	sa.execute = function(actor,targetActors) {
+		applySaCosts(this,actor);
+		
+		var results = new saResults;
+		var target = targetActors[0];
+		
+		// Evasion
+		var evResults = this.doesHitLand(actor,target);
+		
+		if ( evResults.hit ) { // Hit lands
+			// Damage
+			var inDamValue = gCstat(actor,"physique") * 0.2 + gCstat(actor,"resilience") * 0.2 - gCstat(target,"resilience") * 0.1;
+			inDamValue = addLuckFactor(inDamValue,0.1,gCstat(actor,"luck"));
+			var damage = calculateAttackEffects("lust",actor,target,this.affinities,inDamValue);
+			var dmgEffMsg = getWeaknessToAttackText(this.affinities,target);
+			// Control damage
+			var controlDamage = 1.4; // 1.4 ~ 2.6
+			controlDamage += ((luckedDiceThrow(gCstat(actor,"luck")) * 0.4) + (gCstat(actor,"physique") * 0.004) + (gCstat(actor,"resilience") * 0.004));
+			// Altered State
+			var asIntensity = addLuckFactor(((gCstat(actor,"resilience") * 0.13) + (gCstat(actor,"physique") * 0.13)) * 0.5,0.1,gCstat(actor,"luck"));
+			var asIntensity = fixIntensity(asIntensity);
+			var altState = createAScrushedDefenses(asIntensity);
+			// Apply
+			applyBarDamage(target,"lust",-damage);
+			attackControl(target,controlDamage);
+			applyAlteredState([target],altState);
+			results.value = damage;
+			
+			// Description
+			results.description += randomFromList( [
+										(ktn(actor) + " dealt a true blow to " + ktn(target) + ", sending " + gC(target).comPr + " backwards."),
+										(ktn(target) + " gets drown in a world of hurt after " + ktn(actor) + "'s hit reaches " + gC(target).comPr + " whole."),
+										(ktn(actor) + " drops the whole weight of " + gC(actor).posPr + " weapon upon " + ktn(target) + ", in a blow that won't be soon forgotten.")
+									] );
+			results.description += " " + dmgEffMsg + ktn(target) + " received " + textLustDamage(damage) + " and " + controlDamage.toFixed(1) + " control damage. " + generateSaCostsText(this,actor) + ".\n" + evResults.explanation;
+		} else { // Hit fails
+			results.value = 0;
+			results.description = ktn(actor) + " tried to crush " + ktn(target) + " under the weight of " + gC(actor).posPr + " weapon, but failed. " + generateSaCostsText(this,actor)
+								+ ".\n" + evResults.explanation;
+		}
+		
+		return results;
+		
+	}
+	return sa;
+}
+window.createSaRecklessSwing = function() {
+	var sa = new sceneAction();
+	sa.name = "Reckless Swing";
+	sa.key = "recklessSwing";
+	
+	sa.actionType = "hit";
+	sa.targetType = "single";
+	sa.energyCost = 4;
+	
+	sa.tags.push("bs");
+	sa.tags.push("sUse");
+	sa.reqTags.push("diffTarget","control");
+	sa.actorBpReqs.push("arms");
+	
+	sa.requiresFree = true;
+	
+	sa.strategyTags.push("targetEnemy","damage","physical","consumeEnergy","physicalDamage","damageControl","useArms","recklessSwing");
+	sa.affinities.push("physical","weapon");
+	
+	sa.actorStatWeights = [100,0,60,0,0,0,0,0,10];
+	sa.targetStatWeights = [0,0,-20,0,0,0,0,0,0];
+	sa.statWeightDivider = 100;
+	sa.overallWeightMultiplier = 1;
+	
+	sa.description = "The character swings their weapon with savagery, unleashing devastating strength at the risk of hitting someone else.\n"
+				   + "This attack damages the target and erodes their control. Chance to hit an ally or a different enemy.\nCosts 2 energy.\n\nSingle target action."
+				   + "Actor requires free legs. The actor must have control or target the character pinning them down."
+				   + "\n\nPhysical hit attack."
+				   + "\n\n__Influences__:\nDamage: Actor's physique x7, actor's resilience x4, target's resilience x-2.\nControl damage: Actor's physique x4, resilience x4, luck x%4."
+				   + "\nEvasion: Actor's agility x5, actor's perception x5, actor's control.\nTarget's agility x7, target's perception x7, target's control.";
+	
+	sa.doesHitLand = function(actor,target) {
+		var evasionPlus = gCstat(actor,"agility") * 0.25 + gCstat(actor,"perception") * 0.25 + gC(actor).control * 4;
+		var evasionMinus = gCstat(target,"agility") * 0.35 + gCstat(target,"perception") * 0.35 + gC(target).control * 4;
+		
+			var allyTeam = getRemainingCharsAllyTeam(actor);
+			var enemyTeam = getRemainingCharsEnemyTeam(actor);
+			var possibleTargets = arrayMinusA(allyTeam.concat(enemyTeam),actor);
+				State.variables.logL1.push("L1",possibleTargets);
+			if ( possibleTargets.length == 1 ) {
+				evasionMinus += 15;
+			}
+			
+		return calculateEvasion(this.key,this.actionType,actor,target,evasionPlus,evasionMinus);
+	}		   				   
+	sa.execute = function(actor,targetActors) {
+		applySaCosts(this,actor);
+		
+		var results = new saResults;
+		var target = targetActors[0];
+		var oldTarget = target;
+		
+		// Evasion
+		var evResults = this.doesHitLand(actor,target);
+		
+		if ( evResults.hit ) { // Hit lands
+			var wrongTarget = false;
+			var allyTeam = getRemainingCharsAllyTeam(actor);
+			var enemyTeam = getRemainingCharsEnemyTeam(actor);
+			var possibleTargets = arrayMinusA(allyTeam.concat(enemyTeam),actor);
+				State.variables.logL1.push("L2",possibleTargets);
+			if ( possibleTargets.length > 1 && limitedRandomInt(100) >= 50 ) {
+				var newTarget = randomFromList(possibleTargets);
+				if ( newTarget != target ) {
+					wrongTarget = true;
+				}
+				target = newTarget;
+			}
+				State.variables.logL1.push(wrongTarget);
+			
+			// Damage
+			var inDamValue = gCstat(actor,"physique") * 0.4 + gCstat(actor,"resilience") * 0.2 - gCstat(target,"resilience") * 0.1;
+			inDamValue = addLuckFactor(inDamValue,0.1,gCstat(actor,"luck"));
+			var damage = calculateAttackEffects("lust",actor,target,this.affinities,inDamValue);
+			var dmgEffMsg = getWeaknessToAttackText(this.affinities,target);
+			// Control damage
+			var controlDamage = 1.6; // 1.6 ~ 2.8
+			controlDamage += ((luckedDiceThrow(gCstat(actor,"luck")) * 0.4) + (gCstat(actor,"physique") * 0.004) + (gCstat(actor,"resilience") * 0.004));
+			// Apply
+			applyBarDamage(target,"lust",-damage);
+			attackControl(target,controlDamage);
+			results.value = damage;
+			// Description
+			if ( wrongTarget ) {
+				results.description += randomFromList( [
+										(ktn(actor) + " swings " + gC(actor).posPr + " weapon, and " + ktn(target) + " gets in the way!"),
+										(ktn(actor) + " charges recklessly against " + ktn(oldTarget) + ", but " + ktn(target) + " receives the full blow!"),
+										(ktn(actor) + " sends a deadly blow against " + ktn(oldTarget) + ", but ends up hitting " + ktn(target) + " instead!")
+									] );
+			} else {
+				results.description += randomFromList( [
+										(ktn(actor) + " throws " + gC(actor).posPr + " whole might against " + ktn(target) + ", who regrets setting a foot outside the bed."),
+										(ktn(actor) + " delivers deadly punishment against " + ktn(target) + ", sending " + gC(target).comPr + " flying away."),
+										(ktn(actor) + " charges recklessly, and " + ktn(target) + " is unfortunate enough to receive the full blow.")
+									] );
+			}
+			results.description += " " + dmgEffMsg + ktn(target) + " received " + textLustDamage(damage) + " and " + controlDamage.toFixed(1)
+								 + " control damage. " + generateSaCostsText(this,actor)
+								 + ".\n" + evResults.explanation;
+		} else { // Hit fails
+			results.value = 0;
+			results.description = ktn(actor) + " tried to swing " + gC(actor).posPr + " weapon, but hit nobody! " + generateSaCostsText(this,actor)
+								+ ".\n" + evResults.explanation;
+		}
+		
+		return results;
+	}
+	return sa;
+}
+
 
 	// Special
 window.createBaMonsterCapture = function() {

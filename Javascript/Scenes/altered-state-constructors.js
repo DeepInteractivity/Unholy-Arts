@@ -187,7 +187,7 @@ window.createASdisorientation = function(intensity) {
 
 window.createAStwistedArm = function(intensity) {
 	// Physique, agility, resilience loss, physical and weapon frailty, (sum, mult) // Turns
-	var caf = 8 + intensity * 16; // 8 ~ 16
+	var caf = 8 + intensity * 12; // 8 ~ 20
 	var sls = 3 + intensity * 0.3; // 3 ~ 6
 	var slm = 0.1 + intensity * 0.01; // 0.1 ~ 0.2
 	var turns = 2 + limitedRandomInt(1); // 2 ~ 3
@@ -198,8 +198,8 @@ window.createAStwistedArm = function(intensity) {
 		gC(charKey).physique.multModifier -= slm;
 		gC(charKey).resilience.sumModifier -= sls;
 		gC(charKey).resilience.multModifier -= slm;
-		gC(charKey).combatAffinities.physical.frailty += caf;
-		gC(charKey).combatAffinities.weapon.frailty += caf;
+		gC(charKey).combatAffinities.physical.frlt += caf;
+		gC(charKey).combatAffinities.weapon.frlt += caf;
 	}
 	var cancelEffect = function(charKey) {
 		gC(charKey).agility.sumModifier += sls;
@@ -208,8 +208,8 @@ window.createAStwistedArm = function(intensity) {
 		gC(charKey).physique.multModifier += slm;
 		gC(charKey).resilience.sumModifier += sls;
 		gC(charKey).resilience.multModifier += slm;
-		gC(charKey).combatAffinities.physical.frailty -= caf;
-		gC(charKey).combatAffinities.weapon.frailty -= caf;
+		gC(charKey).combatAffinities.physical.frlt -= caf;
+		gC(charKey).combatAffinities.weapon.frlt -= caf;
 	}
 	var description = "This character is suffering damage in their arm from a recent attack.\n"
 					+ "Loss of physique, agility, resilience, physical and weapon frailty.";
@@ -267,14 +267,17 @@ window.createAScoldGuts = function(intensity) {
 }
 
 window.createASrallied = function(intensity) {
-	// Stats gain (phy,res,will) , increased lust resistance
+	// Stats gain (phy,res,will)
+	var cag = 3 + intensity * 0.7; // 3 ~ 10
 	var sgs = 2 + intensity * 0.2; // 2 ~ 4
-	var sgm = 0.08 + intensity * 0.07; // 0.08 ~ 0.15
+	var sgm = 0.05 + intensity * 0.05; // 0.05 ~ 0.10
 	var cri = 0.1 + intensity * 0.01; // 0.1 ~ 0.2
-	var turns = 5 + limitedRandomInt(2); // 5 ~ 7
+	var turns = 5 + limitedRandomInt(2); // 4 ~ 6
 	var provokeEffect = function(charKey) {
-		gC(charKey).physique.sumModifier += sgs;
-		gC(charKey).physique.multModifier += sgm;
+		gC(charKey).combatAffinities.weapon.strength += cag;
+		gC(charKey).combatAffinities.weapon.rst += cag;
+		gC(charKey).combatAffinities.physical.strength += cag;
+		gC(charKey).combatAffinities.physical.rst += cag;
 		gC(charKey).resilience.sumModifier += sgs;
 		gC(charKey).resilience.multModifier += sgm;
 		gC(charKey).will.sumModifier += sgs;
@@ -284,8 +287,10 @@ window.createASrallied = function(intensity) {
 		gC(charKey).controlRecovery += cri;
 	}
 	var cancelEffect = function(charKey) {
-		gC(charKey).physique.sumModifier -= sgs;
-		gC(charKey).physique.multModifier -= sgm;
+		gC(charKey).combatAffinities.weapon.strength -= cag;
+		gC(charKey).combatAffinities.weapon.rst -= cag;
+		gC(charKey).combatAffinities.physical.strength -= cag;
+		gC(charKey).combatAffinities.physical.rst -= cag;
 		gC(charKey).resilience.sumModifier -= sgs;
 		gC(charKey).resilience.multModifier -= sgm;
 		gC(charKey).will.sumModifier -= sgs;
@@ -295,7 +300,7 @@ window.createASrallied = function(intensity) {
 		gC(charKey).controlRecovery -= cri;
 	}
 	var description = "This character has their spirits heightened, and will give it their all.\n"
-					+ "Increased physique, resilience, will, luck and control recovery.";
+					+ "Increased resilience, will, luck, physical and weapon affinities, and control recovery.";
 	var as = new alteredState("Rallied","Rlld","scene",turns,provokeEffect,cancelEffect,description);
 	as.type = "buff";
 	return as;
@@ -449,7 +454,7 @@ window.createASflaringFeint = function(intensity) {
 	var sgs = 5 + intensity * 1.5; // 5 ~ 20
 	var sgm = 0.2 + intensity * 0.02; // 0.2 ~ 0.4
 	var icr = 0.1 + intensity * 0.01; // 0.1 ~ 0.2
-	var ipa = 15 + intensity * 1.5; // 15 ~ 30
+	var ipa = 10 + intensity * 1; // 10 ~ 20
 	var turns = 3 + limitedRandomInt(1); // 3 ~ 4
 	var provokeEffect = function(charKey) {
 		gC(charKey).agility.sumModifier += sgs;
@@ -508,11 +513,172 @@ window.createASearthWall = function(intensity) {
 		gC(charKey).combatAffinities.social.rst -= imr;
 	}
 	var description = "This character is protected by earth walls.\n"
-					+ "Increased resilience, will, decreased perception.\nGreatly increased pounce and physical resistances, slightly increased magical and social resistances.";
+					+ "Increased resilience, will, decreased perception.\nGreatly increased pounce, physical, magical and social resistances.";
 	var as = new alteredState("Earth Wall","EaWa","scene",1,provokeEffect,cancelEffect,description);
 	as.type = "buff";
 	return as;
 }
+
+window.createASshieldBlock = function(intensity) {
+	// Increased resilience, physical, weapon resistances
+	var sgs = 5 + intensity * 1.5; // 5 ~ 20
+	var sgm = 0.2 + intensity * 0.4; // 0.2 ~ 0.6
+	var iCr = 50 + intensity * 5; // 50 ~ 100
+	var provokeEffect = function(charKey) {
+		gC(charKey).resilience.sumModifier += sgs;
+		gC(charKey).resilience.multModifier += sgm;
+		gC(charKey).combatAffinities.physical.rst += iCr;
+		gC(charKey).combatAffinities.weapon.rst += iCr;
+	}
+	var cancelEffect = function(charKey) {
+		gC(charKey).resilience.sumModifier -= sgs;
+		gC(charKey).resilience.multModifier -= sgm;
+		gC(charKey).combatAffinities.physical.rst -= iCr;
+		gC(charKey).combatAffinities.weapon.rst -= iCr;
+	}
+	var description = "This character is blocking with a shield, protecting themself from physical attacks.\n"
+					+ "Increased resilience.\nGreatly increased physical and weapon resistances.";
+	var as = new alteredState("Shield Block","ShBl","scene",1,provokeEffect,cancelEffect,description);
+	as.type = "buff";
+	return as;
+}
+
+window.createASplayingSafe = function(intensity) {
+	// Increased resilience, physical, weapon resistances
+	var sgs = 2 + intensity * 1.8; // 2 ~ 20
+	var sgm = 0.15 + intensity * 0.15; // 0.15 ~ 0.3
+	var iCr = 10 + intensity * 2; // 10 ~ 30
+	var provokeEffect = function(charKey) {
+		gC(charKey).agility.sumModifier += sgs;
+		gC(charKey).agility.multModifier += sgm;
+		gC(charKey).perception.sumModifier += sgs;
+		gC(charKey).perception.multModifier += sgm;
+		gC(charKey).combatAffinities.weapon.rst += iCr;
+	}
+	var cancelEffect = function(charKey) {
+		gC(charKey).agility.sumModifier -= sgs;
+		gC(charKey).agility.multModifier -= sgm;
+		gC(charKey).perception.sumModifier -= sgs;
+		gC(charKey).perception.multModifier -= sgm;
+		gC(charKey).combatAffinities.weapon.rst -= iCr;
+	}
+	var description = "This character playing it safe with distances, guarding themselves against counter-attacks.\n"
+					+ "Increased agility, perception, weapon resistance.";
+	var as = new alteredState("Playing Safe","PlSf","scene",1,provokeEffect,cancelEffect,description);
+	as.type = "buff";
+	return as;
+}
+
+window.createASopenFlank = function(intensity) {
+	// Loss of perception, agility, weapon resistance
+	var sls = 3 + intensity * 1.2; // 3 ~ 15
+	var slm = 0.2 + intensity * 0.2; // 0.2 ~ 0.4
+	var wrd = 15 + intensity * 2.5; // 15 ~ 40
+	var turns = 1;
+	var provokeEffect = function(charKey) {
+		gC(charKey).agility.sumModifier -= sls;
+		gC(charKey).agility.multModifier -= slm;
+		gC(charKey).perception.sumModifier -= sls;
+		gC(charKey).perception.multModifier -= slm;
+		gC(charKey).combatAffinities.weapon.rst -= wrd;
+	}
+	var cancelEffect = function(charKey) {
+		gC(charKey).agility.sumModifier += sls;
+		gC(charKey).agility.multModifier += slm;
+		gC(charKey).perception.sumModifier += sls;
+		gC(charKey).perception.multModifier += slm;
+		gC(charKey).combatAffinities.weapon.rst += wrd;
+	}
+	var description = "This character has their flank open, having difficulty to avoid attacks from other characters.\n"
+					+ "Loss of agility, perception, weapon resistance.";
+	var as = new alteredState("Open Flank","OpFl","scene",turns,provokeEffect,cancelEffect,description);
+	as.type = "debuff";
+	return as;
+}
+
+window.createAStrusting = function(intensity) {
+	// Lowered will, perception
+	var sls = 2 + intensity * 0.2; // 2 ~ 4
+	var slm = 0.1 + intensity * 0.01; // 0.1 ~ 0.2
+	var turns = 3; // 3
+	var provokeEffect = function(charKey) {
+		gC(charKey).perception.sumModifier -= sls;
+		gC(charKey).perception.multModifier -= slm;
+		gC(charKey).will.sumModifier -= sls;
+		gC(charKey).will.multModifier -= slm;
+	}
+	var cancelEffect = function(charKey) {
+		gC(charKey).perception.sumModifier += sls;
+		gC(charKey).perception.multModifier += slm;
+		gC(charKey).will.sumModifier += sls;
+		gC(charKey).will.multModifier += slm;
+	}
+	var description = "This character has their guard down.\n"
+					+ "Loss of perception, will.";
+	var as = new alteredState("Trusting","Trst","scene",turns,provokeEffect,cancelEffect,description);
+	as.type = "debuff";
+	return as;
+}
+window.createAScynical = function(intensity) {
+	// Increased perception, will, lowered charisma, empathy
+	var scs = 2 + intensity * 0.2; // 2 ~ 4
+	var scm = 0.1 + intensity * 0.01; // 0.1 ~ 0.2
+	var turns = 3; // 3
+	var provokeEffect = function(charKey) {
+		gC(charKey).perception.sumModifier += scs;
+		gC(charKey).perception.multModifier += scm;
+		gC(charKey).will.sumModifier += scs;
+		gC(charKey).will.multModifier += scm;
+		gC(charKey).charisma.sumModifier -= scs;
+		gC(charKey).charisma.multModifier -= scm;
+		gC(charKey).empathy.sumModifier -= scs;
+		gC(charKey).empathy.multModifier -= scm;
+	}
+	var cancelEffect = function(charKey) {
+		gC(charKey).perception.sumModifier -= scs;
+		gC(charKey).perception.multModifier -= scm;
+		gC(charKey).will.sumModifier -= scs;
+		gC(charKey).will.multModifier -= scm;
+		gC(charKey).charisma.sumModifier += scs;
+		gC(charKey).charisma.multModifier += scm;
+		gC(charKey).empathy.sumModifier += scs;
+		gC(charKey).empathy.multModifier += scm;
+	}
+	var description = "This character has been lied to recently, and is careful of further deceits.\n"
+					+ "Increased perception, will, decreased charisma, empathy.";
+	var as = new alteredState("Cynical","Cynl","scene",turns,provokeEffect,cancelEffect,description);
+	as.type = "debuff";
+	return as;
+}
+
+window.createAScrushedDefenses = function(intensity) {
+	// Resilience, will loss (sum, mult), increased physical weakness // Turns
+	var als = 2 + intensity * 0.2; // 2 ~ 4
+	var alm = 0.06 + intensity * 0.006; // 0.06 ~ 0.12
+	var ipw = 5 + intensity * 0.5; // 0.05 ~ 0.1
+	var turns = 4 + limitedRandomInt(1); // 4 ~ 5
+	var provokeEffect = function(charKey) {
+		gC(charKey).resilience.sumModifier -= als;
+		gC(charKey).resilience.multModifier -= alm;
+		gC(charKey).will.sumModifier -= als;
+		gC(charKey).will.multModifier -= alm;
+		gC(charKey).combatAffinities.pain.wkn += ipw;
+	}
+	var cancelEffect = function(charKey) {
+		gC(charKey).resilience.sumModifier += als;
+		gC(charKey).resilience.multModifier += alm;
+		gC(charKey).will.sumModifier += als;
+		gC(charKey).will.multModifier += alm;
+		gC(charKey).combatAffinities.pain.wkn -= ipw;
+	}
+	var description = "This character has had their muscles drowned in pain, and needs to recover from the shock.\n"
+					+ "Loss of resilience and will, increased physical damage.";
+	var as = new alteredState("Crushed Defenses","CrDf","scene",turns,provokeEffect,cancelEffect,description);
+	as.type = "debuff";
+	return as;
+}
+
+
 
 window.createAStaintedControlRecovery = function(intensity) {
 	// Control recovery reduction, agility loss (sum, mult) // Turns
@@ -945,6 +1111,113 @@ window.createAScatAspect = function(intensity) {
 	as.type = "buff";
 	return as;
 }
+window.createASbearAspect = function(intensity) {
+	// Increased phisique, resistance, physical resistance, reduced agility
+	var sgs = 4 + intensity * 0.8; // 6 ~ 18
+	var sgm = 0.12 + intensity * 0.012; // 0.18 ~ 0.30
+	var ipa = 5 + intensity * 1.5; // 5 ~ 20
+	var turns = 5 + limitedRandomInt(2); // 5 ~ 7
+	var provokeEffect = function(charKey) {
+		gC(charKey).physique.sumModifier += sgs;
+		gC(charKey).physique.multModifier += sgm;
+		gC(charKey).resilience.sumModifier += sgs;
+		gC(charKey).resilience.multModifier += sgm;
+		gC(charKey).agility.sumModifier -= sgs;
+		gC(charKey).agility.multModifier -= sgm;
+		gC(charKey).combatAffinities.physical.strength += ipa;
+		gC(charKey).combatAffinities.physical.rst += ipa;
+	}
+	var cancelEffect = function(charKey) {
+		gC(charKey).physique.sumModifier -= sgs;
+		gC(charKey).physique.multModifier -= sgm;
+		gC(charKey).resilience.sumModifier -= sgs;
+		gC(charKey).resilience.multModifier -= sgm;
+		gC(charKey).agility.sumModifier += sgs;
+		gC(charKey).agility.multModifier += sgm;
+		gC(charKey).combatAffinities.physical.strength -= ipa;
+		gC(charKey).combatAffinities.physical.rst -= ipa;
+	}
+	var description = "This character is channeling a bear spirit, gaining physical capabilities.\n"
+					+ "Increased physique, resilience and physical resilience, but reduced agility.";
+	var as = new alteredState("Bear Aspect","BeAs","scene",turns,provokeEffect,cancelEffect,description);
+	as.type = "buff";
+	return as;
+}
+window.createASbakuAspect = function(intensity) {
+	// Increased intelligence, will, empathy, hypnosis affinity
+	var sgs = 3 + intensity * 0.7; // 3 ~ 10
+	var sgm = 0.1 + intensity * 0.01; // 0.1 ~ 0.2
+	var ipa = 8 + intensity * 0.12; // 8 ~ 20
+	var turns = 5 + limitedRandomInt(2); // 5 ~ 7
+	var provokeEffect = function(charKey) {
+		gC(charKey).intelligence.sumModifier += sgs;
+		gC(charKey).intelligence.multModifier += sgm;
+		gC(charKey).will.sumModifier += sgs;
+		gC(charKey).will.multModifier += sgm;
+		gC(charKey).empathy.sumModifier += sgs;
+		gC(charKey).empathy.multModifier += sgm;
+		gC(charKey).combatAffinities.hypnosis.strength += ipa;
+		gC(charKey).combatAffinities.hypnosis.rst += ipa;
+	}
+	var cancelEffect = function(charKey) {
+		gC(charKey).intelligence.sumModifier -= sgs;
+		gC(charKey).intelligence.multModifier -= sgm;
+		gC(charKey).will.sumModifier -= sgs;
+		gC(charKey).will.multModifier -= sgm;
+		gC(charKey).empathy.sumModifier -= sgs;
+		gC(charKey).empathy.multModifier -= sgm;
+		gC(charKey).combatAffinities.hypnosis.strength -= ipa;
+		gC(charKey).combatAffinities.hypnosis.rst -= ipa;
+	}
+	var description = "This character is channeling a baku spirit, gaining mystical capabilities.\n"
+					+ "Increased intelligence, will, empathy and hypnosis affinity.";
+	var as = new alteredState("Baku Aspect","BaAs","scene",turns,provokeEffect,cancelEffect,description);
+	as.type = "buff";
+	return as;
+}
+
+
+// Modes
+
+window.createInfusedBody = function(intensity) {
+	// Increased physique, agility, resilience
+	var provokeEffect = function(charKey) {
+		this.sgs = (gC("chPlayerCharacter").intelligence.value + gC("chPlayerCharacter").will.value) * (10 + intensity) * 0.01;
+		gC(charKey).physique.sumModifier += this.sgs;
+		gC(charKey).agility.sumModifier += this.sgs;
+		gC(charKey).resilience.sumModifier += this.sgs;
+	}
+	var cancelEffect = function(charKey) {
+		gC(charKey).physique.sumModifier -= this.sgs;
+		gC(charKey).agility.sumModifier -= this.sgs;
+		gC(charKey).resilience.sumModifier -= this.sgs;
+	}
+	var description = "This character is channeling their aether to strengthen their body.\n"
+					+ "Increased physique, agility and resilience depending on intelligence and will.\n"
+					+ "Continued willpower consumption.";
+	var as = new alteredState("Infused Body","NfBd","mode",5,provokeEffect,cancelEffect,description);
+	as.type = "mode";
+	
+	as.maintenance = function(charKey) {
+		var canceled = false;
+		var willpowerCost = 5;
+		
+		var description = "";
+		
+		if ( gC(charKey).willpower.current < gC(charKey).willpower.calculateCost(willpowerCost) ) {
+			canceled = true;
+			description = colorText(("[Infused Body] "),"darkgray") + gC(charKey).getFormattedName() + " doesn't have enough willpower to continue sustaining Infused Body.";
+		} else {
+			gC(charKey).willpower.applyCost(willpowerCost);
+			description = colorText(("[Infused Body] "),"darkgray") + gC(charKey).getFormattedName() + " consumed " + textWillpowerPoints(willpowerCost) + ".";
+		}
+		
+		return [canceled,description];
+	}
+	
+	return as;
+}
+
 
 // Transformations
 

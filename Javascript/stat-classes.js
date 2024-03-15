@@ -896,7 +896,8 @@ window.alteredState = function(title,acr,scope,turns,provokeEffect,cancelEffect,
 	this.cancelEffect = cancelEffect;
 	this.description = description;
 	this.remainingDays = -1; // If something other than -1, modify outside of constructor // Am I dumb or what? Look below
-	// this.turnEffect = function(character) -> Property added outside of constructor
+	// this.turnEffect = function(character) -> Property added outside of constructor. Gets executed every turn
+	// this.maintenance = function(character) -> Property added outside of constructor. Gets executed every turn, if it fails, flagRemove gets activated
 	
 	if ( scope == "days") {
 		this.remainingDays = turns;
@@ -938,6 +939,13 @@ window.getAsTurnEffect = function(as) {
 		te = as.turnEffect;
 	}
 	return te;
+}
+window.getAsMaintenance = function(as) {
+	var mt = null;
+	if ( as.hasOwnProperty("maintenance") ) {
+		mt = as.maintenance;
+	}
+	return mt;
 }
 
 window.doesCharHaveAlteredState = function(charKey,acr) {
