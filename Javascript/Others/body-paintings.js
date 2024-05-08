@@ -127,8 +127,10 @@ window.washCharsBodyPainting = function(cK) {
 			as.rst--;
 			if ( as.rst == 0 ) {
 				bdPntLosesLevels(as,1);
-				if ( as.level = 0 ) {
+				if ( as.level == 0 ) {
 					removeBdPnt = true;
+				} else {
+					as.rst = 3;
 				}
 			}
 		}

@@ -197,7 +197,7 @@ window.createSystemEventBathRest = function(minutes,characters) {
 				var eventMsg = "";
 			}
 			else {
-				var eventMsg = "" + ktn(cList[0]) + " rested for an hour, chatting and washing their bodies. Lust, energy, willpower and social drive points were restored.\n";
+				var eventMsg = "" + ktn(cList[0]) + " rested for an hour, quietly washing themself. Lust, energy, willpower and social drive points were restored.\n";
 			}
 			return eventMsg;
 		}

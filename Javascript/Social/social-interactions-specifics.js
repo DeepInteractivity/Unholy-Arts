@@ -129,7 +129,7 @@ window.SisSpecifics = function() {
 		}
 		else if ( willpowerRejectCost > gC(target).willpower.current ) { // Forced to accept offer due to lack of willpower
 				// TO DO : INFAMY
-			resultsText = "Not enough " + colorText("willpower","darkslateblue"); + " to reject! " + gC(target).getFormattedName() + " resented that. " + sisTopic.getSuccessMessage(actor,target);
+			resultsText = "Not enough " + colorText("willpower","darkslateblue") + " to reject! " + gC(target).getFormattedName() + " resented that. " + sisTopic.getSuccessMessage(actor,target);
 			gC(target).relations[actor].enmity.stv += 10;
 			gC(target).relations[actor].rivalry.stv += 10;
 			effect = sisTopic.getSuccessEffect(actor,target);
@@ -162,7 +162,7 @@ window.SisSpecifics = function() {
 			effect = sisTopic.getSuccessEffect(actor,target,extraPar);
 		}
 		else if ( willpowerRejectCost > gC(target).willpower.current ) { // Forced to accept offer due to lack of willpower
-			resultsText = "Not enough " + colorText("willpower","darkslateblue"); + " to reject! " + gC(target).getFormattedName() + " resented that. " + sisTopic.getSuccessMessage(actor,target,extraPar);
+			resultsText = "Not enough " + colorText("willpower","darkslateblue") + " to reject! " + gC(target).getFormattedName() + " resented that. " + sisTopic.getSuccessMessage(actor,target,extraPar);
 			gC(target).relations[actor].enmity.stv += 10;
 			gC(target).relations[actor].rivalry.stv += 10;
 			effect = sisTopic.getSuccessEffect(actor,target,extraPar);
@@ -971,7 +971,7 @@ window.createSistSubmissiveSex = function() {
 		gC(actor).relations[target].rivalry.stv += 10;
 	}
 	sist.getSuccessMessage = function(actor,target) {
-		var message = firstToCap(gC(target).perPr) + " agreed. You take " + gC(target).formattedName + " to a secluded place, enjoying the anticipating of submitting...";
+		var message = firstToCap(gC(target).perPr) + " agreed. You take " + gC(target).formattedName + " to a secluded place, enjoying the guilty thrill of submission...";
 		return message;
 	}
 	sist.getSuccessEffect = function(actor,target) {

@@ -866,7 +866,7 @@ window.twistedFestivalPlayerSpeechEffects = function(extraPoints) {
 		tempText += colorText("Your respect in the tribe is too low, and your words lose weight.\n","red");
 	}
 	if ( isStVarOn("neStSs") ) {
-		tempText += colorText("The fact that you apologized in behalf of Valtan, naked and allowing everyone to use your body, makes your speech to become dramatically less effective.\n","red");
+		tempText += colorText("The fact that you apologized on behalf of Valtan, naked and allowing everyone to use your body, makes your speech become dramatically less effective.\n","red");
 	}
 	if ( isStVarOn("CaReVl") ) {
 		tempText += colorText("Glien's support makes the good deeds committed by you and Valtan earn you respect amongst the Shapeshifters, even if many remain skeptical.\n","green");

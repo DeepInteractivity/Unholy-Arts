@@ -6,8 +6,10 @@ window.getRandomTip = function(){
 }
 setup.tipsList = [
 		// Misc
+	("You aren't omniscient. NPCs will train, triumph and suffer heartache beyond your eyes, and you will not be told about it."),
 	("Body paintings wear off faster in baths."),
 	("Experience in painting, perception, agility and intelligence make body paintings stronger and more durable, in that order."),
+	("Particularly strong body paintings last longer and apply stronger effects."),
 		// Main loop mechanics
 	("Assaulting a group smaller than your own will bring greater infamy."),
 	("Infamy wears down faster the more infamy you have."),

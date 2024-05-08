@@ -164,6 +164,8 @@ window.createNashillbyir = function() {
 	
 	character.refugeRooms = [["mapTrainingGrounds","nashRoom"]];
 	
+	character.anTags = ["Ns","DarkHuman"];
+	
 	return character;
 }
 

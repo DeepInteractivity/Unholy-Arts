@@ -1442,14 +1442,12 @@ window.createSaBaPressDown = function() {
 	}		   			
 				   
 	sa.getIsCustomAllowed = function(actionKey,actorKey,targetsKeys,skipLinkedCheck) {
-		State.variables.logL1.push("Try");
 		var isAllowed = false;
 		if ( gC(actorKey).position.type == "active" ) {
 			if ( gC(actorKey).position.targetsList.includes(targetsKeys[0]) ) {
 				isAllowed = true;
 			}
 		}
-		State.variables.logL1.push("Result:",isAllowed);
 		return isAllowed;
 	}
 				   
@@ -3081,7 +3079,7 @@ window.createSaConfidentHarassment = function() {
 			results.description += randomFromList( [
 										(ktn(actor) + " measures " + gC(actor).posPr + " while attacking " + ktn(target) + ", never quite committing to a full blow but remaining a constant danger."),
 										(ktn(actor) + " harasses " + ktn(target) + " from the flank, leaving " + gC(target).comPr + " vulnerable to attacks from " + gC(actor).posPr + " allies."),
-										(ktn(actor) + " advances cautiously, yet confident, sending constant blows without renouncing to " + gC(actor).posPr + " own defense.")
+										(ktn(actor) + " advances cautiously, yet confident, sending constant blows without renouncing " + gC(actor).posPr + " own defense.")
 									] );
 			results.description += " " + dmgEffMsg + ktn(target) + " received " + textLustDamage(damage) + " and " + controlDamage.toFixed(1) + " control damage. " + generateSaCostsText(this,actor) + ". " + ktn(actor) + " will be harder to hit during this turn. " + ktn(target) + " will be vulnerable to different attacks during this turn.\n" + evResults.explanation;
 		} else { // Hit fails
@@ -3868,7 +3866,7 @@ window.createSaFireBreath = function() {
 		var evResults = this.doesHitLand(actor,target);
 		
 		if ( evResults.hit ) { // Hit lands
-			var colTargets = getCharsTeamMinusSelf(target);
+			var colTargets = arrayMinusA(getRemainingCharsAllyTeam(target),target);
 			
 			// Damage
 			var inDamValue = gCstat(actor,"will") * 0.35 + gCstat(actor,"resilience") * 0.2 - gCstat(target,"will") * 0.2;
@@ -4568,7 +4566,7 @@ window.createSaRally = function() {
 	sa.statWeightDivider = 96;
 	sa.overallWeightMultiplier = 1;
 	
-	sa.description = "The character shouts out raise the spirit of their allies, or at least their own.\n"
+	sa.description = "The character shouts out to raise the spirit of their allies, or at least their own.\n"
 				   + "The target and their allies gain resilience, will, luck, physical and weapon affinity, and control recovery, with the target themselves gaining extra points."
 				   + "\nCosts 4 social drive."
 				   + "\n\nSocial attack."
@@ -5845,7 +5843,6 @@ window.createSaRecklessSwing = function() {
 			var allyTeam = getRemainingCharsAllyTeam(actor);
 			var enemyTeam = getRemainingCharsEnemyTeam(actor);
 			var possibleTargets = arrayMinusA(allyTeam.concat(enemyTeam),actor);
-				State.variables.logL1.push("L1",possibleTargets);
 			if ( possibleTargets.length == 1 ) {
 				evasionMinus += 15;
 			}
@@ -5867,7 +5864,6 @@ window.createSaRecklessSwing = function() {
 			var allyTeam = getRemainingCharsAllyTeam(actor);
 			var enemyTeam = getRemainingCharsEnemyTeam(actor);
 			var possibleTargets = arrayMinusA(allyTeam.concat(enemyTeam),actor);
-				State.variables.logL1.push("L2",possibleTargets);
 			if ( possibleTargets.length > 1 && limitedRandomInt(100) >= 50 ) {
 				var newTarget = randomFromList(possibleTargets);
 				if ( newTarget != target ) {
@@ -5875,7 +5871,6 @@ window.createSaRecklessSwing = function() {
 				}
 				target = newTarget;
 			}
-				State.variables.logL1.push(wrongTarget);
 			
 			// Damage
 			var inDamValue = gCstat(actor,"physique") * 0.4 + gCstat(actor,"resilience") * 0.2 - gCstat(target,"resilience") * 0.1;

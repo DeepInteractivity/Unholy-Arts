@@ -202,6 +202,17 @@ window.EventsCalendar = function() {
 						}
 						break;
 				}
+			case 3:
+				switch (State.variables.daycycle.day) {
+					/*
+					case 2:
+						this.customEventScript = shSlSecondDayScript;
+						this.getEndDayButton = function() {
+							return this.getButtonToEvent("SA TCEV Start");
+						}
+						break;
+						*/
+				}
 		}
 		
 		if ( this.customEventScript == blankFunction && isCurrentStoryStateInMainLoop() == true ) {
@@ -441,6 +452,10 @@ setup.eventsMetaInfo["gfn0"] = new eventMetaInfo( // "Gifts For Nature"
 	function() { // Reqs
 		var allowed = true;
 		
+		if ( getCurrentStoryState() >= storyState.secondLoop ) {
+			allowed = false;
+		}
+		
 		return allowed;
 	},
 	function() { // Weight
@@ -451,7 +466,13 @@ setup.eventsMetaInfo["gfn0"] = new eventMetaInfo( // "Gifts For Nature"
 setup.eventsMetaInfo["gfn0"].clairvoyanceData = new emiClaivoyanceData(
 	"When you and the Leirien collect offerings from nature", // Cryptic Name
 	function() { // Reqs to be shown
-		return true; // Might always be shown
+		var allowed = true;
+		
+		if ( getCurrentStoryState() >= storyState.secondLoop ) {
+			allowed = false;
+		}
+		
+		return allowed;
 	},
 	function() { // Reqs to appear
 		var reqsText = formatClairvoyanceCheck("Requisites",20,formatRequisiteForClairvoyance("Wait a few days", function() {
@@ -472,6 +493,10 @@ setup.eventsMetaInfo["dto0"] = new eventMetaInfo( // "Discovering The Others"
 	function() { // Reqs
 		var allowed = true;
 		
+		if ( getCurrentStoryState() >= storyState.secondLoop ) {
+			allowed = false;
+		}
+		
 		return allowed;
 	},
 	function() { // Weight
@@ -483,7 +508,13 @@ setup.eventsMetaInfo["dto0"] = new eventMetaInfo( // "Discovering The Others"
 setup.eventsMetaInfo["dto0"].clairvoyanceData = new emiClaivoyanceData(
 	"When the Aiishen asks for your help to study something alien to her", // Cryptic Name
 	function() { // Reqs to be shown
-		return true; // Might always be shown
+		var allowed = true;
+		
+		if ( getCurrentStoryState() >= storyState.secondLoop ) {
+			allowed = false;
+		}
+		
+		return allowed;
 	},
 	function() { // Reqs to appear
 		var reqsText = formatClairvoyanceCheck("Requisites",20,formatRequisiteForClairvoyance("Wait a few days", function() {
@@ -516,7 +547,6 @@ setup.eventsMetaInfo["gol0"] = new eventMetaInfo( // "The Grapes of Lust"
 		return weight;
 	}
 );
-
 setup.eventsMetaInfo["gol0"].clairvoyanceData = new emiClaivoyanceData(
 	"When someone's excessive focus leads to her getting taken advantage of", // Cryptic Name
 	function() { // Reqs to be shown
@@ -598,7 +628,7 @@ setup.eventsMetaInfo["mt1"] = new eventMetaInfo( // "Martial Tutorship I"
 	function() { // Reqs
 		var allowed = false;
 		
-		if ( gC("chPlayerCharacter").domChar == "chNash" ) {
+		if ( gC("chPlayerCharacter").domChar == "chNash" && getCurrentStoryState() < storyState.thirdLoop ) {
 			if ( gRelTypeAb("chPlayerCharacter","chNash").type == "tutorship" ) {
 				if ( gC("chNash").hasFreeBodypart("arms") && gC("chNash").hasFreeBodypart("legs") ) {
 					if ( ( gC("chPlayerCharacter").hasFreeBodypart("arms") || getEquipById(gC("chPlayerCharacter").body.arms.bondage).owner == "chNash" ) && ( gC("chPlayerCharacter").hasFreeBodypart("legs") || getEquipById(gC("chPlayerCharacter").body.legs.bondage).owner == "chNash" ) ) {
@@ -618,7 +648,13 @@ setup.eventsMetaInfo["mt1"] = new eventMetaInfo( // "Martial Tutorship I"
 setup.eventsMetaInfo["mt1"].clairvoyanceData = new emiClaivoyanceData(
 	"When the Ashwalker teaches you the basics of martial combat", // Cryptic Name
 	function() { // Reqs to be shown
-		return true; // Might always be shown
+		var allowed = true;
+		
+		if ( getCurrentStoryState() >= storyState.thirdLoop ) {
+			allowed = false;
+		}
+		
+		return allowed;
 	},
 	function() { // Reqs to appear
 		var reqsText = formatClairvoyanceCheck("Requisites (1)",40,formatRequisiteForClairvoyance("Nashillbyir is the tutor of " + gC("chPlayerCharacter").getName(), function() {
@@ -728,7 +764,9 @@ setup.eventsMetaInfo["BAw0"] = new eventMetaInfo( // "Bondage Awakening"
 				if ( gC("chMir").domChar != "chPlayerCharacter" && gC("chMir").domChar != "chNash" && gC("chMir").domChar != "chClaw" ) {
 					if ( gC("chPlayerCharacter").domChar != "chNash" && gC("chPlayerCharacter").domChar != "chMir" && gC("chPlayerCharacter").domChar != "chClaw" ) {
 						if ( gC("chNash").hasFreeBodypart("arms") && gC("chNash").hasFreeBodypart("legs") && gC("chClaw").hasFreeBodypart("arms") && gC("chClaw").hasFreeBodypart("legs") && gC("chMir").hasFreeBodypart("arms") && gC("chPlayerCharacter").hasFreeBodypart("arms") ) {
-							allowed = true;
+							if ( getCurrentStoryState() < storyState.thirdAdventure ) {
+								allowed = true;
+							}
 						}
 					}
 				}
@@ -746,7 +784,13 @@ setup.eventsMetaInfo["BAw0"] = new eventMetaInfo( // "Bondage Awakening"
 setup.eventsMetaInfo["BAw0"].clairvoyanceData = new emiClaivoyanceData(
 	"When the Leirien's patience is challenged, and she feels the desire to unleash punishment", // Cryptic Name
 	function() { // Reqs to be shown
-		return true; // Might always be shown
+		var allowed = true;
+		
+		if ( getCurrentStoryState() < storyState.thirdAdventure ) {
+			allowed = false;
+		}
+		
+		return allowed;
 	},
 	function() { // Reqs to appear
 		var reqsText = formatClairvoyanceCheck("Requisites (1)",40,formatRequisiteForClairvoyance("Claw isn't submissive to " + gC("chPlayerCharacter").name + ", Nashillbyir or Padmiri", function() {
@@ -811,6 +855,11 @@ setup.eventsMetaInfo["lm0"] = new eventMetaInfo( // "Luring Masquerade"
 	"Luring Masquerade Start",
 	function() { // Reqs
 		var allowed = true;
+		
+		if ( getCurrentStoryState() > storyState.firstLoop ) {
+			allowed = false;
+		}
+		return allowed;
 		if ( gC("chVal").body.hasOwnProperty("legs") && gC("chPlayerCharacter").body.hasOwnProperty("legs") && gC("chMir").body.hasOwnProperty("legs") ) {
 			if ( gC("chVal").body.legs.state != "free" || gC("chPlayerCharacter").body.legs.state != "free" || gC("chMir").body.legs.state != "free" ) {
 				allowed = false;
@@ -843,7 +892,13 @@ setup.eventsMetaInfo["lm0"] = new eventMetaInfo( // "Luring Masquerade"
 setup.eventsMetaInfo["lm0"].clairvoyanceData = new emiClaivoyanceData(
 	"When your body attracts too much attention during one kind morning", // Cryptic Name
 	function() { // Reqs to be shown
-		return true; // Might always be shown
+		var allowed = true;
+		
+		if ( getCurrentStoryState() >= storyState.secondLoop ) {
+			allowed = false;
+		}
+		
+		return allowed;
 	},
 	function() { // Reqs to appear
 		var reqsText = formatClairvoyanceCheck("Requisites (1)",30,formatRequisiteForClairvoyance("Player has free legs", function() {

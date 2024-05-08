@@ -119,6 +119,14 @@ PersonalRoom.prototype.getButtonBackToMain = function() {
 	}
 PersonalRoom.prototype.getButtonsCharInfo = function() {
 		var bText = "";
+		var charsList = [];
+		/*
+		if ( isCurrentStoryStateInMainLoop() ) {
+			charsList = getActiveSimulationCharactersArray();
+		} else {
+			charsList = getCandidatesKeysArray();
+		}*/
+		
 		for ( var character of getActiveSimulationCharactersArray() ) {
 			if ( isCurrentStoryStateInMainLoop() || getCandidatesKeysArray().includes(character) ) {
 				bText += "<<l" + "ink [[" + gC(character).name + "|Personal Room]]>><<s" + "cript>>";
@@ -859,6 +867,9 @@ PersonalRoom.prototype.initializeNewDay = function() {
 		} else if ( State.variables.storyState == storyState.firstAdventure ) {
 			// Gleaming Caverns Period
 			initAdventurePeriodGleamingCaverns();
+		} else if ( State.variables.storyState == storyState.secondAdventure ) {
+			// Shartrish Slopes Period
+			initAdventurePeriodShartrishSlopes();
 		}
 	
 		// Clean compass
@@ -1010,6 +1021,10 @@ window.guestEntersTemple = function(ch) {
 window.guestLeavesTemple = function(ch) {
 	gC(ch).isAtTemple = false;
 	gC(ch).daysInTemple = 0;
+	for ( var sC of gC(ch).subChars ) {
+		finishRelType(ch,sC);
+		finishRelType(sC,ch);
+	}
 }
 
 window.guestsEnterAndLeavePassionTemple = function() {
@@ -1024,7 +1039,7 @@ window.guestsEnterAndLeavePassionTemple = function() {
 				case "chArt":
 					// Always allowed
 					if ( isCharAtTemple(ch) ) {
-						if ( (-30 + gC(ch).daysInTemple * 30 + limitedRandomInt(100)) >= 100 ) {
+						if ( (-30 + gC(ch).daysInTemple * 30 + limitedRandomInt(100) + returnNifCharHasSubs(-50,"chArt")) >= 100 ) {
 							guestLeavesTemple(ch);
 						}
 					} else {
@@ -1044,7 +1059,7 @@ window.guestsEnterAndLeavePassionTemple = function() {
 						enabledByStory = false;
 					}
 					if ( isCharAtTemple(ch) ) {
-						if ( (-60 + gC(ch).daysInTemple * 20 + limitedRandomInt(100)) >= 100 ) {
+						if ( (-60 + gC(ch).daysInTemple * 20 + limitedRandomInt(100) + returnNifCharHasSubs(-50,"chHope")) >= 100 ) {
 							guestLeavesTemple(ch);
 							if ( State.variables.chRock != null ) {
 								guestLeavesTemple("chRock");
@@ -1062,7 +1077,7 @@ window.guestsEnterAndLeavePassionTemple = function() {
 				case "chMes":
 					// Always allowed
 					if ( isCharAtTemple(ch) ) {
-						if ( (-30 + gC(ch).daysInTemple * 30 + limitedRandomInt(100)) >= 100 ) {
+						if ( (-30 + gC(ch).daysInTemple * 30 + limitedRandomInt(100) + returnNifCharHasSubs(-50,"chMes")) >= 100 ) {
 							guestLeavesTemple(ch);
 						}
 					} else {
@@ -1074,7 +1089,7 @@ window.guestsEnterAndLeavePassionTemple = function() {
 				case "chSil":
 					// Always allowed
 					if ( isCharAtTemple(ch) ) {
-						if ( (-100 + gC(ch).daysInTemple * 50 + limitedRandomInt(100)) >= 100 ) {
+						if ( (-100 + gC(ch).daysInTemple * 50 + limitedRandomInt(100) + returnNifCharHasSubs(-50,"chSil")) >= 100 ) {
 							guestLeavesTemple(ch);
 						}
 					} else {
@@ -1086,7 +1101,7 @@ window.guestsEnterAndLeavePassionTemple = function() {
 				case "chNer":
 					// Always allowed
 					if ( isCharAtTemple(ch) ) {
-						if ( (-30 + gC(ch).daysInTemple * 30 + limitedRandomInt(100)) >= 100 ) {
+						if ( (-30 + gC(ch).daysInTemple * 30 + limitedRandomInt(100) + returnNifCharHasSubs(-50,"chNer")) >= 100 ) {
 							guestLeavesTemple(ch);
 						}
 					} else {
@@ -2030,7 +2045,7 @@ window.spawnMerchants = function() {
 
 window.getButtonMerchants = function() {
 		var bText = "";
-		if ( State.variables.currentMerchants.length > 0 ) {
+		if ( isCurrentStoryStateInMainLoop() && State.variables.currentMerchants.length > 0 ) {
 			bText = "<<l" + "ink [[Merchants|Personal Room]]>><<s" + "cript>>";
 				bText += "State.variables.personalRoom.roomState = 'merchants';\n";
 				bText += "<</s" + "cript>><</l" + "ink>> (" + State.variables.currentMerchants.length + ")\n\n";

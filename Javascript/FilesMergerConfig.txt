@@ -18,7 +18,7 @@ custom-scripts.js
 Others\sim-cycle-pars.js
 Maps\day-cycle-class.js
 Maps\map-class.js
-Maps\temple-maps.js
+Maps\map-temple.js
 Maps\map-actions-training.js
 Maps\npcmapai-class.js
 Maps\pathfinder.js
@@ -56,7 +56,8 @@ Others\punishments.js
 Characters\dyn-generated-characters.js
 Characters\Monsters.js
 Maps\adv-actions-gleaming-caverns.js
-Maps\gleaming-caverns-maps.js
+Maps\map-gleaming-caverns.js
+Maps\map-shartrish-slopes.js
 Adventures\gleamingCavernsScripts.js
 Adventures\map-story-events.js
 Scenes\tf-scenes.js

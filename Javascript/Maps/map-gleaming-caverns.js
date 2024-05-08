@@ -1728,8 +1728,8 @@ window.getGleamingCavernStreetConvs = function() {
 	if ( isStVarOn('blmClaw') ) { // After 'Blackmailed by Claw
 		posConvs.push(colorText('//"Have you heard? Someone was spying from the top of the Lake of Union. I bet it was one of those Candidates... They bring nothing good."//','gray'));
 	}
-	if ( isJudgesReunionFinishedFA() == false ) { // Closed teather
-		posConvs.push(colorText('//"I\'ve just been kicked out of the teather... It looks like the judges are having quite the heated discussion. Again."//','gray'));
+	if ( isJudgesReunionFinishedFA() == false ) { // Closed theater
+		posConvs.push(colorText('//"I\'ve just been kicked out of the theater... It looks like the judges are having quite the heated discussion. Again."//','gray'));
 	}
 		// Painting & Crafting
 	posConvs.push(colorText('//"We\'ve got a good haul of clay and minerals lately. I\'m wondering what could I paint for my house later..."//','gray'));

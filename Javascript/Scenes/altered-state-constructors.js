@@ -1289,6 +1289,7 @@ window.createASslimed = function(intensity) {
 	var slm = 0.05 + intensity * 0.015; // 0.05 ~ 0.15
 	//var lrl = 0.15 + intensity * 0.015; // 0.15 ~ 0.3
 	var turns = 3.5 + intensity * 0.2 + (limitedRandomInt(100) / 100); // 5 ~ 7
+	turns = Math.floor(turns);
 	var provokeEffect = function(charKey) {
 		gC(charKey).agility.sumModifier -= sls;
 		gC(charKey).agility.multModifier -= slm;

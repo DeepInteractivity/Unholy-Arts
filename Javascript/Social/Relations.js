@@ -920,6 +920,14 @@ window.isRivalryPossible = function(charA,charB) {
 	return isPossible;
 }
 
+window.returnNifCharHasSubs = function(n,cK) {
+	var value = 0;
+	if ( gC(cK).subChars.length > 0 ) {
+		value = n;
+	}
+	return value;
+}
+
 // Constructors, serializers, etc.
 RelationshipType.prototype._init = function (obj) {
 	Object.keys(obj).forEach(function (pn) {

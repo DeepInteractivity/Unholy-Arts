@@ -2,7 +2,7 @@
 
 window.scene = function() {
 	this.sceneLog = ""; // Debug console
-	this.logAi = true;
+	this.logAi = false;
 	
 	this.scenePassage = "";
 	
@@ -1357,7 +1357,7 @@ window.scene = function() {
 		this.formatScenePassage();
 		
 		if ( this.logAi == true ) {
-			this.scenePassage += "\n\n\n\n" + this.sceneLog;
+			// this.scenePassage += "\n\n\n\n" + this.sceneLog;
 		}
 	}
 	
@@ -1967,7 +1967,7 @@ window.getSsAiD = function() {
 	// Meta-controls
 	scene.prototype.markNextTurnLink = function() {
 		if ( this.flagSceneActive ) {
-			if ( State.variables.sc.teamAcharKeys.includes("chPlayerCharacter") || State.variables.sc.teamBcharKeys.includes("chPlayerCharacter") ) {
+			if ( (State.variables.sc.teamAcharKeys.includes("chPlayerCharacter") || State.variables.sc.teamBcharKeys.includes("chPlayerCharacter")) && gC("chPlayerCharacter").koed == false ) {
 				State.variables.foundLinks = $("#passages a").toArray();
 				var nextTurnLinkPosition = State.variables.foundLinks.length - 1;
 				if ( State.variables.foundLinks[nextTurnLinkPosition].id != undefined ) {

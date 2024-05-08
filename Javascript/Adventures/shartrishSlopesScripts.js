@@ -109,7 +109,10 @@ window.initializeShartrishSlopesAdventure = function() {
 	getRelation("chClaw","chPain").rivalry.ltv += 750;
 	getRelation("chClaw","chPain").rivalry.stv += 500;
 	
-		// Ashwalkers respect
+		// Ashwalkers respect	
+	if ( State.variables.tribes == undefined ) { // Enable tests
+		State.variables.tribes = new pseudoList();
+	}
 	State.variables.tribes.awRsp = 50;
 	State.variables.tribes.gdRsp = -50;
 	for ( var cK of getCandidatesKeysArray() ) {
@@ -133,6 +136,85 @@ window.initializeShartrishSlopesAdventure = function() {
 	State.variables.daycycle.day = 2;
 	
 	State.variables.storyState = storyState.secondAdventure;
+	
+	// Maps
+	deinitMapTrainingGrounds();
+	initMapShartrishSlopes();
+	
+		// Story Vars
+	gC("chPain").name = "???";
+	gC("chSheze").name = "???";
+	gC("chPain").formattedName = '<span style="color:'+gC("chPain").nameColor+'">'+gC("chPain").name+'</span>';
+	gC("chSheze").formattedName = '<span style="color:'+gC("chSheze").nameColor+'">'+gC("chSheze").name+'</span>';
+		
+	// UI
+	setPasChars([]);
+	setRoomIntro("mapShartrishSlopes","borderHills");
+	
+	State.variables.StVars.check1 = true; // true if conversation with Padmiri+Nash+Claw, false if conversation with Ate+Val
+	if ( isStVarOn("PlTtAt") ) {
+		State.variables.StVars.check1 = false; 
+	} else {
+		var closestCandidate = -1;
+		var highestRelationship = -1;
+		for ( var cK of ["chNash","chMir","chClaw","chAte","chVal"] ) {
+			var currentRel = rLvlAbt(cK,"chPlayerCharacter","friendship") + rLvlAbt(cK,"chPlayerCharacter","romance") * 2 + rLvlAbt(cK,"chPlayerCharacter","sexualTension") - rLvlAbt(cK,"chPlayerCharacter","rivalry") - rLvlAbt(cK,"chPlayerCharacter","enmity") * 3;
+			if ( currentRel > 10 && currentRel > highestRelationship ) {
+				highestRelationship = currentRel;
+				closestCandidate = cK;
+			}
+		}
+		if ( closestCandidate == "chVal" || closestCandidate == "chAte" ) {
+			State.variables.StVars.check1 = false; 
+		}
+	}
+	
+	if ( State.variables.StVars.check1 ) {
+		setPasChars([getPresentCharByKey("chMir"),getPresentCharByKey("chNash"),getPresentCharByKey("chClaw")]);
+	} else {
+		setPasChars([getPresentCharByKey("chVal"),getPresentCharByKey("chAte")]);
+	}
+	
+	if ( isStVarOn("GcEndA") || isStVarOn("GcEndB") ) {
+		State.variables.StVars.check2 = true;
+	} else {
+		State.variables.StVars.check2 = false;
+	}
+	
+	State.variables.StVars.check3 = gCstat("chPlayerCharacter","perception") >= 20;
+	State.variables.StVars.check4 = (gCstat("chPlayerCharacter","charisma")+gCstat("chPlayerCharacter","intelligence")) >= 32;
+	State.variables.StVars.check5 = (gCstat("chPlayerCharacter","will")+gCstat("chPlayerCharacter","intelligence")) >= 30;
+	State.variables.StVars.check6 = ((gCstat("chPlayerCharacter","will") >= 16) || (gCstat("chPlayerCharacter","resilience") >= 18) || ((gCstat("chPlayerCharacter","resilience") + gCstat("chPlayerCharacter","physique")) >= 32));
+}
+
+	// Intro scripts
+window.shoutAtPain = function() {
+	for ( var cK of ["chPlayerCharacter","chClaw","chNash","chMir","chVal"] ) {
+		for ( var tK of ["chPlayerCharacter","chClaw"] ) {
+			if ( cK != tK ) {
+				getRelation(cK,tK).friendship.stv += 300;
+				getRelation(tK,cK).friendship.stv += 300;
+			}
+		}	
+		getRelation(cK,"chPain").enmity.stv += 750;
+		getRelation("chPain",cK).enmity.stv += 750;
+	}
+}
+window.altShoutAtPain = function() {
+	for ( var cK of ["chPlayerCharacter","chClaw","chNash","chMir","chVal"] ) {
+		for ( var tK of ["chVal","chClaw"] ) {
+			if ( cK != tK ) {
+				getRelation(cK,tK).friendship.stv += 300;
+				getRelation(tK,cK).friendship.stv += 300;
+			}
+		}	
+		getRelation(cK,"chPain").enmity.stv += 750;
+		getRelation("chPain",cK).enmity.stv += 750;
+	}
+}
+
+window.shSlSecondDayScript = function() {
+	State.variables.StVars.check1 = gCstat("chPlayerCharacter","empathy") >= 16;
 }
 
 	// End Second Adventure

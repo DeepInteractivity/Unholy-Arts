@@ -213,7 +213,7 @@ NpcSocialAi.prototype.getInterRoundBehavior = function(sis) {
 							if ( gC(this.charKey).mission == "raiseFriendship" || gC(this.charKey).mission == "flirt" || gC(this.charKey).mission == "getAlliance" ) {
 								domSexAllowed = false;
 							}
-							if ( gC(this.charKey).mission == "haveDomSex" || gC(this.charKey).mission == "seduce" || ( (gC(this.charKey).socialAi.covetTs.includes(priorizedChar) || gC(this.charKey).socialAi.conquestTs.includes(priorizedChar)) && gC(this.charKey).socialAi.allyTs.includes(priorizedChar) == false ) ) {
+							if ( gC(this.charKey).mission == "haveDomSex" || gC(this.charKey).mission == "seduce" || gC(this.charKey).mission == "getAlliance" || ( (gC(this.charKey).socialAi.covetTs.includes(priorizedChar) || gC(this.charKey).socialAi.conquestTs.includes(priorizedChar)) ) ) {
 								egaSexAllowed = false;
 							}
 							if ( (gC(this.charKey).socialAi.covetTs.includes(priorizedChar) == false && gC(this.charKey).socialAi.conquestTs.includes(priorizedChar) == false) && (getCharsDrivePercent(this.charKey,"dPleasure")*2 > getCharsDrivePercent(this.charKey,"dDomination") + getCharsDrivePercent(this.charKey,"dAmbition")) && (gC(this.charKey).socialAi.loveTs.includes(priorizedChar) || gC(this.charKey).mission == "haveSex") && gC(priorizedChar).domChar != this.charKey ) {

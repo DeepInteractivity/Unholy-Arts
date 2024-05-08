@@ -57,16 +57,18 @@ Config.history.maxStates = 1;
 // * gcSiTl , gcSiWT , gcSiSp -> Sillan will talk , Sillan will not talk , Sillan Speech
 // * tfWnSF , tfTfVl -> Twisted Festival, Won Special Fight, Transformed Into Valtan
 // * plSgVF , tfNsSp , tfMrSp , tfClSp , tfPlSp , tfVlSP -> Twisted Festival, Player Signals Valtan Defense , Nash/Mir/Claw/Player Speech , Valtan Speech Plus
-// * GcEndA , GcEndB , GcEndC -> Gleaming Caverns Ending A / B / C // MAINTAINED
+// * GcEndA , GcEndB , GcEndC -> Gleaming Caverns Ending A (Defeated Nersmias) / B / C // MAINTAINED 
 // * END FIRST ADVENTURE
 // * VlTtAt , PlTtAt -> Valtan tutored Ate, Player tutored Ate
 // * ShTNgt
 // * DbLlEx -> Doubts on Lizardlin Expedition
 // * SpTtCv -> Suspects a Traitor in the Confined Valley
+// * START SECOND ADVENTURE
+// * SsReMe -> Shartrish Slopes Remember Me
   // Special experiences
 // VarDom -> Varyonte's domination
 
-// State.variables.StVarsList = []; // Ex.: isStVarOn("GcEndA") // removeFromStVarsList("nAtfKn"); addToStVarsList("SpTtCv");
+// State.variables.StVarsList = []; // Ex.: isStVarOn("PlTtAt") // removeFromStVarsList("nAtfKn"); addToStVarsList("SsReMe");
 
 	// Tf Settings constants and definitions
 const tfSetTarget = {
@@ -111,7 +113,7 @@ setup.tfExtraSettingsNames = [ "No transformations", "Temporary", "Permanent", "
 
 ////////// GAME SETTINGS CLASS //////////
 
-setup.versionName = "Unholy Arts v0.4.3";
+setup.versionName = "Unholy Arts v0.4.4.7";
 
 setup.infamySecondThreshold = 1.2;
 setup.infamyThirdThreshold = 1.4;
@@ -851,7 +853,8 @@ window.getCurrentStoryState = function() {
 }
 window.isCurrentStoryStateInMainLoop = function() {
 	var result = true;
-	if ( State.variables.storyState == storyState.firstAdventure ) {
+	if ( State.variables.storyState == storyState.firstAdventure ||
+		 State.variables.storyState == storyState.secondAdventure ) {
 		result = false;
 	}
 	return result;

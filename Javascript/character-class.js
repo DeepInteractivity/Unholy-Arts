@@ -1155,7 +1155,7 @@ window.gainControlBack = function(charKey) {
 		var gainedControl = gC(charKey).maxControl * 0.6;
 		gC(charKey).control = gainedControl;
 		gC(charKey).lostControlTurns = -1;
-		State.variables.sc.otherMessages.push("" + ktn(gC(charKey).varName) + " recovered " + gainedControl + " control points.");
+		State.variables.sc.otherMessages.push("" + ktn(gC(charKey).varName) + " recovered " + gainedControl.toFixed(2) + " control points.");
 	}
 
 // Name, text, formatting
@@ -1643,7 +1643,9 @@ window.charReceivesAnTags = function(cK,anTags) {
 		gC(cK).anTags = [];
 	}
 	for ( var at of anTags ) {
-		gC(cK).anTags.push(at);
+		if ( gC(cK).anTags.includes(at) == false ) {
+			gC(cK).anTags.push(at);
+		}
 	}
 }
 window.charLosesAnTags = function(cK,lostAnTags) {

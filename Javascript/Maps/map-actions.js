@@ -641,7 +641,9 @@ window.createSystemEventRecoverFromExhaustion = function(characters) {
 	
 	var sEvent = new systemEvent(mins,characters,"recoverExhaustion","Recovering from Exhaustion",function(cList) {
 			var eventMsg = "You are being slowly robbed of your aether. Gather your energies, however, and you will find the right moment to escape.";
-			State.variables.compass.setMapMessage(eventMsg);
+			if ( cList.includes("chPlayerCharacter") ) {
+				State.variables.compass.setMapMessage(eventMsg);
+			}
 			return eventMsg;
 		}
 	);

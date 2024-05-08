@@ -3,6 +3,7 @@
 window.applyRequiredPatches = function() {
 	genericPatches();
 	v043LearnPressDown();
+	v0446NashSprites();
 }
 
 window.genericPatches = function() {
@@ -138,5 +139,11 @@ window.v043FixNPCsGenders = function() {
 
 window.v043LearnPressDown = function() {
 	charactersLearnSceneActions(getActiveSimulationCharactersArray(),["baPressDown"]);
+}
+
+window.v0446NashSprites = function() {
+	if ( State.variables.chNash != undefined ) {
+		charReceivesAnTags("chNash",["Ns","DarkHuman"]);
+	}
 }
 

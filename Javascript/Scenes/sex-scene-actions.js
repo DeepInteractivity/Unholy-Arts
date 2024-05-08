@@ -1270,7 +1270,7 @@ window.createSaPushDickBack = function() {
 		results.value += lustDamage;
 		results.description += randomFromList( [
 								(ktn(actorKey) + " pushed " + gC(actorKey).posPr + " " + dickWord() + " against " + ktn(target) + "."),
-								(ktn(actorKey) + " thrusted " + ktn(target) + "'s " + pussyWord() + "."),
+								(ktn(actorKey) + " thrusted into " + ktn(target) + "'s " + pussyWord() + "."),
 								(ktn(actorKey) + "'s " + dickWord() + " retaliated against " + ktn(target) + "'s " + pussyWord() + ".")
 								] );
 		results.description += " " + ktn(target) + " received " + textLustDamage(lustDamage) + ". " + multAr[1];

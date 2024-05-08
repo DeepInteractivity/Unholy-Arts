@@ -8,13 +8,14 @@ window.scSprite = function(varName,gifName,positionPriority,dimensions,coordinat
 	this.dimensions = dimensions; // [x,y] Length and height of the sprite
 	this.coordinates = coordinates; // [x,y] Where must the sprite be placed from the superior left corner
 	this.type = type; // Type of sprite. All sprites of the same type may be interchangeable
-	this.group = group; // Group of sprite. All sprites of the same group are intended to form part of the same character and position
+	this.group = group; // Group of sprites. All sprites of the same group are intended to form part of the same character and position
 	this.animation = animation; // Animation to which this sprite belongs
 }
 
 ///// Display functions ///// [30,15,5] [20] , 0
 
 window.orderScSpritesList = function(scSpritesList) {
+	State.variables.logL1.push(scSpritesList,"ordering");
 	var orderedList = [];
 	for ( var scs of scSpritesList ) {
 		var i = 0;
@@ -36,6 +37,7 @@ window.orderScSpritesList = function(scSpritesList) {
 }
 window.formatScSpritesList = function(dimensions,bgFileRoute,scSpritesVarNames) {
 	var scSpritesList = [];
+	State.variables.logL1.push(scSpritesVarNames,"endOfList");
 	for ( var scvn of scSpritesVarNames ) {
 		scSpritesList.push(getScSprite(scvn));
 	}
@@ -244,8 +246,8 @@ window.selectAnimationSprites = function() {
 	// These continued actions' actors must have valid positions
 	// There may be special requisites
 	// It must return an animation key and a list of actors with corresponding animation positions
-	// Example of ValidAnimationData = ["mountDick",[["chPlayerCharacter","MftfMdT"],["chMir","MftfMdB"]],"MftfMd" + ca.initiator + ca.targetsList[0]];
-	//									type		[[charA,model],				     [charB,model]]		  (type+Actors)Identifier
+	// Example of ValidAnimationData = ["mountDick",[["chPlayerCharacter","MftfMdT"],["chMir","MftfMdB"]],  "MftfMd" + ca.initiator + ca.targetsList[0],["analP"]];
+	//									type [0]	[[charA,model] [1][0],			 [charB,model]] [1][1], (type+Actors)Identifier [2]				    extraArguments [4]
 	// model refers to the object containing the references to the sprites to be selected from setup.SCSDL
 	
 	// Select animation
@@ -287,7 +289,9 @@ window.selectAnimationSprites = function() {
 			}
 		}
 		
+		State.variables.logL1.push("Selected Animation",selectedAnimation);
 		var chAnTagsPosList = [[selectedAnimation[1][0][0],ch1anTags,selectedAnimation[1][0][1]],[selectedAnimation[1][1][0],ch2anTags,selectedAnimation[1][1][1]]];
+		var extraArguments = selectedAnimation[3];
 		// Sprite Collector must receive a list of 3-sized arrays, where the first element is the key of the referred character, the second one is an array with all animation tags of the character, and the second is the position the character will be occupying.
 		// For instance: ["chPlayerCharacter",["Mcy","WhiteHuman"],"MftfMdT"] tells the Sprite collector that it must find all sprites for Mcy (Main Character Yellow) for MftfMdT (Mount Face to Face, Mount Dick, Top), or for WhiteHuman if Mcy doesn't have sprites of the corresponding category. "chPlayerCharacter" must be inputed so that the Sprite Collector knows which groups of sprites should be looked for (such as "lockedArms" instead of "arms" if the characters' arms are locked
 		
@@ -300,11 +304,106 @@ window.selectAnimationSprites = function() {
 				var chK = chAnTags[0];
 				var anTags = chAnTags[1];
 				var charPos = chAnTags[2];
-				var partsSets = ["core","head","bigChest"];
-				if ( gC(chK).body.hasOwnProperty("dick") ) { partsSets.push("dick"); }
-				if ( gC(chK).body.hasOwnProperty("arms") ) { partsSets.push("arms"); }
-				if ( gC(chK).body.hasOwnProperty("legs") ) { partsSets.push("legs"); }
+				var partsSets = ["core","head"]; // Body parts sets
+				var bgPartsSets = []; // Bondage parts sets
+				if ( gC(chK).body.hasOwnProperty("pussy") ) {
+					if ( gC(chK).body.pussy.bondage != -1 ) {
+						bgPartsSets.push("chbelt");
+					}
+				}
+				if ( gC(chK).body.hasOwnProperty("dick") ) {
+					if ( gC(chK).body.dick.bondage != -1 ) {
+						bgPartsSets.push("chcage");
+					} else { // Extra arguments conditions
+						var flagPrintDick = true;
+						if ( extraArguments.includes("analPen") ) {
+							for ( var at of anTags ) {					
+								if ( setup.SCSDL[charPos][at].hasOwnProperty("dickAnal") ) { // Check if any of the tags of the character-position-animation has the desired part
+									partsSets.push("dickAnal");
+									flagPrintDick = false; // Since there's anal penetration, no need to show standard dick
+								}
+							}
+						} else if ( extraArguments.includes("doublePen") ) {
+							for ( var at of anTags ) {					
+								if ( setup.SCSDL[charPos][at].hasOwnProperty("dickDouble") ) {
+									partsSets.push("dickDouble");
+									flagPrintDick = false;
+								}
+							}
+						}
+						if ( flagPrintDick ) {
+							partsSets.push("dick");
+						}
+					}
+				}
+				if ( extraArguments.includes("doubleDildoPen") ) {
+					for ( var at of anTags ) {					
+						if ( setup.SCSDL[charPos][at].hasOwnProperty("doubleDildo") ) {
+							partsSets.push("doubleDildo");
+						}
+					}
+				}
 				
+				if ( gC(chK).body.hasOwnProperty("anus") ) {
+					if ( gC(chK).body.anus.bondage != -1 ) {
+						bgPartsSets.push("buttplug");
+					}
+				}
+				if ( gC(chK).body.hasOwnProperty("breasts") ) {
+					if ( gC(chK).body.breasts.bondage != -1 ) {
+						if ( gC(chK).perPr != "she" ) {
+							bgPartsSets.push("fNipcaps");
+						} else if ( gC(chK).chestSize == "big" ) {
+							bgPartsSets.push("lNipcaps");
+						} else if ( gC(chK).chestSize == "med" ) {
+							bgPartsSets.push("mNipcaps");
+						} else {
+							bgPartsSets.push("sNipcaps");
+						}
+					}
+					if ( gC(chK).perPr == "she" ) {
+						if ( gC(chK).chestSize == "big" ) {
+							partsSets.push("bigChest");
+						} else if ( gC(chK).chestSize == "med" ) {
+							partsSets.push("medChest");
+						} else {
+							partsSets.push("smaChest");
+						}
+					}
+				}
+				if ( gC(chK).body.hasOwnProperty("mouth") ) {
+					if ( gC(chK).body.mouth.bondage != -1 ) {
+						bgPartsSets.push("gag");
+					}
+				}
+				if ( gC(chK).body.hasOwnProperty("eyes") ) {
+					if ( gC(chK).body.eyes.bondage != -1 ) {
+						bgPartsSets.push("blindfold");
+					}
+				}
+				if ( gC(chK).body.hasOwnProperty("neck") ) {
+					if ( gC(chK).body.neck.bondage != -1 ) {
+						bgPartsSets.push("collar");
+					}
+				}
+				if ( gC(chK).body.hasOwnProperty("arms") ) {
+					if ( gC(chK).body.arms.bondage != -1 ) {
+						bgPartsSets.push("armbinds");
+						partsSets.push("lockedArms");
+					} else {
+						partsSets.push("arms");
+					}
+				}
+				if ( gC(chK).body.hasOwnProperty("legs") ) {
+					if ( gC(chK).body.legs.bondage != -1 ) {
+						bgPartsSets.push("legbinds");
+						partsSets.push("lockedLegs");
+					} else {
+						partsSets.push("legs");
+					}
+				}
+				
+				// Body sprites
 				for ( var part of partsSets ) {
 					var foundSet = false;
 					for ( var set of anTags ) {
@@ -319,6 +418,16 @@ window.selectAnimationSprites = function() {
 							}
 						}
 					}				
+				}
+				// Equipment sprites
+				if ( setup.SCSDL[charPos].Bondage != undefined ) {
+					for ( var part of bgPartsSets ) {
+						if ( setup.SCSDL[charPos].Bondage[part] != undefined ) {
+							for ( var spr of setup.SCSDL[charPos].Bondage[part] ) {
+								spritesList.push(spr);
+							}
+						}
+					}
 				}
 			}
 		}

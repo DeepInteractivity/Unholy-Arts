@@ -209,6 +209,12 @@ window.setRoomIntro = function(mapName,roomName) {
 	intro += '</div>';
 	State.variables.customRoomIntro = intro;
 }
+window.setCustomRoomIntro = function(roomName,roomImg,roomDescription) {
+	var intro = `<div class='standardBox'>  <span style="vertical-align: middle;"><img src="img/` + roomImg + `" style="vertical-align: middle;">` + " __" + roomName + "__</span>";
+		intro += "\n" + roomDescription;
+		intro += '</div>';
+	State.variables.customRoomIntro = intro;
+}
 
 window.getTextWithTooltip = function(txt,tooltip) {
 	var fTxt = "<span title='" + tooltip + "'>" + txt + "</" + "span>";
